@@ -1,0 +1,50 @@
+#!/bin/scheme /grass/19/boot
+;;;; compile + run program with timeout, then check exit status and output -*- Scheme -*-
+
+
+(require 'sh 'match)
+
+;(run-verbose #t)
+(define args (command-line-arguments))
+(define file (car args))
+(define bfile (basename file))
+(define xfile (string-append "tmp/" (strip-suffix bfile)))
+(define cfile (string-append "tmp/" (replace-suffix "c" bfile)))
+(define outfile (string-append xfile ".out"))
+
+(define timeout 
+  (cond ((file-exists? (replace-suffix "timeout" file)) =>
+	 (lambda (fn) (with-input-from-file fn read)))
+	(else 3)))
+
+(define status-check zero?)
+(define message "terminated with non-zero exit status")
+
+(define expfile
+  (or (file-exists? (replace-suffix "expected" file))
+      (cond ((file-exists? (replace-suffix "expected-fail" file)) =>
+	     (lambda (fn)
+	       (set! status-check (compl zero?))
+	       (set! message "expected to fail, but terminated with exit status")
+	       fn))
+	    ((file-exists? (replace-suffix "expected-timeout" file)) =>
+	     (lambda (fn)
+	       (set! status-check (cut = 36608 <>))
+	       (set! message "did not reach timeout, exit status is")
+	       fn))
+	    (else #f))))
+
+(run (./pc ,file -o ,cfile))
+(run (gcc -std=gnu99 -save-temps=obj -I. -g ,cfile -o ,xfile))
+
+(define status (run* (./timeout -t ,timeout ,(string-append "./" xfile) > ,outfile)))
+
+(cond ((not (status-check status))
+       (run (cat ,outfile))
+       (print message " " status)
+       (exit 1))
+      ((and expfile (file-exists? expfile))
+       (unless (zero? (run* (diff -u ,expfile ,outfile)))
+	 (print "output differs from expected output")
+	 (exit 1)))
+      (else (run (cat ,outfile))))

@@ -1,0 +1,147 @@
+NOTES											              -*- Org -*-
+
+
+* Abstract instruction set
+
+  | enter(NAME, ARITY)                   | entry-point for predicate with given name + arity                              |
+  | environment(LENGTH)                  | create local environment with LENGTH variables on value stack                  |
+  | exit                                 | exit from predicate (success), jumping to R                                    |
+  | redo                                 | redo predicate after fail (only used for debugging)                            |
+  | add_choice_point(LABEL)              | push entry on CP-stack, LABEL designates next clause                           |
+  | remove_choice_points                 | remove all choice points above C0                                              |
+  | push_choice_points                   | pushes C on stack                                                              |
+  | pop_choice_points                    | drops choice points above CP-index on stack , but not beyond C0                |
+  | assign(LOCAL, R)                     | set local variable in environment to popped stack entry                        |
+  | literal(INDEX, R)                    | load term literal                                                              |
+  | argument(ARGUMENT, R)                | load argument                                                                  |
+  | local(LOCAL, R)                      | load environment-entry                                                         |
+  | unify(R1, R2)                        | unify arguments                                                                |
+  | not_unify(R1, R2)                    | fail if args can not be unified                                                |
+  | make_variable(R)                     | create fresh variable                                                          |
+  | make_term(RLIST, R)                  | load newly constructed new term from functor + arguments in RLIST              |
+  | fail                                 | pop and invoke choice-point from CP-stack                                      |
+  | jump(LABEL)                          | unconditional jump                                                             |
+  | call(NAME, RLIST, LABEL)             | call predicate with arguments in RLIST (LABEL is used for return)              |
+  | tailcall(NAME, RLIST)                | as "call", restores C0, C and R and pops environment (and stack entries above) |
+  | label(LABEL)                         | mark label                                                                     |
+  | foreign_cal(NAME, RLIST)             | call C function with arguments in RLIST                                        |
+  | ordered_greater(R1, R2)              | fail if values don't compare accordingly                                       |
+  | ordered_less(R1, R2)                 |                                                                                |
+  | ordered_greater_or_equal(R1, R2)     |                                                                                |
+  | ordered_less_or_equal(R1, R2)        |                                                                                |
+  | identical(R1, R2)                    | fail if values are (not) identical                                             |
+  | not_identical(R1, R2)                |                                                                                |
+  | numerically_greater(R1, R2)          | fail if values fail to compare numerically                                     |
+  | numerically_less(R1, R2)             |                                                                                |
+  | numerically_greater_or_equal(R1, R2) |                                                                                |
+  | numerically_less_or_equal(R1, R2)    |                                                                                |
+  | numerically_equal(R1, R2)            |                                                                                |
+  | numerically_not_equal(R1, R2)        |                                                                                |
+  | add(R1, R2, R3)                      | arithmetic operation on R1 and R2, with result in R3                           |
+  | subtract(R1, R2, R3)                 |                                                                                |
+  | multiply(R1, R2, R3)                 |                                                                                |
+  | divide(R1, R2, R3)                   |                                                                                |
+  | negate(R1, R2, R3)                   |                                                                                |
+  | binary_and(R1, R2, R3)               |                                                                                |
+  | binary_or(R1, R2, R3)                |                                                                                |
+  | binary_xor(R1, R2, R3)               |                                                                                |
+  | binary_not(R1, R2, R3)               |                                                                                |
+  | shift_left(R1, R2, R3)               |                                                                                |
+  | shift_right(R1, R2, R3)              |                                                                                |
+
+* Registers
+
+  | E     | location of environment in env-stack |
+  | S     | control stack ptr                    |
+  | T     | trail ptr                            |
+  | C     | choice-point stack ptr               |
+  | C0    | C at predicate-entry                 |
+  | R     | return address                       |
+  | F     | frame pointer in value stack         |
+  | R0    | temporary return address             |
+  | A0... | argument registers                   |
+
+* Data areas
+** Trail
+   - holds variables that where bound recently.
+** Data stack
+   - for intermediate values and the local environment.
+** Choice-point stack
+   - each entry holds:
+     - previous T, R, S, E, C0
+     - label (where execution continues)
+** Heap
+
+* Optimization opportunities
+** Anonymous variables could get special handling when in argument position
+   - unification is a noop, unless nested in another term.
+** Mode-declarations
+** Clause indexing
+*** This could even be extended to invoke particular entry-points depending on call-arguments
+** Last clause of predicate with a single call can be treated as determinate (and enable TCO)
+
+* Things to test
+  - trail-unwinding.
+  - failure-driven loop, repeat/0
+  - unification (both directions)
+  - TCO.
+  - test debug-output of arguments with TRACE.
+  - GC.
+  - practically everything.
+
+* Missing
+** Compilation of ordering operators
+   - @<, @>, @>=, @=<
+** Numerical functions
+   - sqrt, etc.
+** record-db
+** I/O
+** runtime-information about defined clauses
+   - for clause/2 we would actually need the full source.
+** All ISO-stuff that makes sense
+
+* Diagnostics
+** Detect singleton variables
+** Detect redefinitions of primitives
+** Detect non-contiguous predicates
+
+* Issues
+** Compiler
+*** TODO unbound var in arithmetic expr doesn't show variable name
+   - extend var-rep to hold name, in addition to index.
+*** TODO implement minimum set of directives
+   - determinate :: register as determinate, use this to find more TCO
+                    opportunities.
+*** TODO check fixnum range when emitting literals 
+*** TODO At some stage auto-include file:prelude.pl
+    - unless "-n" option is given.
+*** TODO allow file-references to be "library(FILE)"
+    - resolve via library-path, settable by "-L".
+*** TODO handle type-predicates inline
+    - primitives:
+      integer(R), var(R), non_var(R), atom(R), atomic(R), number(R)
+*** TODO add instructions to push immediate literals
+   - fixnums, [].
+** Runtime
+*** TODO is cycle-checking in =deref= really necessary?
+*** TODO use hash-tables for symbol-table
+*** TRACE_FAIL should only print something on clause-exit
+    - "fail" in disjunctions may not actually leave the clause.
+*** TODO Remove GC'd variables from trail
+    - and adjust CP-stack entries accordingly.
+** Library
+*** TODO Extend file:rdtok.pl
+    - add support for floating-point numbers.
+    - allow 2-digit radix in integers.
+    - allow escape characters in strings and quoted atoms.
+
+* List of primitives, callable via =foreign_call=
+
+  | write_char(I)   |                                            |
+  | write_atomic(X) | only handles symbol, number, [], var, port |
+
+* Library code
+** file:/archive/dec10-prolog-library.tgz
+
+* Benchmark suites
+** http://www.cs.cmu.edu/afs/cs/project/ai-repository/ai/lang/prolog/code/bench/

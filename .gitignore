@@ -1,0 +1,12 @@
+*.o
+*.c
+*~
+tmp
+*.i
+*.s
+TAGS
+a.out
+x
+x.*
+y
+y.*

@@ -1,0 +1,19 @@
+#!/bin/scheme /grass/19/boot
+;;;; compile + run program -*- Scheme -*-
+
+
+(require 'sh)
+
+;(run-verbose #t)
+(define args (command-line-arguments))
+(define file (car args))
+(define bfile (basename file))
+(define xfile (strip-suffix bfile))
+(define cfile (replace-suffix "c" bfile))
+
+(let ((s (suffix file)))
+  (unless (string=? "c" s)
+    (run (./pc ,file -o ,cfile))))
+
+(run (gcc -std=gnu99 -I. -save-temps=obj -g ,cfile -o ,xfile))
+(exit (run* (,(string-append "./" xfile))))
