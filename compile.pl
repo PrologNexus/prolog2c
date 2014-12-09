@@ -134,9 +134,9 @@ compile_body_expression((X -> Y; Z), TAIL, D1, D2, B1, B2, S1, S2) :-
 compile_body_expression((X; Y), TAIL, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
-	emit(add_choice_point(L1), push_choice_points),
+	emit(add_choice_point(L1)),
 	compile_body_expression(X, nontail, D1, D3, B1, B, S4, S5),
-	emit(pop_choice_points, jump(L2), label(L1)),
+	emit(jump(L2), label(L1)),
 	compile_body_expression(Y, TAIL, D1, D4, B, B2, S5, S2),
 	emit(label(L2)),
 	both_determinate(D3, D4, D2).
