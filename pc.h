@@ -464,6 +464,7 @@ static inline X check_number(X x)
 
 static void check_integer_failed(X x)
 {
+  // x is not a fixnum, so using objtype is safe
   CRASH("type check failed - expected integer, but got %s\n", type_name(objtype(x)));
 }
 
@@ -963,11 +964,12 @@ static X deref(X val)
       return val;
 
     for(X *p = sp - 1; p >= stack; --p) {
-      if(*p == val) return val;
+      if(*p == val) 
+	return val;
     }
 
     *(sp++) = val;
-    X val = deref1(val);
+    val = deref1(val);
 
 #ifndef UNSAFE
     if(sp >= stack + DEREF_STACK_SIZE)
