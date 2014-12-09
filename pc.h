@@ -1299,6 +1299,8 @@ static void basic_write_term(FILE *fp, int limit, int quote, X x) {
 	  default:
 	    if(c < 32 || c > 127) 
 	      fprintf(fp, "\\x%02x", c);
+	    else 
+	      fputc(c, fp);
 	  }
 	}
 
