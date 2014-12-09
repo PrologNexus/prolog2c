@@ -77,8 +77,7 @@ process_input([HEAD|MORE], BLOCK, NA, STATE) :-
 
 % otherwise invalid - if there is an active block, compile it first
 process_input(INPUT, [C|CR], NA, STATE) :-
-	reverse([C|CR], RBLOCK),
-	compile_block(NA, RBLOCK, STATE, STATE2),
+	compile_block(NA, [C|CR], STATE, STATE2),
 	!,
 	process_input(INPUT, [], _, STATE2).
 process_input([EXPR|_], _, _, _) :-
