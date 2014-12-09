@@ -99,7 +99,8 @@ compile_term_for_unification(X, DEST, BOUND1, BOUND2, S1, S2) :-
 	emit(make_term(DLIST2, DEST)).
 
 % compile list of arguments, putting elements on stack
-compile_term_arguments([], DL, DL, B, B, S, S).
+compile_term_arguments([], DL, RDL, B, B, S, S) :-
+	reverse(DL, RDL).
 compile_term_arguments([X|MORE], DL1, DL2, B1, B2, S1, S2) :-
 	gensym('T', T, S1, S3),
 	compile_term_for_unification(X, T, B1, B3, S3, S4),
