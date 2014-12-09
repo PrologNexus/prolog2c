@@ -1364,12 +1364,12 @@ static void basic_write_term(FILE *fp, int limit, int quote, X x) {
 }
 
 
-static void trace_write(char *title, char *name, int arity, X *A)
+static void trace_write(char *title, char *name, int arity, X *A, CHOICE_POINT *C)
 {
   FILE *fp = port_file(standard_error_port);
 
   fflush(port_file(standard_output_port));
-  fprintf(fp, "[%s: %s", title, name);
+  fprintf(fp, "[(%d) %s: %s", (int)(C - choice_point_stack), title, name);
 
   if(arity > 0) {
     fputc('(', fp);
@@ -1389,10 +1389,10 @@ static void trace_write(char *title, char *name, int arity, X *A)
 
 
 #ifdef TRACE
-# define TRACE_ENTER(name, arity)  trace_write("CALL", name, arity, A)
-# define TRACE_REDO(name, arity)   trace_write("REDO", name, arity, A)
-# define TRACE_EXIT(name, arity)   trace_write("EXIT", name, arity, A)
-# define TRACE_FAIL(name, arity)   trace_write("FAIL", name, arity, A)
+# define TRACE_ENTER(name, arity)  trace_write("CALL", name, arity, A, C)
+# define TRACE_REDO(name, arity)   trace_write("REDO", name, arity, A, C)
+# define TRACE_EXIT(name, arity)   trace_write("EXIT", name, arity, A, C)
+# define TRACE_FAIL(name, arity)   trace_write("FAIL", name, arity, A, C)
 #else
 # define TRACE_ENTER(name, arity)
 # define TRACE_REDO(name, arity)
