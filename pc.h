@@ -1003,13 +1003,14 @@ static inline void push_trail(X var)
 
 static int unify(X x, X y)
 {
-  if(x == y) return 1;
+  if(x == y) 
+    return 1;
 
   x = deref(x);
   y = deref(y);
 
-  WORD xt = objtype(x);
-  WORD yt = objtype(y);
+  WORD xt = is_FIXNUM(x) ? FIXNUM_TYPE : objtype(x);
+  WORD yt = is_FIXNUM(y) ? FIXNUM_TYPE : objtype(y);
 
   if(xt == VAR_TYPE) {
     SLOT_SET(x, 0, y);
@@ -1025,6 +1026,9 @@ static int unify(X x, X y)
 
   if(xt != yt) 
     return 0;
+  
+  if(xt == FIXNUM_TYPE)
+    return 1;
 
   WORD s = objsize(x);
 
