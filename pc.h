@@ -1069,6 +1069,9 @@ static X make_term(int arity, ...)
 }
 
 
+#define make_pair    PAIR
+
+
 /// comparisons
 
 static inline int is_identical(X x, X y)

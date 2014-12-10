@@ -92,6 +92,9 @@ compile_term_for_unification(X, DEST, BOUND, BOUND, S1, S2) :-
 	literal_term(X), 	% literal term not containing variables?
 	register_literal(X, N, S1, S2),
 	emit(literal(N, DEST)).
+compile_term_for_unification([X|Y], DEST, BOUND1, BOUND2, S1, S2) :-
+	compile_term_arguments([X, Y], [], [CAR, CDR], BOUND1, BOUND2, S1, S2),
+	emit(make_pair(CAR, CDR, DEST)).
 compile_term_for_unification(X, DEST, BOUND1, BOUND2, S1, S2) :-
 	X =.. LIST,
 	compile_term_arguments(LIST, [], DLIST, BOUND1, BOUND2, S1, S2),

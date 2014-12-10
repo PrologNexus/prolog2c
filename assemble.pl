@@ -58,6 +58,10 @@ assemble(make_term(RLIST, R), S, S) :-
 	generate_data_list(RLIST),
 	gen(');\n').
 
+assemble(make_pair(CAR, CDR, R), S, S) :-
+	gen('X ', R, '=make_pair('),
+	gen(CAR, ',', CDR, ');\n').
+
 assemble(add_choice_point(LABEL), S, S) :- gen('PUSHCP(&&', LABEL, ');\n').
 assemble(push_choice_points, S, S) :- gen('PUSH((X)C);\n').
 assemble(pop_choice_points, S, S) :- gen('POPCP;\n').
