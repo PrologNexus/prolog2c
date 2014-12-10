@@ -121,9 +121,9 @@ assemble_arguments([X|MORE], I) :-
 
 assemble_literals(S1, S2) :-
 	retract(literal(INDEX, TERM)),
-	generate_static_literal(INDEX, TERM, S1, S2),
-	fail.
-assemble_literals(_, _).
+	generate_static_literal(INDEX, TERM, S1, S),
+	!, assemble_literals(S, S2). % force tail call
+assemble_literals(S, S).
 
 generate_static_literal(I, X, S, S) :-
 	integer(X), !,		%XXX check fixnum range
