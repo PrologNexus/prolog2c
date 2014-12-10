@@ -104,6 +104,13 @@ assemble(multiply, S, S) :- gen('MULTIPLY_NUMS;\n').
 assemble(divide, S, S) :- gen('DIVIDE_NUMS;\n').
 assemble(quotient, S, S) :- gen('DIVIDE_NUMS;\n').
 
+assemble(integer(R), S, S) :- gen('if(!is_integer(deref(', R, '))) FAIL;\n').
+assemble(number(R), S, S) :- gen('if(!is_number(deref(', R, '))) FAIL;\n').
+assemble(var(R), S, S) :- gen('if(!is_VAR(deref(', R, '))) FAIL;\n').
+assemble(nonvar(R), S, S) :- gen('if(is_VAR(deref(', R, '))) FAIL;\n').
+assemble(atom(R), S, S) :- gen('if(!is_SYMBOL(deref(', R, '))) FAIL;\n').
+assemble(atomic(R), S, S) :- gen('if(!is_atomic(deref(', R, '))) FAIL;\n').
+
 assemble(OP, _, _) :-
 	error(['invalid pseudo instruction: ', OP]).
 

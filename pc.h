@@ -339,6 +339,18 @@ static inline int is_number(X x)
 }
 
 
+static inline int is_integer(X x)
+{
+  return is_FIXNUM(x);
+}
+
+
+static inline int is_atomic(X x)
+{
+  return is_FIXNUM(x) || is_atomic_type(objtype(x));
+}
+
+
 static inline int is_in_fixnum_range(WORD n) {
   return (n & WORD_SIGN_BIT) == (((n) & WORD_TOP_BIT) << 1);
 }

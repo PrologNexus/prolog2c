@@ -239,17 +239,38 @@ compile_body_expression(foreign_call(CALL), _, D, D, B1, B2, S1, S2) :-
 	compile_term_arguments(ARGS, [], DLIST, B1, B2, S1, S2),
 	emit(foreign_call(NAME, DLIST)).
 
+% type-predicates
+
 % ordinary predicate call
 compile_body_expression(TERM, TAIL, D, D, B1, B2, S1, S2) :-
 	TERM =.. [NAME|ARGS],
 	compile_term_arguments(ARGS, [], DLIST, B1, B2, S1, S),
-	gen_label(L, S, S2),
-	(TAIL/D = tail/det -> emit(tailcall(NAME, DLIST))
-	; emit(call(NAME, DLIST, L))
+	(compile_type_predicate(NAME, DLIST), S2 = S
+	; compile_ordinary_call(NAME, TAIL, DLIST, D, S, S2)
 	).
 
 compile_body_expression(TERM, _, _, _, _, _, _, _) :-
 	error(['can not compile: ', TERM]).
+
+
+%% compile calls (ordinary or type-predicate)
+
+compile_ordinary_call(NAME, TAIL, DLIST, D, S1, S2) :-
+	 gen_label(L, S1, S2),
+	 (TAIL/D = tail/det -> emit(tailcall(NAME, DLIST))
+	 ; emit(call(NAME, DLIST, L))
+	 ).
+
+compile_type_predicate(NAME, [VAL]) :-
+	type_predicate(NAME),
+	CALL =.. [NAME, VAL],
+	emit(CALL).
+
+type_predicate(number).
+type_predicate(atomic).
+type_predicate(atom).
+type_predicate(number).
+type_predicate(integer).
 
 
 %% helper predicates for arithmetic expressions
