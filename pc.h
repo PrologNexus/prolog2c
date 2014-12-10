@@ -1073,8 +1073,16 @@ static int unify1(X x, X y)
 static X make_term(int arity, ...)
 {
   va_list va;
-  ALLOCATE_BLOCK(BLOCK *s, STRUCTURE_TYPE, arity + 1);
   va_start(va, arity);
+  X f = va_arg(va, X);
+  check_type(SYMBOL_TYPE, f);
+
+  if(arity == 2 && !strcmp(".", objdata(slot_ref(f, 0)))) {
+    X car = va_arg(va, X);
+    return PAIR(car, va_arg(va, X));
+  }
+
+  ALLOCATE_BLOCK(BLOCK *s, STRUCTURE_TYPE, arity + 1);
 
   for(int i = 0; i <= arity; ++i)
     s->d[ i ] = va_arg(va, X);
