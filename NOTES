@@ -55,6 +55,8 @@ NOTES											              -*- Org -*-
   | nonvar(R)                            |                                                                                |
   | atom(R)                              |                                                                                |
   | atomic(R)                            |                                                                                |
+  | compound(R)                          |                                                                                |
+  | float(R)                             |                                                                                |
 
 * Registers
 
@@ -97,7 +99,8 @@ NOTES											              -*- Org -*-
   - TCO.
   - GC.
   - type-predicates.
-  - expression-evaluation, numerical comparisons.
+  - transparent handling of structure/pair distinction.
+  - expression-evaluation (is/2), numerical comparisons.
   - append/3, add to prelude.
   - file:nrev.pl, file:queens.pl, later add as benchmarks.
 
@@ -115,6 +118,9 @@ NOTES											              -*- Org -*-
     - for complete support of clause/2 we would actually need the full
       source.
 *** All ISO-stuff that makes sense
+*** Non-standard primitives we need for bootstrapping
+    | getenv/1      |                                                                     |
+    | file_exists/1 | needed for more convenient include/1 and ensure_loaded/1 directives |
 
 * Diagnostics
 ** Detect singleton variables
@@ -123,11 +129,14 @@ NOTES											              -*- Org -*-
 
 * Issues
 ** Compiler
-*** TODO unbound var in arithmetic expr doesn't show variable name
-   - extend var-rep to hold name, in addition to index.
-*** TODO implement minimum set of directives
-   - determinate :: register as determinate, use this to find more TCO
+*** TODO Improve and extend directives
+    - include :: allow omitting file-extension.
+    - ensure_loaded :: like "include", but include only once.
+    - initialization :: allow arbitrary goals.
+    - determinate :: register as determinate, use this to find more TCO
                     opportunities.
+*** TODO Unbound var in arithmetic expr doesn't show variable name
+   - extend var-rep to hold name, in addition to index.
 *** TODO check fixnum range when emitting literals 
 *** TODO At some stage auto-include file:prelude.pl
     - unless "-n" option is given.
@@ -136,8 +145,9 @@ NOTES											              -*- Org -*-
 *** TODO add instructions to push immediate literals
    - fixnums, [].
 ** Runtime
-*** TODO is cycle-checking in =deref= really necessary?
-*** TODO use hash-tables for symbol-table
+*** TODO With "-v", show trail-size on termination
+*** TODO Is cycle-checking in =deref= really necessary?
+*** TODO Use hash-tables for symbol-table
 *** TODO Remove GC'd variables from trail
     - and adjust CP-stack entries accordingly.
 ** Library
