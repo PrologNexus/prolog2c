@@ -1408,13 +1408,13 @@ static void trace_write(char *title, char *name, int arity, X *A, CHOICE_POINT *
 
 static int basic_write(X x) 
 { 
-  basic_write_term(port_file(standard_output_port), 1, 0, x); 
+  basic_write_term(port_file(standard_output_port), 99999, 0, x); 
   return 1; 
 }
 
 
 static int basic_writeq(X x) 
 { 
-  basic_write_term(port_file(standard_output_port), 1, 1, x); 
+  basic_write_term(port_file(standard_output_port), 99999, 1, x); 
   return 1; 
 }
