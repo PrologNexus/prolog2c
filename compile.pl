@@ -271,6 +271,8 @@ type_predicate(atomic).
 type_predicate(atom).
 type_predicate(number).
 type_predicate(integer).
+type_predicate(compound).
+type_predicate(float).
 
 
 %% helper predicates for arithmetic expressions

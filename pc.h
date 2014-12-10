@@ -205,6 +205,7 @@ typedef struct FINALIZER
 #define PAIR_TYPE  9
 
 #define is_atomic_type(t)   ((t) < VAR_TYPE)
+#define is_compound_type(t)   ((t) >= STRUCTURE_TYPE)
 
 #define TYPE_TO_TAG(t)  ((WORD)(t) << TYPE_SHIFT)
 #define TAG_TO_TYPE(t)  ((WORD)(t) >> TYPE_SHIFT)
@@ -339,21 +340,22 @@ static inline int is_number(X x)
 }
 
 
-static inline int is_integer(X x)
-{
-  return is_FIXNUM(x);
-}
-
-
 static inline int is_atomic(X x)
 {
   return is_FIXNUM(x) || is_atomic_type(objtype(x));
 }
 
 
+static inline int is_compound(X x)
+{
+  return !is_FIXNUM(x) || is_compound_type(objtype(x));
+}
+
+
 static inline int is_in_fixnum_range(WORD n) {
   return (n & WORD_SIGN_BIT) == (((n) & WORD_TOP_BIT) << 1);
 }
+
 
 #define string_length(x)  ((objsize(x) / sizeof(CHAR)) - 1)
 
