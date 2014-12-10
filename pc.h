@@ -1015,11 +1015,8 @@ static inline void push_trail(X var)
 
 /// unification
 
-static int unify(X x, X y)
+static int unify1(X x, X y)
 {
-  if(x == y) 
-    return 1;
-
   x = deref(x);
   y = deref(y);
 
@@ -1066,6 +1063,9 @@ static int unify(X x, X y)
 
   return 1;
 }
+
+
+#define unify(x, y)   ({ X _x = (x), _y = (y); _x == _y ? 1 : unify1(_x, _y); })
 
 
 /// term-construction
