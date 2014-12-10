@@ -1259,6 +1259,7 @@ static inline X num_quo(X x, X y)
   CHOICE_POINT *C, *C0;				\
   void *R0 = &&success_exit;			\
   X *E = environment_stack;			\
+  symbol_table = PREVIOUS_SYMBOL; \
   initialize(argc, argv);			\
   C0 = C = choice_point_stack;			\
   void **S = control_stack;				\
