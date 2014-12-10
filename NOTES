@@ -18,6 +18,7 @@ NOTES											              -*- Org -*-
   | unify(R1, R2)                        | unify arguments                                                                |
   | not_unify(R1, R2)                    | fail if args can not be unified                                                |
   | make_variable(R)                     | create fresh variable                                                          |
+  | make_pair(CAR, CDR, R)               | create list-pair                                                               |
   | make_term(RLIST, R)                  | load newly constructed new term from functor + arguments in RLIST              |
   | fail                                 | pop and invoke choice-point from CP-stack                                      |
   | jump(LABEL)                          | unconditional jump                                                             |
@@ -48,6 +49,12 @@ NOTES											              -*- Org -*-
   | binary_not(R1, R2, R3)               |                                                                                |
   | shift_left(R1, R2, R3)               |                                                                                |
   | shift_right(R1, R2, R3)              |                                                                                |
+  | integer(R)                           | type-predicates                                                                |
+  | number(R)                            |                                                                                |
+  | var(R)                               |                                                                                |
+  | nonvar(R)                            |                                                                                |
+  | atom(R)                              |                                                                                |
+  | atomic(R)                            |                                                                                |
 
 * Registers
 
@@ -76,29 +83,38 @@ NOTES											              -*- Org -*-
 ** Anonymous variables could get special handling when in argument position
    - unification is a noop, unless nested in another term.
 ** Mode-declarations
+** Determinacy declarations
+   - i.e. ":- determinate(PRED)."
 ** Clause indexing
 *** This could even be extended to invoke particular entry-points depending on call-arguments
 ** Last clause of predicate with a single call can be treated as determinate (and enable TCO)
+   - if we know about determinacy of library predicates, this could be
+     generalized to multiple calls.
 
 * Things to test
   - trail-unwinding.
-  - failure-driven loop, repeat/0
-  - unification (both directions)
+  - repeat/0, '\+'/1
   - TCO.
-  - test debug-output of arguments with TRACE.
   - GC.
-  - practically everything.
+  - type-predicates.
+  - expression-evaluation, numerical comparisons.
+  - append/3, add to prelude.
+  - file:nrev.pl, file:queens.pl, later add as benchmarks.
 
 * Missing
-** Compilation of ordering operators
-   - @<, @>, @>=, @=<
-** Numerical functions
-   - sqrt, etc.
-** record-db
-** I/O
-** runtime-information about defined clauses
-   - for clause/2 we would actually need the full source.
-** All ISO-stuff that makes sense
+** Compiler
+*** Compilation of ordering operators
+    - @<, @>, @>=, @=<
+*** Numerical functions
+    - sqrt, etc.
+** Library/Runtime
+*** record-db
+*** I/O
+*** Runtime-information about defined clauses
+    - as minimum: mapping of name/arity -> entry-point.
+    - for complete support of clause/2 we would actually need the full
+      source.
+*** All ISO-stuff that makes sense
 
 * Diagnostics
 ** Detect singleton variables
@@ -117,16 +133,11 @@ NOTES											              -*- Org -*-
     - unless "-n" option is given.
 *** TODO allow file-references to be "library(FILE)"
     - resolve via library-path, settable by "-L".
-*** TODO handle type-predicates inline
-    - primitives:
-      integer(R), var(R), non_var(R), atom(R), atomic(R), number(R)
 *** TODO add instructions to push immediate literals
    - fixnums, [].
 ** Runtime
 *** TODO is cycle-checking in =deref= really necessary?
 *** TODO use hash-tables for symbol-table
-*** TRACE_FAIL should only print something on clause-exit
-    - "fail" in disjunctions may not actually leave the clause.
 *** TODO Remove GC'd variables from trail
     - and adjust CP-stack entries accordingly.
 ** Library
@@ -137,8 +148,9 @@ NOTES											              -*- Org -*-
 
 * List of primitives, callable via =foreign_call=
 
-  | write_char(I)   |                                            |
-  | write_atomic(X) | only handles symbol, number, [], var, port |
+  | write_char(I)   |                                                            |
+  | basic_write(X)  | only handles symbol, number, [], var, port, doesn*t quotes |
+  | basic_writeq(X) | quotes atoms                                               |
 
 * Library code
 ** file:/archive/dec10-prolog-library.tgz
