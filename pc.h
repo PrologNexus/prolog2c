@@ -57,6 +57,10 @@
 # define ENVIRONMENT_STACK_SIZE 10000
 #endif
 
+#ifndef SYMBOL_TABLE_SIZE
+# define SYMBOL_TABLE_SIZE 3001
+#endif
+
 
 #define DEREF_STACK_SIZE  100
 #define MAXIMAL_NUMBER_OF_ARGUMENTS 100
@@ -115,7 +119,7 @@ typedef struct STRING_BLOCK {
 typedef struct SYMBOL_BLOCK {
   WORD h;
   X s;
-  struct SYMBOL_STRUCT *p;
+  struct SYMBOL_STRUCT *next, *previous;
 } SYMBOL_BLOCK;
 
 typedef struct STRUCTURE_BLOCK {
@@ -227,6 +231,8 @@ typedef struct FINALIZER
 #define flonum_to_word(x)  ((WORD)((FLONUM_BLOCK *)(x))->n)
 #define fixnum_to_float(x)  ((FLOAT)fixnum_to_word(x))
 
+#define is_forwarded(x)    ((objbits(x) & GC_MARK_BIT) != 0)
+
 #define ptr_to_fptr(ptr)        (((WORD)(ptr) >> 1) | GC_MARK_BIT)
 #define fptr_to_ptr(fptr)       ((X)((fptr) << 1))
 
@@ -251,7 +257,7 @@ static X standard_error_port = (X)(&default_error_port);
 
 static X *fromspace, *fromspace_end, *fromspace_limit, *tospace, *tospace_end, *tospace_top, *scan_ptr;
 static X *ALLOC;
-static X symbol_table;
+static X symbol_table[ SYMBOL_TABLE_SIZE ];
 static WORD heap_reserve;
 static int verbose = 0;
 static int variable_counter = 0;
@@ -262,6 +268,9 @@ static X *trail_top;
 static CHOICE_POINT choice_point_stack[ CHOICE_POINT_STACK_SIZE ];
 static FINALIZER *active_finalizers = NULL, *free_finalizers = NULL;
 static WORD gc_count = 0;
+static char *mmapped_heap = NULL;
+static char **global_argv;
+static int global_argc;
 
 static CHAR *type_names[] = { 
   "invalid", "fixnum", "null", "symbol", "flonum", "stream", "variable", "string", "structure", "pair"
@@ -651,10 +660,11 @@ static inline X check_output_port(X x)
     memcpy(objdata(s_), str_, len3_);					\
     s_; })
   
-#define SYMBOL(name, prev)						\
-  ({ ALLOCATE_BLOCK(BLOCK *p_, SYMBOL_TYPE, 2);			\
+#define SYMBOL(name, next, prev)					\
+  ({ ALLOCATE_BLOCK(BLOCK *p_, SYMBOL_TYPE, 3);			\
     SLOT_INIT((X)p_, 0, (name));					\
-    SLOT_INIT((X)p_, 1, (prev));					\
+    SLOT_INIT((X)p_, 1, (next));					\
+    SLOT_INIT((X)p_, 2, (prev));					\
     (X)p_; })
 
 
@@ -752,6 +762,38 @@ static void collect_garbage(X *E, X *A, int args)
     }
   }
 
+  // remove unforwarded symbols from symbol-table
+  int gcdsyms = 0;
+
+  for(int i = 0; i < SYMBOL_TABLE_SIZE; ++i) {
+    X prevsym = END_OF_LIST_VAL;
+
+    for(X sym = symbol_table[ i ]; sym != END_OF_LIST_VAL; sym = slot_ref(sym, 1)) {
+      // all further symbols in this chain will be static
+      if(!IS_IN_HEAP(sym)) {
+	if(prevsym != END_OF_LIST_VAL)
+	  SLOT_SET(prevsym, 1, sym);
+
+	break;
+      }
+
+      if(is_forwarded(sym)) {
+	sym = fptr_to_ptr(objbits(sym));
+	SLOT_SET(sym, 2, prevsym);
+	SLOT_SET(sym, 1, END_OF_LIST_VAL);
+
+	if(prevsym != END_OF_LIST_VAL) 
+	  SLOT_SET(prevsym, 1, sym);
+
+	prevsym = sym;
+      }
+      else ++gcdsyms;
+    }
+  }
+
+  if(gcdsyms > 0)
+    DRIBBLE("%d symbols collected ", gcdsyms);
+
   void *tmp = fromspace; 
   fromspace = tospace; 
   tospace = tmp;		
@@ -808,45 +850,61 @@ static void set_finalizer(X x, void (*fn)(X))
 
 /// symbol-table management
 
-static X lookup_symbol(X name)
+static WORD hash_name(CHAR *name, int len)
 {
-  WORD len = objsize(name);
+  unsigned long key = 0;
 
-  for(X sym = symbol_table; sym != END_OF_LIST_VAL; sym = slot_ref(sym, 1)) {
-    X name2 = slot_ref(sym, 0);
+  while(len--)
+    key ^= (key << 6) + (key >> 2) + *(name++);
 
-    if(objsize(name2) == len && !strncmp((CHAR *)objdata(name), (CHAR *)objdata(name2), len)) //UUU
-      return sym;
-  }
-
-  return ZERO;
+  return (WORD)key;
 }
 
 
-static X intern(X str)
+static X intern(X name)
 {
-  X sym = lookup_symbol(str);
-  
-  if(sym == ZERO) {
-    WORD len = string_length(str);
-    X str2 = (X)malloc(len + 1 + sizeof(WORD));
-    ((BLOCK *)str2)->h = STRING_TAG | (len + 1);
-    memcpy(objdata(str2), objdata(str), len + 1);
-    sym = (X)malloc(sizeof(WORD) + 2 * sizeof(X));
-    ((BLOCK *)sym)->h = SYMBOL_TAG | 2;
-    SLOT_INIT(sym, 0, str2);
-    SLOT_INIT(sym, 1, symbol_table);
-    symbol_table = sym;
+  WORD len = string_length(name);
+  WORD key = hash_name((CHAR *)objdata(name), len) % SYMBOL_TABLE_SIZE;
+
+  for(X sym = symbol_table[ key ]; sym != END_OF_LIST_VAL; sym = slot_ref(sym, 1)) {
+    X name2 = slot_ref(sym, 0);
+
+    if(string_length(name2) == len &&
+       !strncmp((CHAR *)objdata(name), (CHAR *)objdata(name2), len)) //UUU
+      return sym;
   }
 
+  X oldsym = symbol_table[ key ];
+  X sym = SYMBOL(name, oldsym, END_OF_LIST_VAL);
+
+  if(oldsym != END_OF_LIST_VAL)
+    SLOT_SET(oldsym, 2, sym);
+
+  symbol_table[ key ] = sym;
   return sym;
 }
 
 
-/// runtime initialization and abnormal exit
+static void intern_static_symbols(X sym1)
+{
+  while(sym1 != END_OF_LIST_VAL) {
+    X name = slot_ref(sym1, 0);
+    WORD len = string_length(name);
+    WORD key = hash_name((CHAR *)objdata(name), len) % SYMBOL_TABLE_SIZE;
+    X sym = symbol_table[ key ];
+    X nextsym = slot_ref(sym1, 1);
+    SLOT_SET(sym1, 1, sym);
 
-static X cmdline_args = NULL;
-static char *mmapped_heap = NULL;
+    if(sym != END_OF_LIST_VAL) 
+      SLOT_SET(sym, 2, sym1);
+
+    symbol_table[ key ] = sym;
+    sym1 = nextsym;
+  }
+}
+
+
+/// runtime initialization and abnormal exit
 
 
 static WORD numeric_arg(char *arg)
@@ -931,26 +989,30 @@ static void initialize(int argc, char *argv[])
   default_output_port.fp = stdout;
   default_error_port.fp = stderr;
   trail_top = trail_stack;
+
+  for(int i = 0; i < SYMBOL_TABLE_SIZE; ++i)
+    symbol_table[ i ] = END_OF_LIST_VAL;
+}
+
+
+static X command_line_arguments()
+{
   X lst = END_OF_LIST_VAL;
 
   // build argument-list for "command-line-arguments"
-  for(int i = argc - 1; i > 0; --i) {
-    int len = strlen(argv[ i ]);
+  for(int i = global_argc - 1; i > 0; --i) {
+    int len = strlen(global_argv[ i ]);
     
     // ignore runtime options
-    if(argv[ i ][ 1 ] != ':') {
-      STRING_BLOCK *str = malloc(sizeof(WORD) + len + 1);
-      str->h = STRING_TAG | (len + 1);
-      memcpy(str->s, argv[ i ], len + 1);
-      BLOCK *pr = malloc(sizeof(WORD) * 3);
-      pr->h = PAIR_TAG|2;
-      pr->d[ 0 ] = intern((X)str);
-      pr->d[ 1 ] = lst;
+    if(global_argv[ i ][ 1 ] != ':') {
+      X str = CSTRING(global_argv[ i ]);
+      X sym = intern(str);
+      X pr = PAIR(sym, lst);
       lst = pr;
     }
   }
 
-  cmdline_args = lst;
+  return lst;
 }
 
 
@@ -1015,6 +1077,9 @@ static inline void push_trail(X var)
 
 /// unification
 
+#define unify(x, y)   ({ X _x = (x), _y = (y); _x == _y ? 1 : unify1(_x, _y); })
+
+
 static int unify1(X x, X y)
 {
   x = deref(x);
@@ -1065,9 +1130,6 @@ static int unify1(X x, X y)
 }
 
 
-#define unify(x, y)   ({ X _x = (x), _y = (y); _x == _y ? 1 : unify1(_x, _y); })
-
-
 /// term-construction
 
 static X make_term(int arity, ...)
@@ -1077,7 +1139,7 @@ static X make_term(int arity, ...)
   X f = va_arg(va, X);
   check_type(SYMBOL_TYPE, f);
 
-  if(arity == 2 && !strcmp(".", objdata(slot_ref(f, 0)))) {
+  if(arity == 2 && !strcmp(".", (CHAR *)objdata(slot_ref(f, 0)))) {
     X car = va_arg(va, X);
     return PAIR(car, va_arg(va, X));
   }
@@ -1259,8 +1321,8 @@ static inline X num_quo(X x, X y)
   CHOICE_POINT *C, *C0;				\
   void *R0 = &&success_exit;			\
   X *E = environment_stack;			\
-  symbol_table = PREVIOUS_SYMBOL; \
   initialize(argc, argv);			\
+  intern_static_symbols(PREVIOUS_SYMBOL);	\
   C0 = C = choice_point_stack;			\
   void **S = control_stack;				\
   void *R = NULL;				\
