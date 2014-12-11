@@ -148,10 +148,10 @@ read_number(IntVal, 46, Dict, [T|Tokens]) :-
 	get0(Ch),
 	!,
 	(  (Ch >= 48, Ch =< 57, read_integer(Ch, IntVal2, NextCh)) ->
-	   number_chars(IntVal, IntChars),
-	   number_chars(IntVal2, IntChars2),
+	   number_codes(IntVal, IntChars),
+	   number_codes(IntVal2, IntChars2),
 	   append(IntChars, [46|IntChars2], NumChars),
-	   number_chars(N, NumChars),
+	   number_codes(N, NumChars),
 	   T = number(N),
 	   read_tokens(NextCh, Dict, Tokens)
 	;  T = integer(IntVal),
