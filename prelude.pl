@@ -12,3 +12,6 @@ halt(C) :- foreign_call(halt(C)).
 halt :- foreign_call(halt(0)).
 
 gc :- foreign_call(gc).
+
+append([],X,X).
+append([X|Y],Z,[X|W]) :- append(Y,Z,W).
