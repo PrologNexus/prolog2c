@@ -1284,56 +1284,73 @@ static inline X num_quo(X x, X y)
 #define CURRENT_ARITY
 
 #define ENTER  \
-  { TRACE_ENTER(CURRENT_NAME, CURRENT_ARITY); \
-    CHECK_LIMIT; \
-    PUSH(C0); C0 = C; PUSH(R); PUSH(E); \
+  { TRACE_ENTER(CURRENT_NAME, CURRENT_ARITY);	\
+    CHECK_LIMIT;				\
+    PUSH(C0);					\
+    C0 = C;					\
+    PUSH(R);					\
+    PUSH(E);					\
+    PUSH(env_top);				\
     R = R0; }
 
 #define FAIL     { TRACE_FAIL(CURRENT_NAME, CURRENT_ARITY); goto fail; }
 #define REDO     TRACE_REDO(CURRENT_NAME, CURRENT_ARITY)
 
-#define EXIT \
+#define EXIT				     \
   { TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY); \
-    R0 = R; POP(E); POP(R); POP(C0); \
+    R0 = R;				     \
+    POP(env_top);			     \
+    POP(E);				     \
+    POP(R);					\
+    POP(C0);					\
     goto *R0; }
 
 #define CHECK_LIMIT  \
   if(alloc_top > fromspace_limit) { \
-    collect_garbage(E, A, CURRENT_ARITY);	\
+    collect_garbage(A, CURRENT_ARITY);	\
   }
 
-#define ENVIRONMENT(len)  E = E + (len); 
+#define ENVIRONMENT(len)  { E = env_top; env_top += (len); }
 
 #define PUSH(x)  *(S++) = (x)
 #define POP(x)   (x) = *(--S)
 
-#define PUSHCP(lbl) \
-  { C->T = trail_top; C->R = R; C->S = S; C->E = E;	\
-    C->C0 = C0; C->P = (lbl); ++C; }
+#define PUSHCP(lbl)						\
+  { C->T = trail_top;						\
+    C->R = R;							\
+    C->S = S;							\
+    C->E = E;							\
+    C->env_top = env_top;					\
+    C->C0 = C0;							\
+    C->P = (lbl);						\
+    ++C; }
 
 #define POPCP     ({ CHOICE_POINT *_cp; POP(_cp); if(C != C0) C = _cp; })
 #define CLEARCP   C = C0
 
 #define INVOKE_CHOICE_POINT  \
-  { CHOICE_POINT *_cp = --C; \
+  { CHOICE_POINT *_cp = --C;	      \
     unwind_trail(_cp->T);	      \
-  R = _cp->R; S = _cp->S; E = _cp->E; \
-  goto *(_cp->P); }
+    R = _cp->R;			      \
+    S = _cp->S;					\
+    E = _cp->E;					\
+    env_top = C->env_top;			\
+    goto *(_cp->P); }
 
 
 /// Boilerplate code
 
-#define BOILERPLATE				\
+#define BOILERPLATE					\
   X A[ MAXIMAL_NUMBER_OF_ARGUMENTS ];		\
-  CHOICE_POINT *C, *C0;				\
-  void *R0 = &&success_exit;			\
-  X *E = environment_stack;			\
-  initialize(argc, argv);			\
-  intern_static_symbols(PREVIOUS_SYMBOL);	\
-  C0 = C = choice_point_stack;			\
+  CHOICE_POINT *C, *C0;					\
+  void *R0 = &&success_exit;				\
+  X *E = env_top;					\
+  initialize(argc, argv);				\
+  intern_static_symbols(PREVIOUS_SYMBOL);		\
+  C0 = C = choice_point_stack;				\
   void **S = control_stack;				\
-  void *R = NULL;				\
-  PUSHCP(&&fail_exit);				\
+  void *R = NULL;					\
+  PUSHCP(&&fail_exit);					\
   goto INIT_GOAL;					\
 fail: INVOKE_CHOICE_POINT;				\
 fail_exit: fprintf(stderr, "false.\n"); terminate(1);	\
