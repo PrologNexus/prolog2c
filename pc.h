@@ -792,7 +792,7 @@ static void collect_garbage(X *E, X *A, int args)
   }
 
   if(gcdsyms > 0)
-    DRIBBLE("%d symbols collected ", gcdsyms);
+    DRIBBLE("%d symbols reclaimed ", gcdsyms);
 
   void *tmp = fromspace; 
   fromspace = tospace; 
