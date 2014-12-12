@@ -73,7 +73,7 @@ process_input([HEAD|MORE], BLOCK, NA, STATE) :-
 	functor(HEAD, NAME, 0),
 	!,
 	compile_block(NA, BLOCK, STATE, STATE2),
-	process_input(MORE, [HEAD|BLOCK], NAME/0, STATE2).
+	process_input(MORE, [HEAD], NAME/0, STATE2).
 
 % otherwise invalid - if there is an active block, compile it first
 process_input(INPUT, [C|CR], NA, STATE) :-
