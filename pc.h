@@ -995,6 +995,13 @@ static void initialize(int argc, char *argv[])
 }
 
 
+static void terminate(int code)
+{
+  DRIBBLE("[trail size: " WORD_OUTPUT_FORMAT ", terminating]\n", trail_top - trail_stack);
+  exit(code);
+}
+
+
 static X command_line_arguments()
 {
   X lst = END_OF_LIST_VAL;
@@ -1328,8 +1335,8 @@ static inline X num_quo(X x, X y)
   PUSHCP(&&fail_exit);				\
   goto INIT_GOAL;					\
 fail: INVOKE_CHOICE_POINT;				\
-fail_exit: fprintf(stderr, "false.\n"); exit(1);	\
-success_exit: DRIBBLE("true.\n"); exit(0);
+fail_exit: fprintf(stderr, "false.\n"); terminate(1);	\
+success_exit: DRIBBLE("true.\n"); terminate(0);
 
 
 /// primitives (all expect their argument to be deref'd)
