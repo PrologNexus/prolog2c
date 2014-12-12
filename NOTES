@@ -96,7 +96,7 @@ NOTES											              -*- Org -*-
 * Things to test
   - trail-unwinding.
   - repeat/0, '\\+'/1
-  - TCO.
+  - TCO (probably broken).
   - GC, including symbol-reclamation.
   - command-line access
   - type-predicates.
@@ -133,6 +133,8 @@ NOTES											              -*- Org -*-
 
 * Issues
 ** Compiler
+*** TODO The last clause can pop the argument stack after unification
+    - also applicable after !/0.
 *** TODO Improve and extend directives
     - include :: allow omitting file-extension.
     - ensure_loaded :: like "include", but include only once.
