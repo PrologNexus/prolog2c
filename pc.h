@@ -1509,3 +1509,13 @@ static int basic_writeq(X x)
   basic_write_term(port_file(standard_output_port), 99999, 1, x); 
   return 1; 
 }
+
+
+static int gc() { alloc_top = fromspace_limit + 1; return 1; }
+
+static int halt(X code) 
+{ 
+  check_fixnum(code);
+  terminate(fixnum_to_word(code));
+  return 1;			/* never executed */
+}
