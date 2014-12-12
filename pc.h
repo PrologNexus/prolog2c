@@ -1461,6 +1461,14 @@ static void basic_write_term(FILE *fp, int limit, int quote, X x) {
 }
 
 
+// for debugging
+static void write_hook(X x)
+{
+  basic_write_term(stdout, 99999, 1, deref(x));
+  putchar('\n');
+}
+
+
 static void trace_write(char *title, char *name, int arity, X *A, CHOICE_POINT *C)
 {
   FILE *fp = port_file(standard_error_port);
