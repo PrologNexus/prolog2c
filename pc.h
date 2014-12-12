@@ -61,6 +61,9 @@
 # define SYMBOL_TABLE_SIZE 3001
 #endif
 
+#ifndef ARGUMENT_STACK_SIZE
+# define ARGUMENT_STACK_SIZE 10000
+#endif
 
 #define DEREF_STACK_SIZE  100
 #define MAXIMAL_NUMBER_OF_ARGUMENTS 100
@@ -144,7 +147,7 @@ typedef struct PORT_BLOCK {
 #define PREVIOUS_SYMBOL  END_OF_LIST_VAL
 
 typedef struct CHOICE_POINT {
-  X *T, *R, *E, *env_top;
+  X *T, *R, *E, *env_top, *arg_top, *A;
   void **S;
   struct CHOICE_POINT *C0;
   void *P;
@@ -262,9 +265,10 @@ static WORD heap_reserve;
 static int verbose = 0;
 static int variable_counter = 0;
 static X environment_stack[ ENVIRONMENT_STACK_SIZE ];
+static X argument_stack[ ARGUMENT_STACK_SIZE ];
 static X trail_stack[ TRAIL_STACK_SIZE ];
 static void *control_stack[ CONTROL_STACK_SIZE ];
-static X *trail_top, *env_top;
+static X *trail_top, *env_top, *arg_top;
 static CHOICE_POINT choice_point_stack[ CHOICE_POINT_STACK_SIZE ];
 static FINALIZER *active_finalizers = NULL, *free_finalizers = NULL;
 static WORD gc_count = 0;
@@ -724,6 +728,10 @@ static void collect_garbage(X *A, int args)
   for(X *p = environment_stack; p < env_top; ++p)
     mark1(p);
 
+  // mark argument stack
+  for(X *p = argument_stack; p < arg_top; ++p)
+    mark1(p);
+
   //XXX preliminary - later don't mark and remove unforwarded items
   //    (adjusting T pointers in CP-stack accordingly)
   for(X *p = trail_stack; p < trail_top; ++p)
@@ -990,6 +998,7 @@ static void initialize(int argc, char *argv[])
   default_error_port.fp = stderr;
   trail_top = trail_stack;
   env_top = environment_stack;
+  arg_top = argument_stack;
 
   for(int i = 0; i < SYMBOL_TABLE_SIZE; ++i)
     symbol_table[ i ] = END_OF_LIST_VAL;
@@ -1290,6 +1299,7 @@ static inline X num_quo(X x, X y)
     C0 = C;					\
     PUSH(R);					\
     PUSH(E);					\
+    PUSH(A);					\
     PUSH(env_top);				\
     R = R0; }
 
@@ -1297,12 +1307,13 @@ static inline X num_quo(X x, X y)
 #define REDO     TRACE_REDO(CURRENT_NAME, CURRENT_ARITY)
 
 #define EXIT				     \
-  { TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY); \
-    R0 = R;				     \
+  { R0 = R;				     \
     POP(env_top);			     \
+    POP(A);				     \
     POP(E);				     \
     POP(R);					\
     POP(C0);					\
+    TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY); \
     goto *R0; }
 
 #define CHECK_LIMIT  \
@@ -1320,6 +1331,8 @@ static inline X num_quo(X x, X y)
     C->R = R;							\
     C->S = S;							\
     C->E = E;							\
+    C->A = A;							\
+    C->arg_top = arg_top;					\
     C->env_top = env_top;					\
     C->C0 = C0;							\
     C->P = (lbl);						\
@@ -1334,6 +1347,8 @@ static inline X num_quo(X x, X y)
     R = _cp->R;			      \
     S = _cp->S;					\
     E = _cp->E;					\
+    A = _cp->A;					\
+    arg_top = C->arg_top;			\
     env_top = C->env_top;			\
     goto *(_cp->P); }
 
@@ -1341,7 +1356,7 @@ static inline X num_quo(X x, X y)
 /// Boilerplate code
 
 #define BOILERPLATE					\
-  X A[ MAXIMAL_NUMBER_OF_ARGUMENTS ];		\
+  X *A = NULL;							\
   CHOICE_POINT *C, *C0;					\
   void *R0 = &&success_exit;				\
   X *E = env_top;					\
@@ -1493,7 +1508,8 @@ static void trace_write(char *title, char *name, int arity, X *A, CHOICE_POINT *
   FILE *fp = port_file(standard_error_port);
 
   fflush(port_file(standard_output_port));
-  fprintf(fp, "[(%d) %s: %s", (int)(C - choice_point_stack), title, name);
+  fprintf(fp, "[(%d/%d) %s: %s", (int)(C - choice_point_stack), 
+	  (int)(arg_top - argument_stack), title, name);
 
   if(arity > 0) {
     fputc('(', fp);
