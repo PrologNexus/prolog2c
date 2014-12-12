@@ -256,7 +256,7 @@ static X standard_output_port = (X)(&default_output_port);
 static X standard_error_port = (X)(&default_error_port);
 
 static X *fromspace, *fromspace_end, *fromspace_limit, *tospace, *tospace_end, *tospace_top, *scan_ptr;
-static X *ALLOC;
+static X *alloc_top;
 static X symbol_table[ SYMBOL_TABLE_SIZE ];
 static WORD heap_reserve;
 static int verbose = 0;
@@ -315,7 +315,7 @@ static void crash_hook()
 # define ALIGN(n)  (((n) + 7) & ~7L)
 #else
 # define FPALIGNED(x)  (((WORD)objdata(x) & 0x7) == 0)
-# define FPALIGN  ALLOC = (X)((((WORD)ALLOC + 7) & ~7L) + 4)
+# define FPALIGN  alloc_top = (X)((((WORD)alloc_top + 7) & ~7L) + 4)
 # define ALIGN(n)  (((n) + 3) & ~3L)
 #endif
 
@@ -627,14 +627,14 @@ static inline X check_output_port(X x)
 /// allocators
 
 #define ALLOCATE_BLOCK(dest, type, size)				\
-  dest = (void *)ALLOC;						\
-  ((BLOCK *)ALLOC)->h = ((WORD)(type) << TYPE_SHIFT) | (size);		\
-  ALLOC += (size) + 1
+  dest = (void *)alloc_top;						\
+  ((BLOCK *)alloc_top)->h = ((WORD)(type) << TYPE_SHIFT) | (size);		\
+  alloc_top += (size) + 1
 
 #define ALLOCATE_BYTEBLOCK(dest, type, size)				\
-  dest = (void *)ALLOC;							\
-  ((BLOCK *)ALLOC)->h = ((WORD)(type) << TYPE_SHIFT) | (size);		\
-  ALLOC = (X)ALIGN((WORD)ALLOC + (size) + sizeof(WORD))
+  dest = (void *)alloc_top;							\
+  ((BLOCK *)alloc_top)->h = ((WORD)(type) << TYPE_SHIFT) | (size);		\
+  alloc_top = (X)ALIGN((WORD)alloc_top + (size) + sizeof(WORD))
 
 #define FLONUM(m)  ({ FPALIGN; ALLOCATE_BYTEBLOCK(FLONUM_BLOCK *p_, FLONUM_TYPE, sizeof(FLOAT)); p_->n = (m); (X)p_; })
 #define PAIR(x, y) ({ ALLOCATE_BLOCK(BLOCK *p_, PAIR_TYPE, 2); p_->d[ 0 ] = (x); p_->d[ 1 ] = (y); (X)p_; })
@@ -801,7 +801,7 @@ static void collect_garbage(X *E, X *A, int args)
   fromspace_end = tospace_end;
   tospace_end = tmp;	
   fromspace_limit = (X)((char *)fromspace_end - heap_reserve);	
-  ALLOC = fromspace;
+  alloc_top = fromspace;
   DRIBBLE("finished (" WORD_OUTPUT_FORMAT " bytes in use)]\n", ((long)((char *)tospace_top - (char *)fromspace))); 
   ++gc_count;
   
@@ -984,7 +984,7 @@ static void initialize(int argc, char *argv[])
   fromspace_end = (X *)((WORD)fromspace + heapsize / 2);
   tospace_end = (X *)((WORD)tospace + heapsize / 2);
   fromspace_limit = (X *)((WORD)fromspace_end - heap_reserve);
-  ALLOC = fromspace;
+  alloc_top = fromspace;
   default_input_port.fp = stdin;
   default_output_port.fp = stdout;
   default_error_port.fp = stderr;
@@ -1290,7 +1290,7 @@ static inline X num_quo(X x, X y)
     goto *R0; }
 
 #define CHECK_LIMIT  \
-  if(ALLOC > fromspace_limit) { \
+  if(alloc_top > fromspace_limit) { \
     collect_garbage(E, A, CURRENT_ARITY);	\
   }
 
