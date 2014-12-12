@@ -144,7 +144,7 @@ typedef struct PORT_BLOCK {
 #define PREVIOUS_SYMBOL  END_OF_LIST_VAL
 
 typedef struct CHOICE_POINT {
-  X *T, *R, *E;
+  X *T, *R, *E, *env_top;
   void **S;
   struct CHOICE_POINT *C0;
   void *P;
@@ -264,7 +264,7 @@ static int variable_counter = 0;
 static X environment_stack[ ENVIRONMENT_STACK_SIZE ];
 static X trail_stack[ TRAIL_STACK_SIZE ];
 static void *control_stack[ CONTROL_STACK_SIZE ];
-static X *trail_top;
+static X *trail_top, *env_top;
 static CHOICE_POINT choice_point_stack[ CHOICE_POINT_STACK_SIZE ];
 static FINALIZER *active_finalizers = NULL, *free_finalizers = NULL;
 static WORD gc_count = 0;
@@ -709,7 +709,7 @@ static inline void mark1(X *addr)
 }
 
 
-static void collect_garbage(X *E, X *A, int args)
+static void collect_garbage(X *A, int args)
 {
   va_list va;
   DRIBBLE("[GC ... ");							
@@ -721,7 +721,7 @@ static void collect_garbage(X *E, X *A, int args)
     mark1(p);
 
   // mark local environments
-  for(X *p = environment_stack; p < E; ++p)
+  for(X *p = environment_stack; p < env_top; ++p)
     mark1(p);
 
   //XXX preliminary - later don't mark and remove unforwarded items
@@ -989,6 +989,7 @@ static void initialize(int argc, char *argv[])
   default_output_port.fp = stdout;
   default_error_port.fp = stderr;
   trail_top = trail_stack;
+  env_top = environment_stack;
 
   for(int i = 0; i < SYMBOL_TABLE_SIZE; ++i)
     symbol_table[ i ] = END_OF_LIST_VAL;
