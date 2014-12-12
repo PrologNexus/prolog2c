@@ -1298,7 +1298,6 @@ static inline X num_quo(X x, X y)
 
 #define PUSH(x)  *(S++) = (x)
 #define POP(x)   (x) = *(--S)
-#define RESERVE(n)   for(int _i = (n); _i--;) PUSH(ZERO)
 
 #define PUSHCP(lbl) \
   { C->T = trail_top; C->R = R; C->S = S; C->E = E;	\
