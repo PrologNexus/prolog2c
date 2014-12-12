@@ -11,21 +11,21 @@ compile_clause_list([CLAUSE], NAME/ARITY, I, S1, S2) :-
 	clause_label(NAME, ARITY, I, L),
 	emit(label(L)),
 	(I > 1 -> emit(redo); true),
-	compile_clause(CLAUSE, NAME/ARITY, I, det, S1, S2).	
+	compile_clause(CLAUSE, NAME/ARITY, I, last, S1, S2).	
 compile_clause_list([CLAUSE|MORE], NAME/ARITY, I, S1, S2) :-
 	clause_label(NAME, ARITY, I, L),
 	emit(label(L)),
-	compile_clause(CLAUSE, NAME/ARITY, I, nondet, S1, S),
+	compile_clause(CLAUSE, NAME/ARITY, I, notlast, S1, S),
 	I2 is I + 1,
 	compile_clause_list(MORE, NAME/ARITY, I2, S, S2).
 
 % rule
-compile_clause((HEAD :- BODY), NAME/ARITY, I, MODE, S1, S2) :-
+compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, S1, S2) :-
         show_compiled_clause(HEAD :- BODY),
 	!,			% avoid match of next clause
 	I2 is I + 1,
 	clause_label(NAME, ARITY, I2, L),
-	compile_choice_point(MODE, L),
+	compile_choice_point(LAST, L),
 	gather_variables([HEAD, BODY], VARS),
 	length(VARS, N),
 	(N > 0 -> emit(environment(N)); true),
@@ -44,8 +44,8 @@ show_compiled_clause(_).
 
 %% utilities
 
-% perform CP-handling for a particular clause-position (singleton, nontail or tail)
-compile_choice_point(nondet, L) :- emit(add_choice_point(L)).
+% perform CP-handling for a particular clause-position (no CP needed in last clause)
+compile_choice_point(notlast, L) :- emit(add_choice_point(L)).
 compile_choice_point(_, _).
 
 % generate clause label from name/arity + index
