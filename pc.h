@@ -1347,7 +1347,7 @@ static int debug_hook(X x) { return 1; }
 static inline int write_char(X c) { check_fixnum(c); fputc(fixnum_to_word(c), port_file(standard_output_port)); return 1; }
 
 
-// doesn't quote atoms or respects operators
+// doesn't quote atoms or respects operators - expect's deref'd datum
 static void basic_write_term(FILE *fp, int limit, int quote, X x) { 
   if(limit == 0) fputs("...", fp);
   else if(is_FIXNUM(x)) 
@@ -1416,12 +1416,14 @@ static void basic_write_term(FILE *fp, int limit, int quote, X x) {
     case PAIR_TYPE: { 
       fputc('[', fp);
       --limit;
-      basic_write_term(fp, limit, quote, slot_ref(x, 0));
+      basic_write_term(fp, limit, quote, deref(slot_ref(x, 0)));
       int len = DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT;
 
-      for(x = slot_ref(x, 1); --len > 0 && objtype(x) == PAIR_TYPE; x = slot_ref(x, 1)) {
+      for(x = deref(slot_ref(x, 1)); 
+	  --len > 0 && objtype(x) == PAIR_TYPE; 
+	  x = deref(slot_ref(x, 1))) {
 	fputs(", ", fp); 
-	basic_write_term(fp, limit, quote, slot_ref(x, 0));
+	basic_write_term(fp, limit, quote, deref(slot_ref(x, 0)));
       }
 
       if(x == END_OF_LIST_VAL)
@@ -1430,7 +1432,7 @@ static void basic_write_term(FILE *fp, int limit, int quote, X x) {
 	fputs("|...]", fp);
       else {
 	fputc('|', fp);
-	basic_write_term(fp, limit, quote, x);
+	basic_write_term(fp, limit, quote, deref(x));
 	fputc(']', fp);
       }
 
@@ -1447,7 +1449,7 @@ static void basic_write_term(FILE *fp, int limit, int quote, X x) {
 	if(i > 1) 
 	  fputs(", ", fp);
 
-	basic_write_term(fp, limit, quote, slot_ref(x, i));
+	basic_write_term(fp, limit, quote, deref(slot_ref(x, i)));
       }
 
       fputc(')', fp);
