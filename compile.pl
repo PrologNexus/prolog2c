@@ -23,12 +23,12 @@ compile_clause_list([CLAUSE|MORE], NAME/ARITY, I, S1, S2) :-
 compile_clause((HEAD :- BODY), NAME/ARITY, I, MODE, S1, S2) :-
         show_compiled_clause(HEAD :- BODY),
 	!,			% avoid match of next clause
-	gather_variables([HEAD, BODY], VARS),
-	length(VARS, N),
-	(N > 0 -> emit(environment(N)); true),
 	I2 is I + 1,
 	clause_label(NAME, ARITY, I2, L),
 	compile_choice_point(MODE, L),
+	gather_variables([HEAD, BODY], VARS),
+	length(VARS, N),
+	(N > 0 -> emit(environment(N)); true),
 	compile_head(HEAD, BOUND, S1, S),
 	compile_body(BODY, nondet, BOUND, S, S2),
 	emit(exit).
