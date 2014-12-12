@@ -95,9 +95,10 @@ NOTES											              -*- Org -*-
 
 * Things to test
   - trail-unwinding.
-  - repeat/0, '\+'/1
+  - repeat/0, '\\+'/1
   - TCO.
-  - GC.
+  - GC, including symbol-reclamation.
+  - command-line access
   - type-predicates.
   - transparent handling of structure/pair distinction.
   - expression-evaluation (is/2), numerical comparisons.
@@ -111,16 +112,19 @@ NOTES											              -*- Org -*-
 *** Numerical functions
     - sqrt, etc.
 ** Library/Runtime
-*** record-db
-*** I/O
+*** Internal infrastructure for record-db 
+    - simple key-value store (hashtable), with operations to add,
+      remove, lookup.
+    - add (atomic) type DBREFERENCE.
 *** Runtime-information about defined clauses
     - as minimum: mapping of name/arity -> entry-point.
     - for complete support of clause/2 we would actually need the full
       source.
 *** All ISO-stuff that makes sense
 *** Non-standard primitives we need for bootstrapping
-    | getenv/1      |                                                                     |
-    | file_exists/1 | needed for more convenient include/1 and ensure_loaded/1 directives |
+    | getenv/1                 |                                                                     |
+    | command_line_arguments/1 |                                                                     |
+    | file_exists/1            | needed for more convenient include/1 and ensure_loaded/1 directives |
 
 * Diagnostics
 ** Detect singleton variables
@@ -152,8 +156,6 @@ NOTES											              -*- Org -*-
     - and adjust CP-stack entries accordingly.
 ** Library
 *** TODO Extend file:rdtok.pl
-    - add support for floating-point numbers.
-    - allow 2-digit radix in integers.
     - allow escape characters in strings and quoted atoms.
 
 * List of primitives, callable via =foreign_call=
@@ -161,6 +163,8 @@ NOTES											              -*- Org -*-
   | write_char(I)   |                                                            |
   | basic_write(X)  | only handles symbol, number, [], var, port, doesn*t quotes |
   | basic_writeq(X) | quotes atoms                                               |
+  | gc              | perform garbage collection                                 |
+  | halt(I)         | terminate process                                          |
 
 * Library code
 ** file:/archive/dec10-prolog-library.tgz
