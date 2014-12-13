@@ -91,10 +91,11 @@ assemble(call(NAME, RLIST, LABEL), S, S) :-
 
 assemble(tailcall(NAME, RLIST), S, S) :-
 	length(RLIST, ARITY),
-	(ARITY > 0 -> gen('A=(arg_top-=CURRENT_ARITY);\n'); true),
 	assemble_arguments(RLIST, 0),
 	mangle_name(NAME, MNAME),
-	gen('R0=R;\nPOP(env_top);\nPOP(E);\nPOP(R);\nPOP(C0);\ngoto ', MNAME),
+	% args are not popped - this has already being done by cut (or this
+	% is the last clause)
+	gen('R0=R;\nPOP(env_top);\nPOP(A)\nPOP(E);\nPOP(R);\nPOP(C0);\ngoto ', MNAME),
 	gen('$', ARITY, ';\n').
 
 assemble(foreign_call(NAME, 0), S, S) :- gen('if(!', NAME, '()) FAIL;\n').
