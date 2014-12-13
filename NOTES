@@ -13,6 +13,7 @@ NOTES											              -*- Org -*-
   | pop_choice_points                    | drops choice points above CP-index on stack , but not beyond C0                |
   | assign(LOCAL, R)                     | set local variable in environment to popped stack entry                        |
   | literal(INDEX, R)                    | load term literal                                                              |
+  | pop_arguments                        | pop arguments from arg-stack in last clause or after cut                       |
   | argument(ARGUMENT, R)                | load argument                                                                  |
   | local(LOCAL, R)                      | load environment-entry                                                         |
   | unify(R1, R2)                        | unify arguments                                                                |
@@ -95,14 +96,11 @@ NOTES											              -*- Org -*-
 
 * Things to test
   - trail-unwinding.
-  - repeat/0, '\\+'/1
-  - TCO (probably broken).
   - GC, including symbol-reclamation.
   - command-line access
   - type-predicates.
   - transparent handling of structure/pair distinction.
-  - expression-evaluation (is/2), numerical comparisons.
-  - append/3, add to prelude.
+  - numerical comparisons and operations.
   - file:nrev.pl, file:queens.pl, later add as benchmarks.
 
 * Missing
@@ -133,8 +131,6 @@ NOTES											              -*- Org -*-
 
 * Issues
 ** Compiler
-*** TODO The last clause can pop the argument stack after unification
-    - also applicable after !/0.
 *** TODO Improve and extend directives
     - include :: allow omitting file-extension.
     - ensure_loaded :: like "include", but include only once.
@@ -156,9 +152,6 @@ NOTES											              -*- Org -*-
 *** TODO Use hash-tables for symbol-table
 *** TODO Remove GC'd variables from trail
     - and adjust CP-stack entries accordingly.
-** Library
-*** TODO Extend file:rdtok.pl
-    - allow escape characters in strings and quoted atoms.
 
 * List of primitives, callable via =foreign_call=
 
