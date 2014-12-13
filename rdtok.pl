@@ -203,6 +203,10 @@ read_string(-1, _N, Quote, -1) :-
 read_string(Quote, Chars, Quote, NextCh) :- !,
 	get0(Ch),				% closing or doubled quote
 	more_string(Ch, Quote, Chars, NextCh).
+read_string(92, [Ch2|Chars], Quote, NextCh) :- % (flw) \C handling
+	!, get0(Ch),
+	(escaped_char(Ch, Ch2); read_string(-1, Chars, Quote, NextCh)),
+	read_string(Chars, Quote, NextCh).
 read_string(Char, [Char|Chars], Quote, NextCh) :-
 	read_string(Chars, Quote, NextCh).	% ordinary character
 
@@ -211,6 +215,11 @@ more_string(Quote, Quote, [Quote|Chars], NextCh) :- !,
 	read_string(Chars, Quote, NextCh).	% doubled quote
 more_string(NextCh, _, [], NextCh).		% end
 
+escaped_char(-1, -1) :- !, fail.
+escaped_char(110, 10). % \n
+escaped_char(114, 13). % \r
+escaped_char(116, 9). % \t
+escaped_char(C, C). % anything else
 
 
 %   read_solidus(Ch, Dict, Tokens)
