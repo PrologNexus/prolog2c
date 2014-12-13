@@ -45,8 +45,10 @@ show_compiled_clause(_).
 %% utilities
 
 % perform CP-handling for a particular clause-position (no CP needed in last clause)
-compile_choice_point(notlast, L) :- emit(add_choice_point(L)).
-compile_choice_point(_, _).
+compile_choice_point(notlast, L) :-
+	emit(add_choice_point(L)).
+compile_choice_point(last, _) :-
+	emit(pop_arguments).
 
 % generate clause label from name/arity + index
 clause_label(N, A, I, L) :-

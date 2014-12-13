@@ -62,6 +62,9 @@ assemble(make_pair(CAR, CDR, R), S, S) :-
 	gen('X ', R, '=make_pair('),
 	gen(CAR, ',', CDR, ');\n').
 
+% A is still in use, but no calls are made until head-unification has taken place:
+assemble(pop_arguments, S, S) :- gen('arg_top-=CURRENT_ARITY;\n').
+
 assemble(add_choice_point(LABEL), S, S) :- gen('PUSHCP(&&', LABEL, ');\n').
 assemble(push_choice_points, S, S) :- gen('PUSH((X)C);\n').
 assemble(pop_choice_points, S, S) :- gen('POPCP;\n').
