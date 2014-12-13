@@ -148,7 +148,7 @@ compile_body_expression((X; Y), TAIL, D1, D2, B1, B2, S1, S2) :-
 
 % cut
 compile_body_expression(!, _, _, det, B, B, S, S) :-
-	emit(remove_choice_points).
+	emit(remove_choice_points, pop_arguments).
 
 % true
 compile_body_expression(true, _, D, D, B, B, S, S).
