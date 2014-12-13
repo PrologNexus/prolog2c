@@ -30,7 +30,7 @@ compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, S1, S2) :-
 	length(VARS, N),
 	(N > 0 -> emit(environment(N)); true),
 	compile_head(HEAD, BOUND, S1, S),
-	compile_body(BODY, nondet, BOUND, S, S2),
+	compile_body(BODY, nondet, LAST, BOUND, S, S2),
 	emit(exit).
 % fact
 compile_clause(HEAD, NA, I, M, S1, S2) :-
@@ -45,10 +45,8 @@ show_compiled_clause(_).
 %% utilities
 
 % perform CP-handling for a particular clause-position (no CP needed in last clause)
-compile_choice_point(notlast, L) :-
-	emit(add_choice_point(L)).
-compile_choice_point(last, _) :-
-	emit(pop_arguments).
+compile_choice_point(notlast, L) :- emit(add_choice_point(L)).
+compile_choice_point(last, _) :- emit(pop_arguments).
 
 % generate clause label from name/arity + index
 clause_label(N, A, I, L) :-
@@ -114,84 +112,86 @@ compile_term_arguments([X|MORE], DL1, DL2, B1, B2, S1, S2) :-
 			 
 %% compile body
 
-compile_body(BODY, DET, BOUND, S1, S2) :-
-	compile_body_expression(BODY, tail, DET, _, BOUND, _, S1, S2).
+compile_body(BODY, DET, LAST, BOUND, S1, S2) :-
+	compile_body_expression(BODY, tail, LAST, DET, _, BOUND, _, S1, S2).
 
 % conjunction
-compile_body_expression((X, Y), TAIL, D1, D2, B1, B2, S1, S2) :-
-	compile_body_expression(X, nontail, D1, D, B1, B, S1, S),
-	compile_body_expression(Y, TAIL, D, D2, B, B2, S, S2).
+compile_body_expression((X, Y), TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
+	compile_body_expression(X, nontail, LAST, D1, D, B1, B, S1, S),
+	compile_body_expression(Y, TAIL, LAST, D, D2, B, B2, S, S2).
 
 % if-then-else
-compile_body_expression((X -> Y; Z), TAIL, D1, D2, B1, B2, S1, S2) :-
+compile_body_expression((X -> Y; Z), TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
 	emit(add_choice_point(L1), push_choice_points),
-	compile_body_expression(X, nontail, D1, D3, B1, B3, S4, S5),
+	compile_body_expression(X, nontail, LAST, D1, D3, B1, B3, S4, S5),
 	emit(pop_choice_points),
-	compile_body_expression(Y, TAIL, D3, D4, B3, B4, S5, S6),
+	compile_body_expression(Y, TAIL, LAST, D3, D4, B3, B4, S5, S6),
 	emit(jump(L2), label(L1)),
-	compile_body_expression(Z, TAIL, D3, D5, B4, B2, S6, S2),
+	compile_body_expression(Z, TAIL, LAST, D3, D5, B4, B2, S6, S2),
 	emit(label(L2)),
 	both_determinate(D4, D5, D2).
 
 % disjunction
-compile_body_expression((X; Y), TAIL, D1, D2, B1, B2, S1, S2) :-
+compile_body_expression((X; Y), TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
 	emit(add_choice_point(L1)),
-	compile_body_expression(X, nontail, D1, D3, B1, B, S4, S5),
+	compile_body_expression(X, nontail, LAST, D1, D3, B1, B, S4, S5),
 	emit(jump(L2), label(L1)),
-	compile_body_expression(Y, TAIL, D1, D4, B, B2, S5, S2),
+	compile_body_expression(Y, TAIL, LAST, D1, D4, B, B2, S5, S2),
 	emit(label(L2)),
 	both_determinate(D3, D4, D2).
 
 % cut
-compile_body_expression(!, _, _, det, B, B, S, S) :-
+compile_body_expression(!, _, last, _, det, B, B, S, S) :-
+	emit(remove_choice_points).
+compile_body_expression(!, _, notlast, _, det, B, B, S, S) :-
 	emit(remove_choice_points, pop_arguments).
 
 % true
-compile_body_expression(true, _, D, D, B, B, S, S).
+compile_body_expression(true, _, _, D, D, B, B, S, S).
 
 % fail
-compile_body_expression(fail, _, D, D, B, B, S, S) :-
+compile_body_expression(fail, _, _, D, D, B, B, S, S) :-
 	emit(fail).
 
 % repeat
-compile_body_expression(repeat, _, det, det, B, B, S, S).
-compile_body_expression(repeat, _, D, D, B, B, S1, S2) :-
+compile_body_expression(repeat, _, _, det, det, B, B, S, S).
+compile_body_expression(repeat, _, _, D, D, B, B, S1, S2) :-
 	gen_label(L, S1, S2),
 	emit(label(L), add_choice_point(L)).
 	
 % not
-compile_body_expression(\+X, _, D1, D2, B1, B2, S1, S2) :-
+compile_body_expression(\+X, _, LAST, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
-	emit(add_choice_point(L1), push_choice_points),
-	compile_body_expression(X, nontail, D1, D2, B1, B2, S3, S2),
+	emit(push_choice_points, add_choice_point(L1)),
+	compile_body_expression(X, nontail, LAST, D1, D2, B1, B2, S3, S2),
 	emit(pop_choice_points, fail, label(L1)).
 
 % if-then
-compile_body_expression(X -> Y, TAIL, D1, D2, B1, B2, S1, S2) :-
-	compile_body_expression((X -> Y; fail), TAIL, D1, D2, B1, B2, S1, S2).
+compile_body_expression(X -> Y, TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
+	compile_body_expression((X -> Y; fail), TAIL, LAST, D1, D2, B1, B2, S1, S2).
 
 % inline-unification
-compile_body_expression('_var_'(N) = Y, _, D, D, B1, B2, S1, S2) :-
+compile_body_expression('_var_'(N) = Y, _, _, D, D, B1, B2, S1, S2) :-
 	\+member(N, B1),
 	gensym('T', T, S1, S),
 	compile_term_for_unification(Y, T, [N|B1], B2, S, S2),
 	emit(assign(N, T)).
-compile_body_expression(X = '_var_'(N), _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(X = '_var_'(N), _, _, D, D, B1, B2, S1, S2) :-
 	\+member(N, B1),
 	gensym('T', T, S1, S),
 	compile_term_for_unification(X, T, [N|B1], B2, S, S2),
 	emit(assign(N, T)).
-compile_body_expression(X = Y, _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(X = Y, _, _, D, D, B1, B2, S1, S2) :-
 	gensym('T', T1, S1, S3),
 	compile_term_for_unification(X, T1, B1, B, S3, S4),
 	gensym('T', T2, S4, S5),
 	compile_term_for_unification(Y, T2, B, B2, S5, S2),
 	emit(unify(T1, T2)).
-compile_body_expression(X \= Y, _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(X \= Y, _, _, D, D, B1, B2, S1, S2) :-
 	gensym('T', T1, S1, S3),
 	compile_term_for_unification(X, T1, B1, B, S3, S4),
 	gensym('T', T2, S4, S5),
@@ -199,13 +199,13 @@ compile_body_expression(X \= Y, _, D, D, B1, B2, S1, S2) :-
 	emit(not_unify(T1, T2)).
 
 % identity comparison
-compile_body_expression(X == Y, _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(X == Y, _, _, D, D, B1, B2, S1, S2) :-
 	gensym('T', T1, S1, S3),
 	compile_term_for_unification(X, B1, B, S3, S4),
 	gensym('T', T2, S4, S5),
 	compile_term_for_unification(Y, B, B2, S5, S2),
 	emit(identical(T1, T2)).
-compile_body_expression(X \== Y, _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(X \== Y, _, _, D, D, B1, B2, S1, S2) :-
 	gensym('T', T1, S1, S3),
 	compile_term_for_unification(X, B1, B, S3, S4),
 	gensym('T', T2, S4, S5),
@@ -213,30 +213,36 @@ compile_body_expression(X \== Y, _, D, D, B1, B2, S1, S2) :-
 	emit(not_identical(T1, T2)).
 
 % arithmetic
-compile_body_expression('_var_'(N) is EXP, _, D, D, B1, [N|B1], S1, S2) :-
+compile_body_expression('_var_'(N) is EXP, _, _, D, D, B1, [N|B1], S1, S2) :-
 	\+member(N, B1),
 	gensym('T', T1, S1, S),
 	compile_arithmetic_expression(EXP, T1, B1, S, S2),
 	emit(assign(N, T1)).
-compile_body_expression(X is EXP, _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(X is EXP, _, _, D, D, B1, B2, S1, S2) :-
 	gensym('T', T1, S1, S3),
 	compile_arithmetic_expression(EXP, T1, B1, S3, S4),
 	gensym('T', T2, S4, S5),
 	compile_term_for_unification(X, T2, B1, B2, S5, S2),
 	emit(unify(T1, T2)).
 
-compile_body_expression(X =:= Y, _, D, D, B, B, S1, S2) :- compile_arithmetic_test(X, Y, B, numerically_equal, S1, S2).
-compile_body_expression(X =\= Y, _, D, D, B, B, S1, S2) :- compile_arithmetic_test(X, Y, B, numerically_not_equal, S1, S2).
-compile_body_expression(X > Y, _, D, D, B, B, S1, S2) :- compile_arithmetic_test(X, Y, B, numerically_greater, S1, S2).
-compile_body_expression(X < Y, _, D, D, B, B, S1, S2) :- compile_arithmetic_test(X, Y, B, numerically_less, S1, S2).
-compile_body_expression(X >= Y, _, D, D, B, B, S1, S2) :- compile_arithmetic_test(X, Y, B, numerically_greater_or_equal, S1, S2).
-compile_body_expression(X =< Y, _, D, D, B, B, S1, S2) :- compile_arithmetic_test(X, Y, B, numerically_less_or_equal, S1, S2).
+compile_body_expression(X =:= Y, _, _, D, D, B, B, S1, S2) :-
+	compile_arithmetic_test(X, Y, B, numerically_equal, S1, S2).
+compile_body_expression(X =\= Y, _, _, D, D, B, B, S1, S2) :-
+	compile_arithmetic_test(X, Y, B, numerically_not_equal, S1, S2).
+compile_body_expression(X > Y, _, _, D, D, B, B, S1, S2) :-
+	compile_arithmetic_test(X, Y, B, numerically_greater, S1, S2).
+compile_body_expression(X < Y, _, _, D, D, B, B, S1, S2) :-
+	compile_arithmetic_test(X, Y, B, numerically_less, S1, S2).
+compile_body_expression(X >= Y, _, _, D, D, B, B, S1, S2) :-
+	compile_arithmetic_test(X, Y, B, numerically_greater_or_equal, S1, S2).
+compile_body_expression(X =< Y, _, _, D, D, B, B, S1, S2) :-
+	compile_arithmetic_test(X, Y, B, numerically_less_or_equal, S1, S2).
 			
 %XXX
 % @<, @>, @>=, @<=
 
 % foreign call
-compile_body_expression(foreign_call(CALL), _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(foreign_call(CALL), _, _, D, D, B1, B2, S1, S2) :-
 	CALL =.. [NAME|ARGS],
 	compile_term_arguments(ARGS, [], DLIST, B1, B2, S1, S2),
 	emit(foreign_call(NAME, DLIST)).
@@ -244,14 +250,14 @@ compile_body_expression(foreign_call(CALL), _, D, D, B1, B2, S1, S2) :-
 % type-predicates
 
 % ordinary predicate call
-compile_body_expression(TERM, TAIL, D, D, B1, B2, S1, S2) :-
+compile_body_expression(TERM, TAIL, _, D, D, B1, B2, S1, S2) :-
 	TERM =.. [NAME|ARGS],
 	compile_term_arguments(ARGS, [], DLIST, B1, B2, S1, S),
 	(compile_type_predicate(NAME, DLIST), S2 = S
 	; compile_ordinary_call(NAME, TAIL, DLIST, D, S, S2)
 	).
 
-compile_body_expression(TERM, _, _, _, _, _, _, _) :-
+compile_body_expression(TERM, _, _, _, _, _, _, _, _) :-
 	error(['can not compile: ', TERM]).
 
 
