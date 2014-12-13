@@ -1102,8 +1102,14 @@ static int unify1(X x, X y)
   x = deref(x);
   y = deref(y);
 
-  WORD xt = is_FIXNUM(x) ? FIXNUM_TYPE : objtype(x);
-  WORD yt = is_FIXNUM(y) ? FIXNUM_TYPE : objtype(y);
+  if(is_FIXNUM(x)) 
+    return x == y;
+
+  if(is_FIXNUM(y))
+    return 0;
+
+  WORD xt = objtype(x);
+  WORD yt = objtype(y);
 
   if(xt == VAR_TYPE) {
     SLOT_SET(x, 0, y);
