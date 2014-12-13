@@ -287,17 +287,17 @@ type_predicate(float).
 
 compile_arithmetic_test(X, Y, B, OP, S1, S2) :-
 	gensym('T', T1, S1, S3),
-	compile_arithmetic_expression(X, B, S3, S4),
+	compile_arithmetic_expression(X, T1, B, S3, S4),
 	gensym('T', T2, S4, S5),
-	compile_arithmetic_expression(Y, B, S5, S2),
+	compile_arithmetic_expression(Y, T2, B, S5, S2),
 	TERM =.. [OP, T1, T2],
 	emit(TERM).
 
 compile_arithmetic_op(X, Y, DEST, B, OP, S1, S2) :-
 	gensym('T', T1, S1, S3),
-	compile_arithmetic_expression(X, B, S3, S4),
+	compile_arithmetic_expression(X, T1, B, S3, S4),
 	gensym('T', T2, S4, S5),
-	compile_arithmetic_expression(Y, B, S5, S2),
+	compile_arithmetic_expression(Y, T2, B, S5, S2),
 	TERM =.. [OP, T1, T2, DEST],
 	emit(TERM).
 

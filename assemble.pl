@@ -103,11 +103,16 @@ assemble(foreign_call(NAME, RLIST), S, S) :-
 	generate_foreign_arguments(RLIST),
 	gen(')) FAIL;\n').	%XXX doesn't pop
 
-assemble(add, S, S) :- gen('ADD_NUMS;\n').
-assemble(subtract, S, S) :- gen('SUBTRACT_NUMS;\n').
-assemble(multiply, S, S) :- gen('MULTIPLY_NUMS;\n').
-assemble(divide, S, S) :- gen('DIVIDE_NUMS;\n').
-assemble(quotient, S, S) :- gen('DIVIDE_NUMS;\n').
+assemble(add(R1, R2, R3), S, S) :-
+	gen('X ', R3, '=num_add(', R1, ','),
+	gen(R2, ');\n').
+assemble(subtract(R1, R2, R3), S, S) :-
+	gen('X ', R3, '=num_sub(', R1, ','),
+	gen(R2, ');\n').
+assemble(multiply(R1, R2, R3), S, S) :-
+	gen('X ', R3, '=num_mul(', R1, ','),
+	gen(R2, ');\n').
+assemble(divide(R1, R2, R3), S, S) :- gen(R3, '=num_div(', R1, ','), gen(R2, ');\n').
 
 assemble(integer(R), S, S) :- gen('if(!is_FIXNUM(deref(', R, '))) FAIL;\n').
 assemble(number(R), S, S) :- gen('if(!is_number(deref(', R, '))) FAIL;\n').
