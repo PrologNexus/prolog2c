@@ -98,6 +98,7 @@ NOTES											              -*- Org -*-
   - trail-unwinding.
   - GC, including symbol-reclamation.
   - command-line access
+  - inline unification.
   - type-predicates.
   - transparent handling of structure/pair distinction.
   - numerical comparisons and operations.
