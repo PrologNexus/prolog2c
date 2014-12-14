@@ -127,6 +127,10 @@ read(atom(Atom), S0, Precedence, Answer, S) :- !,
 read(integer(Integer), S0, Precedence, Answer, S) :- !,
 	exprtl0(S0, Integer, Precedence, Answer, S).
 
+% flw
+read(number(Number), S0, Precedence, Answer, S) :- !,
+	exprtl0(S0, Number, Precedence, Answer, S).
+
 read('[', [']'|S1], Precedence, Answer, S) :- !,
 	exprtl0(S1, [], Precedence, Answer, S).
 
