@@ -938,6 +938,8 @@ static WORD numeric_arg(char *arg)
 static void initialize(int argc, char *argv[])
 {
   WORD heapsize = HEAP_SIZE;
+  global_argc = argc;
+  global_argv = argv;
 
   // scan argv for runtime-parameters
   for(int i = argc - 1; i > 0; --i) {
@@ -1009,27 +1011,6 @@ static void terminate(int code)
 {
   DRIBBLE("[trail size: " WORD_OUTPUT_FORMAT ", terminating]\n", trail_top - trail_stack);
   exit(code);
-}
-
-
-static X command_line_arguments()
-{
-  X lst = END_OF_LIST_VAL;
-
-  // build argument-list for "command-line-arguments"
-  for(int i = global_argc - 1; i > 0; --i) {
-    int len = strlen(global_argv[ i ]);
-    
-    // ignore runtime options
-    if(global_argv[ i ][ 1 ] != ':') {
-      X str = CSTRING(global_argv[ i ]);
-      X sym = intern(str);
-      X pr = PAIR(sym, lst);
-      lst = pr;
-    }
-  }
-
-  return lst;
 }
 
 
@@ -1566,3 +1547,26 @@ static int halt(X code)
   terminate(fixnum_to_word(code));
   return 1;			/* never executed */
 }
+
+
+static int command_line_arguments(X var)
+{
+  X lst = END_OF_LIST_VAL;
+
+  // build argument-list for "command-line-arguments"
+  for(int i = global_argc - 1; i > 0; --i) {
+    int len = strlen(global_argv[ i ]);
+    
+    // ignore runtime options
+    if(global_argv[ i ][ 1 ] != ':') {
+      X str = CSTRING(global_argv[ i ]);
+      X sym = intern(str);
+      X pr = PAIR(sym, lst);
+      lst = pr;
+    }
+  }
+
+  return unify(lst, var);
+}
+
+

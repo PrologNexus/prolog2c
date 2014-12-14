@@ -15,3 +15,5 @@ gc :- foreign_call(gc).
 
 append([],X,X).
 append([X|Y],Z,[X|W]) :- append(Y,Z,W).
+
+command_line_arguments(X) :- foreign_call(command_line_arguments(X)).
