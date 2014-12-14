@@ -1133,22 +1133,23 @@ static int unify1(X x, X y)
 
 /// term-construction
 
-static X make_term(int arity, ...)
+static X make_term(int arity, X functor, ...)
 {
   va_list va;
-  va_start(va, arity);
-  X f = va_arg(va, X);
-  check_type(SYMBOL_TYPE, f);
+  va_start(va, functor);
+  functor = deref(functor);
+  check_type(SYMBOL_TYPE, functor);
 
-  if(arity == 2 && !strcmp(".", (CHAR *)objdata(slot_ref(f, 0)))) {
+  if(arity == 2 && !strcmp(".", (CHAR *)objdata(slot_ref(functor, 0)))) {
     X car = va_arg(va, X);
     return PAIR(car, va_arg(va, X));
   }
 
   ALLOCATE_BLOCK(BLOCK *s, STRUCTURE_TYPE, arity + 1);
+  s->d[ 0 ] = functor;
 
-  for(int i = 0; i <= arity; ++i)
-    s->d[ i ] = va_arg(va, X);
+  for(int i = 1; i <= arity; ++i)
+    s->d[ i ] = deref(va_arg(va, X));
 
   return (X)s;
 }
