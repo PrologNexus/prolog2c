@@ -249,6 +249,8 @@ compile_body_expression(foreign_call(CALL), _, _, D, D, B1, B2, S1, S2) :-
 % type-predicates
 
 % ordinary predicate call
+compile_body_expression('_var_'(N), TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
+	compile_body_expression(call('_var_'(N)), TAIL, LAST, D1, D2, B1, B2, S1, S2).
 compile_body_expression(TERM, TAIL, _, D, D, B1, B2, S1, S2) :-
 	TERM =.. [NAME|ARGS],
 	compile_term_arguments(ARGS, [], DLIST, B1, B2, S1, S),
