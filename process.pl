@@ -91,7 +91,11 @@ process_directive((DECL1, DECL2), S1, S2) :-
 	process_directive(DECL2, S, S2).
 
 process_directive(initialization PRED, STATE, STATE) :-
+	atom(PRED),
 	recorda(initialization_goal, PRED).
+process_directive(initialization GOAL, STATE1, STATE2) :-
+	compile_block('_start_'/0, ['_start_' :- GOAL], STATE1, STATE2), 
+	recorda(initialization_goal, '_start_').
 
 process_directive(include(FNAME), STATE1, STATE2) :-
 	seeing(CURRENT), 
