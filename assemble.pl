@@ -180,19 +180,20 @@ generate_static_literal(I, X, S1, S2) :-
 	X =.. [F|ARGS], !,
 	gensym('f', IF, S1, S3),
 	generate_static_literal(IF, F, S3, S4),
-	generate_static_literals(ARGS, 1, IS, S4, S2),
+	generate_static_literals(ARGS, 1, IF, IS, S4, S2),
 	length(ARGS, ARITY),
-	gen('static STRUCTURE_BLOCK lb', I, '={STRUCTURE_TAG|', ARITY),
-	gen('+1,{', IF),
+	gen('static BLOCK lb', I, '={STRUCTURE_TAG|', ARITY),
+	gen('+1,{literal_', IF, ','),
 	generate_data_list(IS),
-	gen('}\n#define literal_', I, '&lb', I, '\n').
+	gen('}};\n#define literal_', I, ' &lb', I, '\n').
 
-generate_static_literals([], _, [], S, S).
-generate_static_literals([X|MORE], I, [IS|IMORE], S1, S2) :-
-	atomic_list_concat(['_', I], IS),
-	generate_static_literal(IS, X, S1, S),
+generate_static_literals([], _, _, [], S, S).
+generate_static_literals([X|MORE], I, IF, [IS|IMORE], S1, S2) :-
+	atomic_list_concat([IF, '_', I], IS1),
+	atomic_list_concat(['literal_', IS1], IS),
+	generate_static_literal(IS1, X, S1, S),
 	I2 = I + 1,
-	generate_static_literals(MORE, I2, IMORE, S, S2).
+	generate_static_literals(MORE, I2, IF, IMORE, S, S2).
 
 
 % output helpers
