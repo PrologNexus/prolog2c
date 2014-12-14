@@ -120,7 +120,7 @@ assemble(integer(R), S, S) :- gen('if(!is_FIXNUM(deref(', R, '))) FAIL;\n').
 assemble(number(R), S, S) :- gen('if(!is_number(deref(', R, '))) FAIL;\n').
 assemble(var(R), S, S) :- gen('if(!is_VAR(deref(', R, '))) FAIL;\n').
 assemble(nonvar(R), S, S) :- gen('if(is_VAR(deref(', R, '))) FAIL;\n').
-assemble(atom(R), S, S) :- gen('if(!is_SYMBOL(deref(', R, '))) FAIL;\n').
+assemble(atom(R), S, S) :- gen('if(!is_atom(deref(', R, '))) FAIL;\n').
 assemble(atomic(R), S, S) :- gen('if(!is_atomic(deref(', R, '))) FAIL;\n').
 assemble(compound(R), S, S) :- gen('if(!is_compound(deref(', R, '))) FAIL;\n').
 assemble(float(R), S, S) :- gen('if(!is_FLONUM(deref(', R, '))) FAIL;\n').

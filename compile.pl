@@ -283,6 +283,8 @@ type_predicate(number).
 type_predicate(integer).
 type_predicate(compound).
 type_predicate(float).
+type_predicate(var).
+type_predicate(nonvar).
 
 
 %% helper predicates for arithmetic expressions

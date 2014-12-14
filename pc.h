@@ -211,9 +211,6 @@ typedef struct FINALIZER
 #define STRUCTURE_TYPE  8
 #define PAIR_TYPE  9
 
-#define is_atomic_type(t)   ((t) < VAR_TYPE)
-#define is_compound_type(t)   ((t) >= STRUCTURE_TYPE)
-
 #define TYPE_TO_TAG(t)  ((WORD)(t) << TYPE_SHIFT)
 #define TAG_TO_TYPE(t)  ((WORD)(t) >> TYPE_SHIFT)
 
@@ -353,15 +350,21 @@ static inline int is_number(X x)
 }
 
 
+static inline int is_atom(X x)
+{
+  return x == END_OF_LIST_VAL || is_SYMBOL(x);
+}
+
+
 static inline int is_atomic(X x)
 {
-  return is_FIXNUM(x) || is_atomic_type(objtype(x));
+  return x == END_OF_LIST_VAL || is_FIXNUM(x) || is_FLONUM(x) || is_SYMBOL(x);
 }
 
 
 static inline int is_compound(X x)
 {
-  return !is_FIXNUM(x) || is_compound_type(objtype(x));
+  return !is_FIXNUM(x) && (is_PAIR(x) || is_STRUCTURE(x));
 }
 
 
@@ -526,7 +529,7 @@ static void check_atomic_failed(X x)
 static inline X check_atomic(X x)
 {
 #ifndef UNSAFE
-  if(!is_FIXNUM(x) && !is_atomic_type(objtype(x)))
+  if(!is_FIXNUM(x) && !is_atomic(x))
     check_atomic_failed(x);
 #endif
   
