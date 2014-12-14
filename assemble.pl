@@ -54,7 +54,8 @@ assemble(literal(N, R), S, S) :- gen('X ', R, '=literal_', N, ';\n').
 
 assemble(make_term(RLIST, R), S, S) :-
 	length(RLIST, N),
-	gen('X ', R, '=make_term(', N, ','),
+	N1 is N - 1,
+	gen('X ', R, '=make_term(', N1, ','),
 	generate_data_list(RLIST),
 	gen(');\n').
 

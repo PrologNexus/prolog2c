@@ -98,8 +98,7 @@ compile_term_for_unification([X|Y], DEST, BOUND1, BOUND2, S1, S2) :-
 compile_term_for_unification(X, DEST, BOUND1, BOUND2, S1, S2) :-
 	X =.. LIST,
 	compile_term_arguments(LIST, [], DLIST, BOUND1, BOUND2, S1, S2),
-	reverse(DLIST, DLIST2),
-	emit(make_term(DLIST2, DEST)).
+	emit(make_term(DLIST, DEST)).
 
 % compile list of arguments, putting elements on stack
 compile_term_arguments([], DL, RDL, B, B, S, S) :-
