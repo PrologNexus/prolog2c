@@ -174,13 +174,14 @@ compile_body_expression(X -> Y, TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
 	compile_body_expression((X -> Y; fail), TAIL, LAST, D1, D2, B1, B2, S1, S2).
 
 % inline-unification
+compile_body_expression('_var_'(N) = '_var_'(N), _, _, D, D, B, B, S, S).
 compile_body_expression('_var_'(N) = Y, _, _, D, D, B1, B2, S1, S2) :-
-	\+member(N, B1),
+	\+member(N, B1), Y \= '_var_'(_),
 	gensym('T', T, S1, S),
 	compile_term_for_unification(Y, T, [N|B1], B2, S, S2),
 	emit(assign(N, T)).
 compile_body_expression(X = '_var_'(N), _, _, D, D, B1, B2, S1, S2) :-
-	\+member(N, B1),
+	\+member(N, B1), X \= '_var_'(_),
 	gensym('T', T, S1, S),
 	compile_term_for_unification(X, T, [N|B1], B2, S, S2),
 	emit(assign(N, T)).
