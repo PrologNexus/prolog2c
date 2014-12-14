@@ -97,8 +97,6 @@ NOTES											              -*- Org -*-
 * Things to test
   - trail-unwinding.
   - GC, including symbol-reclamation.
-  - command-line access
-  - inline unification.
   - type-predicates.
   - transparent handling of structure/pair distinction.
   - numerical comparisons and operations.
@@ -135,7 +133,6 @@ NOTES											              -*- Org -*-
 *** TODO Improve and extend directives
     - include :: allow omitting file-extension.
     - ensure_loaded :: like "include", but include only once.
-    - initialization :: allow arbitrary goals.
     - determinate :: register as determinate, use this to find more TCO
                     opportunities.
 *** TODO Unbound var in arithmetic expr doesn't show variable name
@@ -148,7 +145,7 @@ NOTES											              -*- Org -*-
 *** TODO add instructions to push immediate literals
    - fixnums, [].
 ** Runtime
-*** TODO With "-v", show trail-size on termination
+*** TODO Should "make_term" deref it's args, especially the functor?
 *** TODO Is cycle-checking in =deref= really necessary?
 *** TODO Use hash-tables for symbol-table
 *** TODO Remove GC'd variables from trail
