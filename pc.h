@@ -808,7 +808,7 @@ static void collect_garbage(int args)
   fromspace_end = tospace_end;
   tospace_end = tmp;	
   fromspace_limit = (X)((char *)fromspace_end - heap_reserve);	
-  alloc_top = fromspace;
+  alloc_top = tospace_top;
   DRIBBLE("finished (" WORD_OUTPUT_FORMAT " bytes in use)]\n", ((long)((char *)tospace_top - (char *)fromspace))); 
   ++gc_count;
   
