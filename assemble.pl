@@ -96,8 +96,7 @@ assemble(tailcall(NAME, RLIST), S, S) :-
 	mangle_name(NAME, MNAME),
 	% args are not popped - this has already being done by cut (or this
 	% is the last clause)
-	gen('R0=R;\nPOP(env_top);\nPOP(A);\nPOP(E);\nPOP(R);\nPOP(C0);\ngoto ', MNAME),
-	gen('$', ARITY, ';\n').
+	gen('TAILCALL(', MNAME, '$', ARITY, ');\n').
 
 assemble(foreign_call(NAME, 0), S, S) :- gen('if(!', NAME, '()) FAIL;\n').
 assemble(foreign_call(NAME, RLIST), S, S) :-

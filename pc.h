@@ -1304,6 +1304,15 @@ static inline X num_quo(X x, X y)
     TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY); \
     goto *R0; }
 
+#define TAILCALL(lbl)				\
+  R0 = R;					\
+  POP(env_top);					\
+  POP(A);					\
+  POP(E);					\
+  POP(R);					\
+  POP(C0);					\
+  goto lbl
+
 #define CHECK_LIMIT  \
   if(alloc_top > fromspace_limit) { \
     collect_garbage(A, CURRENT_ARITY);	\
