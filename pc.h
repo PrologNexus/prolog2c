@@ -1074,7 +1074,7 @@ static inline void push_trail(X var)
 
 /// unification
 
-#define unify(x, y)   ({ X _x = (x), _y = (y); _x == _y ? 1 : unify1(_x, _y); })
+#define unify(x, y)   ({ X _x = (x), _y = (y); _x == _y || unify1(_x, _y); })
 
 
 static int unify1(X x, X y)
