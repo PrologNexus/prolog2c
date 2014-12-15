@@ -104,16 +104,11 @@ assemble(foreign_call(NAME, RLIST), S, S) :-
 	generate_foreign_arguments(RLIST),
 	gen(')) FAIL;\n').	%XXX doesn't pop
 
-assemble(add(R1, R2, R3), S, S) :-
-	gen('X ', R3, '=num_add(', R1, ','),
-	gen(R2, ');\n').
-assemble(subtract(R1, R2, R3), S, S) :-
-	gen('X ', R3, '=num_sub(', R1, ','),
-	gen(R2, ');\n').
-assemble(multiply(R1, R2, R3), S, S) :-
-	gen('X ', R3, '=num_mul(', R1, ','),
-	gen(R2, ');\n').
-assemble(divide(R1, R2, R3), S, S) :- gen(R3, '=num_div(', R1, ','), gen(R2, ');\n').
+assemble(add(R1, R2, R3), S, S) :- gen('X ', R3, '=num_add(', R1, ','),	gen(R2, ');\n').
+assemble(subtract(R1, R2, R3), S, S) :-	gen('X ', R3, '=num_sub(', R1, ','), gen(R2, ');\n').
+assemble(multiply(R1, R2, R3), S, S) :-	gen('X ', R3, '=num_mul(', R1, ','), gen(R2, ');\n').
+assemble(divide(R1, R2, R3), S, S) :- gen('X ', R3, '=num_div(', R1, ','), gen(R2, ');\n').
+assemble(quotient(R1, R2, R3), S, S) :- gen('X ', R3, '=num_quo(', R1, ','), gen(R2, ');\n').
 
 assemble(integer(R), S, S) :- gen('if(!is_FIXNUM(deref(', R, '))) FAIL;\n').
 assemble(number(R), S, S) :- gen('if(!is_number(deref(', R, '))) FAIL;\n').
