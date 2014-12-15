@@ -201,15 +201,15 @@ compile_body_expression(X \= Y, _, _, D, D, B1, B2, S1, S2) :-
 % identity comparison
 compile_body_expression(X == Y, _, _, D, D, B1, B2, S1, S2) :-
 	gensym('T', T1, S1, S3),
-	compile_term_for_unification(X, B1, B, S3, S4),
+	compile_term_for_unification(X, T1, B1, B, S3, S4),
 	gensym('T', T2, S4, S5),
-	compile_term_for_unification(Y, B, B2, S5, S2),
+	compile_term_for_unification(Y, T2, B, B2, S5, S2),
 	emit(identical(T1, T2)).
 compile_body_expression(X \== Y, _, _, D, D, B1, B2, S1, S2) :-
 	gensym('T', T1, S1, S3),
-	compile_term_for_unification(X, B1, B, S3, S4),
+	compile_term_for_unification(X, T1, B1, B, S3, S4),
 	gensym('T', T2, S4, S5),
-	compile_term_for_unification(Y, B, B2, S5, S2),
+	compile_term_for_unification(Y, T2, B, B2, S5, S2),
 	emit(not_identical(T1, T2)).
 
 % arithmetic
