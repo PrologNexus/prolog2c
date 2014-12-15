@@ -716,16 +716,12 @@ static inline void mark1(X *addr)
 }
 
 
-static void collect_garbage(X *A, int args)
+static void collect_garbage(int args)
 {
   va_list va;
   DRIBBLE("[GC ... ");							
   tospace_top = tospace; 
   scan_ptr = tospace_top;				
-
-  // mark argument variables
-  for(X *p = A; args > 0; --args) 
-    mark1(p);
 
   // mark local environments
   for(X *p = environment_stack; p < env_top; ++p)
@@ -1315,7 +1311,7 @@ static inline X num_quo(X x, X y)
 
 #define CHECK_LIMIT  \
   if(alloc_top > fromspace_limit) { \
-    collect_garbage(A, CURRENT_ARITY);	\
+    collect_garbage(CURRENT_ARITY);	\
   }
 
 #define ENVIRONMENT(len)  { E = env_top; env_top += (len); }
