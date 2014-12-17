@@ -1621,7 +1621,7 @@ static void basic_write_term(FILE *fp, int limit, int quote, X x) {
       int len = DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT;
 
       for(x = deref(slot_ref(x, 1)); 
-	  --len > 0 && objtype(x) == PAIR_TYPE; 
+	  --len > 0 && !is_FIXNUM(x) && objtype(x) == PAIR_TYPE; 
 	  x = deref(slot_ref(x, 1))) {
 	fputs(", ", fp); 
 	basic_write_term(fp, limit, quote, deref(slot_ref(x, 0)));
