@@ -109,6 +109,31 @@ assemble(subtract(R1, R2, R3), S, S) :-	gen('X ', R3, '=num_sub(', R1, ','), gen
 assemble(multiply(R1, R2, R3), S, S) :-	gen('X ', R3, '=num_mul(', R1, ','), gen(R2, ');\n').
 assemble(divide(R1, R2, R3), S, S) :- gen('X ', R3, '=num_div(', R1, ','), gen(R2, ');\n').
 assemble(quotient(R1, R2, R3), S, S) :- gen('X ', R3, '=num_quo(', R1, ','), gen(R2, ');\n').
+assemble(mod(R1, R2, R3), S, S) :- gen('X ', R3, '=num_mod(', R1, ','), gen(R2, ');\n').
+assemble(rem(R1, R2, R3), S, S) :- gen('X ', R3, '=num_rem(', R1, ','), gen(R2, ');\n').
+assemble(bitwise_and(R1, R2, R3), S, S) :- gen('X ', R3, '=num_and(', R1, ','), gen(R2, ');\n').
+assemble(bitwise_or(R1, R2, R3), S, S) :- gen('X ', R3, '=num_or(', R1, ','), gen(R2, ');\n').
+assemble(shift_left(R1, R2, R3), S, S) :- gen('X ', R3, '=num_shl(', R1, ','), gen(R2, ');\n').
+assemble(shift_right(R1, R2, R3), S, S) :- gen('X ', R3, '=num_shr(', R1, ','), gen(R2, ');\n').
+assemble(exponent(R1, R2, R3), S, S) :- gen('X ', R3, '=num_pow(', R1, ','), gen(R2, ');\n').
+
+assemble(bitwise_not(R1, R2), S, S) :- gen('X ', R2, '=num_not(', R1, ');\n').
+assemble(abs(R1, R2), S, S) :- gen('X ', R2, '=num_abs(', R1, ');\n').
+assemble(atan(R1, R2), S, S) :- gen('X ', R2, '=num_atan(', R1, ');\n').
+assemble(ceiling(R1, R2), S, S) :- gen('X ', R2, '=num_ceiling(', R1, ');\n').
+assemble(cos(R1, R2), S, S) :- gen('X ', R2, '=num_cos(', R1, ');\n').
+assemble(exp(R1, R2), S, S) :- gen('X ', R2, '=num_exp(', R1, ');\n').
+assemble(float(R1, R2), S, S) :- gen('X ', R2, '=num_float(', R1, ');\n').
+assemble(float_fractional_part(R1, R2), S, S) :- gen('X ', R2, '=num_frac(', R1, ');\n').
+assemble(float_integer_part(R1, R2), S, S) :- gen('X ', R2, '=num_int(', R1, ');\n').
+assemble(floor(R1, R2), S, S) :- gen('X ', R2, '=num_floor(', R1, ');\n').
+assemble(log(R1, R2), S, S) :- gen('X ', R2, '=num_log(', R1, ');\n').
+assemble(round(R1, R2), S, S) :- gen('X ', R2, '=num_round(', R1, ');\n').
+assemble(sign(R1, R2), S, S) :- gen('X ', R2, '=num_sgn(', R1, ');\n').
+assemble(sin(R1, R2), S, S) :- gen('X ', R2, '=num_sin(', R1, ');\n').
+assemble(sqrt(R1, R2), S, S) :- gen('X ', R2, '=num_sqrt(', R1, ');\n').
+assemble(truncate(R1, R2), S, S) :- gen('X ', R2, '=num_truncate(', R1, ');\n').
+assemble(negate(R1, R2), S, S) :- gen('X ', R2, '=num_negate(', R1, ');\n').
 
 assemble(integer(R), S, S) :- gen('if(!is_FIXNUM(deref(', R, '))) FAIL;\n').
 assemble(number(R), S, S) :- gen('if(!is_number(deref(', R, '))) FAIL;\n').
@@ -118,6 +143,9 @@ assemble(atom(R), S, S) :- gen('if(!is_atom(deref(', R, '))) FAIL;\n').
 assemble(atomic(R), S, S) :- gen('if(!is_atomic(deref(', R, '))) FAIL;\n').
 assemble(compound(R), S, S) :- gen('if(!is_compound(deref(', R, '))) FAIL;\n').
 assemble(float(R), S, S) :- gen('if(!is_FLONUM(deref(', R, '))) FAIL;\n').
+
+assemble(term_less(R1, R2), S, S) :- gen('if(compare_terms(deref(', R1, '),deref(', R2, ')) >= 0) FAIL;\n').
+assemble(term_not_less(R1, R2), S, S) :- gen('if(compare_terms(deref(', R1, '),deref(', R2, ')) < 0) FAIL;\n').
 
 assemble(OP, _, _) :-
 	error(['invalid pseudo instruction: ', OP]).

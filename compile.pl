@@ -238,8 +238,6 @@ compile_body_expression(X >= Y, _, _, D, D, B, B, S1, S2) :-
 compile_body_expression(X =< Y, _, _, D, D, B, B, S1, S2) :-
 	compile_arithmetic_test(X, Y, B, numerically_less_or_equal, S1, S2).
 			
-%XXX
-% @<, @>, @>=, @<=
 
 % foreign call
 compile_body_expression(foreign_call(CALL), _, _, D, D, B1, B2, S1, S2) :-
@@ -256,6 +254,7 @@ compile_body_expression(TERM, TAIL, _, D, D, B1, B2, S1, S2) :-
 	TERM =.. [NAME|ARGS],
 	compile_term_arguments(ARGS, [], DLIST, B1, B2, S1, S),
 	(compile_type_predicate(NAME, DLIST), S2 = S
+	; DLIST = [X, Y], compile_order_predicate(NAME, X, Y), S2 = S
 	; compile_ordinary_call(NAME, TAIL, DLIST, D, S, S2)
 	).
 
@@ -263,7 +262,7 @@ compile_body_expression(TERM, _, _, _, _, _, _, _, _) :-
 	error(['can not compile: ', TERM]).
 
 
-%% compile calls (ordinary or type-predicate)
+%% compile calls (ordinary or type-/order-predicate)
 
 compile_ordinary_call(NAME, TAIL, DLIST, D, S1, S2) :-
 	 gen_label(L, S1, S2),
@@ -286,30 +285,18 @@ type_predicate(float).
 type_predicate(var).
 type_predicate(nonvar).
 
+compile_order_predicate('@<', X, Y) :- emit(term_less(X, Y)).
+compile_order_predicate('@>', X, Y) :- emit(term_less(Y, X)).
+compile_order_predicate('@>=', X, Y) :- emit(term_not_less(X, Y)).
+compile_order_predicate('@=<', X, Y) :- emit(term_not_less(Y, X)).
+
 
 %% helper predicates for arithmetic expressions
 
 compile_arithmetic_test(X, Y, B, OP, S1, S2) :-
-	gensym('T', T1, S1, S3),
-	compile_arithmetic_expression(X, T1, B, S3, S4),
-	gensym('T', T2, S4, S5),
-	compile_arithmetic_expression(Y, T2, B, S5, S2),
+	compile_arithmetic_operation_arguments([X, Y], [T1, T2], B, S1, S2),
 	TERM =.. [OP, T1, T2],
 	emit(TERM).
-
-compile_arithmetic_op(X, Y, DEST, B, OP, S1, S2) :-
-	gensym('T', T1, S1, S3),
-	compile_arithmetic_expression(X, T1, B, S3, S4),
-	gensym('T', T2, S4, S5),
-	compile_arithmetic_expression(Y, T2, B, S5, S2),
-	TERM =.. [OP, T1, T2, DEST],
-	emit(TERM).
-
-compile_arithmetic_expression(X + Y, DEST, B, S1, S2) :- compile_arithmetic_op(X, Y, DEST, B, add, S1, S2).
-compile_arithmetic_expression(X - Y, DEST, B, S1, S2) :- compile_arithmetic_op(X, Y, DEST, B, subtract, S1, S2).
-compile_arithmetic_expression(X * Y, DEST, B, S1, S2) :- compile_arithmetic_op(X, Y, DEST, B, multiply, S1, S2).
-compile_arithmetic_expression(X / Y, DEST, B, S1, S2) :- compile_arithmetic_op(X, Y, DEST, B, divide, S1, S2).
-compile_arithmetic_expression(X // Y, DEST, B, S1, S2) :- compile_arithmetic_op(X, Y, DEST, B, quotient, S1, S2).
 
 compile_arithmetic_expression('_var_'(N), DEST, B, S, S) :-
 	member(N, B),
@@ -320,13 +307,62 @@ compile_arithmetic_expression(X, DEST, _, S1, S2) :-
 	number(X),
 	register_literal(X, N, S1, S2),
 	emit(literal(N, DEST)).
-%XXX
-% trigonometric functions, etc.
+
+compile_arithmetic_expression(EXP, DEST, B, S1, S2) :-
+	functor(EXP, NAME, ARITY),
+	EXP =.. [_|ARGS],
+	arithmetic_operation(NAME, ARITY, OP),
+	compile_arithmetic_operation_arguments(ARGS, DLIST, B, S1, S2),
+	append(DLIST, [DEST], DLIST2),
+	FN =.. [OP|DLIST2],
+	emit(FN).
+
 compile_arithmetic_expression(X, _, _, _, _) :-
 	error(['invalid arithmetic expression: ', X]).
 
+arithmetic_operation(abs, 1).
+arithmetic_operation(atan, 1).
+arithmetic_operation(ceiling, 1).
+arithmetic_operation(cos, 1).
+arithmetic_operation(exp, 1).
+arithmetic_operation(float, 1).
+arithmetic_operation(float_fractional_part, 1).
+arithmetic_operation(float_integer_part, 1).
+arithmetic_operation(floor, 1).
+arithmetic_operation(log, 1).
+arithmetic_operation(mod, 2).
+arithmetic_operation(rem, 2).
+arithmetic_operation(round, 1).
+arithmetic_operation(sign, 1).
+arithmetic_operation(sin, 1).
+arithmetic_operation(sqrt, 1).
+arithmetic_operation(truncate, 1).
 
-%% adding code to database
+arithmetic_operation('+', 2, add).
+arithmetic_operation('/\\', 2, bitwise_and).
+arithmetic_operation('\\', 1, bitwise_not).
+arithmetic_operation('<<', 2, shift_left).
+arithmetic_operation('>>', 2, shift_right).
+arithmetic_operation('\\/', 1, bitwise_or).
+arithmetic_operation('**', 1, exponent).
+arithmetic_operation('/', 2, divide).
+arithmetic_operation('-', 1, negate).
+arithmetic_operation('-', 2, subtract).
+arithmetic_operation('//', 2, quotient).
+arithmetic_operation('*', 2, multiply).
+
+arithmetic_operation(NAME, ARITY, NAME) :- arithmetic_operation(NAME, ARITY).
+
+compile_arithmetic_operation_arguments([ARG], [T], B, S1, S2) :-
+	gensym('T', T, S1, S),
+	compile_arithmetic_expression(ARG, T, B, S, S2).
+
+compile_arithmetic_operation_arguments([ARG1, ARG2], [T1, T2], B, S1, S2) :-
+	compile_arithmetic_operation_arguments([ARG1], [T1], B, S1, S),
+	compile_arithmetic_operation_arguments([ARG2], [T2], B, S, S2).
+
+	
+%% adding code to compiled-code-database
 
 emit(T) :- assertz(code(T)).
 emit(T1, T2) :- emit(T1), emit(T2).
