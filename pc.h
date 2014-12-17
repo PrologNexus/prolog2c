@@ -1249,8 +1249,14 @@ static inline X num_div(X x, X y)
   }					
 
   if(is_FLONUM(x)) {						
-    if(is_FIXNUM(y))						
+    if(is_FIXNUM(y)) {
+#ifndef UNSAFE
+      if(y == word_to_fixnum(0))
+	CRASH("division by zero");
+#endif
+
       return FLONUM(flonum_to_float(x) / fixnum_to_float(y));  
+    }
 
     if(is_FLONUM(y))							
       return FLONUM(flonum_to_float(x) / flonum_to_float(y));		
