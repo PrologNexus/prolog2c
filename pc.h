@@ -358,7 +358,7 @@ static inline int is_atom(X x)
 
 static inline int is_atomic(X x)
 {
-  return x == END_OF_LIST_VAL || is_FIXNUM(x) || is_FLONUM(x) || is_SYMBOL(x);
+  return x == END_OF_LIST_VAL || is_FIXNUM(x) || is_FLONUM(x) || is_SYMBOL(x) || is_PORT(x);
 }
 
 
