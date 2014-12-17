@@ -1213,14 +1213,34 @@ NUMERIC_BINARY_OP(num_add, +)
 NUMERIC_BINARY_OP(num_sub, -)
 NUMERIC_BINARY_OP(num_mul, *)
 
+#define INTEGER_BINARY_OP(name, op)  \
+  static inline X name(X x, X y)		\
+  { x = deref(x); \
+    y = deref(y); \
+    check_fixnum(x); \
+    check_fixnum(y); \
+    return word_to_fixnum(fixnum_to_word(x) op fixnum_to_word(y)); }
+
+INTEGER_BINARY_OP(num_and, &)
+INTEGER_BINARY_OP(num_or, |)
+INTEGER_BINARY_OP(num_shl, <<)
+INTEGER_BINARY_OP(num_shr, >>)
+
+
 static inline X num_div(X x, X y)
 {
   x = deref(x);
   y = deref(y);
 
   if(is_FIXNUM(x)) {
-    if(is_FIXNUM(y))
+    if(is_FIXNUM(y)) {
+#ifndef UNSAFE
+      if(y == word_to_fixnum(0))
+	CRASH("division by zero");
+#endif
+
       return FLONUM(fixnum_to_float(x) / fixnum_to_float(y));	
+    }
 
     if(is_FLONUM(y))						
       return FLONUM(fixnum_to_float(x) / flonum_to_float(y));	
@@ -1246,28 +1266,176 @@ static inline X num_quo(X x, X y)
 {
   x = deref(x);
   y = deref(y);
+  check_fixnum(x);
+  check_fixnum(y);
+
+#ifndef UNSAFE
+  if(y == word_to_fixnum(0))
+    CRASH("division by zero");
+#endif
+
+  return word_to_fixnum(fixnum_to_word(x) / fixnum_to_word(y));
+}
+
+
+static inline X num_rem(X x, X y) 
+{
+  x = deref(x);
+  y = deref(y);
+  check_fixnum(x);
+  check_fixnum(y);
+
+#ifndef UNSAFE
+  if(y == word_to_fixnum(0))
+    CRASH("division by zero");
+#endif
+
+  return word_to_fixnum(fixnum_to_word(x) % fixnum_to_word(y));
+}
+
+
+static inline X num_mod(X x, X y)
+{
+  WORD x2 = fixnum_to_word(check_fixnum(deref(x)));
+  WORD y2 = fixnum_to_word(check_fixnum(deref(y)));
+
+#ifndef UNSAFE
+  if(y2 == 0)
+    CRASH("division by zero");
+#endif
+
+  WORD z = x2 % y2;
+    
+  if(y2 < 0)
+    return z <= 0 ? word_to_fixnum(z) : word_to_fixnum(z + y2);
+  else 
+    return z >= 0 ? word_to_fixnum(z) : word_to_fixnum(z + y2);
+}
+
+
+static inline X num_pow(X x, X y)
+{
+  x = deref(x);
+  y = deref(y);
 
   if(is_FIXNUM(x)) {
     if(is_FIXNUM(y))
-      return word_to_fixnum(fixnum_to_word(x) / fixnum_to_word(y));	
+      return FLONUM(pow(fixnum_to_float(x), fixnum_to_float(y)));	
 
     if(is_FLONUM(y))						
-      return word_to_fixnum(fixnum_to_word(x) / flonum_to_word(y));	
+      return FLONUM(pow(fixnum_to_float(x), flonum_to_float(y)));	
   
     check_number_failed(y);
   }					
 
   if(is_FLONUM(x)) {						
-    if(is_FIXNUM(y))						
-      return word_to_fixnum(flonum_to_word(x) / fixnum_to_word(y));  
+    if(is_FIXNUM(y))
+      return FLONUM(pow(flonum_to_float(x), fixnum_to_float(y)));  
 
     if(is_FLONUM(y))							
-      return word_to_fixnum(flonum_to_word(x) / flonum_to_word(y));		
+      return FLONUM(pow(flonum_to_float(x), flonum_to_float(y)));		
 
     check_number_failed(y);
   }						
   
   check_number_failed(x); 
+}
+
+
+static inline X num_frac(X x)
+{
+  double i;
+  return FLONUM(modf(flonum_to_float(check_type_FLONUM(deref(x))), &i));
+}
+
+
+static inline X num_int(X x)
+{
+  double i;
+  modf(flonum_to_float(check_type_FLONUM(deref(x))), &i);
+  return FLONUM(i);
+}
+
+
+static inline X num_floor(X x) { return FLONUM(floor(flonum_to_float(check_type_FLONUM(deref(x))))); }
+static inline X num_ceiling(X x) { return FLONUM(ceil(flonum_to_float(check_type_FLONUM(deref(x))))); }
+static inline X num_round(X x) { return FLONUM(round(flonum_to_float(check_type_FLONUM(deref(x))))); }
+static inline X num_truncate(X x) { return FLONUM(trunc(flonum_to_float(check_type_FLONUM(deref(x))))); }
+static inline X num_sin(X x) { return FLONUM(sin(flonum_to_float(check_type_FLONUM(deref(x))))); }
+static inline X num_cos(X x) { return FLONUM(cos(flonum_to_float(check_type_FLONUM(deref(x))))); }
+static inline X num_atan(X x) { return FLONUM(atan(flonum_to_float(check_type_FLONUM(deref(x))))); }
+static inline X num_exp(X x) { return FLONUM(exp(flonum_to_float(check_type_FLONUM(deref(x))))); }
+static inline X num_log(X x) { return FLONUM(log(flonum_to_float(check_type_FLONUM(deref(x))))); }
+static inline X num_sqrt(X x) { return FLONUM(sqrt(flonum_to_float(check_type_FLONUM(deref(x))))); }
+
+
+static inline X num_abs(X x)
+{ 
+  x = deref(x);
+
+  // no need to convert to word - we only manipulate the sign
+  if(is_FIXNUM(x))
+    return x < 0 ? (X)(-(WORD)x) : x;
+
+  if(is_FLONUM(x)) {
+    double n = flonum_to_float(x);
+
+    if(n < 0) return FLONUM(-n);
+    
+    return x;
+  }
+
+  check_number_failed(x);
+}
+
+
+static inline X num_sign(X x)
+{ 
+  x = deref(x);
+
+  if(is_FIXNUM(x)) {
+    if(x < 0)
+      return word_to_fixnum(-1);
+
+    if(x > 0) 
+      return word_to_fixnum(1);
+      
+    return word_to_fixnum(0);
+  }
+
+  if(is_FLONUM(x)) {
+    double n = flonum_to_float(x);
+
+    if(n < 0.0) 
+      return FLONUM(-1);
+    
+    if(n > 0.0)
+      return FLONUM(1);
+
+    return FLONUM(0);
+  }
+
+  check_number_failed(x);
+}
+
+
+static inline X num_negate(X x)
+{ 
+  x = deref(x);
+
+  if(is_FIXNUM(x)) 
+    return word_to_fixnum(-fixnum_to_word(x));
+
+  if(is_FLONUM(x))
+    return FLONUM(-flonum_to_float(x));
+
+  check_number_failed(x);
+}
+
+
+static inline X num_not(X x) 
+{ 
+  return word_to_fixnum(~fixnum_to_word(check_fixnum(deref(x))));
 }
 
 
@@ -1372,6 +1540,16 @@ static int debug_hook(X x) { return 1; }
 static inline int write_char(X c) { check_fixnum(c); fputc(fixnum_to_word(c), port_file(standard_output_port)); return 1; }
 
 
+// stream-name
+static char *port_name(X x)
+{
+  PORT_BLOCK *p = (PORT_BLOCK *)x;
+  static CHAR buffer[ 256 ];
+  sprintf(buffer, "<%s-stream>(%p)", p->dir != ZERO ? "input" : "output", p->fp);
+  return buffer;
+}
+
+
 // doesn't quote atoms or respects operators - expect's deref'd datum
 static void basic_write_term(FILE *fp, int limit, int quote, X x) { 
   if(limit == 0) fputs("...", fp);
@@ -1432,11 +1610,9 @@ static void basic_write_term(FILE *fp, int limit, int quote, X x) {
       break;
     }
 
-    case PORT_TYPE: { 
-      PORT_BLOCK *p = (PORT_BLOCK *)x;
-      fprintf(fp, "<%s-stream>(%p)", p->dir != ZERO ? "input" : "output", p->fp);
+    case PORT_TYPE:
+      fputs(port_name(x), fp);
       break;
-    }
 
     case PAIR_TYPE: { 
       fputc('[', fp);
@@ -1579,3 +1755,147 @@ static int command_line_arguments(X var)
 }
 
 
+/// term comparison - returns 0, or positive/negative integer
+
+static int compare_strings(CHAR *str1, WORD len1, CHAR *str2, WORD len2)
+{
+  WORD d = strncmp((CHAR *)objdata(str1), (CHAR *)objdata(str2), len1 < len2 ? len1 : len2);
+  return d == 0 ? len2 - len1 : d;
+}
+
+
+static int compare_terms(X x, X y)
+{
+  WORD xt = is_FIXNUM(x) ? FIXNUM_TYPE : objtype(x);
+  WORD yt = is_FIXNUM(y) ? FIXNUM_TYPE : objtype(y);
+  static int type_order[] = { 0, 3, 4, 4, 2, 4, 1, 0, 5, 5 };
+  WORD d = type_order[ xt & 0x1f ] - type_order[ yt & 0x1f ];
+
+  if(d != 0) return d;
+
+  switch(xt) {
+  case FIXNUM_TYPE: return word_to_fixnum(y) - word_to_fixnum(x);
+
+  case END_OF_LIST_TYPE: 
+    switch(yt) {
+    case END_OF_LIST_TYPE: return 0;
+
+    case SYMBOL_TYPE:
+      { X str = slot_ref(y, 1);
+	return compare_strings("[]", 2, (CHAR *)objdata(str), string_length(str)); }
+
+    case PORT_TYPE: return '<' - '[';
+    }
+
+  case SYMBOL_TYPE:
+    switch(yt) {
+    case SYMBOL_TYPE:
+      { X str1 = slot_ref(x, 1);
+	X str2 = slot_ref(y, 1);
+	WORD len1 = string_length(str1);
+	WORD len2 = string_length(str2);
+	return compare_strings((CHAR *)objdata(str1), len1, (CHAR *)objdata(str2), len2); }
+
+    case END_OF_LIST_TYPE:
+      { X str = slot_ref(x, 1);
+	return compare_strings((CHAR *)objdata(str), string_length(str), "[]", 2); }
+      
+    case PORT_TYPE:
+      { char *buf = port_name(y);
+	X str = slot_ref(x, 1);
+	return compare_strings((CHAR *)objdata(str), string_length(str), buf, strlen(buf)); }
+    }
+
+  case PORT_TYPE:
+    switch(yt) {
+    case END_OF_LIST_TYPE:
+      { char *buf = port_name(x);
+	return compare_strings(buf, strlen(buf), "[]", 2); }
+      
+    case SYMBOL_TYPE:
+      { char *buf = port_name(x);
+	X str = slot_ref(y, 1);
+	return compare_strings(buf, strlen(buf), (CHAR *)objdata(str), string_length(str)); }
+      
+    case PORT_TYPE:
+      { char *buf1 = port_name(x);
+	char *buf2 = port_name(y);
+	return compare_strings(buf1, strlen(buf1), buf2, strlen(buf2)); }
+    }
+
+  case FLONUM_TYPE: 
+    if(flonum_to_float(x) < flonum_to_float(y)) return -1;
+      
+    if(flonum_to_float(x) > flonum_to_float(y)) return 1;
+      
+    return 0;
+    
+  case VAR_TYPE:
+    return slot_ref(y, 1) - slot_ref(x, 1);
+
+  case STRUCTURE_TYPE:
+    switch(yt) {
+    case STRUCTURE_TYPE:
+      { WORD s = objsize(y);
+	d = s - objsize(x);
+
+	if(d != 0) return d;
+      
+	d = compare_terms(slot_ref(x, 0), slot_ref(y, 0));
+    
+	if(d != 0) return d;
+
+	for(int i = 1; i <= s; ++i) {
+	  d = compare_terms(slot_ref(x, i), slot_ref(y, i));
+
+	  if(d != 0) return d;
+	}
+
+	return 0; }
+
+    case PAIR_TYPE:
+      d = 2 - objsize(x);
+
+      if(d != 0) return d;
+
+      d = compare_terms(slot_ref(x, 0), (X)&eol_atom);
+
+      if(d != 0) return d;
+
+      d = compare_terms(slot_ref(x, 1), slot_ref(y, 0));
+
+      if(d != 0) return d;
+
+      return compare_terms(slot_ref(x, 2), slot_ref(y, 1));
+
+    }
+
+  case PAIR_TYPE:
+    switch(yt) {
+    case STRUCTURE_TYPE:
+      d = objsize(y) - 2;
+
+      if(d != 0) return d;
+
+      d = compare_terms((X)&eol_atom, slot_ref(y, 0));
+
+      if(d != 0) return d;
+
+      d = compare_terms(slot_ref(x, 0), slot_ref(x, 1));
+
+      if(d != 0) return d;
+
+      return compare_terms(slot_ref(x, 1), slot_ref(y, 2));
+
+    case PAIR_TYPE:
+      d = compare_terms(slot_ref(x, 0), slot_ref(y, 0));
+
+      if(d != 0) return d;
+
+      return compare_terms(slot_ref(x, 1), slot_ref(y, 1));
+
+    }
+  }
+
+  CRASH("compare_terms");
+}
