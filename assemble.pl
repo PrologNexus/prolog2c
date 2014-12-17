@@ -215,7 +215,7 @@ generate_static_literals([X|MORE], I, IF, [IS|IMORE], S1, S2) :-
 	atomic_list_concat([IF, '_', I], IS1),
 	atomic_list_concat(['literal_', IS1], IS),
 	generate_static_literal(IS1, X, S1, S),
-	I2 = I + 1,
+	I2 is I + 1,
 	generate_static_literals(MORE, I2, IF, IMORE, S, S2).
 
 
