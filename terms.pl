@@ -1,7 +1,7 @@
 %%% operations on terms
 
 
-%% gather list of variables, assigning indices by unifying each var with _var_(INDEX)
+%% gather list of variables, assigning indices by unifying each var with '_var_'(INDEX)
 
 gather_variables(X, VARS) :- gather_variables(X, 0, _, VARS).
 					      
@@ -32,3 +32,18 @@ literal_term(X) :- atomic(X), !.
 literal_term(X) :-
 	X =.. LST,
 	literal_term(LST).
+
+
+%% collect instances of '_var_'(N)
+
+collect_var_instances('_var_'(N), [N]) :- !.
+collect_var_instances(X, []) :- atomic(X), !.
+collect_var_instances(X, NS) :-
+	X =.. [_|ARGS],
+	collect_var_instances(ARGS, [], NS).
+
+collect_var_instances([], NS, NS).
+collect_var_instances([X|Y], NS1, NS) :-
+	collect_var_instances(X, NS2),
+	append(NS1, NS2, NS3),
+	collect_var_instances(Y, NS3, NS).

@@ -126,10 +126,15 @@ compile_body_expression((X -> Y; Z), TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
 	emit(add_choice_point(L1), push_choice_points),
 	compile_body_expression(X, nontail, LAST, D1, D3, B1, B3, S4, S5),
 	emit(pop_choice_points),
+	collect_var_instances(Y, BY),
+	collect_var_instances(Z, BZ),
 	compile_body_expression(Y, TAIL, LAST, D3, D4, B3, B4, S5, S6),
+	make_unbound_vars(BY, BZ, S6, S7),
 	emit(jump(L2), label(L1)),
-	compile_body_expression(Z, TAIL, LAST, D3, D5, B4, B2, S6, S2),
+	compile_body_expression(Z, TAIL, LAST, D3, D5, B3, B5, S7, S8),
+	make_unbound_vars(BZ, BY, S8, S2),
 	emit(label(L2)),
+	union(B4, B5, B2),
 	both_determinate(D4, D5, D2).
 
 % disjunction
@@ -137,10 +142,15 @@ compile_body_expression((X; Y), TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
 	emit(add_choice_point(L1)),
-	compile_body_expression(X, nontail, LAST, D1, D3, B1, B, S4, S5),
+	collect_var_instances(X, BX),
+	collect_var_instances(Y, BY),
+	compile_body_expression(X, nontail, LAST, D1, D3, B1, B3, S4, S5),
+	make_unbound_vars(BX, BY, S5, S6),
 	emit(jump(L2), label(L1)),
-	compile_body_expression(Y, TAIL, LAST, D1, D4, B, B2, S5, S2),
+	compile_body_expression(Y, TAIL, LAST, D1, D4, B1, B4, S6, S7),
+	make_unbound_vars(BY, BX, S7, S2),
 	emit(label(L2)),
+	union(B3, B4, B2),
 	both_determinate(D3, D4, D2).
 
 % cut
@@ -383,3 +393,16 @@ register_literal(TERM, N, S, S) :- clause(literal(N, TERM), _), !.
 register_literal(TERM, N, S1, S2) :-
 	gen_literal_index(N, S1, S2),
 	assertz(literal(N, TERM)).
+
+
+%% create variables that are in the 2nd set but not in the first
+
+make_unbound_vars(_, [], S, S).
+make_unbound_vars(VS, [X|Y], S1, S) :-
+	\+member(X, VS),
+	!,
+	gensym('T', T, S1, S2),
+	emit(make_variable(T), assign(X, T)),
+	make_unbound_vars(VS, Y, S2, S).
+make_unbound_vars(VS, [_|Y], S1, S) :-
+	make_unbound_vars(VS, Y, S1, S).
