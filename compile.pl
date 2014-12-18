@@ -25,13 +25,12 @@ compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, S1, S2) :-
 	!,			% avoid match of next clause
 	I2 is I + 1,
 	clause_label(NAME, ARITY, I2, L),
-	compile_choice_point(LAST, L),
+	compile_redo(LAST, L),
 	gather_variables([HEAD, BODY], VARS),
 	length(VARS, N),
 	(N > 0 -> emit(environment(N)); true),
 	compile_head(HEAD, BOUND, S1, S),
-	compile_body(BODY, nondet, LAST, BOUND, S, S2),
-	emit(exit).
+	compile_body(BODY, nondet, LAST, BOUND, S, S2).
 % fact
 compile_clause(HEAD, NA, I, M, S1, S2) :-
 	compile_clause((HEAD :- true), NA, I, M, S1, S2).
@@ -45,8 +44,8 @@ show_compiled_clause(_).
 %% utilities
 
 % perform CP-handling for a particular clause-position (no CP needed in last clause)
-compile_choice_point(notlast, L) :- emit(add_choice_point(L)).
-compile_choice_point(last, _) :- emit(pop_arguments).
+compile_redo(notlast, L) :- emit(set_redo(L)).
+compile_redo(last, _) :- emit(no_redo).
 
 % generate clause label from name/arity + index
 clause_label(N, A, I, L) :-
@@ -112,7 +111,9 @@ compile_term_arguments([X|MORE], DL1, DL2, B1, B2, S1, S2) :-
 %% compile body
 
 compile_body(BODY, DET, LAST, BOUND, S1, S2) :-
-	compile_body_expression(BODY, tail, LAST, DET, _, BOUND, _, S1, S2).
+	compile_body_expression(BODY, tail, LAST, DET, DET2, BOUND, _, S1, S2),
+	(DET2 = det -> emit(determinate_exit); emit(exit)).
+
 
 % conjunction
 compile_body_expression((X, Y), TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
@@ -123,14 +124,14 @@ compile_body_expression((X, Y), TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
 compile_body_expression((X -> Y; Z), TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
-	emit(add_choice_point(L1), push_choice_points),
+	emit(save_choice_points, push_choice_point(L1)),
 	compile_body_expression(X, nontail, LAST, D1, D3, B1, B3, S4, S5),
-	emit(pop_choice_points),
+	emit(restore_choice_points),
 	collect_var_instances(Y, BY),
 	collect_var_instances(Z, BZ),
 	compile_body_expression(Y, TAIL, LAST, D3, D4, B3, B4, S5, S6),
 	make_unbound_vars(BY, BZ, S6, S7),
-	emit(jump(L2), label(L1)),
+	emit(jump(L2), label(L1), restore_choice_points),
 	compile_body_expression(Z, TAIL, LAST, D3, D5, B3, B5, S7, S8),
 	make_unbound_vars(BZ, BY, S8, S2),
 	emit(label(L2)),
@@ -141,12 +142,12 @@ compile_body_expression((X -> Y; Z), TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
 compile_body_expression((X; Y), TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
-	emit(add_choice_point(L1)),
+	emit(copy_choice_point(L1)),
 	collect_var_instances(X, BX),
 	collect_var_instances(Y, BY),
 	compile_body_expression(X, nontail, LAST, D1, D3, B1, B3, S4, S5),
 	make_unbound_vars(BX, BY, S5, S6),
-	emit(jump(L2), label(L1)),
+	emit(jump(L2), label(L1), no_redo, pop_choice_point),
 	compile_body_expression(Y, TAIL, LAST, D1, D4, B1, B4, S6, S7),
 	make_unbound_vars(BY, BX, S7, S2),
 	emit(label(L2)),
@@ -154,10 +155,8 @@ compile_body_expression((X; Y), TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
 	both_determinate(D3, D4, D2).
 
 % cut
-compile_body_expression(!, _, last, _, det, B, B, S, S) :-
-	emit(remove_choice_points).
-compile_body_expression(!, _, notlast, _, det, B, B, S, S) :-
-	emit(remove_choice_points, pop_arguments).
+compile_body_expression(!, _, _, _, det, B, B, S, S) :-
+	emit(cut).
 
 % true
 compile_body_expression(true, _, _, D, D, B, B, S, S).
@@ -170,14 +169,14 @@ compile_body_expression(fail, _, _, D, D, B, B, S, S) :-
 compile_body_expression(repeat, _, _, det, det, B, B, S, S).
 compile_body_expression(repeat, _, _, D, D, B, B, S1, S2) :-
 	gen_label(L, S1, S2),
-	emit(label(L), add_choice_point(L)).
+	emit(set_redo(L), label(L)).
 	
 % not
 compile_body_expression(\+X, _, LAST, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
-	emit(push_choice_points, add_choice_point(L1)),
+	emit(save_choice_points, push_choice_point(L1)),
 	compile_body_expression(X, nontail, LAST, D1, D2, B1, B2, S3, S2),
-	emit(pop_choice_points, fail, label(L1)).
+	emit(restore_choice_points, fail, label(L1), restore_choice_points).
 
 % if-then
 compile_body_expression(X -> Y, TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
@@ -276,7 +275,7 @@ compile_body_expression(TERM, _, _, _, _, _, _, _, _) :-
 
 compile_ordinary_call(NAME, TAIL, DLIST, D, S1, S2) :-
 	 gen_label(L, S1, S2),
-	 (TAIL/D = tail/det -> emit(tailcall(NAME, DLIST))
+	 (TAIL/D = tail/det -> emit(determinate_call(NAME, DLIST))
 	 ; emit(call(NAME, DLIST, L))
 	 ).
 
@@ -340,8 +339,6 @@ arithmetic_operation(float_fractional_part, 1).
 arithmetic_operation(float_integer_part, 1).
 arithmetic_operation(floor, 1).
 arithmetic_operation(log, 1).
-arithmetic_operation(mod, 2).
-arithmetic_operation(rem, 2).
 arithmetic_operation(round, 1).
 arithmetic_operation(sign, 1).
 arithmetic_operation(sin, 1).
@@ -360,6 +357,7 @@ arithmetic_operation('-', 1, negate).
 arithmetic_operation('-', 2, subtract).
 arithmetic_operation('//', 2, quotient).
 arithmetic_operation('*', 2, multiply).
+arithmetic_operation('\\\\', 2, rem).
 
 arithmetic_operation(NAME, ARITY, NAME) :- arithmetic_operation(NAME, ARITY).
 

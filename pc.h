@@ -41,10 +41,6 @@
 # define HEAP_RESERVE 20
 #endif
 
-#ifndef CONTROL_STACK_SIZE
-# define CONTROL_STACK_SIZE 10000
-#endif
-
 #ifndef TRAIL_STACK_SIZE
 # define TRAIL_STACK_SIZE 10000
 #endif
@@ -63,6 +59,10 @@
 
 #ifndef ARGUMENT_STACK_SIZE
 # define ARGUMENT_STACK_SIZE 10000
+#endif
+
+#ifndef IFTHEN_STACK_SIZE
+# define IFTHEN_STACK_SIZE 1000
 #endif
 
 #define DEREF_STACK_SIZE  100
@@ -147,8 +147,7 @@ typedef struct PORT_BLOCK {
 #define PREVIOUS_SYMBOL  END_OF_LIST_VAL
 
 typedef struct CHOICE_POINT {
-  X *T, *R, *E, *env_top, *arg_top, *A;
-  void **S;
+  X *T, *R, *E, *A, *env_top, *arg_top;
   struct CHOICE_POINT *C0;
   void *P;
 } CHOICE_POINT;
@@ -246,6 +245,8 @@ static BLOCK END_OF_LIST_VAL_BLOCK = { END_OF_LIST_TAG, {}};
 
 #define END_OF_LIST_VAL  ((X)(&END_OF_LIST_VAL_BLOCK))
 
+static STRING_BLOCK dot_name = { STRING_TYPE|3, "." };
+static BLOCK dot_atom = { SYMBOL_TYPE|3, { &dot_name, NULL, NULL } };
 
 static PORT_BLOCK default_input_port = { PORT_TAG|4, NULL, ONE, ZERO, ZERO };
 static PORT_BLOCK default_output_port = { PORT_TAG|4, NULL, ZERO, ZERO, ZERO };
@@ -264,7 +265,6 @@ static int variable_counter = 0;
 static X environment_stack[ ENVIRONMENT_STACK_SIZE ];
 static X argument_stack[ ARGUMENT_STACK_SIZE ];
 static X trail_stack[ TRAIL_STACK_SIZE ];
-static void *control_stack[ CONTROL_STACK_SIZE ];
 static X *trail_top, *env_top, *arg_top;
 static CHOICE_POINT choice_point_stack[ CHOICE_POINT_STACK_SIZE ];
 static FINALIZER *active_finalizers = NULL, *free_finalizers = NULL;
@@ -272,6 +272,7 @@ static WORD gc_count = 0;
 static char *mmapped_heap = NULL;
 static char **global_argv;
 static int global_argc;
+static void *ifthen_stack[ IFTHEN_STACK_SIZE ], **ifthen_top = ifthen_stack;
 
 static CHAR *type_names[] = { 
   "invalid", "fixnum", "null", "symbol", "flonum", "stream", "variable", "string", "structure", "pair"
@@ -285,7 +286,7 @@ static CHAR *type_names[] = {
 /// debugging and termination
 
 #define OUTPUT(...)  { fflush(stdout); fprintf(stderr, __VA_ARGS__); } 
-#define CRASH(...)   { OUTPUT(__VA_ARGS__); crash_hook(); exit(1); }
+#define CRASH(...)   { fflush(stdout); fprintf(stderr, "\n" __VA_ARGS__); fputc('\n', stderr); crash_hook(); exit(1); }
 
 #ifdef UNSAFE
 # define NDEBUG
@@ -390,7 +391,7 @@ static inline int is_in_fixnum_range(WORD n) {
 #define port_file(p)  (((PORT_BLOCK *)(p))->fp)
 
 
-static void write_barrier_error() { CRASH("assignment to non-mutable data detected\n"); }
+static void write_barrier_error() { CRASH("assignment to non-mutable data detected"); }
 
 
 static inline X fill_block(X x, X y, WORD from, WORD to) 
@@ -446,10 +447,10 @@ static inline X copy_string(X src, WORD srcp, X dest, WORD destp, WORD len)
 static void check_type_failed(WORD t, X x)
 {
   if(is_FIXNUM(x))
-    CRASH("type check failed - expected type %s but got fixnum\n", type_name(t));
+    CRASH("type check failed - expected type %s but got fixnum", type_name(t));
   
   if(objtype(x) != t)
-    CRASH("type check failed - expected type %s but got type %s\n", type_name(t), type_name(objtype(x)));
+    CRASH("type check failed - expected type %s but got type %s", type_name(t), type_name(objtype(x)));
 }
 
 
@@ -477,7 +478,7 @@ static inline X check_fixnum(X x)
 
 static void check_number_failed(X x)
 {
-  CRASH("type check failed - expected number, but got %s\n", type_name(objtype(x)));
+  CRASH("type check failed - expected number, but got %s", type_name(objtype(x)));
 }
 
 
@@ -495,7 +496,7 @@ static inline X check_number(X x)
 static void check_integer_failed(X x)
 {
   // x is not a fixnum, so using objtype is safe
-  CRASH("type check failed - expected integer, but got %s\n", type_name(objtype(x)));
+  CRASH("type check failed - expected integer, but got %s", type_name(objtype(x)));
 }
 
 
@@ -522,7 +523,7 @@ static inline X check_integer(X x)
 
 static void check_atomic_failed(X x)
 {
-  CRASH("type check failed - expected atomic, but got %s\n", type_name(objtype(x)));
+  CRASH("type check failed - expected atomic, but got %s", type_name(objtype(x)));
 }
 
 
@@ -541,7 +542,7 @@ static inline WORD check_index(X x, WORD i)
 {
 #ifndef UNSAFE
   if(i < 0 || i >= objsize(x))
-    CRASH("index out of range - index is " WORD_OUTPUT_FORMAT ", size is " WORD_OUTPUT_FORMAT "\n", i, objsize(x)); 
+    CRASH("index out of range - index is " WORD_OUTPUT_FORMAT ", size is " WORD_OUTPUT_FORMAT, i, objsize(x)); 
 #endif
 
   return i;
@@ -554,8 +555,7 @@ static inline WORD check_index_STRING(X x, WORD i)
   WORD len = string_length(x);
 
   if(i < 0 || i >= len)
-    CRASH("string index out of range - index is " WORD_OUTPUT_FORMAT ", size is " WORD_OUTPUT_FORMAT "\n",
-	  i, len); 
+    CRASH("string index out of range - index is " WORD_OUTPUT_FORMAT ", size is " WORD_OUTPUT_FORMAT, i, len); 
 #endif
 
   return i;
@@ -569,7 +569,7 @@ static inline X check_range(X x, WORD i, WORD j)
 
   if(i < 0 || i > s || j < 0 || j > s)	      
     CRASH("index out of range - range is " WORD_OUTPUT_FORMAT "..." WORD_OUTPUT_FORMAT ", size is " 
-	  WORD_OUTPUT_FORMAT "\n", i, j, s); 
+	  WORD_OUTPUT_FORMAT, i, j, s); 
 #endif
 
   return x;
@@ -583,7 +583,7 @@ static inline X check_range_STRING(X x, WORD i, WORD j)
 
   if(i < 0 || i > s || j < 0 || j > s) 
     CRASH("string index out of range - range is " WORD_OUTPUT_FORMAT "..." WORD_OUTPUT_FORMAT ", size is " 
-	  WORD_OUTPUT_FORMAT "\n", i, j, s); 
+	  WORD_OUTPUT_FORMAT, i, j, s); 
 #endif
 
   return x;
@@ -611,7 +611,7 @@ static inline X check_input_port(X x)
   check_type_PORT(x);
   
   if(slot_ref(x, 1) == ZERO)
-    CRASH("not an input-port\n");
+    CRASH("not an input-port");
 #endif
 
   return x;
@@ -624,7 +624,7 @@ static inline X check_output_port(X x)
   check_type_PORT(x);
 
   if(slot_ref(x, 1) != ZERO)
-    CRASH("not an output-port\n");
+    CRASH("not an output-port");
 #endif
 
   return x;
@@ -765,7 +765,7 @@ static void collect_garbage(int args)
       while(size-- > 0)
 	mark1(scan_ptr++);
 
-      ASSERT(scan_ptr < tospace_end, "scan_ptr exceeded fromspace\n");
+      ASSERT(scan_ptr < tospace_end, "scan_ptr exceeded fromspace");
     }
   }
 
@@ -813,7 +813,7 @@ static void collect_garbage(int args)
   ++gc_count;
   
   if(tospace_top >= fromspace_limit) 
-    CRASH("heap exhausted\n");				
+    CRASH("heap exhausted");				
 
   // check finalizers
   FINALIZER *prev = NULL;
@@ -972,15 +972,15 @@ static void initialize(int argc, char *argv[])
     int fd = open(mmapped_heap, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 
     if(fd == -1) 
-      CRASH("unable to open heap file: %s\n", strerror(errno));
+      CRASH("unable to open heap file: %s", strerror(errno));
 
     if(ftruncate(fd, heapsize) == -1)
-      CRASH("unable to create heap file: %s\n", strerror(errno));
+      CRASH("unable to create heap file: %s", strerror(errno));
 
     fromspace = mmap(NULL, heapsize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
     if(fromspace == MAP_FAILED) 
-      CRASH("unable to map heap file into memory: %s\n", strerror(errno));
+      CRASH("unable to map heap file into memory: %s", strerror(errno));
 
     tospace = (X *)((WORD)fromspace + heapsize / 2);
   }
@@ -1013,7 +1013,7 @@ static void terminate(int code)
 }
 
 
-/// variable handling
+/// variable + trail handling
 
 static inline X make_var()
 {
@@ -1046,7 +1046,7 @@ static X deref(X val)
 
 #ifndef UNSAFE
     if(sp >= stack + DEREF_STACK_SIZE)
-      CRASH("deref-stack overflow\n");
+      CRASH("deref-stack overflow");
 #endif
   }
 }
@@ -1056,6 +1056,7 @@ static void unwind_trail(X *tp)
 {
   while(trail_top != tp) {
     BLOCK *var = (BLOCK *)(*(--trail_top));
+    //DRIBBLE("[detrail: _" WORD_OUTPUT_FORMAT "]\n", fixnum_to_word(slot_ref((X)var, 1)));
     SLOT_SET(var, 0, var);
   }
 }
@@ -1065,11 +1066,186 @@ static inline void push_trail(X var)
 {
 #ifndef UNSAFE
   if(trail_top >= trail_stack + TRAIL_STACK_SIZE)
-    CRASH("trail-stack overflow.\n");
+    CRASH("trail-stack overflow.");
 #endif
 
   *(trail_top++) = var;
 }
+
+
+/// basic I/O 
+
+// stream-name
+static char *port_name(X x)
+{
+  PORT_BLOCK *p = (PORT_BLOCK *)x;
+  static CHAR buffer[ 256 ];
+  sprintf(buffer, "<%s-stream>(%p)", p->dir != ZERO ? "input" : "output", p->fp);
+  return buffer;
+}
+
+
+// doesn't quote atoms or respects operators - expect's deref'd datum
+static void basic_write_term(FILE *fp, int limit, int quote, X x) { 
+  if(limit == 0) fputs("...", fp);
+  else if(is_FIXNUM(x)) 
+    fprintf(fp, WORD_OUTPUT_FORMAT, fixnum_to_word(x));
+  else {
+    switch(objtype(x)) {
+    case FLONUM_TYPE:
+      fprintf(fp, FLOAT_OUTPUT_FORMAT, flonum_to_float(x));
+      break;
+
+    case END_OF_LIST_TYPE:
+      fputs("[]", fp);
+      break;
+
+    case VAR_TYPE:
+      fprintf(fp, "_" WORD_OUTPUT_FORMAT, fixnum_to_word(slot_ref(x, 1)));
+      break;
+
+    case SYMBOL_TYPE: {
+      X str = slot_ref(x, 0);
+      char *name = (char *)objdata(str);
+      WORD len = string_length(str);
+      int q = 0;
+
+      if(quote) {
+	for(int i = 0; i < len; ++i) {
+	  if((i == 0 && !islower(name[ i ])) || (name[ i ] != '_' && !isalpha(name[ i ]) && !isdigit(name[ i ]))) {
+	    q = 1;
+	    break;
+	  }
+	}
+      }
+      
+      if(q) { 
+	fputc('\'', fp);
+
+	while(len--) {
+	  char c = *(name++);
+	  
+	  switch(c) {
+	  case '\n': fputs("\\n", fp); break;
+	  case '\r': fputs("\\r", fp); break;
+	  case '\t': fputs("\\t", fp); break;
+	  default:
+	    if(c < 32 || c > 127) 
+	      fprintf(fp, "\\x%02x", c);
+	    else 
+	      fputc(c, fp);
+	  }
+	}
+
+	fputc('\'', fp);
+      }
+      else 
+	fprintf(fp, "%s", name);
+
+      break;
+    }
+
+    case PORT_TYPE:
+      fputs(port_name(x), fp);
+      break;
+
+    case PAIR_TYPE: { 
+      fputc('[', fp);
+      --limit;
+      basic_write_term(fp, limit, quote, deref(slot_ref(x, 0)));
+      int len = DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT;
+
+      for(x = deref(slot_ref(x, 1)); 
+	  --len > 0 && !is_FIXNUM(x) && objtype(x) == PAIR_TYPE; 
+	  x = deref(slot_ref(x, 1))) {
+	fputs(", ", fp); 
+	basic_write_term(fp, limit, quote, deref(slot_ref(x, 0)));
+      }
+
+      if(x == END_OF_LIST_VAL)
+	fputc(']', fp);
+      else if(len == 0)
+	fputs("|...]", fp);
+      else {
+	fputc('|', fp);
+	basic_write_term(fp, limit, quote, deref(x));
+	fputc(']', fp);
+      }
+
+      break;
+    }
+
+    case STRUCTURE_TYPE: {
+      --limit;
+      basic_write_term(fp, limit, quote, slot_ref(x, 0));
+      fputc('(', fp);
+      WORD len = objsize(x);
+      
+      for(int i = 1; i < len; ++i) {
+	if(i > 1) 
+	  fputs(", ", fp);
+
+	basic_write_term(fp, limit, quote, deref(slot_ref(x, i)));
+      }
+
+      fputc(')', fp);
+      break;
+    }
+
+    default:
+      fprintf(fp, "<object of unknown type %p:" WORD_OUTPUT_FORMAT ">", (void *)x, objtype(x));
+    }
+  }
+}
+
+
+// debugging and tracing support
+
+static void write_hook(X x)
+{
+  basic_write_term(stdout, 99999, 1, deref(x));
+  putchar('\n');
+}
+
+
+static void trace_write(char *title, char *name, int arity, X *A, CHOICE_POINT *C)
+{
+  FILE *fp = port_file(standard_error_port);
+
+  fflush(port_file(standard_output_port));
+  fprintf(fp, "[(%d/%d) %s: %s", (int)(C - choice_point_stack), 
+	  (int)(arg_top - argument_stack), title, name);
+
+  if(arity > 0) {
+    fputc('(', fp);
+
+    for(int i = 0; i < arity; ++i) {
+      if(i > 0)
+	fputs(", ", fp);
+
+      basic_write_term(fp, TRACE_DEBUG_WRITE_LIMIT, 1, deref(A[ i ]));
+    }
+    
+    fputc(')', fp);
+  }
+
+  fputs("]\n", fp);
+}
+
+
+#ifdef TRACE
+# define TRACE_ENTER(name, arity)  trace_write("CALL", name, arity, A, C)
+# define TRACE_REDO(name, arity)   trace_write("REDO", name, arity, A, C)
+# define TRACE_EXIT(name, arity)   trace_write("EXIT", name, arity, A, C)
+# define TRACE_FAIL(name, arity)   { if(C0 == C) trace_write("FAIL", name, arity, A, C); }
+# define TRACE_DETERMINATE_CALL(name, arity)  trace_write("TAIL", name, arity, A, C);
+#else
+# define TRACE_ENTER(name, arity)
+# define TRACE_REDO(name, arity)
+# define TRACE_EXIT(name, arity)
+# define TRACE_FAIL(name, arity)
+# define TRACE_DETERMINATE_CALL(name, arity)
+#endif
 
 
 /// unification
@@ -1089,12 +1265,28 @@ static int unify1(X x, X y)
   WORD yt = is_FIXNUM(y) ? FIXNUM_TYPE : objtype(y);
 
   if(xt == VAR_TYPE) {
+    /*
+    if(verbose) {
+      DRIBBLE("[binding _" WORD_OUTPUT_FORMAT " <- ", fixnum_to_word(slot_ref(x, 1)));
+      basic_write_term(stderr, 9999, 1, y);
+      fputs("]\n", stderr);
+    }
+    */
+
     SLOT_SET(x, 0, y);
     push_trail(x);
     return 1;
   }
 
   if(yt == VAR_TYPE) {
+    /*
+    if(verbose) {
+      DRIBBLE("[binding _" WORD_OUTPUT_FORMAT " <- ", fixnum_to_word(slot_ref(y, 1)));
+      basic_write_term(stderr, 9999, 1, x);
+      fputs("]\n", stderr);
+    }
+    */
+
     SLOT_SET(y, 0, x);
     push_trail(y);
     return 1;
@@ -1155,16 +1347,6 @@ static X make_term(int arity, X functor, ...)
 
 
 #define make_pair    PAIR
-
-
-/// comparisons
-
-static inline int is_identical(X x, X y)
-{
-  if(x == y) return 1;
-  
-  return deref(x) == deref(y);
-}
 
 
 /// numerical operations
@@ -1445,275 +1627,281 @@ static inline X num_not(X x)
 }
 
 
+/// term comparison
+
+static inline int is_identical(X x, X y)
+{
+  if(x == y) return 1;
+  
+  return deref(x) == deref(y);
+}
+
+
+static inline int compare_strings(CHAR *str1, WORD len1, CHAR *str2, WORD len2)
+{
+  WORD d = strncmp(str1, str2, len1 < len2 ? len1 : len2);
+  return d == 0 ? len2 - len1 : -d;
+}
+
+
+static int compare_terms(X x, X y)
+{
+  WORD xt = is_FIXNUM(x) ? FIXNUM_TYPE : objtype(x);
+  WORD yt = is_FIXNUM(y) ? FIXNUM_TYPE : objtype(y);
+  static int type_order[] = { 0, 3, 4, 4, 2, 4, 1, 0, 5, 5 };
+  WORD d = type_order[ yt & 0x1f ] - type_order[ xt & 0x1f ];
+
+  if(d != 0) return d;
+
+  switch(xt) {
+  case FIXNUM_TYPE: return fixnum_to_word(y) - fixnum_to_word(x);
+
+  case END_OF_LIST_TYPE: 
+    switch(yt) {
+    case END_OF_LIST_TYPE: return 0;
+
+    case SYMBOL_TYPE:
+      { X str = slot_ref(y, 0);
+	return compare_strings("[]", 2, (CHAR *)objdata(str), string_length(str)); }
+
+    case PORT_TYPE: return '<' - '[';
+    }
+
+  case SYMBOL_TYPE:
+    switch(yt) {
+    case SYMBOL_TYPE:
+      { X str1 = slot_ref(x, 0);
+	X str2 = slot_ref(y, 0);
+	WORD len1 = string_length(str1);
+	WORD len2 = string_length(str2);
+	return compare_strings((CHAR *)objdata(str1), len1, (CHAR *)objdata(str2), len2); }
+
+    case END_OF_LIST_TYPE:
+      { X str = slot_ref(x, 0);
+	return compare_strings((CHAR *)objdata(str), string_length(str), "[]", 2); }
+      
+    case PORT_TYPE:
+      { char *buf = port_name(y);
+	X str = slot_ref(x, 0);
+	return compare_strings((CHAR *)objdata(str), string_length(str), buf, strlen(buf)); }
+    }
+
+  case PORT_TYPE:
+    switch(yt) {
+    case END_OF_LIST_TYPE:
+      { char *buf = port_name(x);
+	return compare_strings(buf, strlen(buf), "[]", 2); }
+      
+    case SYMBOL_TYPE:
+      { char *buf = port_name(x);
+	X str = slot_ref(y, 0);
+	return compare_strings(buf, strlen(buf), (CHAR *)objdata(str), string_length(str)); }
+      
+    case PORT_TYPE:
+      { char *buf1 = port_name(x);
+	char *buf2 = port_name(y);
+	return compare_strings(buf1, strlen(buf1), buf2, strlen(buf2)); }
+    }
+
+  case FLONUM_TYPE: 
+    if(flonum_to_float(x) < flonum_to_float(y)) return 1;
+      
+    if(flonum_to_float(x) > flonum_to_float(y)) return -1;
+      
+    return 0;
+    
+  case VAR_TYPE:
+    return slot_ref(y, 1) - slot_ref(x, 1);
+
+  case STRUCTURE_TYPE:
+    switch(yt) {
+    case STRUCTURE_TYPE:
+      { WORD s = objsize(y);
+	d = s - objsize(x);
+
+	if(d != 0) return d;
+      
+	d = compare_terms(slot_ref(x, 0), slot_ref(y, 0));
+    
+	if(d != 0) return d;
+
+	for(int i = 1; i < s; ++i) {
+	  d = compare_terms(slot_ref(x, i), slot_ref(y, i));
+
+	  if(d != 0) return d;
+	}
+
+	return 0; }
+
+    case PAIR_TYPE:
+      d = 3 - objsize(x);
+
+      if(d != 0) return d;
+
+      d = compare_terms(slot_ref(x, 0), (X)&dot_atom);
+
+      if(d != 0) return d;
+
+      d = compare_terms(slot_ref(x, 1), slot_ref(y, 0));
+
+      if(d != 0) return d;
+
+      return compare_terms(slot_ref(x, 2), slot_ref(y, 1));
+
+    }
+
+  case PAIR_TYPE:
+    switch(yt) {
+    case STRUCTURE_TYPE:
+      d = objsize(y) - 3;
+
+      if(d != 0) return d;
+
+      d = compare_terms((X)&dot_atom, slot_ref(y, 0));
+
+      if(d != 0) return d;
+
+      d = compare_terms(slot_ref(x, 0), slot_ref(x, 1));
+
+      if(d != 0) return d;
+
+      return compare_terms(slot_ref(x, 1), slot_ref(y, 2));
+
+    case PAIR_TYPE:
+      d = compare_terms(slot_ref(x, 0), slot_ref(y, 0));
+
+      if(d != 0) return d;
+
+      return compare_terms(slot_ref(x, 1), slot_ref(y, 1));
+
+    }
+  }
+
+  CRASH("compare_terms");
+}
+
+
 /// VM operations
 
 #define CURRENT_NAME
 #define CURRENT_ARITY
 
-#define ENTER  \
-  { TRACE_ENTER(CURRENT_NAME, CURRENT_ARITY);	\
-    CHECK_LIMIT;				\
-    PUSH(C0);					\
-    C0 = C;					\
-    PUSH(R);					\
-    PUSH(E);					\
-    PUSH(A);					\
-    PUSH(env_top);				\
-    R = R0; }
+#define ENTER								\
+  { TRACE_ENTER(CURRENT_NAME, CURRENT_ARITY);				\
+    CHECK_LIMIT;							\
+    PUSH_CHOICE_POINT(NULL); }
 
-#define FAIL     { TRACE_FAIL(CURRENT_NAME, CURRENT_ARITY); goto fail; }
-#define REDO     TRACE_REDO(CURRENT_NAME, CURRENT_ARITY)
-
-#define EXIT				     \
-  { R0 = R;				     \
-    POP(env_top);			     \
-    POP(A);				     \
-    POP(E);				     \
-    POP(R);					\
-    POP(C0);					\
-    TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY); \
-    goto *R0; }
-
-#define TAILCALL(lbl)				\
-  R0 = R;					\
-  POP(env_top);					\
-  POP(A);					\
-  POP(E);					\
-  POP(R);					\
-  POP(C0);					\
-  goto lbl
-
-#define CHECK_LIMIT  \
-  if(alloc_top > fromspace_limit) { \
-    collect_garbage(CURRENT_ARITY);	\
-  }
-
-#define ENVIRONMENT(len)  { E = env_top; env_top += (len); }
-
-#define PUSH(x)  *(S++) = (x)
-#define POP(x)   (x) = *(--S)
-
-#define PUSHCP(lbl)						\
+#define PUSH_CHOICE_POINT(lbl)					\
   { C->T = trail_top;						\
     C->R = R;							\
-    C->S = S;							\
     C->E = E;							\
     C->A = A;							\
     C->arg_top = arg_top;					\
     C->env_top = env_top;					\
     C->C0 = C0;							\
-    C->P = (lbl);						\
-    ++C; }
+    C->P = lbl;							\
+    C0 = C++;							\
+    ASSERT(C < choice_point_stack + CHOICE_POINT_STACK_SIZE, "choice-point stack overflow"); }
 
-#define POPCP     ({ CHOICE_POINT *_cp; POP(_cp); if(C != C0) C = _cp; })
-#define CLEARCP   C = C0
+#define COPY_CHOICE_POINT(lbl)						\
+  { C->T = trail_top;							\
+    C->R = C0->R;							\
+    C->E = C0->E;							\
+    C->A = C0->A;							\
+    C->arg_top = arg_top;						\
+    C->env_top = env_top;						\
+    C->C0 = C0;								\
+    C->P = lbl;								\
+    C++;								\
+    ASSERT(C < choice_point_stack + CHOICE_POINT_STACK_SIZE, "choice-point stack overflow"); }
 
-#define INVOKE_CHOICE_POINT  \
-  { CHOICE_POINT *_cp = --C;	      \
-    unwind_trail(_cp->T);	      \
-    R = _cp->R;			      \
-    S = _cp->S;					\
-    E = _cp->E;					\
-    A = _cp->A;					\
-    arg_top = C->arg_top;			\
-    env_top = C->env_top;			\
-    goto *(_cp->P); }
+#define SAVE_CHOICE_POINTS						\
+  { *(ifthen_top++) = C0->P; *(ifthen_top++) = C0; *(ifthen_top++) = C; \
+    ASSERT(ifthen_top < ifthen_stack + IFTHEN_STACK_SIZE, "if-then stack overflow"); }
+
+#define RESTORE_CHOICE_POINTS   { C = *(--ifthen_top); C0 = *(--ifthen_top); C0->P = *(--ifthen_top); }
+#define POP_CHOICE_POINT        C0 = C0->C0
+
+#define EXIT				     \
+  { TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY); \
+    R = C0->R;				     \
+    E = C0->E;				     \
+    env_top = C0->env_top;		     \
+    C0 = C0->C0;			     \
+    goto *R; }
+
+#define DETERMINATE_EXIT		     \
+  { TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY); \
+    R = C0->R;				     \
+    E = C0->E;				     \
+    env_top = C0->env_top;		     \
+    C0 = C0->C0;			     \
+    C = C0 + 1;				     \
+    goto *R; }
+
+#define FAIL     { TRACE_FAIL(CURRENT_NAME, CURRENT_ARITY); goto fail; }
+#define REDO     TRACE_REDO(CURRENT_NAME, CURRENT_ARITY)
+
+#define POP_ARGUMENTS   arg_top = C0->arg_top - CURRENT_ARITY
+
+#define DETERMINATE_CALL(lbl)				 \
+  { TRACE_DETERMINATE_CALL(CURRENT_NAME, CURRENT_ARITY); \
+    R = C0->R;						 \
+    E = C0->E;						 \
+    env_top = C0->env_top;				 \
+    C0 = C0->C0;					 \
+    C = C0 + 1;						 \
+    goto lbl; }
+
+#define CHECK_LIMIT				\
+  if(alloc_top > fromspace_limit) {		\
+    collect_garbage(CURRENT_ARITY);		\
+  }
+
+#define ENVIRONMENT(len)  { E = env_top; env_top += (len); }
+
+#define SET_REDO(lbl)   C0->P = (lbl)
+#define CUT             { C = C0 + 1; SET_REDO(NULL); }
+
+#define INVOKE_CHOICE_POINT			\
+  { for(C0 = C - 1; C0->P == NULL; --C0);	\
+    C = C0 + 1;					\
+    unwind_trail(C0->T);			\
+    A = C0->A;					\
+    arg_top = C0->arg_top;			\
+    env_top = C0->env_top;			\
+    goto *(C0->P); }
 
 
 /// Boilerplate code
 
 #define BOILERPLATE					\
-  X *A = NULL;							\
+  X *A = NULL;						\
   CHOICE_POINT *C, *C0;					\
-  void *R0 = &&success_exit;				\
+  void *R = &&success_exit;				\
+  void *R0;						\
   X *E = env_top;					\
   initialize(argc, argv);				\
   intern_static_symbols(PREVIOUS_SYMBOL);		\
   C0 = C = choice_point_stack;				\
-  void **S = control_stack;				\
-  void *R = NULL;					\
-  PUSHCP(&&fail_exit);					\
+  C->T = trail_top;					\
+  C->R = NULL;						\
+  C->C0 = NULL;						\
+  C->P = &&fail_exit;					\
+  C++;							\
   goto INIT_GOAL;					\
 fail: INVOKE_CHOICE_POINT;				\
 fail_exit: fprintf(stderr, "false.\n"); terminate(1);	\
 success_exit: DRIBBLE("true.\n"); terminate(0);
 
 
-/// primitives (all expect their argument to be deref'd)
+////////////////////////////////////////////////////////////////////////////////
+
+/// PRIMITIVES (all expect their arguments to be deref'd)
 
 
 static int debug_hook(X x) { return 1; }
 static inline int write_char(X c) { check_fixnum(c); fputc(fixnum_to_word(c), port_file(standard_output_port)); return 1; }
-
-
-// stream-name
-static char *port_name(X x)
-{
-  PORT_BLOCK *p = (PORT_BLOCK *)x;
-  static CHAR buffer[ 256 ];
-  sprintf(buffer, "<%s-stream>(%p)", p->dir != ZERO ? "input" : "output", p->fp);
-  return buffer;
-}
-
-
-// doesn't quote atoms or respects operators - expect's deref'd datum
-static void basic_write_term(FILE *fp, int limit, int quote, X x) { 
-  if(limit == 0) fputs("...", fp);
-  else if(is_FIXNUM(x)) 
-    fprintf(fp, WORD_OUTPUT_FORMAT, fixnum_to_word(x));
-  else {
-    switch(objtype(x)) {
-    case FLONUM_TYPE:
-      fprintf(fp, FLOAT_OUTPUT_FORMAT, flonum_to_float(x));
-      break;
-
-    case END_OF_LIST_TYPE:
-      fputs("[]", fp);
-      break;
-
-    case VAR_TYPE:
-      fprintf(fp, "_" WORD_OUTPUT_FORMAT, fixnum_to_word(slot_ref(x, 1)));
-      break;
-
-    case SYMBOL_TYPE: {
-      X str = slot_ref(x, 0);
-      char *name = (char *)objdata(str);
-      WORD len = string_length(str);
-      int q = 0;
-
-      if(quote) {
-	for(int i = 0; i < len; ++i) {
-	  if((i == 0 && !islower(name[ i ])) || (name[ i ] != '_' && !isalpha(name[ i ]) && !isdigit(name[ i ]))) {
-	    q = 1;
-	    break;
-	  }
-	}
-      }
-      
-      if(q) { 
-	fputc('\'', fp);
-
-	while(len--) {
-	  char c = *(name++);
-	  
-	  switch(c) {
-	  case '\n': fputs("\\n", fp); break;
-	  case '\r': fputs("\\r", fp); break;
-	  case '\t': fputs("\\t", fp); break;
-	  default:
-	    if(c < 32 || c > 127) 
-	      fprintf(fp, "\\x%02x", c);
-	    else 
-	      fputc(c, fp);
-	  }
-	}
-
-	fputc('\'', fp);
-      }
-      else 
-	fprintf(fp, "%s", name);
-
-      break;
-    }
-
-    case PORT_TYPE:
-      fputs(port_name(x), fp);
-      break;
-
-    case PAIR_TYPE: { 
-      fputc('[', fp);
-      --limit;
-      basic_write_term(fp, limit, quote, deref(slot_ref(x, 0)));
-      int len = DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT;
-
-      for(x = deref(slot_ref(x, 1)); 
-	  --len > 0 && !is_FIXNUM(x) && objtype(x) == PAIR_TYPE; 
-	  x = deref(slot_ref(x, 1))) {
-	fputs(", ", fp); 
-	basic_write_term(fp, limit, quote, deref(slot_ref(x, 0)));
-      }
-
-      if(x == END_OF_LIST_VAL)
-	fputc(']', fp);
-      else if(len == 0)
-	fputs("|...]", fp);
-      else {
-	fputc('|', fp);
-	basic_write_term(fp, limit, quote, deref(x));
-	fputc(']', fp);
-      }
-
-      break;
-    }
-
-    case STRUCTURE_TYPE: {
-      --limit;
-      basic_write_term(fp, limit, quote, slot_ref(x, 0));
-      fputc('(', fp);
-      WORD len = objsize(x);
-      
-      for(int i = 1; i < len; ++i) {
-	if(i > 1) 
-	  fputs(", ", fp);
-
-	basic_write_term(fp, limit, quote, deref(slot_ref(x, i)));
-      }
-
-      fputc(')', fp);
-      break;
-    }
-
-    default:
-      fprintf(fp, "<object of unknown type %p:" WORD_OUTPUT_FORMAT ">", (void *)x, objtype(x));
-    }
-  }
-}
-
-
-// for debugging
-static void write_hook(X x)
-{
-  basic_write_term(stdout, 99999, 1, deref(x));
-  putchar('\n');
-}
-
-
-static void trace_write(char *title, char *name, int arity, X *A, CHOICE_POINT *C)
-{
-  FILE *fp = port_file(standard_error_port);
-
-  fflush(port_file(standard_output_port));
-  fprintf(fp, "[(%d/%d) %s: %s", (int)(C - choice_point_stack), 
-	  (int)(arg_top - argument_stack), title, name);
-
-  if(arity > 0) {
-    fputc('(', fp);
-
-    for(int i = 0; i < arity; ++i) {
-      if(i > 0)
-	fputs(", ", fp);
-
-      basic_write_term(fp, TRACE_DEBUG_WRITE_LIMIT, 1, deref(A[ i ]));
-    }
-    
-    fputc(')', fp);
-  }
-
-  fputs("]\n", fp);
-}
-
-
-#ifdef TRACE
-# define TRACE_ENTER(name, arity)  trace_write("CALL", name, arity, A, C)
-# define TRACE_REDO(name, arity)   trace_write("REDO", name, arity, A, C)
-# define TRACE_EXIT(name, arity)   trace_write("EXIT", name, arity, A, C)
-# define TRACE_FAIL(name, arity)   { if(C0 == C) trace_write("FAIL", name, arity, A, C); }
-#else
-# define TRACE_ENTER(name, arity)
-# define TRACE_REDO(name, arity)
-# define TRACE_EXIT(name, arity)
-# define TRACE_FAIL(name, arity)
-#endif
 
 
 static int basic_write(X x) 
@@ -1758,150 +1946,4 @@ static int command_line_arguments(X var)
   }
 
   return unify(lst, var);
-}
-
-
-/// term comparison - returns 0, or positive/negative integer
-
-static int compare_strings(CHAR *str1, WORD len1, CHAR *str2, WORD len2)
-{
-  WORD d = strncmp((CHAR *)objdata(str1), (CHAR *)objdata(str2), len1 < len2 ? len1 : len2);
-  return d == 0 ? len2 - len1 : d;
-}
-
-
-static int compare_terms(X x, X y)
-{
-  WORD xt = is_FIXNUM(x) ? FIXNUM_TYPE : objtype(x);
-  WORD yt = is_FIXNUM(y) ? FIXNUM_TYPE : objtype(y);
-  static int type_order[] = { 0, 3, 4, 4, 2, 4, 1, 0, 5, 5 };
-  WORD d = type_order[ xt & 0x1f ] - type_order[ yt & 0x1f ];
-
-  if(d != 0) return d;
-
-  switch(xt) {
-  case FIXNUM_TYPE: return word_to_fixnum(y) - word_to_fixnum(x);
-
-  case END_OF_LIST_TYPE: 
-    switch(yt) {
-    case END_OF_LIST_TYPE: return 0;
-
-    case SYMBOL_TYPE:
-      { X str = slot_ref(y, 1);
-	return compare_strings("[]", 2, (CHAR *)objdata(str), string_length(str)); }
-
-    case PORT_TYPE: return '<' - '[';
-    }
-
-  case SYMBOL_TYPE:
-    switch(yt) {
-    case SYMBOL_TYPE:
-      { X str1 = slot_ref(x, 1);
-	X str2 = slot_ref(y, 1);
-	WORD len1 = string_length(str1);
-	WORD len2 = string_length(str2);
-	return compare_strings((CHAR *)objdata(str1), len1, (CHAR *)objdata(str2), len2); }
-
-    case END_OF_LIST_TYPE:
-      { X str = slot_ref(x, 1);
-	return compare_strings((CHAR *)objdata(str), string_length(str), "[]", 2); }
-      
-    case PORT_TYPE:
-      { char *buf = port_name(y);
-	X str = slot_ref(x, 1);
-	return compare_strings((CHAR *)objdata(str), string_length(str), buf, strlen(buf)); }
-    }
-
-  case PORT_TYPE:
-    switch(yt) {
-    case END_OF_LIST_TYPE:
-      { char *buf = port_name(x);
-	return compare_strings(buf, strlen(buf), "[]", 2); }
-      
-    case SYMBOL_TYPE:
-      { char *buf = port_name(x);
-	X str = slot_ref(y, 1);
-	return compare_strings(buf, strlen(buf), (CHAR *)objdata(str), string_length(str)); }
-      
-    case PORT_TYPE:
-      { char *buf1 = port_name(x);
-	char *buf2 = port_name(y);
-	return compare_strings(buf1, strlen(buf1), buf2, strlen(buf2)); }
-    }
-
-  case FLONUM_TYPE: 
-    if(flonum_to_float(x) < flonum_to_float(y)) return -1;
-      
-    if(flonum_to_float(x) > flonum_to_float(y)) return 1;
-      
-    return 0;
-    
-  case VAR_TYPE:
-    return slot_ref(y, 1) - slot_ref(x, 1);
-
-  case STRUCTURE_TYPE:
-    switch(yt) {
-    case STRUCTURE_TYPE:
-      { WORD s = objsize(y);
-	d = s - objsize(x);
-
-	if(d != 0) return d;
-      
-	d = compare_terms(slot_ref(x, 0), slot_ref(y, 0));
-    
-	if(d != 0) return d;
-
-	for(int i = 1; i <= s; ++i) {
-	  d = compare_terms(slot_ref(x, i), slot_ref(y, i));
-
-	  if(d != 0) return d;
-	}
-
-	return 0; }
-
-    case PAIR_TYPE:
-      d = 2 - objsize(x);
-
-      if(d != 0) return d;
-
-      d = compare_terms(slot_ref(x, 0), (X)&eol_atom);
-
-      if(d != 0) return d;
-
-      d = compare_terms(slot_ref(x, 1), slot_ref(y, 0));
-
-      if(d != 0) return d;
-
-      return compare_terms(slot_ref(x, 2), slot_ref(y, 1));
-
-    }
-
-  case PAIR_TYPE:
-    switch(yt) {
-    case STRUCTURE_TYPE:
-      d = objsize(y) - 2;
-
-      if(d != 0) return d;
-
-      d = compare_terms((X)&eol_atom, slot_ref(y, 0));
-
-      if(d != 0) return d;
-
-      d = compare_terms(slot_ref(x, 0), slot_ref(x, 1));
-
-      if(d != 0) return d;
-
-      return compare_terms(slot_ref(x, 1), slot_ref(y, 2));
-
-    case PAIR_TYPE:
-      d = compare_terms(slot_ref(x, 0), slot_ref(y, 0));
-
-      if(d != 0) return d;
-
-      return compare_terms(slot_ref(x, 1), slot_ref(y, 1));
-
-    }
-  }
-
-  CRASH("compare_terms");
 }

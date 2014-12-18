@@ -40,8 +40,19 @@ assemble(enter(NAME, ARITY), S, S) :-
 	gen(NAME, '"\n#define CURRENT_ARITY ', ARITY, '\nENTER;\n').
 
 assemble(environment(SIZE), S, S) :- gen('ENVIRONMENT(', SIZE, ');\n').
+assemble(determinate_exit, S, S) :- gen('DETERMINATE_EXIT;\n').
 assemble(exit, S, S) :-	gen('EXIT;\n').
 assemble(redo, S, S) :- gen('REDO;\n').
+
+assemble(set_redo(L), S, S) :- gen('SET_REDO(&&', L, ');\n').
+assemble(no_redo, S, S) :- gen('SET_REDO(NULL);\n').
+assemble(copy_choice_point(L), S, S) :- gen('COPY_CHOICE_POINT(&&', L, ');\n').
+assemble(push_choice_point(L), S, S) :- gen('PUSH_CHOICE_POINT(&&', L, ');\n').
+assemble(pop_choice_point, S, S) :- gen('POP_CHOICE_POINT;\n').
+assemble(save_choice_points, S, S) :- gen('SAVE_CHOICE_POINTS;\n').
+assemble(restore_choice_points, S, S) :- gen('RESTORE_CHOICE_POINTS;\n').
+
+assemble(cut, S, S) :- gen('CUT;\n').
 
 assemble(label(LABEL), S, S) :- gen('}', LABEL, ':{\n').
 assemble(local(N, R), S, S) :- gen('X ', R, '=E[', N, '];\n').
@@ -63,12 +74,6 @@ assemble(make_pair(CAR, CDR, R), S, S) :-
 	gen('X ', R, '=make_pair('),
 	gen(CAR, ',', CDR, ');\n').
 
-% A is still in use, but no calls are made until head-unification has taken place:
-assemble(pop_arguments, S, S) :- gen('arg_top-=CURRENT_ARITY;\n').
-
-assemble(add_choice_point(LABEL), S, S) :- gen('PUSHCP(&&', LABEL, ');\n').
-assemble(push_choice_points, S, S) :- gen('PUSH((X)C);\n').
-assemble(pop_choice_points, S, S) :- gen('POPCP;\n').
 assemble(jump(LABEL), S, S) :- gen('goto ', LABEL, ';\n').
 assemble(remove_choice_points, S, S) :- gen('CLEARCP;\n').
 assemble(fail, S, S) :- gen('FAIL;\n').
@@ -86,17 +91,17 @@ assemble(call(NAME, RLIST, LABEL), S, S) :-
 	(ARITY > 0 -> gen('A=arg_top;\n'); true),
 	assemble_arguments(RLIST, 0),
 	mangle_name(NAME, MNAME),
-	gen('R0=&&', LABEL, ';\ngoto '),
+	gen('R=&&', LABEL, ';\ngoto '),
 	gen(MNAME, '$', ARITY),
 	gen(';}\n', LABEL, ':{\n').
 
-assemble(tailcall(NAME, RLIST), S, S) :-
+assemble(determinate_call(NAME, RLIST), S, S) :-
 	length(RLIST, ARITY),
+	gen('POP_ARGUMENTS;\n'),
+	(ARITY > 0 -> gen('A=arg_top;\n'); true),
 	assemble_arguments(RLIST, 0),
 	mangle_name(NAME, MNAME),
-	% args are not popped - this has already being done by cut (or this
-	% is the last clause)
-	gen('TAILCALL(', MNAME, '$', ARITY, ');\n').
+	gen('DETERMINATE_CALL(', MNAME, '$', ARITY, ');\n').
 
 assemble(foreign_call(NAME, 0), S, S) :- gen('if(!', NAME, '()) FAIL;\n').
 assemble(foreign_call(NAME, RLIST), S, S) :-
@@ -144,8 +149,8 @@ assemble(atomic(R), S, S) :- gen('if(!is_atomic(deref(', R, '))) FAIL;\n').
 assemble(compound(R), S, S) :- gen('if(!is_compound(deref(', R, '))) FAIL;\n').
 assemble(float(R), S, S) :- gen('if(!is_FLONUM(deref(', R, '))) FAIL;\n').
 
-assemble(term_less(R1, R2), S, S) :- gen('if(compare_terms(deref(', R1, '),deref(', R2, ')) >= 0) FAIL;\n').
-assemble(term_not_less(R1, R2), S, S) :- gen('if(compare_terms(deref(', R1, '),deref(', R2, ')) < 0) FAIL;\n').
+assemble(term_less(R1, R2), S, S) :- gen('if(compare_terms(deref(', R1, '),deref(', R2, ')) <= 0) FAIL;\n').
+assemble(term_not_less(R1, R2), S, S) :- gen('if(compare_terms(deref(', R1, '),deref(', R2, ')) > 0) FAIL;\n').
 
 assemble(OP, _, _) :-
 	error(['invalid pseudo instruction: ', OP]).
