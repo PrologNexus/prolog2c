@@ -91,7 +91,7 @@ compile_term_for_unification('_var_'(N), DEST, BOUND, [N|BOUND], S, S) :-
 compile_term_for_unification(X, DEST, BOUND, BOUND, S1, S2) :-
 	literal_term(X), 	% literal term not containing variables?
 	register_literal(X, N, S1, S2),
-	emit(literal(N, DEST)).
+	emit(literal(N, DEST, X)).
 compile_term_for_unification([X|Y], DEST, BOUND1, BOUND2, S1, S2) :-
 	compile_term_arguments([X, Y], [], [CAR, CDR], BOUND1, BOUND2, S1, S2),
 	emit(make_pair(CAR, CDR, DEST)).
@@ -316,7 +316,7 @@ compile_arithmetic_expression('_var_'(N), _, _, _, _) :-
 compile_arithmetic_expression(X, DEST, _, S1, S2) :-
 	number(X),
 	register_literal(X, N, S1, S2),
-	emit(literal(N, DEST)).
+	emit(literal(N, DEST, X)).
 
 compile_arithmetic_expression(EXP, DEST, B, S1, S2) :-
 	functor(EXP, NAME, ARITY),

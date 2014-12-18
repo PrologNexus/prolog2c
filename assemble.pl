@@ -50,7 +50,7 @@ assemble(not_unify(R1, R2), S, S) :- gen('if(unify(', R1, ',', R2, ')) FAIL;\n')
 assemble(argument(INDEX, R), S, S) :- gen('X ', R, '=A[', INDEX, '];\n').
 assemble(assign(N, R), S, S) :- gen('E[', N, ']=', R, ';\n').
 assemble(make_variable(R), S, S) :- gen('X ', R, '=make_var();\n').
-assemble(literal(N, R), S, S) :- gen('X ', R, '=literal_', N, ';\n').
+assemble(literal(N, R, _), S, S) :- gen('X ', R, '=literal_', N, ';\n').
 
 assemble(make_term(RLIST, R), S, S) :-
 	length(RLIST, N),
