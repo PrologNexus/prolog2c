@@ -6,6 +6,5 @@ main :-
 	\+fail, display('2 ok\n'),
 	foo.
 
-% note: SWI prints "foo", which is not ISO compliant
 foo :- \+(!).
 foo :- display('foo\n').
