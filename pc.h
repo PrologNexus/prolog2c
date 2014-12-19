@@ -1088,7 +1088,7 @@ static char *port_name(X x)
 
 
 // doesn't quote atoms or respects operators - expect's deref'd datum
-static void basic_write_term(FILE *fp, int limit, int quote, X x) { 
+static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) { 
   if(limit == 0) fputs("...", fp);
   else if(is_FIXNUM(x)) 
     fprintf(fp, WORD_OUTPUT_FORMAT, fixnum_to_word(x));
@@ -1154,14 +1154,14 @@ static void basic_write_term(FILE *fp, int limit, int quote, X x) {
     case PAIR_TYPE: { 
       fputc('[', fp);
       --limit;
-      basic_write_term(fp, limit, quote, deref(slot_ref(x, 0)));
-      int len = DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT;
+      basic_write_term(fp, debug, limit, quote, deref(slot_ref(x, 0)));
+      int len = debug ? DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT : 999999;
 
       for(x = deref(slot_ref(x, 1)); 
 	  --len > 0 && !is_FIXNUM(x) && objtype(x) == PAIR_TYPE; 
 	  x = deref(slot_ref(x, 1))) {
 	fputs(", ", fp); 
-	basic_write_term(fp, limit, quote, deref(slot_ref(x, 0)));
+	basic_write_term(fp, debug, limit, quote, deref(slot_ref(x, 0)));
       }
 
       if(x == END_OF_LIST_VAL)
@@ -1170,7 +1170,7 @@ static void basic_write_term(FILE *fp, int limit, int quote, X x) {
 	fputs("|...]", fp);
       else {
 	fputc('|', fp);
-	basic_write_term(fp, limit, quote, deref(x));
+	basic_write_term(fp, debug, limit, quote, deref(x));
 	fputc(']', fp);
       }
 
@@ -1179,7 +1179,7 @@ static void basic_write_term(FILE *fp, int limit, int quote, X x) {
 
     case STRUCTURE_TYPE: {
       --limit;
-      basic_write_term(fp, limit, quote, slot_ref(x, 0));
+      basic_write_term(fp, debug, limit, quote, slot_ref(x, 0));
       fputc('(', fp);
       WORD len = objsize(x);
       
@@ -1187,7 +1187,7 @@ static void basic_write_term(FILE *fp, int limit, int quote, X x) {
 	if(i > 1) 
 	  fputs(", ", fp);
 
-	basic_write_term(fp, limit, quote, deref(slot_ref(x, i)));
+	basic_write_term(fp, debug, limit, quote, deref(slot_ref(x, i)));
       }
 
       fputc(')', fp);
@@ -1205,7 +1205,7 @@ static void basic_write_term(FILE *fp, int limit, int quote, X x) {
 
 static void write_hook(X x)
 {
-  basic_write_term(stdout, 99999, 1, deref(x));
+  basic_write_term(stdout, 1, TRACE_DEBUG_WRITE_LIMIT, 1, deref(x));
   putchar('\n');
 }
 
@@ -1225,7 +1225,7 @@ static void trace_write(char *title, char *name, int arity, X *A, CHOICE_POINT *
       if(i > 0)
 	fputs(", ", fp);
 
-      basic_write_term(fp, TRACE_DEBUG_WRITE_LIMIT, 1, deref(A[ i ]));
+      basic_write_term(fp, 1, TRACE_DEBUG_WRITE_LIMIT, 1, deref(A[ i ]));
     }
     
     fputc(')', fp);
@@ -1270,7 +1270,7 @@ static int unify1(X x, X y)
     /*
     if(verbose) {
       DRIBBLE("[binding _" WORD_OUTPUT_FORMAT " <- ", fixnum_to_word(slot_ref(x, 1)));
-      basic_write_term(stderr, 9999, 1, y);
+      basic_write_term(stderr, 1, 9999, 1, y);
       fputs("]\n", stderr);
     }
     */
@@ -1284,7 +1284,7 @@ static int unify1(X x, X y)
     /*
     if(verbose) {
       DRIBBLE("[binding _" WORD_OUTPUT_FORMAT " <- ", fixnum_to_word(slot_ref(y, 1)));
-      basic_write_term(stderr, 9999, 1, x);
+      basic_write_term(stderr, 1, 9999, 1, x);
       fputs("]\n", stderr);
     }
     */
@@ -1914,14 +1914,14 @@ static inline int write_char(X c) { check_fixnum(c); fputc(fixnum_to_word(c), po
 
 static int basic_write(X x) 
 { 
-  basic_write_term(port_file(standard_output_port), 99999, 0, x); 
+  basic_write_term(port_file(standard_output_port), 0, 99999, 0, x); 
   return 1; 
 }
 
 
 static int basic_writeq(X x) 
 { 
-  basic_write_term(port_file(standard_output_port), 99999, 1, x); 
+  basic_write_term(port_file(standard_output_port), 0, 99999, 1, x); 
   return 1; 
 }
 
