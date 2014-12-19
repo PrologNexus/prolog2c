@@ -809,10 +809,12 @@ static void collect_garbage(int args)
   tospace_end = tmp;	
   fromspace_limit = (X)((char *)fromspace_end - heap_reserve);	
   alloc_top = tospace_top;
-  DRIBBLE("finished (" WORD_OUTPUT_FORMAT " bytes in use)]\n", ((long)((char *)tospace_top - (char *)fromspace))); 
+  DRIBBLE("finished (" WORD_OUTPUT_FORMAT " bytes in use, trail: " WORD_OUTPUT_FORMAT ")]\n",
+	  ((WORD)((char *)tospace_top - (char *)fromspace)),
+	  (WORD)(trail_top - trail_stack)); 
   ++gc_count;
   
-  if(tospace_top >= fromspace_limit) 
+  if(alloc_top >= fromspace_limit) 
     CRASH("heap exhausted");				
 
   // check finalizers
