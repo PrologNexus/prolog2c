@@ -1597,11 +1597,9 @@ static inline X num_sign(X x)
   if(is_FLONUM(x)) {
     double n = flonum_to_float(x);
 
-    if(n < 0.0) 
-      return FLONUM(-1);
+    if(n < 0.0) return FLONUM(-1);
     
-    if(n > 0.0)
-      return FLONUM(1);
+    if(n > 0.0) return FLONUM(1);
 
     return FLONUM(0);
   }
