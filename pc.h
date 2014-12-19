@@ -1236,11 +1236,11 @@ static void trace_write(char *title, char *name, int arity, X *A, CHOICE_POINT *
 
 
 #ifdef TRACE
-# define TRACE_ENTER(name, arity)  trace_write("CALL", name, arity, A, C)
-# define TRACE_REDO(name, arity)   trace_write("REDO", name, arity, A, C)
-# define TRACE_EXIT(name, arity)   trace_write("EXIT", name, arity, A, C)
-# define TRACE_FAIL(name, arity)   { if(C0 == C) trace_write("FAIL", name, arity, A, C); }
-# define TRACE_DETERMINATE_CALL(name, arity)  trace_write("TAIL", name, arity, A, C);
+# define TRACE_ENTER(name, arity)  trace_write("CALL", name, arity, C0->A, C)
+# define TRACE_REDO(name, arity)   trace_write("REDO", name, arity, C0->A, C)
+# define TRACE_EXIT(name, arity)   trace_write("EXIT", name, arity, C0->A, C)
+# define TRACE_FAIL(name, arity)   { if(C0 == C) trace_write("FAIL", name, arity, C0->A, C); }
+# define TRACE_DETERMINATE_CALL(name, arity)  trace_write("TAIL", name, arity, C0->A, C);
 #else
 # define TRACE_ENTER(name, arity)
 # define TRACE_REDO(name, arity)
@@ -1789,9 +1789,9 @@ static int compare_terms(X x, X y)
 #define CURRENT_ARITY
 
 #define ENTER								\
-  { TRACE_ENTER(CURRENT_NAME, CURRENT_ARITY);				\
-    CHECK_LIMIT;							\
-    PUSH_CHOICE_POINT(NULL); }
+  { CHECK_LIMIT;							\
+    PUSH_CHOICE_POINT(NULL);						\
+    TRACE_ENTER(CURRENT_NAME, CURRENT_ARITY); }
 
 #define PUSH_CHOICE_POINT(lbl)					\
   { C->T = trail_top;						\
