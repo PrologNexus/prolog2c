@@ -29,6 +29,9 @@ NOTES											              -*- Org -*-
     - could run separate program to preprocess source.
     - could even filter out latent term_expansions expressions and build
       preprocessor on the fly.
+*** It would be nice to do selective tracing
+    - declaration "trace(PI)", where PI may be atom, NAME/ARITY, or
+      list of those.
 ** Library/Runtime
 *** Allocate all data areas dynamically
     - add runtime-options to set sizes (trail, args, env).
@@ -81,12 +84,13 @@ NOTES											              -*- Org -*-
 *** TODO allow file-references to be "library(FILE)"
     - resolve via library-path, settable by "-L".
 ** Runtime
+*** TODO The trail is never reduced
+**** TODO Remove GC'd variables from trail
+     - and adjust CP-stack entries accordingly.
+     - tricky.
 *** TODO Should "make_term" deref it's args, especially the functor?
 *** TODO Is cycle-checking in =deref= really necessary?
 *** TODO Use hash-tables for symbol-table
-*** TODO Remove GC'd variables from trail
-    - and adjust CP-stack entries accordingly.
-    - tricky.
 *** TODO TAILCALL does not provide a TRACE_EXIT
 * List of primitives, callable via =foreign_call=
   | write_char(I)             |                                                            |
