@@ -24,33 +24,37 @@ NOTES											              -*- Org -*-
 ** TODO file:nrev.pl, file:queens.pl, later add as benchmarks.
 * Missing
 ** Compiler
-*** Allow "[X]" in arithmetic expressions
-    - and probably more, check ISO.
-*** Compilation of ordering operators
-    - @<, @>, @>=, @=<
-    - equality necessary? (ISO)
-*** Numerical functions
-    - sqrt, etc.
+*** Write driver script
+    - handles compilation to C.
+    - could run separate program to preprocess source.
+    - could even filter out latent term_expansions expressions and build
+      preprocessor on the fly.
 ** Library/Runtime
-*** Allocate all data areas dynaimcally
+*** Allocate all data areas dynamically
     - add runtime-options to set sizes (trail, args, env).
 *** Internal infrastructure for record-db 
     - simple key-value store (hashtable), with operations to add,
       remove, lookup.
-    - add (atomic) type DBREFERENCE.
+    - add (atomic?) type DBREFERENCE, decide on sort-ordering.
 *** We could install a SIGSEGV handler and dump all global state
-    - stack-ptrs, etc.
+    - stack-ptrs, VM-registers, etc.
 *** Runtime-information about defined clauses
     - as minimum: mapping of name/arity -> entry-point.
     - for complete support of clause/2 we would actually need the full
       source.
-*** ISO-stuff that makes sense
 *** Provide some surt of embedding
     - could have distinct entry point that returns an invocation
       function ptr, calling a suspension primitive from prolog then
       returns some value to the caller, reinvocation continues, with a
       result.
     - "foreign_call(suspend(OUT, IN))"
+*** Basic Edinburgh I/O
+    - "see", "seen", "seeing", "tell", "told", "telling"
+    - stream-alias "user" (default I/O ports)
+    - "get", "get0", "put", "peek_char", 
+*** file:prelude.pl:
+**** Add all-solutions predicates
+     - "bagof", "setof", "findall"
 *** Non-standard primitives we need for bootstrapping
     | getenv/1                 |                                                                     |
     | command_line_arguments/1 |                                                                     |
