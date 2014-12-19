@@ -32,19 +32,61 @@
     you got a very strange answer!  Now fixed, at a price.
 */
 
-:- public setof/3, bagof/3 .
+:- public
+	findall/3,		%   Same effect as C&M p152
+	findall/4,		%   A variant I have found very useful
+	bag_of/3,		%   Like bagof (Dec-10 manual p52)
+	set_of/3.		%   Like setof (Dec-10 manual p51)
+
+:- mode
+	bag_of(+,+,?),
+	concordant_subset(+,+,-),
+	concordant_subset(+,+,-,-),
+	concordant_subset(+,+,+,+,-),
+	findall(+,+,?),
+	findall(+,+,+,?),
+	list_instances(+,-),
+	list_instances(+,+,-),
+	list_instances(+,+,+,-),
+	list_instances(+,+,+,+,-),
+	replace_key_variables(+,+,+),
+	save_instances(+,+),
+	set_of(+,+,?).
+
+
+%   findall(Template, Generator, List)
+%   is a special case of bagof, where all free variables in the
+%   generator are taken to be existentially quantified.  It is
+%   described in Clocksin & Mellish on p152.  The code they give
+%   has a bug (which the Dec-10 bagof and setof predicates share)
+%   which this has not.
+
+findall(Template, Generator, List) :-
+	save_instances(-Template, Generator),
+	list_instances([], List).
+
+
+
+%   findall(Template, Generator, SoFar, List) :-
+%	findall(Template, Generator, Solns),
+%	append(Solns, SoFar, List).
+%   But done more cheaply.
+
+findall(Template, Generator, SoFar, List) :-
+	save_instances(-Template, Generator),
+	list_instances(SoFar, List).
 
 
 %   set_of(Template, Generator, Set)
-%   finds the Set of instances of the Template satisfying the Generator..
+%   finds the Set of instances of the Template satisfying the Generator.
 %   The set is in ascending order (see compare/3 for a definition of
 %   this order) without duplicates, and is non-empty.  If there are
 %   no solutions, set_of fails.  set_of may succeed more than one way,
 %   binding free variables in the Generator to different values.  This
 %   predicate is defined on p51 of the Dec-10 Prolog manual.
 
-setof(Template, Filter, Set) :-
-	bagof(Template, Filter, Bag),
+set_of(Template, Filter, Set) :-
+	bag_of(Template, Filter, Bag),
 	sort(Bag, Set).
 
 
@@ -68,7 +110,7 @@ setof(Template, Filter, Set) :-
 %   The second clause is basically just findall, which of course works in
 %   the common case when there are no free variables.
 
-bagof(Template, Generator, Bag) :-
+bag_of(Template, Generator, Bag) :-
 	free_variables(Generator, Template, [], Vars),
 	Vars \== [],
 	!,
@@ -79,7 +121,7 @@ bagof(Template, Generator, Bag) :-
 	keysort(OmniumGatherum, Gamut), !,
 	concordant_subset(Gamut, Key, Answer),
 	Bag = Answer.
-bagof(Template, Generator, Bag) :-
+bag_of(Template, Generator, Bag) :-
 	save_instances(-Template, Generator),
 	list_instances([], Bag),
 	Bag \== [].
@@ -189,4 +231,5 @@ concordant_subset([],   Key, Subset, Key, Subset) :- !.
 concordant_subset(_,    Key, Subset, Key, Subset).
 concordant_subset(More, _,   _,   Clavis, Answer) :-
 	concordant_subset(More, Clavis, Answer).
+
 
