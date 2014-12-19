@@ -1,3 +1,5 @@
+display(X) :- foreign_call(basic_write(X)).
+nl :- foreign_call(write_char(10)).
 
 append([],X,X).
 append([X|Y],Z,[X|W]) :- append(Y,Z,W).  
@@ -11,6 +13,6 @@ nrev([X|Xs],Zs) :-
 % nrev 30 has 496 logical inferences
 nrev30 :-
 	nrev([1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0], X),
-	write(X), nl.
+	display(X), nl.
 
 :- initialization(nrev30).
