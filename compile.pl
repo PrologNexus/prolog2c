@@ -169,7 +169,7 @@ compile_body_expression(fail, _, _, D, D, B, B, S, S) :-
 compile_body_expression(repeat, _, _, det, det, B, B, S, S).
 compile_body_expression(repeat, _, _, D, D, B, B, S1, S2) :-
 	gen_label(L, S1, S2),
-	emit(set_redo(L), label(L)).
+	emit(adjust_choice_point(L), label(L)).
 	
 % not
 compile_body_expression(\+X, _, LAST, D1, D2, B1, B2, S1, S2) :-

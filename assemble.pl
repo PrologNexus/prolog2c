@@ -51,6 +51,7 @@ assemble(push_choice_point(L), S, S) :- gen('PUSH_CHOICE_POINT(&&', L, ');\n').
 assemble(pop_choice_point, S, S) :- gen('POP_CHOICE_POINT;\n').
 assemble(save_choice_points, S, S) :- gen('SAVE_CHOICE_POINTS;\n').
 assemble(restore_choice_points, S, S) :- gen('RESTORE_CHOICE_POINTS;\n').
+assemble(adjust_choice_point(L), S, S) :- gen('ADJUST_CHOICE_POINT(&&', L, ');\n').
 
 assemble(cut, S, S) :- gen('CUT;\n').
 
