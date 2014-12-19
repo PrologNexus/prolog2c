@@ -1,6 +1,7 @@
 %%% loader for compiler files
 
 
+:- include('swi.pl').
 :- include('settings.pl').
 :- include('rdtok.pl').
 :- include('read.pl').

@@ -1,10 +1,6 @@
 %%% misc support library
 
 
-command_line_arguments(ARGS) :-
-	current_prolog_flag(argv, X),
-	append(_, ['--'|ARGS], X), !.
-
 gen(T) :- write(T).
 gen(T1, T2) :- gen(T1), gen(T2).
 gen(T1, T2, T3) :- gen(T1, T2), gen(T3).
