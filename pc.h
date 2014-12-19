@@ -1806,14 +1806,20 @@ static int compare_terms(X x, X y)
 #define COPY_CHOICE_POINT(lbl)						\
   { C->T = trail_top;							\
     C->R = C0->R;							\
-    C->E = C0->E;							\
+    C->E = E;								\
     C->A = C0->A;							\
     C->arg_top = arg_top;						\
     C->env_top = env_top;						\
     C->C0 = C0;								\
     C->P = lbl;								\
-    C++;								\
+    ++C;								\
     ASSERT(C < choice_point_stack + CHOICE_POINT_STACK_SIZE, "choice-point stack overflow"); }
+
+#define ADJUST_CHOICE_POINT(lbl)						\
+  { C0->T = trail_top;							\
+    C0->arg_top = arg_top;						\
+    C0->env_top = env_top;						\
+    C0->P = lbl; }
 
 #define SAVE_CHOICE_POINTS						\
   { *(ifthen_top++) = C0->P; *(ifthen_top++) = C0; *(ifthen_top++) = C; \
