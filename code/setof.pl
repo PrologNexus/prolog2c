@@ -1,7 +1,7 @@
 %   File   : SETOF.PL
 %   Author : R.A.O'Keefe
 %   Updated: 17 November 1983
-%   Purpose: define set_of/3, bag_of/3, findall/3, and findall/4
+%   Purpose: define set_of/3, bagof/3, findall/3, and findall/4
 %   Needs  : Not.Pl
 
 /*  This file defines two predicates which act like setof/3 and bagof/3.
@@ -31,28 +31,6 @@
     the Template was a variable and the Generator never bound it at all
     you got a very strange answer!  Now fixed, at a price.
 */
-
-:- public
-	findall/3,		%   Same effect as C&M p152
-	findall/4,		%   A variant I have found very useful
-	bag_of/3,		%   Like bagof (Dec-10 manual p52)
-	set_of/3.		%   Like setof (Dec-10 manual p51)
-
-:- mode
-	bag_of(+,+,?),
-	concordant_subset(+,+,-),
-	concordant_subset(+,+,-,-),
-	concordant_subset(+,+,+,+,-),
-	findall(+,+,?),
-	findall(+,+,+,?),
-	list_instances(+,-),
-	list_instances(+,+,-),
-	list_instances(+,+,+,-),
-	list_instances(+,+,+,+,-),
-	replace_key_variables(+,+,+),
-	save_instances(+,+),
-	set_of(+,+,?).
-
 
 %   findall(Template, Generator, List)
 %   is a special case of bagof, where all free variables in the
@@ -85,32 +63,32 @@ findall(Template, Generator, SoFar, List) :-
 %   binding free variables in the Generator to different values.  This
 %   predicate is defined on p51 of the Dec-10 Prolog manual.
 
-set_of(Template, Filter, Set) :-
-	bag_of(Template, Filter, Bag),
+setof(Template, Filter, Set) :-
+	bagof(Template, Filter, Bag),
 	sort(Bag, Set).
 
 
 
-%   bag_of(Template, Generator, Bag)
+%   bagof(Template, Generator, Bag)
 %   finds all the instances of the Template produced by the Generator,
 %   and returns them in the Bag in they order in which they were found.
 %   If the Generator contains free variables which are not bound in the
 %   Template, it assumes that this is like any other Prolog question
 %   and that you want bindings for those variables.  (You can tell it
 %   not to bother by using existential quantifiers.)
-%   bag_of records three things under the key '.':
+%   bagof records three things under the key '.':
 %	the end-of-bag marker	       -
 %	terms with no free variables   -Term
 %	terms with free variables   Key-Term
 %   The key '.' was chosen on the grounds that most people are unlikely
 %   to realise that you can use it at all, another good key might be ''.
-%   The original data base is restored after this call, so that set_of
-%   and bag_of can be nested.  If the Generator smashes the data base
+%   The original data base is restored after this call, so that setof
+%   and bagof can be nested.  If the Generator smashes the data base
 %   you are asking for trouble and will probably get it.
 %   The second clause is basically just findall, which of course works in
 %   the common case when there are no free variables.
 
-bag_of(Template, Generator, Bag) :-
+bagof(Template, Generator, Bag) :-
 	free_variables(Generator, Template, [], Vars),
 	Vars \== [],
 	!,
@@ -121,7 +99,7 @@ bag_of(Template, Generator, Bag) :-
 	keysort(OmniumGatherum, Gamut), !,
 	concordant_subset(Gamut, Key, Answer),
 	Bag = Answer.
-bag_of(Template, Generator, Bag) :-
+bagof(Template, Generator, Bag) :-
 	save_instances(-Template, Generator),
 	list_instances([], Bag),
 	Bag \== [].
@@ -143,7 +121,7 @@ save_instances(_, _).
 %   list_instances(SoFar, Total)
 %   pulls all the -Template instances out of the data base until it
 %   hits the - marker, and puts them on the front of the accumulator
-%   SoFar.  This routine is used by findall/3-4 and by bag_of when
+%   SoFar.  This routine is used by findall/3-4 and by bagof when
 %   the Generator has no free variables.
 
 list_instances(SoFar, Total) :-
@@ -231,5 +209,3 @@ concordant_subset([],   Key, Subset, Key, Subset) :- !.
 concordant_subset(_,    Key, Subset, Key, Subset).
 concordant_subset(More, _,   _,   Clavis, Answer) :-
 	concordant_subset(More, Clavis, Answer).
-
-
