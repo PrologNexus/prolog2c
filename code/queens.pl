@@ -3,7 +3,10 @@
 
 % http://yieldprolog.sourceforge.net/benchmarks.html
 
-main :- queens(11, _Qs).
+nl :- foreign_call(write_char(10)).
+display(X) :- foreign_call(basic_write(X)).
+
+main :- queens(11, _Qs), display(_Qs), nl.
 
 queens(N,Qs) :- rangeList(1,N,Ns), queens3(Ns,[],Qs).
 
