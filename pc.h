@@ -1215,8 +1215,9 @@ static void trace_write(char *title, char *name, int arity, X *A, CHOICE_POINT *
   FILE *fp = port_file(standard_error_port);
 
   fflush(port_file(standard_output_port));
-  fprintf(fp, "[(%d/%d) %s: %s", (int)(C - choice_point_stack), 
-	  (int)(arg_top - argument_stack), title, name);
+  fprintf(fp, "[(%d/%d/%d) %s: %s", (int)(C - choice_point_stack), 
+	  (int)(arg_top - argument_stack), (int)(trail_top - trail_stack),
+	  title, name);
 
   if(arity > 0) {
     fputc('(', fp);
