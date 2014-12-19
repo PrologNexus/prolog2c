@@ -1647,6 +1647,8 @@ static inline int compare_strings(CHAR *str1, WORD len1, CHAR *str2, WORD len2)
 
 static int compare_terms(X x, X y)
 {
+  if(x == y) return 0;
+
   WORD xt = is_FIXNUM(x) ? FIXNUM_TYPE : objtype(x);
   WORD yt = is_FIXNUM(y) ? FIXNUM_TYPE : objtype(y);
   static int type_order[] = { 0, 3, 4, 4, 2, 4, 1, 0, 5, 5 };
