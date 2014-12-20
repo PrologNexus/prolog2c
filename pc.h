@@ -1259,7 +1259,7 @@ static void trace_write(char *title, char *name, int arity, X *A, CHOICE_POINT *
 
 /// unification
 
-#define unify(C0, x, y)   ({ X _x = (x), _y = (y); _x == _y || unify1(C0, _x, _y); })
+#define unify(x, y)   ({ X _x = (x), _y = (y); _x == _y || unify1(C0, _x, _y); })
 
 
 static int unify1(CHOICE_POINT *C0, X x, X y)
@@ -1321,7 +1321,7 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
     ++i;
 
   while(i < s) {
-    if(!unify(C0, slot_ref(x, i), slot_ref(y, i)))
+    if(!unify(slot_ref(x, i), slot_ref(y, i)))
       return 0;
 
     ++i;
