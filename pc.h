@@ -42,7 +42,7 @@
 #endif
 
 #ifndef TRAIL_STACK_SIZE
-# define TRAIL_STACK_SIZE 10000
+# define TRAIL_STACK_SIZE 100000
 #endif
 
 #ifndef CHOICE_POINT_STACK_SIZE
