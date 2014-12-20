@@ -1,3 +1,6 @@
+nl :- foreign_call(write_char(10)).
+display(X) :- foreign_call(basic_write(X)).
+
 iota(N, L) :- iota(0, N, L).
 iota(N, N, []).
 iota(N, M, [N|R]) :-
