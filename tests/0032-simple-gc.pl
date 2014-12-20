@@ -3,7 +3,7 @@ nl :- foreign_call(write_char(10)).
 
 main :-
 	iota(1000, X),
-	foreign_call(gc),
+	foreign_call(gc(0)),
 	dump(X).
 
 iota(N, L) :- iota(0, N, L).

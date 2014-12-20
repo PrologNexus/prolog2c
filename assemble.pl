@@ -57,8 +57,8 @@ assemble(cut, S, S) :- gen('CUT;\n').
 
 assemble(label(LABEL), S, S) :- gen('}', LABEL, ':{\n').
 assemble(local(N, R), S, S) :- gen('X ', R, '=E[', N, '];\n').
-assemble(unify(R1, R2), S, S) :- gen('if(!unify(', R1, ',', R2, ')) FAIL;\n').
-assemble(not_unify(R1, R2), S, S) :- gen('if(unify(', R1, ',', R2, ')) FAIL;\n').
+assemble(unify(R1, R2), S, S) :- gen('if(!unify(C0,', R1, ',', R2, ')) FAIL;\n').
+assemble(not_unify(R1, R2), S, S) :- gen('if(unify(C0,', R1, ',', R2, ')) FAIL;\n').
 assemble(argument(INDEX, R), S, S) :- gen('X ', R, '=A[', INDEX, '];\n').
 assemble(assign(N, R), S, S) :- gen('E[', N, ']=', R, ';\n').
 assemble(make_variable(R), S, S) :- gen('X ', R, '=make_var();\n').
@@ -106,7 +106,7 @@ assemble(determinate_call(NAME, RLIST), S, S) :-
 
 assemble(foreign_call(NAME, 0), S, S) :- gen('if(!', NAME, '()) FAIL;\n').
 assemble(foreign_call(NAME, RLIST), S, S) :-
-	gen('if(!', NAME, '('),
+	gen('if(!', NAME, '(C0,'),
 	generate_foreign_arguments(RLIST),
 	gen(')) FAIL;\n').	%XXX doesn't pop
 

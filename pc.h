@@ -150,6 +150,7 @@ typedef struct CHOICE_POINT {
   X *T, *R, *E, *A, *env_top, *arg_top;
   struct CHOICE_POINT *C0;
   void *P;
+  WORD timestamp;
 } CHOICE_POINT;
 
 
@@ -273,6 +274,7 @@ static char *mmapped_heap = NULL;
 static char **global_argv;
 static int global_argc;
 static void *ifthen_stack[ IFTHEN_STACK_SIZE ], **ifthen_top = ifthen_stack;
+static WORD clock_ticks = 0;
 
 static CHAR *type_names[] = { 
   "invalid", "fixnum", "null", "symbol", "flonum", "stream", "variable", "string", "structure", "pair"
@@ -1019,9 +1021,10 @@ static void terminate(int code)
 
 static inline X make_var()
 {
-  ALLOCATE_BLOCK(BLOCK *v, VAR_TYPE, 2);
+  ALLOCATE_BLOCK(BLOCK *v, VAR_TYPE, 3);
   v->d[ 0 ] = (X)v;
   v->d[ 1 ] = word_to_fixnum(variable_counter++);
+  v->d[ 2 ] = word_to_fixnum(clock_ticks++);
   return v;
 }
 
@@ -1064,14 +1067,17 @@ static void unwind_trail(X *tp)
 }
 
 
-static inline void push_trail(X var)
+static inline void push_trail(CHOICE_POINT *C0, X var)
 {
+  // trail-check
+  if(fixnum_to_word(slot_ref(var, 2)) < C0->timestamp) {
 #ifndef UNSAFE
-  if(trail_top >= trail_stack + TRAIL_STACK_SIZE)
-    CRASH("trail-stack overflow.");
+    if(trail_top >= trail_stack + TRAIL_STACK_SIZE)
+      CRASH("trail-stack overflow.");
 #endif
 
-  *(trail_top++) = var;
+    *(trail_top++) = var;
+  }
 }
 
 
@@ -1253,10 +1259,10 @@ static void trace_write(char *title, char *name, int arity, X *A, CHOICE_POINT *
 
 /// unification
 
-#define unify(x, y)   ({ X _x = (x), _y = (y); _x == _y || unify1(_x, _y); })
+#define unify(C0, x, y)   ({ X _x = (x), _y = (y); _x == _y || unify1(C0, _x, _y); })
 
 
-static int unify1(X x, X y)
+static int unify1(CHOICE_POINT *C0, X x, X y)
 {
   x = deref(x);
   y = deref(y);
@@ -1277,7 +1283,7 @@ static int unify1(X x, X y)
     */
 
     SLOT_SET(x, 0, y);
-    push_trail(x);
+    push_trail(C0, x);
     return 1;
   }
 
@@ -1291,7 +1297,7 @@ static int unify1(X x, X y)
     */
 
     SLOT_SET(y, 0, x);
-    push_trail(y);
+    push_trail(C0, y);
     return 1;
   }
 
@@ -1315,7 +1321,7 @@ static int unify1(X x, X y)
     ++i;
 
   while(i < s) {
-    if(!unify(slot_ref(x, i), slot_ref(y, i)))
+    if(!unify(C0, slot_ref(x, i), slot_ref(y, i)))
       return 0;
 
     ++i;
@@ -1799,6 +1805,7 @@ static int compare_terms(X x, X y)
     C->R = R;							\
     C->E = E;							\
     C->A = A;							\
+    C->timestamp = clock_ticks++;				\
     C->arg_top = arg_top;					\
     C->env_top = env_top;					\
     C->C0 = C0;							\
@@ -1811,6 +1818,7 @@ static int compare_terms(X x, X y)
     C->R = C0->R;							\
     C->E = E;								\
     C->A = C0->A;							\
+    C->timestamp = clock_ticks++;					\
     C->arg_top = arg_top;						\
     C->env_top = env_top;						\
     C->C0 = C0;								\
@@ -1894,6 +1902,7 @@ static int compare_terms(X x, X y)
   intern_static_symbols(PREVIOUS_SYMBOL);		\
   C0 = C = choice_point_stack;				\
   C->T = trail_top;					\
+  C->timestamp = clock_ticks++;				\
   C->R = NULL;						\
   C->C0 = NULL;						\
   C->P = &&fail_exit;					\
@@ -1909,35 +1918,34 @@ success_exit: DRIBBLE("true.\n"); terminate(0);
 /// PRIMITIVES (all expect their arguments to be deref'd)
 
 
-static int debug_hook(X x) { return 1; }
-static inline int write_char(X c) { check_fixnum(c); fputc(fixnum_to_word(c), port_file(standard_output_port)); return 1; }
+#define PRIMITIVE(name, ...)	   static int name(CHOICE_POINT *C0, __VA_ARGS__)
 
 
-static int basic_write(X x) 
+PRIMITIVE(debug_hook, X x) { return 1; }
+PRIMITIVE(write_char, X c) { check_fixnum(c); fputc(fixnum_to_word(c), port_file(standard_output_port)); return 1; }
+
+PRIMITIVE(basic_write, X x) 
 { 
   basic_write_term(port_file(standard_output_port), 0, 99999, 0, x); 
   return 1; 
 }
 
-
-static int basic_writeq(X x) 
+PRIMITIVE(basic_writeq, X x) 
 { 
   basic_write_term(port_file(standard_output_port), 0, 99999, 1, x); 
   return 1; 
 }
 
+PRIMITIVE(gc, X dummy) { alloc_top = fromspace_limit + 1; return 1; }
 
-static int gc() { alloc_top = fromspace_limit + 1; return 1; }
-
-static int halt(X code) 
+PRIMITIVE(halt, X code) 
 { 
   check_fixnum(code);
   terminate(fixnum_to_word(code));
   return 1;			/* never executed */
 }
 
-
-static int command_line_arguments(X var)
+PRIMITIVE(command_line_arguments, X var)
 {
   X lst = END_OF_LIST_VAL;
 
@@ -1954,5 +1962,5 @@ static int command_line_arguments(X var)
     }
   }
 
-  return unify(lst, var);
+  return unify(C0, lst, var);
 }
