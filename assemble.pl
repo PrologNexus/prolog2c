@@ -104,9 +104,9 @@ assemble(determinate_call(NAME, RLIST), S, S) :-
 	mangle_name(NAME, MNAME),
 	gen('DETERMINATE_CALL(', MNAME, '$', ARITY, ');\n').
 
-assemble(foreign_call(NAME, 0), S, S) :- gen('if(!', NAME, '()) FAIL;\n').
+assemble(foreign_call(NAME, 0), S, S) :- gen('if(!', NAME, '(C0)) FAIL;\n').
 assemble(foreign_call(NAME, RLIST), S, S) :-
-	gen('if(!', NAME, '(C0,'),
+	gen('if(!', NAME, '(C0'),
 	generate_foreign_arguments(RLIST),
 	gen(')) FAIL;\n').	%XXX doesn't pop
 
@@ -232,7 +232,7 @@ generate_data_list([X]) :- gen(X), !.
 generate_data_list([X|Y]) :- gen(X,','), generate_data_list(Y).
 
 generate_foreign_arguments([]).
-generate_foreign_arguments([X]) :- gen('deref(', X, ')').
+generate_foreign_arguments([X]) :- gen(',deref(', X, ')').
 generate_foreign_arguments([X|MORE]) :-
 	gen(',deref(', X, ')'),
-	assemble_foreign_arguments(MORE).
+	generate_foreign_arguments(MORE).
