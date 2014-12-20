@@ -2270,7 +2270,7 @@ PRIMITIVE(db_next, X ref, X result)
   if(item != NULL) {
     ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 1);
     b->d[ 0 ] = (X)item;
-    return unify(ref2, (X)b);
+    return unify(result, (X)b);
   }
 
   return 0;
