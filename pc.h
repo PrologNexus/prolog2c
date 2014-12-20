@@ -1830,7 +1830,9 @@ static int compare_terms(X x, X y)
 // evict into malloc'd memory, replacing variables with new ones with indexes from 0 to N
 static X freeze_term_recursive(X x)
 {
-  if(is_FIXNUM(x)) return x;
+  x = deref(x);
+
+  if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return x;
 
   if(is_VAR(x)) {
     //XXX could use hashing, but probably not worth it
@@ -1892,7 +1894,7 @@ static int thaw_term_recursive(X *xp)
 {
   X x = *xp;
 
-  if(is_FIXNUM(x)) return 1;
+  if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return 1;
 
   if(is_VAR(x)) {
     WORD index = fixnum_to_word(slot_ref(x, 1));
