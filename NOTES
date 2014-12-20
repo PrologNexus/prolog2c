@@ -17,8 +17,7 @@ NOTES											              -*- Org -*-
 * Things to test
 ** TODO GC symbol-reclamation.
 ** TODO all numerical functions + operators.
-** TODO ordering, particularly between EOL/atom/port and list/structure.
-** TODO file:nrev.pl, file:queens.pl, later add as benchmarks.
+** TODO file:queens.pl, file:code/crypta.pl
 * Missing
 ** Compiler
 *** Write driver script
@@ -52,7 +51,7 @@ NOTES											              -*- Org -*-
 *** Basic Edinburgh I/O
     - "see", "seen", "seeing", "tell", "told", "telling"
     - stream-alias "user" (default I/O ports)
-    - "get", "get0", "put", "peek_char", "tab"
+    - "get", "get0", "put", "peek"
 *** Non-standard primitives we need for bootstrapping
     | getenv/1                 |                                                                     |
     | command_line_arguments/1 |                                                                     |
@@ -85,15 +84,20 @@ NOTES											              -*- Org -*-
      - tricky.
 *** TODO Should "make_term" deref it's args, especially the functor?
 *** TODO Is cycle-checking in =deref= really necessary?
-*** TODO Use hash-tables for symbol-table
 * List of primitives, callable via =foreign_call=
-  | basic_write(X)            | only handles symbol, number, [], var, port, doesn*t quotes |
-  | basic_writeq(X)           | quotes atoms                                               |
-  | command_line_arguments(X) |                                                            |
-  | debug_hook(X)             | does nothing, suitable for hooking into                    |
-  | gc                        | perform garbage collection                                 |
-  | halt(I)                   | terminate process                                          |
-  | write_char(I)             |                                                            |
+  | basic_write(X)                      | only handles symbol, number, [], var, port, doesn*t quotes                            |
+  | basic_writeq(X)                     | quotes atoms                                                                          |
+  | command_line_arguments(X)           |                                                                                       |
+  | db_create(NAME, SIZE, DB)           | create database, with given name (atom), table-size and unifies DB with db-designator |
+  | db_erase(REF)                       | erases DB entry, invalidating all other refs to this item                             |
+  | db_find(DB, KEY, REF)               | unifies REF with first entry found for KEY (atom)                                     |
+  | db_next(REF, REF2)                  | unifies REF2 with entry after REF or fails                                            |
+  | db_record(DB, ATEND, KEY, VAL, REF) | inserts new item (ATEND != 0: insert at end)                                          |
+  | db_ref(REF, VAL)                    | unifies VAL with referenced item or fails if GC is needed (so VAL should be a var)    |
+  | debug_hook(X)                       | does nothing, suitable for hooking into                                               |
+  | gc                                  | perform garbage collection                                                            |
+  | halt(I)                             | terminate process                                                                     |
+  | write_char(I)                       |                                                                                       |
 * Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz

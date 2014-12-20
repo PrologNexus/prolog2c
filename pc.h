@@ -69,6 +69,7 @@
 #define MAXIMAL_NUMBER_OF_ARGUMENTS 100
 #define DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT 10
 #define TRACE_DEBUG_WRITE_LIMIT 5
+#define FREEZE_TERM_VAR_TABLE_SIZE 1000
 
 
 /// miscellanous
@@ -144,8 +145,6 @@ typedef struct PORT_BLOCK {
   X data;
 } PORT_BLOCK;
 
-#define PREVIOUS_SYMBOL  END_OF_LIST_VAL
-
 typedef struct CHOICE_POINT {
   X *T, *R, *E, *A, *env_top, *arg_top;
   struct CHOICE_POINT *C0;
@@ -153,13 +152,36 @@ typedef struct CHOICE_POINT {
   WORD timestamp;
 } CHOICE_POINT;
 
-
 typedef struct FINALIZER
 {
   X object;
   void (*finalizer)(X);
   struct FINALIZER *next;
 } FINALIZER;
+
+typedef struct DB
+{
+  char *name;
+  WORD tablesize;
+  struct DB_BUCKET **table;
+} DB;
+
+typedef struct DB_BUCKET
+{
+  DB *db;
+  WORD index;
+  char *key;
+  WORD keylen;
+  struct DB_ITEM *firstitem, *lastitem;
+  struct DB_BUCKET *previous, *next;
+} DB_BUCKET;
+
+typedef struct DB_ITEM 
+{
+  X val;
+  DB_BUCKET *bucket;
+  struct DB_ITEM *previous, *next;
+} DB_ITEM;
 
 
 /// tags and type-codes
@@ -210,6 +232,7 @@ typedef struct FINALIZER
 #define STRING_TYPE  0x27
 #define STRUCTURE_TYPE  8
 #define PAIR_TYPE  9
+#define DBREFERENCE_TYPE 0x4a
 
 #define TYPE_TO_TAG(t)  ((WORD)(t) << TYPE_SHIFT)
 #define TAG_TO_TYPE(t)  ((WORD)(t) >> TYPE_SHIFT)
@@ -222,6 +245,7 @@ typedef struct FINALIZER
 #define END_OF_LIST_TAG  TYPE_TO_TAG(END_OF_LIST_TYPE)
 #define SYMBOL_TAG  TYPE_TO_TAG(SYMBOL_TYPE)
 #define PORT_TAG  TYPE_TO_TAG(PORT_TYPE)
+#define DBREFERENCE_TAG TYPE_TO_TAG(DBREFERENCE_TYPE)
 
 #define fixnum_to_word(n)  ((WORD)(n) >> 1)
 #define word_to_fixnum(n)  ((X)((WORD)(n) << 1 | FIXNUM_MARK_BIT))
@@ -238,6 +262,8 @@ typedef struct FINALIZER
 
 #define ZERO     word_to_fixnum(0)
 #define ONE     word_to_fixnum(0)
+
+#define PREVIOUS_SYMBOL  END_OF_LIST_VAL
 
 
 /// predefined literals and global variables
@@ -275,9 +301,11 @@ static char **global_argv;
 static int global_argc;
 static void *ifthen_stack[ IFTHEN_STACK_SIZE ], **ifthen_top = ifthen_stack;
 static WORD clock_ticks = 0;
+static X freeze_term_var_table[ FREEZE_TERM_VAR_TABLE_SIZE * 2 ];
+static int freeze_term_var_counter;
 
 static CHAR *type_names[] = { 
-  "invalid", "fixnum", "null", "symbol", "flonum", "stream", "variable", "string", "structure", "pair"
+  "invalid", "fixnum", "null", "symbol", "flonum", "stream", "variable", "string", "structure", "pair", "dbreference"
 };
 
 
@@ -345,6 +373,7 @@ static void crash_hook()
 #define is_STRUCTURE(x)  is(STRUCTURE_TYPE, (x))
 #define is_PORT(x)  is(PORT_TYPE, (x))
 #define is_FLONUM(x)  is(FLONUM_TYPE, (x))
+#define is_DBREFERENCE(x)  is(DBREFERENCE_TYPE, (x))
 
 
 static inline int is_number(X x)
@@ -599,6 +628,7 @@ static inline X check_range_STRING(X x, WORD i, WORD j)
 #define check_type_SYMBOL(x)  check_type(SYMBOL_TYPE, (x))
 #define check_type_PORT(x)  check_type(PORT_TYPE, (x))
 #define check_type_STRUCTURE(x)  check_type(VECTOR_TYPE, (x))
+#define check_type_DBREFERENCE(x)  check_type(DBREFERENCE_TYPE, (x))
 
 
 static inline int is_port_and_direction(X x, X d)
@@ -1004,6 +1034,7 @@ static void initialize(int argc, char *argv[])
   trail_top = trail_stack;
   env_top = environment_stack;
   arg_top = argument_stack;
+  memset(freeze_term_var_table, 0, FREEZE_TERM_VAR_TABLE_SIZE * 2 * sizeof(X));
 
   for(int i = 0; i < SYMBOL_TABLE_SIZE; ++i)
     symbol_table[ i ] = END_OF_LIST_VAL;
@@ -1199,6 +1230,10 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
       fputc(')', fp);
       break;
     }
+
+    case DBREFERENCE_TYPE:
+      fprintf(fp, "<dbreference>(%p)", (void *)slot_ref(x, 0));
+      break;
 
     default:
       fprintf(fp, "<object of unknown type %p:" WORD_OUTPUT_FORMAT ">", (void *)x, objtype(x));
@@ -1790,6 +1825,239 @@ static int compare_terms(X x, X y)
 }
 
 
+/// Databases
+
+// evict into malloc'd memory, replacing variables with new ones with indexes from 0 to N
+static X freeze_term_recursive(X x)
+{
+  if(is_FIXNUM(x)) return x;
+
+  if(is_VAR(x)) {
+    //XXX could use hashing, but probably not worth it
+    for(int i = 0; i < freeze_term_var_counter; i += 2) {
+      if(x == freeze_term_var_table[ i ]) 
+	return freeze_term_var_table[ i + 1 ];
+    }
+
+    ASSERT(freeze_term_var_counter < FREEZE_TERM_VAR_TABLE_SIZE, "can not freeze term - too many variables");
+    freeze_term_var_table[ freeze_term_var_counter++ ] = x;
+    BLOCK *newvar = (BLOCK *)malloc(sizeof(WORD) * 4);
+    ASSERT(newvar, "out of memory - can mot freeze term");
+    newvar->h = VAR_TAG | 3;
+    newvar->d[ 0 ] = (X)newvar;
+    newvar->d[ 1 ] = word_to_fixnum(freeze_term_var_counter / 2);
+    newvar->d[ 2 ] = word_to_fixnum(0);
+    freeze_term_var_table[ freeze_term_var_counter++ ] = (X)newvar;
+    return (X)newvar;
+  }
+
+  if(is_byteblock(x)) {
+    WORD size = objsize(x);
+    BYTEBLOCK *b = (BYTEBLOCK *)malloc(sizeof(WORD) + size);
+    ASSERT(b, "out of memory - can not allocate byteblock");
+    b->h = objbits(x);
+    memcpy(b->d, objdata(x), size);
+    return (X)b;
+  }
+
+  WORD size = objsize(x);
+  WORD i = 0;
+  BLOCK *b = (BLOCK *)malloc(sizeof(WORD) * (size + 1));
+  ASSERT(b, "out of memory - can not allocate block");
+  b->h = objbits(x);
+
+  if(is_specialblock(x)) {
+    ++i;
+    b->d[ 0 ] = slot_ref(x, 0);
+  }
+
+  for(;i < size; ++i)
+    b->d[ i ] = freeze_term_recursive(slot_ref(x, i));
+
+  return (X)b;
+}
+
+
+static X freeze_term(X x)
+{
+  freeze_term_var_counter = 0;
+  X y = freeze_term_recursive(x);
+  memset(freeze_term_var_table, 0, freeze_term_var_counter * 2 * sizeof(X));
+  return y;
+}
+
+
+// copy object back into GC'd memory - this will set "failed" to true, if heap-space is inusfficient
+static int thaw_term_recursive(X *xp)
+{
+  X x = *xp;
+
+  if(is_FIXNUM(x)) return 1;
+
+  if(is_VAR(x)) {
+    WORD index = fixnum_to_word(slot_ref(x, 1));
+
+    if(freeze_term_var_table[ index ] != NULL) {
+      *xp = freeze_term_var_table[ index ];
+      return 1;
+    }
+
+    if(alloc_top + objsize(x) + 1 > fromspace_limit) return 0;
+
+    *xp = make_var();
+    freeze_term_var_table[ index ] = *xp;
+    return 1;
+  }
+
+  if(is_byteblock(x)) {
+    WORD size = objsize(x);
+
+    if(alloc_top + bytes_to_words(size + 1) > fromspace_limit)
+      return 0;
+
+    ALLOCATE_BYTEBLOCK(BYTEBLOCK *b, objtype(x), size);
+    memcpy(b->d, objdata(x), size);
+    *xp = (X)b;
+    return 1;
+  }
+
+  WORD i = 0;
+  WORD size = objsize(x);
+
+  if(alloc_top + size + 1 > fromspace_limit) return 0;
+
+  ALLOCATE_BLOCK(BLOCK *b, objtype(x), size);
+  
+  // initialize, in case thawing fails
+  for(i = 0; i < size; ++i)
+    b->d[ i ] = ZERO;
+  
+  if(is_specialblock(x)) {
+    i = 1;
+    b->d[ 0 ] = slot_ref(x, 0);
+  }
+  else i = 0;
+
+  for(;i < size; ++i) {
+    b->d[ i ] = slot_ref(x, i);
+    
+    if(!thaw_term_recursive(&(b->d[ i ]))) {
+      b->d[ i ] = ZERO;
+      return 0;
+    }
+  }
+
+  *xp = (X)b;
+  return 1;
+}
+
+
+static X thaw_term(X x, int *failed)
+{
+  X y = x;
+  freeze_term_var_counter = 0;
+  *failed = !thaw_term_recursive(&y);
+  memset(freeze_term_var_table, 0, freeze_term_var_counter * sizeof(X));
+  return y;
+}
+
+
+static DB *create_db(char *name, int namelen, WORD tablesize)
+{
+  DB *db = (DB *)malloc(sizeof(DB));
+  ASSERT(db, "out of memory - can not create database");
+  db->name = strndup(name, namelen);
+  db->tablesize = tablesize;
+  db->table = (DB_BUCKET **)malloc(sizeof(DB_BUCKET *) * tablesize);
+  ASSERT(db->table, "out of memory - can not allocate database table");
+
+  for(WORD i = 0; i < tablesize; ++i)
+    db->table[ i ] = NULL;
+
+  return db;
+}
+
+
+static DB_ITEM *db_insert_item(DB *db, char *key, int keylen, X val, int atend)
+{
+  WORD hash = hash_name(key, keylen) % db->tablesize;
+  DB_ITEM *item = (DB_ITEM *)malloc(sizeof(DB_ITEM));
+  ASSERT(item, "out of memory - can not allocate db-item");
+  item->val = freeze_term(val);
+
+  for(DB_BUCKET *bucket = db->table[ hash ]; bucket != NULL; bucket = bucket->next) {
+    if(bucket->keylen == keylen && !strncmp(key, bucket->key, keylen)) {
+      item->bucket = bucket;
+
+      if(atend) {
+	item->previous = bucket->lastitem;
+	item->next = NULL;
+	bucket->lastitem->next = item;
+	bucket->lastitem = item;
+      }
+      else {
+	item->previous = NULL;
+	item->next = bucket->firstitem;
+	bucket->firstitem = item;
+      }
+
+      return item;
+    }
+  }
+
+  DB_BUCKET *bucket = (DB_BUCKET *)malloc(sizeof(DB_BUCKET));
+  ASSERT(bucket, "out of memory - can not allocate db-bucket");
+  bucket->db = db;
+  bucket->index = hash;
+  bucket->key = strndup(key, keylen);
+  bucket->keylen = keylen;
+  bucket->firstitem = item;
+  item->next = NULL;
+  bucket->lastitem = item;
+  bucket->previous = NULL;
+  bucket->next = db->table[ hash ];
+  db->table[ hash ] = bucket;
+  return item;
+}
+
+
+static DB_ITEM *db_find_first_item(DB *db, char *key, int keylen)
+{
+  WORD hash = hash_name(key, keylen) % db->tablesize;
+
+  for(DB_BUCKET *bucket = db->table[ hash ]; bucket != NULL; bucket = bucket->next) {
+    if(bucket->keylen == keylen && !strncmp(key, bucket->key, keylen))
+      return bucket->firstitem;
+  }
+
+  return NULL;
+}
+
+
+static void db_erase_item(DB_ITEM *item)
+{
+  DB_BUCKET *bucket = item->bucket;
+
+  if(bucket->firstitem == item && bucket->lastitem == item) {
+    if(bucket->previous) bucket->previous->next = bucket->next;
+    
+    if(bucket->next) bucket->next->previous = bucket->previous;
+
+    bucket->db->table[ bucket->index ] = NULL;
+    bucket->previous = bucket->next = NULL;
+    free(bucket);
+  }
+  else {
+    if(item->previous) item->previous->next = item->next;
+  
+    if(item->next) item->next->previous = item->previous;
+  }
+
+  item->next = item->previous = NULL;
+  free(item);
+}
+
+
 /// VM operations
 
 #define CURRENT_NAME
@@ -1962,5 +2230,77 @@ PRIMITIVE(command_line_arguments, X var)
     }
   }
 
-  return unify(C0, lst, var);
+  return unify(lst, var);
+}
+
+PRIMITIVE(db_create, X name, X size, X result) 
+{
+  check_type_SYMBOL(name);
+  check_fixnum(size);
+  X str = slot_ref(name, 0);
+  DB *db = create_db((char *)objdata(str), string_length(str), fixnum_to_word(size));
+  // this is a fake db-reference, not usable for lookup
+  ALLOCATE_BLOCK(BLOCK *dbr, DBREFERENCE_TYPE, 1);
+  dbr->d[ 0 ] = (X)db;
+  return unify(result, (X)dbr);
+}
+
+PRIMITIVE(db_find, X dbr, X key, X ref)
+{
+  check_type_DBREFERENCE(dbr);
+  check_type_SYMBOL(key);
+  X str = slot_ref(key, 0);
+  DB *db = (DB *)slot_ref(dbr, 0);
+  DB_ITEM *item = db_find_first_item(db, (char *)objdata(str), string_length(str));
+
+  if(item) {
+    ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 1);
+    b->d[ 0 ] = (X)item;
+    return unify(ref, (X)b);
+  }
+
+  return 0;
+}
+
+PRIMITIVE(db_next, X ref, X result)
+{
+  check_type_DBREFERENCE(ref);
+  DB_ITEM *item = ((DB_ITEM *)slot_ref(ref, 0))->next;
+
+  if(item != NULL) {
+    ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 1);
+    b->d[ 0 ] = (X)item;
+    return unify(ref2, (X)b);
+  }
+
+  return 0;
+}
+
+PRIMITIVE(db_ref, X ref, X result)
+{
+  check_type_DBREFERENCE(ref);
+  DB_ITEM *item = (DB_ITEM *)slot_ref(ref, 0);
+  int failed;
+  X x = thaw_term(item->val, &failed);
+  return !failed && unify(result, x);
+}
+
+PRIMITIVE(db_erase, X ref)
+{
+  check_type_DBREFERENCE(ref);
+  DB_ITEM *item = (DB_ITEM *)slot_ref(ref, 0);
+  db_erase_item(item);
+  return 1;
+}
+
+PRIMITIVE(db_record, X dbr, X atend, X key, X val, X result)
+{
+  check_type_DBREFERENCE(dbr);
+  check_type_SYMBOL(key);
+  X str = slot_ref(key, 0);
+  DB *db = (DB *)slot_ref(dbr, 0);
+  DB_ITEM *item = db_insert_item(db, (char *)objdata(str), string_length(str), val, atend != ZERO);
+  ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 1);
+  b->d[ 0 ] = (X)item;
+  return unify(result, (X)b);
 }
