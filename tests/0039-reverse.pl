@@ -1,5 +1,3 @@
-:- include('prelude.pl').
-
 iota(N, L) :- iota(0, N, L).
 iota(N, N, []).
 iota(N, M, [N|R]) :-
