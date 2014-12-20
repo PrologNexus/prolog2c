@@ -20,3 +20,7 @@ command_line_arguments(X) :- foreign_call(command_line_arguments(X)).
 reverse(L, R) :- reverse(L, R, []).
 reverse([],Z,Z).
 reverse([H|T],Z,Acc) :- reverse(T,Z,[H|Acc]).
+
+compare(>, X, Y) :- X @> Y, !.
+compare(<, X, Y) :- X @< Y, !.
+compare(=, X, X).
