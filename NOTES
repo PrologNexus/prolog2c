@@ -2,21 +2,18 @@ NOTES											              -*- Org -*-
 
 
 * Optimization opportunities
-** We need to reduce usage of trail
-   - any sort of loop (iota) is constrained by trail-stack size.
 ** Anonymous variables could get special handling when in argument position
    - unification is a noop, unless nested in another term.
 ** Mode-declarations
 ** Determinacy declarations
-   - i.e. ":- determinate(PRED)."
+   - i.e. ":- determinate(PI)."
 ** Clause indexing
 *** This could even be extended to invoke particular entry-points depending on call-arguments
 ** Last clause of predicate with a single call can be treated as determinate (and enable TCO)
    - if we know about determinacy of library predicates, this could be
      generalized to multiple calls.
-** Can we combine call + exit?
-   - i.e. use a "lastcall" instruction.
 ** Deterministic goal in condition of if-then-else can drop CP dance
+   - same for '\\+'/2
 * Things to test
 ** TODO GC symbol-reclamation.
 ** TODO all numerical functions + operators.
@@ -29,7 +26,8 @@ NOTES											              -*- Org -*-
     - could run separate program to preprocess source.
     - could even filter out latent term_expansions expressions and build
       preprocessor on the fly.
-*** It would be nice to do selective tracing
+*** Use preprocessor for implementing term_expansion
+*** Allow selective tracing
     - declaration "trace(PI)", where PI may be atom, NAME/ARITY, or
       list of those.
 ** Library/Runtime
@@ -54,10 +52,7 @@ NOTES											              -*- Org -*-
 *** Basic Edinburgh I/O
     - "see", "seen", "seeing", "tell", "told", "telling"
     - stream-alias "user" (default I/O ports)
-    - "get", "get0", "put", "peek_char", 
-*** file:prelude.pl:
-**** Add all-solutions predicates
-     - "bagof", "setof", "findall"
+    - "get", "get0", "put", "peek_char", "tab"
 *** Non-standard primitives we need for bootstrapping
     | getenv/1                 |                                                                     |
     | command_line_arguments/1 |                                                                     |
@@ -91,18 +86,16 @@ NOTES											              -*- Org -*-
 *** TODO Should "make_term" deref it's args, especially the functor?
 *** TODO Is cycle-checking in =deref= really necessary?
 *** TODO Use hash-tables for symbol-table
-*** TODO TAILCALL does not provide a TRACE_EXIT
 * List of primitives, callable via =foreign_call=
-  | write_char(I)             |                                                            |
   | basic_write(X)            | only handles symbol, number, [], var, port, doesn*t quotes |
   | basic_writeq(X)           | quotes atoms                                               |
+  | command_line_arguments(X) |                                                            |
+  | debug_hook(X)             | does nothing, suitable for hooking into                    |
   | gc                        | perform garbage collection                                 |
   | halt(I)                   | terminate process                                          |
-  | command_line_arguments(X) |                                                            |
-* Tests
+  | write_char(I)             |                                                            |
+* Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
-* Library code
-** file:/archive/dec10-prolog-library.tgz
 * Benchmark suites
 ** http://www.cs.cmu.edu/afs/cs/project/ai-repository/ai/lang/prolog/code/bench/
