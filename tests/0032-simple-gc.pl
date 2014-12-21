@@ -1,6 +1,3 @@
-display(X) :- foreign_call(basic_write(X)).
-nl :- foreign_call(write_char(10)).
-
 main :-
 	iota(1000, X),
 	foreign_call(gc(0)),

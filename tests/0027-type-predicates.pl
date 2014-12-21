@@ -47,7 +47,3 @@ main :-
 	\+float(x(y)), display(\+float(x(y))), nl,
 	float(1.23), display(float(1.23)), nl,
 	\+float([]), display(\+float([])), nl.
-	
-display(X) :- foreign_call(basic_write(X)).
-
-nl :- foreign_call(write_char(10)).

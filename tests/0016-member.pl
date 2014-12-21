@@ -1,7 +1,3 @@
-nl :- foreign_call(write_char(10)).
-
-display(X) :- foreign_call(basic_write(X)).
-
 main :-
 	member(X, [1,2,3]), display(X), nl, fail.
 main :-

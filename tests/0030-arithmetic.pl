@@ -1,6 +1,3 @@
-display(X) :- foreign_call(basic_write(X)).
-nl :- foreign_call(write_char(10)).
-
 main :-
 	Y = 3,
 	X1 is Y + 2, display(X1), nl,

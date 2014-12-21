@@ -1,6 +1,3 @@
-display(X) :- foreign_call(basic_write(X)).
-nl :- foreign_call(write_char(10)).
-
 append([],X,X).
 append([X|Y],Z,[X|W]) :- append(Y,Z,W).  
 
