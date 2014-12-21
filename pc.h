@@ -69,6 +69,7 @@
 #define DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT 10
 #define TRACE_DEBUG_WRITE_LIMIT 5
 #define FREEZE_TERM_VAR_TABLE_SIZE 1000
+#define MAX_GLOBAL_VARIABLES 256
 
 
 /// miscellanous
@@ -301,6 +302,8 @@ static void **ifthen_stack, **ifthen_top;
 static WORD clock_ticks = 0;
 static X freeze_term_var_table[ FREEZE_TERM_VAR_TABLE_SIZE * 2 ];
 static int freeze_term_var_counter;
+static X global_variables[ MAX_GLOBAL_VARIABLES ];
+static int global_variable_counter = 0;
 
 static CHAR *type_names[] = { 
   "invalid", "fixnum", "null", "symbol", "flonum", "stream", "variable", "string", "structure", "pair", "dbreference"
@@ -368,6 +371,9 @@ static CHAR *type_names[] = {
 #define is_PORT(x)  is(PORT_TYPE, (x))
 #define is_FLONUM(x)  is(FLONUM_TYPE, (x))
 #define is_DBREFERENCE(x)  is(DBREFERENCE_TYPE, (x))
+
+#define GLOBAL_REF(index)  global_variables[ index ]
+#define GLOBAL_SET(index, x)  global_variables[ index ] = (x)
 
 
 static inline int is_number(X x)
@@ -765,8 +771,12 @@ static void collect_garbage(int args)
   for(X *p = argument_stack; p < arg_top; ++p)
     mark1(p);
 
+  // mark global variables
+  for(int i = 0; i < global_variable_counter; ++i)
+    mark1(&(global_variables[ i ]));
+
   //XXX preliminary - later don't mark and remove unforwarded items
-  //    (adjusting T pointers in CP-stack accordingly)
+  //    (adjusting trail-pointers in CP-stack accordingly)
   for(X *p = trail_stack; p < trail_top; ++p)
     mark1(p);
 
@@ -1074,6 +1084,9 @@ static void initialize(int argc, char *argv[])
 
   for(int i = 0; i < SYMBOL_TABLE_SIZE; ++i)
     symbol_table[ i ] = END_OF_LIST_VAL;
+
+  for(int i = 0; i < MAX_GLOBAL_VARIABLES; ++i)
+    global_variables[ i ] = ZERO;
 }
 
 

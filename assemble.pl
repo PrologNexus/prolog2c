@@ -10,12 +10,22 @@ assemble_file(FILE, STATE) :-
 	default_setting(entry_point, MAIN),
 	mangle_name(MAIN, MMAIN),
 	gen('#define INIT_GOAL ', MMAIN, '$0\n'),
+	assemble_global_variables(0, N),
 	gen('int main(int argc, char *argv[]) {\n'),
+	gen('global_variable_counter=', N, ';\n'),
 	gen('BOILERPLATE;{\n'),
 	assemble_instructions(S1),
 	gen('}}\n'),
 	generate_trailer,
 	told.
+
+assemble_global_variables(I, N) :-
+	recorded(global_variables, NAME, REF),
+	erase(REF),
+	gen('#define ', NAME, ' ', I, '\n'),
+	I2 is I + 1,
+	assemble_global_variables(I2, N).
+assemble_global_variables(N, N).
 
 assemble_instructions(STATE) :-
 	retract(code(OP)),
@@ -153,6 +163,13 @@ assemble(float(R), S, S) :- gen('if(!is_FLONUM(deref(', R, '))) FAIL;\n').
 
 assemble(term_less(R1, R2), S, S) :- gen('if(compare_terms(deref(', R1, '),deref(', R2, ')) <= 0) FAIL;\n').
 assemble(term_not_less(R1, R2), S, S) :- gen('if(compare_terms(deref(', R1, '),deref(', R2, ')) > 0) FAIL;\n').
+
+assemble(global_ref(NAME, R), S, S) :-
+	mangle_name(NAME, MNAME),
+	gen('X ', R, '=GLOBAL_REF(', MNAME, ');\n').
+assemble(global_set(NAME, R), S, S) :-
+	mangle_name(NAME, MNAME),
+	gen('GLOBAL_SET(', MNAME, ',', R, ');\n').	
 
 assemble(OP, _, _) :-
 	error(['invalid pseudo instruction: ', OP]).

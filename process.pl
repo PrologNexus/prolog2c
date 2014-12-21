@@ -106,6 +106,10 @@ process_directive(include(FNAME), STATE1, STATE2) :-
 	open_file_stack(CURRENT, STATE1, STATE2),
 	see(FNAME).
 
+process_directive(global_variable(NAME), S, S) :-
+	mangle_name(NAME, MNAME),
+	recordz(global_variables, MNAME).
+
 process_directive(DECL, STATE, STATE) :-
 	error(['unrecognized directive: ', DECL]).
 
