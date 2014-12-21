@@ -20,10 +20,12 @@ tak :-
 
 tak(X,Y,Z,A) :-
         X =< Y,
-        Z = A.
+        !,
+	Z = A.
 tak(X,Y,Z,A) :-
 	X > Y,
-        X1 is X - 1,
+        !,
+	X1 is X - 1,
         tak(X1,Y,Z,A1),
         Y1 is Y - 1,
         tak(Y1,Z,X,A2),
