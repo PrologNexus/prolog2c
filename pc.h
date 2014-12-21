@@ -1096,10 +1096,9 @@ static inline X make_var()
 }
 
 
-#define deref1(var)  (((BLOCK *)(var))->d[ 0 ])
+#define deref(x)   ({ X _x = (x); is_FIXNUM(_x) ? _x : deref1(_x); })
 
-
-static X deref(X val)
+static X deref1(X val)
 {
   static X stack[ DEREF_STACK_SIZE ];
   X *sp = stack;
@@ -1114,7 +1113,7 @@ static X deref(X val)
     }
 
     *(sp++) = val;
-    val = deref1(val);
+    val = slot_ref(val, 0);
 
 #ifndef UNSAFE
     if(sp >= stack + DEREF_STACK_SIZE)
