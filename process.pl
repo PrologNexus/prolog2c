@@ -12,7 +12,7 @@ compile_file(FILE) :-
 compile_file_finished(STATE) :-
 	recorded(compiling_input, _, REF),
 	erase(REF),
-	process_initialization_goal(STATE).
+	process_initialization_goals(STATE).
 compile_file_finished(STATE) :-
 	seen,
 	recorded(output_file, OUTFILE),
@@ -94,17 +94,21 @@ process_directive((DECL1, DECL2), S1, S2) :-
 	process_directive(DECL1, S1, S),
 	process_directive(DECL2, S, S2).
 
-process_directive(initialization GOAL, STATE, STATE) :-
-	recorded(initialization_goal, OLD, REF),
-	erase(REF),
-	recorda(initialization_goal, (OLD, GOAL)).
-process_directive(initialization GOAL, STATE, STATE) :-
-	recorda(initialization_goal, GOAL).
+process_directive(initialization(GOAL), STATE, STATE) :-
+	(recorded(initialization_goal, OLD, REF), erase(REF) ->
+	 recorda(initialization_goal, (OLD, GOAL))
+	; recorda(initialization_goal, GOAL)).
+
+process_directive(pre_initialization(GOAL), STATE, STATE) :-
+	(recorded(pre_initialization_goal, OLD, REF), erase(REF) ->
+	 recorda(pre_initialization_goal, (OLD, GOAL))
+	; recorda(pre_initialization_goal, GOAL)).
 
 process_directive(include(FNAME), STATE1, STATE2) :-
 	seeing(CURRENT), 
 	open_file_stack(CURRENT, STATE1, STATE2),
-	see(FNAME).
+	locate_file(FNAME, REALNAME),
+	see(REALNAME).
 
 process_directive(global_variable(NAME), S, S) :-
 	mangle_name(NAME, MNAME),
@@ -130,9 +134,19 @@ show_intermediate_code :-
 show_intermediate_code.
 
 
-%%% add clause for initialization goal
+%% add clause for (pre-)initialization goals
 
-process_initialization_goal(STATE) :-
+process_initialization_goals(STATE) :-
 	(recorded(initialization_goal, GOAL); GOAL = main),
+	(recorded(pre_initialization_goal, IGOAL); IGOAL = true),
+	findall(B, recorded(boilerplate, B), BOILERPLATE),
 	default_setting(entry_point, EP),
-	process_input([(EP :- GOAL)], [], _, STATE).
+	process_input([(EP :- IGOAL, GOAL)|BOILERPLATE], [], _, STATE).
+
+
+%% add boilerplate code for a given tag, unless already added
+
+add_boilerplate(TAG, _) :- recorded(boilerplate_added, TAG).
+add_boilerplate(TAG, CODE) :-
+	recordz(boilerplate, CODE),
+	recordz(boilerplate_added, TAG).

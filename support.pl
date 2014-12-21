@@ -43,3 +43,18 @@ concatenate([], []).
 concatenate([X|Y], Z) :-
 	concatenate(Y, Z2),
 	append(X, Z2, Z).
+
+locate_file(NAME, REALNAME) :-
+	recorded(include_path, PATH),
+	locate_file(NAME, PATH, REALNAME).
+
+locate_file(NAME, [], _) :-
+	error(['include-file not found: ', NAME]).
+locate_file(NAME, [DIR|_], REALNAME) :-
+	atomic_list_concat([DIR, '/', NAME], REALNAME),
+	file_exists(REALNAME).
+locate_file(NAME, [DIR|_], REALNAME) :-
+	atomic_list_concat([DIR, '/', NAME, '.pl'], REALNAME),
+	file_exists(REALNAME).
+locate_file(NAME, [_|MORE], REALNAME) :-
+	locate_file(NAME, MORE; REALNAME).

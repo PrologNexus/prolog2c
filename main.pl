@@ -18,6 +18,8 @@ main :-
 	command_line_arguments(ARGS),
 	parse_arguments(ARGS),
 	(recorded(source_file, FILE); default_setting(source_file, FILE)),
+	default_setting(include_path, PATH),
+	recorda(include_path, PATH),
 	compile_file(FILE),
 	halt.
 
@@ -31,11 +33,17 @@ parse_arguments(['-i'|MORE]) :-
 parse_arguments(['-v'|MORE]) :-
 	recorda(show_compiled_clauses, yes),
 	parse_arguments(MORE).
+parse_arguments(['-I', DIR|MORE]) :-
+	recorded(include_path, OLD, REF),
+	erase(REF),
+	recorda(include_path, [DIR|OLD]),
+	parse_arguments(MORE).
 parse_arguments(['-h'|_]) :- usage(0).
 parse_arguments(['-help'|_]) :- usage(0).
 parse_arguments(['--help'|_]) :- usage(0).
 parse_arguments([INFILE|MORE]) :-
 	name(INFILE, IFL),
+	IFL \= [45|_],		% 0'-
 	file_name_string(IFL, OFL),
 	append(OFL, ".c", OFL2),
 	name(OUTFILE, OFL2),
@@ -45,5 +53,5 @@ parse_arguments([INFILE|MORE]) :-
 parse_arguments(_) :- usage(1).
 
 usage(STATUS) :-
-	gen('usage: pc [-h] [-v] [-o FILENAME] [-i] [-L FILENAME]* [FILENAME]\n'),
+	gen('usage: pc [-h] [-v] [-o FILENAME] [-i] [FILENAME]\n'),
 	halt(STATUS).
