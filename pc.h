@@ -1,9 +1,8 @@
 //// pc.h - prolog runtime system
 
 
-#ifdef PC_H
-# error "pc.h included multiple times"
-#endif
+#ifndef PC_H
+#define PC_H
 
 
 // as if superficial warnings would make C any safer...
@@ -268,9 +267,8 @@ typedef struct DB_ITEM
 
 /// predefined literals and global variables
 
+#ifdef COMPILED_PROGRAM
 static BLOCK END_OF_LIST_VAL_BLOCK = { END_OF_LIST_TAG, {}};
-
-#define END_OF_LIST_VAL  ((X)(&END_OF_LIST_VAL_BLOCK))
 
 static STRING_BLOCK dot_name = { STRING_TYPE|3, "." };
 static BLOCK dot_atom = { SYMBOL_TYPE|3, { &dot_name, NULL, NULL } };
@@ -307,7 +305,9 @@ static int freeze_term_var_counter;
 static CHAR *type_names[] = { 
   "invalid", "fixnum", "null", "symbol", "flonum", "stream", "variable", "string", "structure", "pair", "dbreference"
 };
+#endif
 
+#define END_OF_LIST_VAL  ((X)(&END_OF_LIST_VAL_BLOCK))
 
 #define type_name(t)         (type_names[ (WORD)(t) & 0x1f ])
 #define tag_to_type_name(t)  type_name(objtype(t))
@@ -331,12 +331,6 @@ static CHAR *type_names[] = {
 # define DBG              OUTPUT
 # define DRIBBLE(...)     { if(verbose) OUTPUT(__VA_ARGS__); }
 #endif
-
-
-static void crash_hook()
-{
-  return;
-}
 
 
 /// accessors and type-testing
@@ -420,6 +414,14 @@ static inline int is_in_fixnum_range(WORD n) {
 #define SLOT_INIT(x, i, y)      atomic_slot_set(x, i, y)
 
 #define port_file(p)  (((PORT_BLOCK *)(p))->fp)
+
+
+#ifdef COMPILED_PROGRAM
+
+static void crash_hook()
+{
+  return;
+}
 
 
 static void write_barrier_error() { CRASH("assignment to non-mutable data detected"); }
@@ -2340,3 +2342,7 @@ PRIMITIVE(db_record, X dbr, X atend, X key, X val, X result)
   b->d[ 0 ] = (X)item;
   return unify(result, (X)b);
 }
+
+
+#endif
+#endif
