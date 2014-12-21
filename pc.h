@@ -42,27 +42,27 @@
 #endif
 
 #ifndef TRAIL_STACK_SIZE
-# define TRAIL_STACK_SIZE 100000
+# define TRAIL_STACK_SIZE 500000
 #endif
 
 #ifndef CHOICE_POINT_STACK_SIZE
-# define CHOICE_POINT_STACK_SIZE 10000
+# define CHOICE_POINT_STACK_SIZE 1000000
 #endif
 
 #ifndef ENVIRONMENT_STACK_SIZE 
-# define ENVIRONMENT_STACK_SIZE 10000
+# define ENVIRONMENT_STACK_SIZE 1000000
+#endif
+
+#ifndef ARGUMENT_STACK_SIZE
+# define ARGUMENT_STACK_SIZE 100000
+#endif
+
+#ifndef IFTHEN_STACK_SIZE
+# define IFTHEN_STACK_SIZE 10000
 #endif
 
 #ifndef SYMBOL_TABLE_SIZE
 # define SYMBOL_TABLE_SIZE 3001
-#endif
-
-#ifndef ARGUMENT_STACK_SIZE
-# define ARGUMENT_STACK_SIZE 10000
-#endif
-
-#ifndef IFTHEN_STACK_SIZE
-# define IFTHEN_STACK_SIZE 1000
 #endif
 
 #define DEREF_STACK_SIZE  100
@@ -289,17 +289,17 @@ static X symbol_table[ SYMBOL_TABLE_SIZE ];
 static WORD heap_reserve;
 static int verbose = 0;
 static int variable_counter = 0;
-static X environment_stack[ ENVIRONMENT_STACK_SIZE ];
-static X argument_stack[ ARGUMENT_STACK_SIZE ];
-static X trail_stack[ TRAIL_STACK_SIZE ];
+static X *environment_stack;
+static X *argument_stack;
+static X *trail_stack;
 static X *trail_top, *env_top, *arg_top;
-static CHOICE_POINT choice_point_stack[ CHOICE_POINT_STACK_SIZE ];
+static CHOICE_POINT *choice_point_stack;
 static FINALIZER *active_finalizers = NULL, *free_finalizers = NULL;
 static WORD gc_count = 0;
 static char *mmapped_heap = NULL;
 static char **global_argv;
 static int global_argc;
-static void *ifthen_stack[ IFTHEN_STACK_SIZE ], **ifthen_top = ifthen_stack;
+static void **ifthen_stack, **ifthen_top;
 static WORD clock_ticks = 0;
 static X freeze_term_var_table[ FREEZE_TERM_VAR_TABLE_SIZE * 2 ];
 static int freeze_term_var_counter;
@@ -971,6 +971,11 @@ static WORD numeric_arg(char *arg)
 static void initialize(int argc, char *argv[])
 {
   WORD heapsize = HEAP_SIZE;
+  WORD environment_stack_size = ENVIRONMENT_STACK_SIZE;
+  WORD ifthen_stack_size = IFTHEN_STACK_SIZE;
+  WORD choice_point_stack_size = CHOICE_POINT_STACK_SIZE;
+  WORD trail_stack_size = TRAIL_STACK_SIZE;
+  WORD argument_stack_size = ARGUMENT_STACK_SIZE;
   global_argc = argc;
   global_argv = argv;
 
@@ -992,6 +997,24 @@ static void initialize(int argc, char *argv[])
       case 'm':
 	mmapped_heap = arg + 3;
 	break;
+
+      case 'A':
+	argument_stack_size = numeric_arg(arg + 3);
+	break;
+
+      case 'E':
+	environment_stack_size = numeric_arg(arg + 3);
+	break;
+
+      case 'C':
+	choice_point_stack_size = numeric_arg(arg + 3);
+	break;
+
+      case 'T':
+	trail_stack_size = numeric_arg(arg + 3);
+	break;
+
+	// no option for ifthen-stack, in the moment
 
       default:
 	OUTPUT("WARNING: invalid runtime option \"%s\" (ignored)\n", arg);
@@ -1031,7 +1054,18 @@ static void initialize(int argc, char *argv[])
   default_input_port.fp = stdin;
   default_output_port.fp = stdout;
   default_error_port.fp = stderr;
+  environment_stack = (X *)malloc(environment_stack_size);
+  ASSERT(environment_stack, "out of memory - can not allocate environment stack");
+  trail_stack = (X *)malloc(trail_stack_size);
+  ASSERT(trail_stack, "out of memory - can not allocate environment stack");
+  ifthen_stack = (void **)malloc(ifthen_stack_size);
+  ASSERT(ifthen_stack, "out of memory - can not allocate if-then stack");
+  choice_point_stack = (CHOICE_POINT *)malloc(choice_point_stack_size);
+  ASSERT(choice_point_stack, "out of memory - can not allocate choice-point stack");
+  argument_stack = (X *)malloc(argument_stack_size);
+  ASSERT(argument_stack, "out of memory - can not allocate argument stack");
   trail_top = trail_stack;
+  ifthen_top = ifthen_stack;
   env_top = environment_stack;
   arg_top = argument_stack;
   memset(freeze_term_var_table, 0, FREEZE_TERM_VAR_TABLE_SIZE * 2 * sizeof(X));
