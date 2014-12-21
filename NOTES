@@ -9,6 +9,9 @@ NOTES											              -*- Org -*-
    - i.e. ":- determinate(PI)."
 ** Clause indexing
 *** This could even be extended to invoke particular entry-points depending on call-arguments
+** Arithmetic
+   - deref all vars just once at start.
+   - track types, use unboxed math.
 ** Last clause of predicate with a single call can be treated as determinate (and enable TCO)
    - if we know about determinacy of library predicates, this could be
      generalized to multiple calls.
@@ -16,8 +19,12 @@ NOTES											              -*- Org -*-
    - same for '\\+'/2
 * Things to test
 ** TODO GC symbol-reclamation.
-** TODO all numerical functions + operators.
+** TODO all numerical functions + operators
+** TODO db-stuff
 ** TODO file:queens.pl, file:code/crypta.pl
+** TODO test file:rdtok.pl, file:read.pl (self-compiled)
+** TODO tests for stuff in file:code/
+   - ordsets, queues, writef, write
 * Missing
 ** Compiler
 *** Write driver script
@@ -25,33 +32,36 @@ NOTES											              -*- Org -*-
     - could run separate program to preprocess source.
     - could even filter out latent term_expansions expressions and build
       preprocessor on the fly.
-*** Use preprocessor for implementing term_expansion
 *** Allow selective tracing
     - declaration "trace(PI)", where PI may be atom, NAME/ARITY, or
       list of those.
 ** Library/Runtime
 *** Allocate all data areas dynamically
     - add runtime-options to set sizes (trail, args, env).
-*** Internal infrastructure for record-db 
-    - simple key-value store (hashtable), with operations to add,
-      remove, lookup.
-    - add (atomic?) type DBREFERENCE, decide on sort-ordering.
-*** We could install a SIGSEGV handler and dump all global state
-    - stack-ptrs, VM-registers, etc.
 *** Runtime-information about defined clauses
     - as minimum: mapping of name/arity -> entry-point.
     - for complete support of clause/2 we would actually need the full
       source.
-*** Provide some surt of embedding
-    - could have distinct entry point that returns an invocation
-      function ptr, calling a suspension primitive from prolog then
-      returns some value to the caller, reinvocation continues, with a
-      result.
-    - "foreign_call(suspend(OUT, IN))"
+    - at least compiler could offer "call_predicate".
 *** Basic Edinburgh I/O
     - "see", "seen", "seeing", "tell", "told", "telling"
     - stream-alias "user" (default I/O ports)
     - "get", "get0", "put", "peek"
+*** Primitives needed
+    | file_exists(NAME)                   |
+    | open_stream(FILENAME, I/O?, STREAM) |
+    | close_sream(STREAM)                 |
+    | get_byte(STREAM, BYTE)              |
+    | put_byte(STREAM, BYTE)              |
+    | put_string(STREAM, ATOM/LIST)       |
+    | eof(STREAM)                         |
+    | current_input(STREAM)               |
+    | current_output(STREAM)              |
+    | current_error_output(STREAM)        |
+*** Add support for predefined macros
+    - simple expansion, done for each unknown predicate.
+    - add facility to add "boilerplate" support code, to be compiled
+      with program.
 *** Non-standard primitives we need for bootstrapping
     | getenv/1                 |                                                                     |
     | command_line_arguments/1 |                                                                     |
@@ -65,18 +75,18 @@ NOTES											              -*- Org -*-
 * Issues
 ** Compiler
 *** TODO Detect invalid commmand-line options
+*** TODO Command-line option to set include-path
+    - "-I PATH"
 *** TODO Improve and extend directives
     - include :: allow omitting file-extension.
     - ensure_loaded :: like "include", but include only once.
     - determinate :: register as determinate, use this to find more TCO
                     opportunities.
+    - initialization :: allow multiple times (combine, in order
+                        given).
 *** TODO Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
 *** TODO check fixnum range when emitting literals 
-*** TODO At some stage auto-include file:prelude.pl
-    - unless "-n" option is given.
-*** TODO allow file-references to be "library(FILE)"
-    - resolve via library-path, settable by "-L".
 ** Runtime
 *** TODO The trail is never reduced
 **** TODO Remove GC'd variables from trail
@@ -87,7 +97,7 @@ NOTES											              -*- Org -*-
 * List of primitives, callable via =foreign_call=
   | basic_write(X)                      | only handles symbol, number, [], var, port, doesn*t quotes                            |
   | basic_writeq(X)                     | quotes atoms                                                                          |
-  | command_line_arguments(X)           |                                                                                       |
+  | command_line_arguments(X)           | filters runtime options out                                                           |
   | db_create(NAME, SIZE, DB)           | create database, with given name (atom), table-size and unifies DB with db-designator |
   | db_erase(REF)                       | erases DB entry, invalidating all other refs to this item                             |
   | db_find(DB, KEY, REF)               | unifies REF with first entry found for KEY (atom)                                     |
@@ -97,7 +107,7 @@ NOTES											              -*- Org -*-
   | debug_hook(X)                       | does nothing, suitable for hooking into                                               |
   | gc                                  | perform garbage collection                                                            |
   | halt(I)                             | terminate process                                                                     |
-  | write_char(I)                       |                                                                                       |
+  | write_char(I)                       | write to current output stream                                                        |
 * Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
