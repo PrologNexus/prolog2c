@@ -3,17 +3,21 @@
 
 compile_file(FILE) :-
 	initial_state(STATE),
-	create_prelude(PRELUDE),
 	see(FILE), !,
-	process_input(PRELUDE, [], _, STATE).
+	recorda(compiling_input, yes),
+	process_input([], [], _, STATE).
 compile_file(FILE) :-
 	error(['compilation of ', FILE, ' failed.']).
 
 compile_file_finished(STATE) :-
+	recorded(compiling_input, _, REF),
+	erase(REF),
+	process_initialization_goal(STATE).
+compile_file_finished(STATE) :-
 	seen,
 	recorded(output_file, OUTFILE),
 	(recorded(show_intermediate_code, yes) -> show_intermediate_code
-	;assemble_file(OUTFILE, STATE)
+	; assemble_file(OUTFILE, STATE)
 	).
 
 
@@ -32,9 +36,9 @@ process_input([end_of_file], BLOCK, NA, STATE) :-
 	process_input([], BLOCK, NA, STATE2).
 process_input([end_of_file], [], _, STATE) :-
 	compile_file_finished(STATE).
-process_input([end_of_file], BLOCK, NA, STATE) :-
-	compile_block(NA, BLOCK, STATE, _),
-	compile_file_finished(STATE).
+process_input([end_of_file], BLOCK, NA, STATE1) :-
+	compile_block(NA, BLOCK, STATE1, STATE2),
+	compile_file_finished(STATE2).
 
 
 %% a normal clause - check if it belongs to the block
@@ -90,12 +94,12 @@ process_directive((DECL1, DECL2), S1, S2) :-
 	process_directive(DECL1, S1, S),
 	process_directive(DECL2, S, S2).
 
-process_directive(initialization PRED, STATE, STATE) :-
-	atom(PRED),
-	recorda(initialization_goal, PRED).
-process_directive(initialization GOAL, STATE1, STATE2) :-
-	compile_block('_start_'/0, ['_start_' :- GOAL], STATE1, STATE2), 
-	recorda(initialization_goal, '_start_').
+process_directive(initialization GOAL, STATE, STATE) :-
+	recorded(initialization_goal, OLD, REF),
+	erase(REF),
+	recorda(initialization_goal, (OLD, GOAL)).
+process_directive(initialization GOAL, STATE, STATE) :-
+	recorda(initialization_goal, GOAL).
 
 process_directive(include(FNAME), STATE1, STATE2) :-
 	seeing(CURRENT), 
@@ -122,7 +126,9 @@ show_intermediate_code :-
 show_intermediate_code.
 
 
-%% create code compiled by default
+%%% add clause for initialization goal
 
-create_prelude(CODE) :-
-	findall((:- include(FNAME)), recorded(library_files, FNAME), CODE).
+process_initialization_goal(STATE) :-
+	(recorded(initialization_goal, GOAL); GOAL = main),
+	default_setting(entry_point, EP),
+	process_input([(EP :- GOAL)], [], _, STATE).

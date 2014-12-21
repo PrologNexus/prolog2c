@@ -7,7 +7,7 @@ assemble_file(FILE, STATE) :-
 	tell(FILE),
 	generate_header,
 	assemble_literals(STATE, S1),
-	(recorded(initialization_goal, MAIN); default_setting(initialization_goal, MAIN)),
+	default_setting(entry_point, MAIN),
 	mangle_name(MAIN, MMAIN),
 	gen('#define INIT_GOAL ', MMAIN, '$0\n'),
 	gen('int main(int argc, char *argv[]) {\n'),

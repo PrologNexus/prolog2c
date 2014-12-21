@@ -15,7 +15,6 @@
 :- initialization(main).
 
 main :-
-	(getenv('PC_PRELUDE_FILE', FNAME) -> recordz(library_files, FNAME); true),
 	command_line_arguments(ARGS),
 	parse_arguments(ARGS),
 	(recorded(source_file, FILE); default_setting(source_file, FILE)),
