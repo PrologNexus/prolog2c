@@ -115,6 +115,13 @@ compile_body(BODY, DET, LAST, BOUND, S1, S2) :-
 	(DET2 = det -> emit(determinate_exit); emit(exit)).
 
 
+%% compile expression occuring in clause body
+
+% first, try macros
+compile_body_expression(TERM, TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
+	macro(TERM, EXPANSION),
+	compile_body_expression(EXPANSION, TAIL, LAST, D1, D2, B1, B2, S1, S2).
+
 % conjunction
 compile_body_expression((X, Y), TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
 	compile_body_expression(X, nontail, LAST, D1, D, B1, B, S1, S),

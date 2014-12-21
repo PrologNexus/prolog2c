@@ -8,6 +8,7 @@
 :- include('support.pl').
 :- include('state.pl').
 :- include('terms.pl').
+:- include('macros.pl').
 :- include('process.pl').
 :- include('compile.pl').
 :- include('assemble.pl').
