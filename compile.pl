@@ -120,6 +120,7 @@ compile_body(BODY, DET, LAST, BOUND, S1, S2) :-
 % first, try macros
 compile_body_expression(TERM, TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
 	macro(TERM, EXPANSION),
+	TERM \= EXPANSION,	% handle macro that just adds boilerplate (e.g. "autoload" like)
 	compile_body_expression(EXPANSION, TAIL, LAST, D1, D2, B1, B2, S1, S2).
 
 % conjunction
