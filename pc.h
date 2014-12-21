@@ -1867,9 +1867,12 @@ static int compare_terms(X x, X y)
       return compare_terms(slot_ref(x, 1), slot_ref(y, 1));
 
     }
+
+  case DBREFERENCE_TYPE:
+    return (WORD)slot_ref(y, 0) - (WORD)slot_ref(x, 0);
   }
 
-  CRASH("compare_terms");
+  CRASH("unable to compare terms");
 }
 
 
