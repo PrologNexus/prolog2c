@@ -303,10 +303,12 @@ static void **ifthen_stack, **ifthen_top;
 static WORD clock_ticks = 0;
 static X freeze_term_var_table[ FREEZE_TERM_VAR_TABLE_SIZE * 2 ];
 static int freeze_term_var_counter;
-static X global_variables[ MAX_GLOBAL_VARIABLES ];
 static int global_variable_counter = 0;
 static char *string_buffer;
 static int string_buffer_length;
+
+// externally visible (the only one that is)
+X global_variables[ MAX_GLOBAL_VARIABLES ];
 
 static CHAR *type_names[] = { 
   "invalid", "fixnum", "null", "symbol", "flonum", "stream", "variable", "string", "structure", "pair", "dbreference"
