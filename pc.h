@@ -2218,9 +2218,9 @@ static void db_erase_item(DB_ITEM *item)
   CHOICE_POINT *C, *C0;					\
   void *R = &&success_exit;				\
   void *R0;						\
-  X *E = env_top;					\
   initialize(argc, argv);				\
   intern_static_symbols(PREVIOUS_SYMBOL);		\
+  X *E = env_top;					\
   C0 = C = choice_point_stack;				\
   C->T = trail_top;					\
   C->timestamp = clock_ticks++;				\
