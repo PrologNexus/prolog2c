@@ -70,6 +70,7 @@
 #define TRACE_DEBUG_WRITE_LIMIT 5
 #define FREEZE_TERM_VAR_TABLE_SIZE 1000
 #define MAX_GLOBAL_VARIABLES 256
+#define STRING_BUFFER_SIZE   1024
 
 
 /// miscellanous
@@ -304,6 +305,8 @@ static X freeze_term_var_table[ FREEZE_TERM_VAR_TABLE_SIZE * 2 ];
 static int freeze_term_var_counter;
 static X global_variables[ MAX_GLOBAL_VARIABLES ];
 static int global_variable_counter = 0;
+static char *string_buffer;
+static int string_buffer_length;
 
 static CHAR *type_names[] = { 
   "invalid", "fixnum", "null", "symbol", "flonum", "stream", "variable", "string", "structure", "pair", "dbreference"
@@ -1077,6 +1080,8 @@ static void initialize(int argc, char *argv[])
   env_top = environment_stack;
   arg_top = argument_stack;
   memset(freeze_term_var_table, 0, FREEZE_TERM_VAR_TABLE_SIZE * 2 * sizeof(X));
+  string_buffer = malloc(string_buffer_length = STRING_BUFFER_SIZE);
+  ASSERT(argument_stack, "out of memory - can not allocate string buffer");
 
   for(int i = 0; i < SYMBOL_TABLE_SIZE; ++i)
     symbol_table[ i ] = END_OF_LIST_VAL;
@@ -2114,6 +2119,45 @@ static void db_erase_item(DB_ITEM *item)
 }
 
 
+// assumes x is deref'd, returns pointer to char that should not be modified
+static char *to_string(X x)
+{
+  if(is_FIXNUM(x))
+    check_type_failed(SYMBOL_TYPE, x);
+
+  switch(objtype(x)) {
+  case SYMBOL_TYPE:
+    return (char *)objdata(slot_ref(x, 0));
+
+  case PAIR_TYPE:
+    { int len = 0;
+      char *ptr = string_buffer;
+      
+      while(!is_FIXNUM(x) && objtype(x) == PAIR_TYPE) {
+	if(len >= string_buffer_length - 1) {
+	  string_buffer = realloc(string_buffer, string_buffer_length *= 2);
+	  ASSERT(string_buffer, 
+		 "out of memory - can not increase size of string-buffer to " WORD_OUTPUT_FORMAT, 
+		 (WORD)string_buffer_length);
+	}
+
+	X c = slot_ref(x, 0);
+	check_fixnum(c);
+	*(ptr++) = fixnum_to_word(c);
+	++len;
+	x = slot_ref(x, 1);
+      }
+
+      *ptr = '\0';
+      return string_buffer; }
+
+  default:
+    CRASH("bad argument type - can not convert to string");
+    return NULL;
+  }
+}
+
+
 /// VM operations
 
 #define CURRENT_NAME
@@ -2259,7 +2303,23 @@ success_exit: DRIBBLE("true.\n"); terminate(0);
 
 static int debug_hook(CHOICE_POINT *C0) { return 1; }
 
-PRIMITIVE(write_char, X c) { check_fixnum(c); fputc(fixnum_to_word(c), port_file(standard_output_port)); return 1; }
+PRIMITIVE(put_byte, X c) 
+{
+  int code;
+
+  if(is_FIXNUM(c)) code = fixnum_to_word(c);
+  else if(is_SYMBOL(c)) code = *((char *)objdata(slot_ref(c, 0)));
+  else CRASH("bad argument type - not a valid character");
+  
+  fputc(code, port_file(standard_output_port)); 
+  return 1;
+}
+
+PRIMITIVE(put_string, X str)
+{
+  char *ptr = to_string(str);
+  fputs(ptr, port_file(standard_output_port));
+}
 
 PRIMITIVE(basic_write, X x) 
 { 
@@ -2373,6 +2433,28 @@ PRIMITIVE(db_record, X dbr, X atend, X key, X val, X result)
   return unify(result, (X)b);
 }
 
+PRIMITIVE(file_exists, X name) 
+{
+  struct stat info;
+  char *fname = to_string(name);
+  return !stat(fname, &info) && S_ISREG(info.st_mode);
+}
+
+PRIMITIVE(get_byte, X c)
+{
+  int g = fgetc(port_file(standard_input_port));
+  return unify(word_to_fixnum(g), c);
+}
+
+PRIMITIVE(peek_byte, X c)
+{
+  FILE *fp = port_file(standard_input_port);
+  int g = fgetc(fp);
+
+  if(g != EOF) ungetc(g, fp);
+
+  return unify(word_to_fixnum(g), c);
+}
 
 #endif
 #endif
