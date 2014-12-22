@@ -207,7 +207,7 @@ generate_static_literal(I, X, S, S) :-
 	gen('#ifndef SYMBOL', NAME, '\n'),
 	name(X, STRING),
 	length(STRING, LEN),
-	gen('static STRING_BLOCK lbs', I, '={STRING_TAG|', LEN, '+1,{'),
+	gen('static STRING_BLOCK lbs', I, '={(STRING_TAG|', LEN, ')+1,{'),
 	generate_data_list(STRING),
 	gen(',0}};\nstatic SYMBOL_BLOCK lb', I, '={SYMBOL_TAG|3,(X)&lbs', I),
 	gen(',PREVIOUS_SYMBOL,END_OF_LIST_VAL};\n#undef PREVIOUS_SYMBOL\n#define PREVIOUS_SYMBOL (X)&lb', I),
@@ -229,8 +229,8 @@ generate_static_literal(I, X, S1, S2) :-
 	generate_static_literal(IF, F, S3, S4),
 	generate_static_literals(ARGS, 1, IF, IS, S4, S2),
 	length(ARGS, ARITY),
-	gen('static BLOCK lb', I, '={STRUCTURE_TAG|', ARITY),
-	gen('+1,{literal_', IF, ','),
+	gen('static BLOCK lb', I, '={(STRUCTURE_TAG|', ARITY),
+	gen(')+1,{literal_', IF, ','),
 	generate_data_list(IS),
 	gen('}};\n#define literal_', I, ' &lb', I, '\n').
 
