@@ -20,13 +20,15 @@ NOTES											              -*- Org -*-
 * Things to test
 ** TODO GC symbol-reclamation.
 ** TODO all numerical functions + operators
-** TODO db-stuff
-** TODO file:queens.pl, file:code/crypta.pl
+** TODO file:code/crypta.pl
 ** TODO test file:rdtok.pl, file:read.pl (self-compiled)
 ** TODO tests for stuff in file:code/
    - ordsets, queues, writef, write
-* Missing
+* Missing features
 ** Compiler
+*** TODO Add macros for everything in file:prelude.pl
+    - include library files in boilerplate, as necessary.
+    - remove that file afterwards.
 *** Write driver script
     - handles compilation to C.
     - could run separate program to preprocess source.
@@ -36,8 +38,6 @@ NOTES											              -*- Org -*-
     - declaration "trace(PI)", where PI may be atom, NAME/ARITY, or
       list of those.
 ** Library/Runtime
-*** Allocate all data areas dynamically
-    - add runtime-options to set sizes (trail, args, env).
 *** Runtime-information about defined clauses
     - as minimum: mapping of name/arity -> entry-point.
     - for complete support of clause/2 we would actually need the full
@@ -47,22 +47,19 @@ NOTES											              -*- Org -*-
     - "see", "seen", "seeing", "tell", "told", "telling"
     - stream-alias "user" (default I/O ports)
     - "get", "get0", "put", "peek"
-*** Primitives needed
+*** TODO Primitives needed
     | file_exists(NAME)                   |
     | open_stream(FILENAME, I/O?, STREAM) |
     | close_sream(STREAM)                 |
-    | get_byte(STREAM, BYTE)              |
-    | put_byte(STREAM, BYTE)              |
+    | get_byte(BYTE)                      |
+    | put_byte(BYTE)                      |
     | put_string(STREAM, ATOM/LIST)       |
+    | shell_command(STRING, EXITCODE)     |
     | eof(STREAM)                         |
     | current_input(STREAM)               |
     | current_output(STREAM)              |
     | current_error_output(STREAM)        |
-*** Add support for predefined macros
-    - simple expansion, done for each unknown predicate.
-    - add facility to add "boilerplate" support code, to be compiled
-      with program.
-*** Non-standard primitives we need for bootstrapping
+*** TODO Non-standard predicates we need for bootstrapping
     | getenv/1                 |                                                                     |
     | command_line_arguments/1 |                                                                     |
     | file_exists/1            | needed for more convenient include/1 and ensure_loaded/1 directives |
@@ -72,26 +69,26 @@ NOTES											              -*- Org -*-
 ** Detect singleton variables
 ** Detect redefinitions of primitives
 ** Detect non-contiguous predicates
+* TODO Once we have a suitable test, compare performance with other implementations
+  - maybe file:queens.pl
+  - SWI, GNU-Prolog, BinProlog
 * Issues
 ** Compiler
-*** TODO Detect invalid commmand-line options
 *** TODO Command-line option to set include-path
     - "-I PATH"
 *** TODO Improve and extend directives
-    - include :: allow omitting file-extension.
     - ensure_loaded :: like "include", but include only once.
-    - determinate :: register as determinate, use this to find more TCO
-                    opportunities.
-    - initialization :: allow multiple times (combine, in order
-                        given).
+    - determinate :: register as determinate, use this to find more
+                    TCO opportunities and reduce temporary CPs in
+                    if-then-else, not, etc.
 *** TODO Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
 *** TODO check fixnum range when emitting literals 
 ** Runtime
-*** TODO The trail is never reduced
-**** TODO Remove GC'd variables from trail
-     - and adjust CP-stack entries accordingly.
-     - tricky.
+*** TODO Reconsider default data-area sizes
+*** TODO trail-GC
+    - and adjust CP-stack entries accordingly.
+    - tricky.
 *** TODO Should "make_term" deref it's args, especially the functor?
 *** TODO Is cycle-checking in =deref= really necessary?
 * List of primitives, callable via =foreign_call=
@@ -108,6 +105,10 @@ NOTES											              -*- Org -*-
   | gc                                  | perform garbage collection                                                            |
   | halt(I)                             | terminate process                                                                     |
   | write_char(I)                       | write to current output stream                                                        |
+* List of builtin macros
+  | display(X)      |   |
+  | garbage_collect |   |
+  | nl              |   |
 * Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
