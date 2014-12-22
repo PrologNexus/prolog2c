@@ -33,6 +33,7 @@ list_to_ord_set(List, Set) :-
 %   output, e.g. merge("122357", "34568", "12233455678").  Study this
 %   routine carefully, as it is the basis for all the rest.
 
+% (flw) note: collides with merge/3 in sorts.pl
 merge([Head1|Tail1], [Head2|Tail2], [Head2|Merged]) :-
 	Head1 @> Head2, !,
 	merge([Head1|Tail1], Tail2, Merged).

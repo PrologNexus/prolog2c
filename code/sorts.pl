@@ -30,6 +30,7 @@ halve([_,_|Count], [H|T], [H|F], B) :- !,
 halve(_, B, [], B).
 
 
+% (flw) note: collides with merge/3 in ordset.pl
 merge(Key, Order, [H1|T1], [H2|T2], [Hm|Tm]) :- !,
 	compare(Key, Order, H1, H2, R),
 	(   R = (<), !, Hm = H1, merge(Key, Order, T1, [H2|T2], Tm)
