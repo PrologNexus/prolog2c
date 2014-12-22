@@ -269,7 +269,7 @@ typedef struct DB_ITEM
 /// predefined literals and global variables
 
 #ifdef COMPILED_PROGRAM
-static BLOCK END_OF_LIST_VAL_BLOCK = { END_OF_LIST_TAG, {}};
+static BLOCK END_OF_LIST_VAL_BLOCK = { END_OF_LIST_TAG, {0}};
 
 static STRING_BLOCK dot_name = { STRING_TYPE|3, "." };
 static BLOCK dot_atom = { SYMBOL_TYPE|3, { &dot_name, NULL, NULL } };
@@ -430,9 +430,6 @@ static void crash_hook()
 }
 
 
-static void write_barrier_error() { CRASH("assignment to non-mutable data detected"); }
-
-
 static inline X fill_block(X x, X y, WORD from, WORD to) 
 {
   if(from == to) return x;
@@ -556,6 +553,7 @@ static inline X check_integer(X x)
   }
 
   check_integer_failed(x);
+  return x;			/* never executed */
 #endif
 }
 
@@ -756,9 +754,8 @@ static inline void mark1(X *addr)
 }
 
 
-static void collect_garbage(int args)
+static void collect_garbage()
 {
-  va_list va;
   DRIBBLE("[GC ... ");							
   tospace_top = tospace; 
   scan_ptr = tospace_top;				
@@ -994,7 +991,6 @@ static void initialize(int argc, char *argv[])
   // scan argv for runtime-parameters
   for(int i = argc - 1; i > 0; --i) {
     char *arg = argv[ i ];
-    int len = strlen(arg);
 
     if(arg[ 1 ] == ':') {
       switch(arg[ 2 ]) {
@@ -1167,7 +1163,7 @@ static char *port_name(X x)
 {
   PORT_BLOCK *p = (PORT_BLOCK *)x;
   static CHAR buffer[ 256 ];
-  sprintf(buffer, "<%s-stream>(%p)", p->dir != ZERO ? "input" : "output", p->fp);
+  sprintf(buffer, "<%s-stream>(%p)", p->dir != ZERO ? "input" : "output", (void *)p->fp);
   return buffer;
 }
 
@@ -1210,7 +1206,7 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
 	fputc('\'', fp);
 
 	while(len--) {
-	  char c = *(name++);
+	  int c = *(name++);
 	  
 	  switch(c) {
 	  case '\n': fputs("\\n", fp); break;
@@ -1459,7 +1455,8 @@ static X make_term(int arity, X functor, ...)
       if(is_FLONUM(y))						\
 	return flonum_to_float(x) op flonum_to_float(y);	\
       check_number_failed(y); }					\
-    check_number_failed(x); }
+    check_number_failed(x);					\
+    return 0; }
 
 NUMERIC_BINARY_CMP(is_num_eq, ==)
 NUMERIC_BINARY_CMP(is_num_gt, >)
@@ -1481,7 +1478,8 @@ NUMERIC_BINARY_CMP(is_num_lt, <)
       if(is_FLONUM(y))						\
 	return FLONUM(flonum_to_float(x) op flonum_to_float(y));	\
       check_number_failed(y); }						\
-    check_number_failed(x); }
+    check_number_failed(x);						\
+    return 0; }
 
 NUMERIC_BINARY_OP(num_add, +)
 NUMERIC_BINARY_OP(num_sub, -)
@@ -1539,6 +1537,7 @@ static inline X num_div(X x, X y)
   }						
   
   check_number_failed(x); 
+  return x;			/* never executed */
 }
 
 
@@ -1619,6 +1618,7 @@ static inline X num_pow(X x, X y)
   }						
   
   check_number_failed(x); 
+  return x;			/* never executed */
 }
 
 
@@ -1666,6 +1666,7 @@ static inline X num_abs(X x)
   }
 
   check_number_failed(x);
+  return x;			/* never executed */
 }
 
 
@@ -1694,6 +1695,7 @@ static inline X num_sign(X x)
   }
 
   check_number_failed(x);
+  return x;			/* never executed */
 }
 
 
@@ -1708,6 +1710,7 @@ static inline X num_negate(X x)
     return FLONUM(-flonum_to_float(x));
 
   check_number_failed(x);
+  return x;			/* never executed */
 }
 
 
@@ -1803,7 +1806,7 @@ static int compare_terms(X x, X y)
     return 0;
     
   case VAR_TYPE:
-    return slot_ref(y, 1) - slot_ref(x, 1);
+    return (WORD)slot_ref(y, 1) - (WORD)slot_ref(x, 1);
 
   case STRUCTURE_TYPE:
     switch(yt) {
@@ -2193,7 +2196,7 @@ static void db_erase_item(DB_ITEM *item)
 
 #define CHECK_LIMIT				\
   if(alloc_top > fromspace_limit) {		\
-    collect_garbage(CURRENT_ARITY);		\
+    collect_garbage();		\
   }
 
 #define ENVIRONMENT(len)  { E = env_top; env_top += (len); }
@@ -2274,8 +2277,6 @@ PRIMITIVE(command_line_arguments, X var)
 
   // build argument-list for "command-line-arguments"
   for(int i = global_argc - 1; i > 0; --i) {
-    int len = strlen(global_argv[ i ]);
-    
     // ignore runtime options
     if(global_argv[ i ][ 1 ] != ':') {
       X str = CSTRING(global_argv[ i ]);
