@@ -2242,7 +2242,8 @@ success_exit: DRIBBLE("true.\n"); terminate(0);
 #define PRIMITIVE(name, ...)	   static int name(CHOICE_POINT *C0, __VA_ARGS__)
 
 
-PRIMITIVE(debug_hook, X x) { return 1; }
+static int debug_hook(CHOICE_POINT *C0) { return 1; }
+
 PRIMITIVE(write_char, X c) { check_fixnum(c); fputc(fixnum_to_word(c), port_file(standard_output_port)); return 1; }
 
 PRIMITIVE(basic_write, X x) 
@@ -2257,7 +2258,8 @@ PRIMITIVE(basic_writeq, X x)
   return 1; 
 }
 
-PRIMITIVE(gc, X dummy) { alloc_top = fromspace_limit + 1; return 1; }
+// has no args, avoid ugly dummy parameter
+static int gc(CHOICE_POINT *C0) { alloc_top = fromspace_limit + 1; return 1; }
 
 PRIMITIVE(halt, X code) 
 { 
