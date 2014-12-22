@@ -377,6 +377,7 @@ arithmetic_operation('-', 2, subtract).
 arithmetic_operation('//', 2, quotient).
 arithmetic_operation('*', 2, multiply).
 arithmetic_operation('\\\\', 2, rem).
+arithmetic_operation(xor, 2, xor).
 
 arithmetic_operation(NAME, ARITY, NAME) :- arithmetic_operation(NAME, ARITY).
 

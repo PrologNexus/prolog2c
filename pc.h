@@ -1500,6 +1500,7 @@ NUMERIC_BINARY_OP(num_mul, *)
 
 INTEGER_BINARY_OP(num_and, &)
 INTEGER_BINARY_OP(num_or, |)
+INTEGER_BINARY_OP(num_xor, ^)
 INTEGER_BINARY_OP(num_shl, <<)
 INTEGER_BINARY_OP(num_shr, >>)
 
