@@ -369,8 +369,8 @@ arithmetic_operation('/\\', 2, bitwise_and).
 arithmetic_operation('\\', 1, bitwise_not).
 arithmetic_operation('<<', 2, shift_left).
 arithmetic_operation('>>', 2, shift_right).
-arithmetic_operation('\\/', 1, bitwise_or).
-arithmetic_operation('**', 1, exponent).
+arithmetic_operation('\\/', 2, bitwise_or).
+arithmetic_operation('**', 2, exponent).
 arithmetic_operation('/', 2, divide).
 arithmetic_operation('-', 1, negate).
 arithmetic_operation('-', 2, subtract).

@@ -1627,6 +1627,15 @@ static inline X num_pow(X x, X y)
 }
 
 
+static inline X num_float(X x)
+{
+  if(is_FIXNUM(x)) return FLONUM(fixnum_to_word(x));
+
+  check_type_FLONUM(x);
+  return x;
+}
+
+
 static inline X num_frac(X x)
 {
   double i;
@@ -1658,9 +1667,8 @@ static inline X num_abs(X x)
 { 
   x = deref(x);
 
-  // no need to convert to word - we only manipulate the sign
   if(is_FIXNUM(x))
-    return x < 0 ? (X)(-(WORD)x) : x;
+    return fixnum_to_word(x) < 0 ? word_to_fixnum(-fixnum_to_word(x)) : x;
 
   if(is_FLONUM(x)) {
     double n = flonum_to_float(x);
@@ -1680,13 +1688,13 @@ static inline X num_sign(X x)
   x = deref(x);
 
   if(is_FIXNUM(x)) {
-    if(x < 0)
+    if(fixnum_to_word(x) < 0)
       return word_to_fixnum(-1);
 
-    if(x > 0) 
-      return word_to_fixnum(1);
+    if(x == ZERO) 
+      return word_to_fixnum(0);
       
-    return word_to_fixnum(0);
+    return word_to_fixnum(1);
   }
 
   if(is_FLONUM(x)) {
