@@ -19,52 +19,92 @@ NOTES											              -*- Org -*-
    - same for '\\+'/2
 * Things to test
 ** TODO GC symbol-reclamation.
-** TODO all numerical functions + operators
 ** TODO file:code/crypta.pl
 ** TODO test file:rdtok.pl, file:read.pl (self-compiled)
 ** TODO tests for stuff in file:code/
    - ordsets, queues, writef, write
+** TODO Test on Mac, Windows (32 bit) and R/Pi
 * Missing features
 ** Compiler
 *** TODO Add macros for everything in file:prelude.pl
     - include library files in boilerplate, as necessary.
     - remove that file afterwards.
-*** Write driver script
-    - handles compilation to C.
-    - could run separate program to preprocess source.
-    - could even filter out latent term_expansions expressions and build
-      preprocessor on the fly.
+*** TODO current_op/3 and op-database
+    - need some internal DB
+    - Operators
+      [700,xfx,@=<]
+      [1100,xfy,;]
+      [700,xfx,@<]
+      [1000,xfy,,]
+      [700,xfx,is]
+      [200,xfx,**]
+      [700,xfx,@>]
+      [400,yfx,<<]
+      [700,xfx,@>=]
+      [700,xfx,\==]
+      [200,fy,+]
+      [500,yfx,+]
+      [400,yfx,>>]
+      [700,xfx,==]
+      [400,yfx,\\]
+      [200,fy,-]
+      [500,yfx,-]
+      [1150,fx,initialization]
+      [900,fy,\+]
+      [700,xfx,=:=]
+      [700,xfx,=\=]
+      [500,yfx,\/]
+      [1200,fx,:-]
+      [1200,xfx,:-]
+      [700,xfx,\=]
+      [200,fy,\]
+      [500,yfx,/\]
+      [400,yfx,xor]
+      [700,xfx,=<]
+      [700,xfx,<]
+      [700,xfx,=..]
+      [700,xfx,=]
+      [400,yfx,//]
+      [400,yfx,/]
+      [1050,xfy,->]
+      [700,xfx,>]
+      [400,yfx,*]
+      [700,xfx,>=]
+    - later: 
+      [1200,xfx,-->]
+      [1105,xfy,|]
+*** Add support for DCGs
+    - probably using file:code/dcg.pl
 *** Allow selective tracing
     - declaration "trace(PI)", where PI may be atom, NAME/ARITY, or
       list of those.
 ** Library/Runtime
+*** Make it possible to embed compiled code
+    - "suspend(IN, OUT)" saves state and suspends execution.
+    - define alternative entry-point via macro and return procedure
+      ptr to invoke prolog (similar to BONES).
 *** Runtime-information about defined clauses
     - as minimum: mapping of name/arity -> entry-point.
     - for complete support of clause/2 we would actually need the full
       source.
     - at least compiler could offer "call_predicate".
 *** Basic Edinburgh I/O
-    - "see", "seen", "seeing", "tell", "told", "telling"
+    - "see", "seen", "seeing", "tell", "told", "telling", "get"
     - stream-alias "user" (default I/O ports)
-    - "get", "get0", "put", "peek"
+    - add all as macros, auto-including library file:io.pl
 *** TODO Primitives needed
-    | file_exists(NAME)                   |
     | open_stream(FILENAME, I/O?, STREAM) |
     | close_sream(STREAM)                 |
-    | get_byte(BYTE)                      |
-    | put_byte(BYTE)                      |
-    | put_string(STREAM, ATOM/LIST)       |
     | shell_command(STRING, EXITCODE)     |
     | eof(STREAM)                         |
+    | getenv(ATOM)                        |
     | current_input(STREAM)               |
     | current_output(STREAM)              |
     | current_error_output(STREAM)        |
 *** TODO Non-standard predicates we need for bootstrapping
-    | getenv/1                 |                                                                     |
-    | command_line_arguments/1 |                                                                     |
-    | file_exists/1            | needed for more convenient include/1 and ensure_loaded/1 directives |
-    | atomic_list_concat/2     |                                                                     |
-    | union/3                  |                                                                     |
+    | getenv/1             | macro               |
+    | atomic_list_concat/2 | add to file:misc.pl |
+    | union/3              | file:sets.pl        |
 * Diagnostics
 ** Detect singleton variables
 ** Detect redefinitions of primitives
@@ -77,7 +117,8 @@ NOTES											              -*- Org -*-
 *** TODO Command-line option to set include-path
     - "-I PATH"
 *** TODO Improve and extend directives
-    - ensure_loaded :: like "include", but include only once.
+    - ensure_loaded :: like "include", but include only once (name
+                       without extension.)
     - determinate :: register as determinate, use this to find more
                     TCO opportunities and reduce temporary CPs in
                     if-then-else, not, etc.
@@ -91,24 +132,38 @@ NOTES											              -*- Org -*-
     - tricky.
 *** TODO Should "make_term" deref it's args, especially the functor?
 *** TODO Is cycle-checking in =deref= really necessary?
-* List of primitives, callable via =foreign_call=
-  | basic_write(X)                      | only handles symbol, number, [], var, port, doesn*t quotes                            |
-  | basic_writeq(X)                     | quotes atoms                                                                          |
-  | command_line_arguments(X)           | filters runtime options out                                                           |
-  | db_create(NAME, SIZE, DB)           | create database, with given name (atom), table-size and unifies DB with db-designator |
-  | db_erase(REF)                       | erases DB entry, invalidating all other refs to this item                             |
-  | db_find(DB, KEY, REF)               | unifies REF with first entry found for KEY (atom)                                     |
-  | db_next(REF, REF2)                  | unifies REF2 with entry after REF or fails                                            |
-  | db_record(DB, ATEND, KEY, VAL, REF) | inserts new item (ATEND != 0: insert at end)                                          |
-  | db_ref(REF, VAL)                    | unifies VAL with referenced item or fails if GC is needed (so VAL should be a var)    |
-  | debug_hook(X)                       | does nothing, suitable for hooking into                                               |
-  | gc                                  | perform garbage collection                                                            |
-  | halt(I)                             | terminate process                                                                     |
-  | write_char(I)                       | write to current output stream                                                        |
-* List of builtin macros
-  | display(X)      |   |
-  | garbage_collect |   |
-  | nl              |   |
+* List of available primitives
+  | basic_write(X)                      |
+  | basic_writeq(X)                     |
+  | command_line_arguments(X)           |
+  | db_create(NAME, SIZE, DB)           |
+  | db_erase(REF)                       |
+  | db_find(DB, KEY, REF)               |
+  | db_next(REF, REF2)                  |
+  | db_record(DB, ATEND, KEY, VAL, REF) |
+  | db_ref(REF, VAL)                    |
+  | debug_hook(X)                       |
+  | gc                                  |
+  | get_byte(BYTE)                      |
+  | halt(I)                             |
+  | peek_byte(BYTE)                     |
+  | put_byte(CHAR)                      |
+  | put_string(STREAM, ATOM/LIST)       |
+  | write_char(I)                       |
+* List of builtin and library predicates
+  | Name                         | Type | Library | Notes                                                                |
+  |------------------------------+------+---------+----------------------------------------------------------------------|
+  | command_line_arguments(LIST) | M    |         | Filters out runtime-options ("-:..."), does not include program name |
+  | display(X)                   | M    |         |                                                                      |
+  | exists_file(NAME)            | M    |         | fails if nonexistent or not a regular file                           |
+  | garbage_collect              | M    |         |                                                                      |
+  | get0(BYTE)                   | M    |         | -1 on EOF                                                            |
+  | halt                         | M    |         | exits with code 0                                                    |
+  | halt(CODE)                   | M    |         |                                                                      |
+  | nl                           | M    |         |                                                                      |
+  | peek(BYTE)                   | M    |         | -1 on EOF                                                            |
+  | put(CHAR)                    | M    |         | CHAR may be fixnum or symbol                                         |
+  - "M" = macro, "A" autoload
 * Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
