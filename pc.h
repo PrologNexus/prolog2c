@@ -268,7 +268,7 @@ typedef struct DB_ITEM
 
 /// predefined literals and global variables
 
-#ifdef COMPILED_PROGRAM
+#ifdef COMPILED_PROLOG_PROGRAM
 static BLOCK END_OF_LIST_VAL_BLOCK = { END_OF_LIST_TAG, {0}};
 
 static STRING_BLOCK dot_name = { STRING_TYPE|3, "." };
@@ -422,7 +422,7 @@ static inline int is_in_fixnum_range(WORD n) {
 #define port_file(p)  (((PORT_BLOCK *)(p))->fp)
 
 
-#ifdef COMPILED_PROGRAM
+#ifdef COMPILED_PROLOG_PROGRAM
 
 static void crash_hook()
 {
