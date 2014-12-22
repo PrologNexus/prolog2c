@@ -143,11 +143,3 @@ process_initialization_goals(STATE) :-
 	findall(B, recorded(boilerplate, B), BOILERPLATE),
 	default_setting(entry_point, EP),
 	process_input([(EP :- IGOAL, GOAL)|BOILERPLATE], [], _, STATE).
-
-
-%% add boilerplate code for a given tag, unless already added
-
-add_boilerplate(TAG, _) :- recorded(boilerplate_added, TAG).
-add_boilerplate(TAG, CODE) :-
-	recordz(boilerplate, CODE),
-	recordz(boilerplate_added, TAG).
