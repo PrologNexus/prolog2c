@@ -1,6 +1,6 @@
 main :-
 	iota(1000, X),
-	foreign_call(gc),
+	garbage_collect,
 	dump(X).
 
 iota(N, L) :- iota(0, N, L).
