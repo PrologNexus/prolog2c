@@ -1,1 +1,1 @@
-main :- foreign_call(write_char(65)).
+main :- put(65).
