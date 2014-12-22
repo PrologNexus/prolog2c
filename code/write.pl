@@ -34,15 +34,10 @@
     its name.
 */
 
-
-:- public display/1, print/1, write/1, writeq/1 .
-
-
-display(Term) :-
-	write_out(Term, display, 1200, punct, _).
-
+/*
 print(Term) :-
 	write_out(Term, print, 1200, punct, _).
+*/
 
 write(Term) :-
 	write_out(Term, write, 1200, punct, _).
@@ -131,9 +126,11 @@ write_out(N, _, _, Ci, alpha) :-
 	),  !,
 	name(N, String),
 	put_string(String).
+/*
 write_out(Term, print, _, Ci, alpha) :-
 	portray(Term),
 	!.
+*/
 write_out(Atom, Style, Prio, _, punct) :-
 	atom(Atom),
 	current_op(P, _, Atom),

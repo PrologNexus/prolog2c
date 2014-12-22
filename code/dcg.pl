@@ -290,7 +290,7 @@ phrase(GRBody, S0, S) :-
 	call(Goal).
 
 
-% The predicate dcg body/4 is part of the grammar rule translator reference 
+% The predicate dcg_body/4 is part of the grammar rule translator reference 
 % implementation, defined in section 11.1. An alternative, informal 
 % implementation  of phrase/3 using a meta-interpreter is presented in 
 % the Annex A.

@@ -1,3 +1,5 @@
+/*
+
 Perl Style Regular Expressions in Prolog
 CMPT 383 Lecture Notes
 Robert D. Cameron
@@ -39,6 +41,7 @@ To represent regular expressions as symbolic objects in Prolog, we specify that 
 DCG Parser for Regular Expressions
 
 Constructing the DCG parser requires apply the left recursion removal techniques illustrated earlier for both the <RE> and <basic-RE> productions. We also left factor the <simple-RE> production to avoid backtracking.
+*/
 
 re(Z) --> basicRE(W), reTail(W, Z).
 reTail(W, Z) --> "|", basicRE(X), reTail(union(W,X), Z).
@@ -79,7 +82,7 @@ setItem(char(C)) --> "\\", [C], {set_metachar([C])}.
 setItem(range(A,B)) --> setItem(char(A)), "-", setItem(char(B)).
 
 
-Logic of Regular Expression Matching and Selection
+% Logic of Regular Expression Matching and Selection
 
 %
 % rematch1(RE, S, Unmatched, Selected) is true if RE matches
@@ -131,12 +134,14 @@ charSetMember(C, [range(C1, C2) | _]) :-
   C =< C2.
 charSetMember(C, [_|T]) :- charSetMember(C, T).
 
-Lexical Analysis with Regular Expressions
+/*
+  Lexical Analysis with Regular Expressions
 
     * Define a regular expression that matches and extracts tokens.
     * Repeatedly apply this expression until all input is consumed. 
 
 The tokenize/3 predicate will do the whole job, given a satisfactory regular expression!
+*/
 
 %
 %  tokenize(RE, Input, Output) is true if
@@ -162,6 +167,7 @@ names([Sym1|MoreSymbols], [Str1|MoreStrings]) :-
   name(Sym1, Str1), 
   names(MoreSymbols, MoreStrings).
 
+/*
 To use the tokenizer for lexical analysis, we now need only define a regular expression that specifies the allowable forms of tokens and whitespace. Tokens should be included inside parenthesized regular expressions so they are returned; whitespace should not be included in parenthesized expressions. For example, if we consider the tokens for the numeric expression grammar described previously, an appropriate regular expression is " +|([0-9]+|\+|-)". Note that this expression defines 4 alternative string types: (1) sequences of one or more spaces (" +"), (2) sequences of one or more digits ("[0-9]+"), (3) the + operator (which must be escaped because it is a metacharacter), and (4) the - operator. However, only the last three are selected as tokens by inclusion within parentheses.
 
 Finally, to use this expression in the Prolog tokenizer, the escape character itself must be escaped due to Prolog's string syntax conventions.
@@ -191,3 +197,4 @@ no
 Concluding Remarks
 
 The regular expression package defined here in Prolog is intended to illustrate both the power of regular expressions and their semantics in logical form. It is not intended to be a practical tool. However, the built-in regular expression support provided by many scripting languages (Perl, Javascript and so on), Unix tools (emacs, ex, grep, and so on), and lexical analyzer generators (lex, flex, flex++, and so on) are indeed practical and can greatly simplify string processing. The use of regular expressions for lexical analysis is a standard technique that is widely used in symbolic computing applications. 
+*/

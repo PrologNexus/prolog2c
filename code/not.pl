@@ -27,19 +27,6 @@
     or this debugging one, not because I like the name.
 */
 
-:- public
-	(not)/1.		%   new checking denial
-
-:- mode
-	explicit_binding(+,+,-,-),
-	free_variables(+,+,+,-),
-	    free_variables(+,+,+,+,-),
-	list_is_free_of(+,+),
-	not(+),
-	term_is_free_of(+,+),
-	    term_is_free_of(+,+,+).
-
-
 not(Goal) :-
 	free_variables(Goal, [], [], Vars),
 	Vars \== [], !,

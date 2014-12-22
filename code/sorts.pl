@@ -16,26 +16,6 @@
 --->    predicates in it.
 */
 
-:- public
-	keysort/2,
-	merge/3,
-	merge/5,
-	msort/2,
-	sort/2,
-	sort/4.
-
-:- mode
-	combine(+, +, -),
-	compare(+, +, +, -),
-	compare(+, +, +, +, -),
-	halve(+, +, -, -),
-	keysort(+, -),	
-	merge(+, +, -),
-	merge(+, +, +, +, -),
-	msort(+, -),
-	sort(+, -),
-	sort(+, +, +, -).
-
 sort(_, _, [], []).
 sort(_, _, [X], [X]).
 sort(Key, Order, [X,Y|L], Sorted) :-
