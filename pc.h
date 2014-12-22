@@ -2157,10 +2157,31 @@ static void db_erase_item(DB_ITEM *item)
     C0->P = lbl; }
 
 #define SAVE_CHOICE_POINTS						\
-  { *(ifthen_top++) = C0->P; *(ifthen_top++) = C0; *(ifthen_top++) = C; \
+  { *(ifthen_top++) = arg_top;						\
+    *(ifthen_top++) = env_top;						\
+    *(ifthen_top++) = E;						\
+    *(ifthen_top++) = C0->P;						\
+    *(ifthen_top++) = C0;						\
+    *(ifthen_top++) = C;						\
     ASSERT(ifthen_top < ifthen_stack + IFTHEN_STACK_SIZE, "if-then stack overflow"); }
 
-#define RESTORE_CHOICE_POINTS   { C = *(--ifthen_top); C0 = *(--ifthen_top); C0->P = *(--ifthen_top); }
+#define RESTORE_CHOICE_POINTS	 \
+  { C = *(--ifthen_top);	 \
+    C0 = *(--ifthen_top);	 \
+    C0->P = *(--ifthen_top);	 \
+    E = *(--ifthen_top);	 \
+    env_top = *(--ifthen_top);	 \
+    arg_top = *(--ifthen_top); }
+
+#define INVOKE_CHOICE_POINT			\
+  { for(C0 = C - 1; C0->P == NULL; --C0);	\
+    C = C0 + 1;					\
+    unwind_trail(C0->T);			\
+    A = C0->A;					\
+    arg_top = C0->arg_top;			\
+    env_top = C0->env_top;			\
+    goto *(C0->P); }
+
 #define POP_CHOICE_POINT        C0 = C0->C0
 
 #define EXIT				     \
@@ -2203,15 +2224,6 @@ static void db_erase_item(DB_ITEM *item)
 
 #define SET_REDO(lbl)   C0->P = (lbl)
 #define CUT             { C = C0 + 1; SET_REDO(NULL); }
-
-#define INVOKE_CHOICE_POINT			\
-  { for(C0 = C - 1; C0->P == NULL; --C0);	\
-    C = C0 + 1;					\
-    unwind_trail(C0->T);			\
-    A = C0->A;					\
-    arg_top = C0->arg_top;			\
-    env_top = C0->env_top;			\
-    goto *(C0->P); }
 
 
 /// Boilerplate code
