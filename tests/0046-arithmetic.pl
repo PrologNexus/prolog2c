@@ -16,8 +16,7 @@ main :-
 	9 // 4 =:= 2, ok('//'),
 	3 * 2 =:= 6, ok('i*'),
 	X5 is 6.2 * 2, f(X5, 12.4), ok('f*'),
-% not defined in SWI
-%	8 \\ 3 =:= 2, ok('\\\\'),
+	8 \\ 3 =:= 2, ok('\\\\'),
 	abs(-3) =:= 3, X6 is abs(9.0), f(X6, 9), ok('abs'),
 	X7 is atan(0.5), f(X7, 0.463647609000806), ok('atan'),
 	ceiling(3.6) =:= 4, ceiling(-3.2) =:= -3, ok('ceiling'),
