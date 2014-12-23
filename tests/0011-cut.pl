@@ -1,5 +1,5 @@
 main :- foo.
-main :- put66).
+main :- put(66).
 
 foo :-
 	bar,
