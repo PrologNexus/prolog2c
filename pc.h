@@ -2517,7 +2517,7 @@ PRIMITIVE(get_environment_variable, X name, X result)
 {
   CHAR *ptr = to_string(name);
   CHAR *val = getenv(ptr);
-  return val && unify(intern(val), result);
+  return val && unify(intern(CSTRING(val)), result);
 }
 
 PRIMITIVE(current_input_stream, X stream) { return unify(standard_input_port, stream); }
