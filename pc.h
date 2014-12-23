@@ -2492,6 +2492,9 @@ PRIMITIVE(close_stream, X stream)
 {
   check_type_PORT(stream);
 
+  if(stream == &default_input_port || stream == &default_output_port || stream == &default_error_port)
+    return 1;
+
   if(slot_ref(stream, 2) != ZERO) {
     fclose(port_file(stream));
     SLOT_SET(stream, 2, ZERO);
