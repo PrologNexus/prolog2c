@@ -33,6 +33,5 @@ auto_include(_, _) :- fail.
 add_boilerplate(TAG, _) :-
 	recorded(boilerplate_added, TAG), !.
 add_boilerplate(TAG, CODE) :-
-	display([TAG, CODE]), nl,
 	recordz(boilerplate, CODE),
 	recordz(boilerplate_added, TAG).
