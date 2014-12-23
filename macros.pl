@@ -13,17 +13,28 @@ macro(nl, foreign_call(put_byte(10))).
 macro(put(BYTE), foreign_call(put_byte(BYTE))).
 macro(get0(BYTE), foreign_call(get_byte(BYTE))).
 macro(peek(BYTE), foreign_call(peek_byte(BYTE))).
+macro(erase(REF), foreign_call(db_erase(REF))).
+macro(getenv(NAME, VAL), foreign_call(get_environment_variable(NAME, VAL))).
+macro(shell(CMD), foreign_call(shell_command(CMD, 0))).
+macro(shell(CMD, STATUS), foreign_call(shell_command(CMD, STATUS))).
 
 
 % nothing matches - tryi auto-include and finally, fail
 macro(TERM, TERM) :-
-	TERM =.. [NAME|_],
+	functor(TERM, NAME, ARITY),
 	atom(NAME),
-	auto_include(NAME, FILE),
+	auto_include(NAME/ARITY, FILE),
 	add_boilerplate(FILE, (:- include(FILE))).
 
 
 %% auto-include definitions
+
+auto_include(length/2, 'lists.pl').
+auto_include(append/3, 'lists.pl').
+auto_include(member/2, 'lists.pl').
+auto_include(reverse/2, 'lists.pl').
+
+auto_include(compare/3, 'misc.pl').
 
 auto_include(_, _) :- fail.
 
