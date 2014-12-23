@@ -13,3 +13,6 @@ throw(EXN) :-
 	foreign_call(set_current_output_stream(S)),
 	display('\nERROR: '), display(EXN), nl,
 	halt(70).
+
+shell(CMD) :- shell(CMD, 0).
+

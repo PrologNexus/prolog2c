@@ -3,6 +3,9 @@
 
 % predefined macros
 
+% NOTE: macros may not introduce new variables - these are scanned
+%       before a toplevel expression is compiled.
+
 macro(command_line_arguments(X), foreign_call(command_line_arguments(X))).
 macro(display(X), foreign_call(basic_write(X))).
 macro(exists_file(NAME), foreign_call(file_exists(NAME))).
@@ -15,7 +18,6 @@ macro(get0(BYTE), foreign_call(get_byte(BYTE))).
 macro(peek(BYTE), foreign_call(peek_byte(BYTE))).
 macro(erase(REF), foreign_call(db_erase(REF))).
 macro(getenv(NAME, VAL), foreign_call(get_environment_variable(NAME, VAL))).
-macro(shell(CMD), foreign_call(shell_command(CMD, 0))).
 macro(shell(CMD, STATUS), foreign_call(shell_command(CMD, STATUS))).
 
 
@@ -33,8 +35,10 @@ auto_include(length/2, 'lists.pl').
 auto_include(append/3, 'lists.pl').
 auto_include(member/2, 'lists.pl').
 auto_include(reverse/2, 'lists.pl').
+auto_include(select/3, 'lists.pl').
 
 auto_include(compare/3, 'misc.pl').
+auto_include(shell/1, 'misc.pl').
 
 auto_include(_, _) :- fail.
 
