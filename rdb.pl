@@ -1,8 +1,8 @@
 %%% record database operations
 
 
-:- pre_initialization((foreign_call(db_create(record_db, 3001, DB)),
-		       set_global(record_db, DB))).
+:- global_variable(record_db).
+:- pre_initialization((foreign_call(db_create(record_db, 3001, DB)), set_global(record_db, DB))).
 
 recorda(KEY, TERM) :- recorda(KEY, TERM, _).
 recorda(KEY, TERM, REF) :- '$record'(KEY, TERM, REF, 0).
