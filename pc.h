@@ -2480,5 +2480,82 @@ PRIMITIVE(peek_byte, X c)
   return unify(word_to_fixnum(g), c);
 }
 
+PRIMITIVE(open_stream, X name, X input, X result)
+{
+  CHAR *str = to_string(name);
+  FILE *fp = fopen(str, input == ZERO ? "wb" : "rb");
+  X port = PORT(fp, input, ONE, ZERO);
+  return unify(port, result);
+}
+
+PRIMITIVE(close_stream, X stream)
+{
+  check_type_PORT(stream);
+
+  if(slot_ref(stream, 2) != ZERO) {
+    fclose(port_file(stream));
+    SLOT_SET(stream, 2, ZERO);
+  }
+
+  if(stream == standard_input_port) stream = &default_input_port;
+  else if(stream == standard_output_port) stream = &default_output_port;
+  else if(stream == standard_error_port) stream = &default_error_port;
+  return 1;
+}
+
+PRIMITIVE(shell_command, X cmd, X status)
+{
+  CHAR *ptr = to_string(cmd);
+  int s = system(ptr);
+  return unify(word_to_fixnum(s), status);
+}
+
+PRIMITIVE(get_environment_variable, X name, X result)
+{
+  CHAR *ptr = to_string(name);
+  CHAR *val = getenv(ptr);
+  return val && unify(intern(val), result);
+}
+
+PRIMITIVE(current_input_stream, X stream) { return unify(standard_input_port, stream); }
+PRIMITIVE(current_output_stream, X stream) { return unify(standard_output_port, stream); }
+PRIMITIVE(current_error_stream, X stream) { return unify(standard_error_port, stream); }
+
+PRIMITIVE(set_current_input_stream, X stream)
+{
+  if(stream == ZERO)			      /* 'user' */
+    standard_input_port = &default_input_port;
+  else {
+    check_input_port(stream);
+    standard_input_port = stream;
+  }
+
+  return 1;
+}
+
+PRIMITIVE(set_current_output_stream, X stream)
+{
+  if(stream == ZERO)		/* 'user' */
+    standard_output_port = &default_output_port;
+  else {
+    check_output_port(stream);
+    standard_output_port = stream;
+  }
+
+  return 1;
+}
+
+PRIMITIVE(set_current_error_stream, X stream)
+{
+  if(stream == ZERO)		/* 'user' */
+    standard_error_port = &default_error_port;
+  else {
+    check_output_port(stream);
+    standard_error_port = stream;
+  }
+
+  return 1;
+}
+
 #endif
 #endif
