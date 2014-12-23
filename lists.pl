@@ -13,3 +13,7 @@ reverse([H|T],Z,Acc) :- reverse(T,Z,[H|Acc]).
 
 length([], 0).
 length([_|X], N) :- length(X, N2), N is N2 + 1.
+
+select(X, [X|Tail], Tail).
+select(Elem, [Head|Tail], [Head|Rest]) :-
+	select(Elem, Tail, Rest).
