@@ -133,7 +133,7 @@ assemble(bitwise_or(R1, R2, R3), S, S) :- gen('X ', R3, '=num_or(', R1, ','), ge
 assemble(shift_left(R1, R2, R3), S, S) :- gen('X ', R3, '=num_shl(', R1, ','), gen(R2, ');\n').
 assemble(shift_right(R1, R2, R3), S, S) :- gen('X ', R3, '=num_shr(', R1, ','), gen(R2, ');\n').
 assemble(exponent(R1, R2, R3), S, S) :- gen('X ', R3, '=num_pow(', R1, ','), gen(R2, ');\n').
-assemble(xor(R1, R2, R3), S, S) :- gen('X ', R3, '=num_xor(', R1, ',', R2, ');\n').
+assemble(xor(R1, R2, R3), S, S) :- gen('X ', R3, '=num_xor(', R1, ','), gen(R2, ');\n').
 
 assemble(bitwise_not(R1, R2), S, S) :- gen('X ', R2, '=num_not(', R1, ');\n').
 assemble(abs(R1, R2), S, S) :- gen('X ', R2, '=num_abs(', R1, ');\n').
