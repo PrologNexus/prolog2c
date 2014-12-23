@@ -1,0 +1,5 @@
+--- tests/0047-getenv.expected	2014-12-23 23:36:25.075741997 +0100
++++ tmp/0047-getenv.out	2014-12-23 23:36:25.451742277 +0100
+@@ -0,0 +1 @@
++/bin/bash
+output differs from expected output
