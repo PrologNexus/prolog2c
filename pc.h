@@ -912,7 +912,7 @@ static WORD hash_name(CHAR *name, int len)
   while(len--)
     key ^= (key << 6) + (key >> 2) + *(name++);
 
-  return (WORD)key;
+  return (WORD)(key & 0x7fffffff);
 }
 
 
