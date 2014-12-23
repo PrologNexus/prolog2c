@@ -24,13 +24,10 @@ NOTES											              -*- Org -*-
 ** TODO file:code/crypta.pl
 ** TODO test file:rdtok.pl, file:read.pl (self-compiled)
    - use of file:op.pl.
-** TODO select/3 (file:lists.pl)
 ** TODO file:write.pl
    - including file:op.pl
-** TODO stream/1
-   - file:tests/0027-type-predicates.pl
 ** TODO tests for new macros and autoloads
-   - getenv, shell, erase
+   - erase
 ** TODO tests for stuff in file:code/
    - ordsets, queues, writef, write
 ** TODO Test on Mac, Windows (32 bit) and R/Pi
