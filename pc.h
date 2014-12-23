@@ -2341,7 +2341,7 @@ PRIMITIVE(put_byte, X c)
 
 PRIMITIVE(put_string, X str)
 {
-  char *ptr = to_string(str);
+  CHAR *ptr = to_string(str);
   fputs(ptr, port_file(standard_output_port));
 }
 
@@ -2390,7 +2390,7 @@ PRIMITIVE(db_create, X name, X size, X result)
   check_type_SYMBOL(name);
   check_fixnum(size);
   X str = slot_ref(name, 0);
-  DB *db = create_db((char *)objdata(str), string_length(str), fixnum_to_word(size));
+  DB *db = create_db((CHAR *)objdata(str), string_length(str), fixnum_to_word(size));
   // this is a fake db-reference, not usable for lookup
   ALLOCATE_BLOCK(BLOCK *dbr, DBREFERENCE_TYPE, 1);
   dbr->d[ 0 ] = (X)db;
@@ -2403,7 +2403,7 @@ PRIMITIVE(db_find, X dbr, X key, X ref)
   check_type_SYMBOL(key);
   X str = slot_ref(key, 0);
   DB *db = (DB *)slot_ref(dbr, 0);
-  DB_ITEM *item = db_find_first_item(db, (char *)objdata(str), string_length(str));
+  DB_ITEM *item = db_find_first_item(db, (CHAR *)objdata(str), string_length(str));
 
   if(item) {
     ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 1);
@@ -2451,7 +2451,7 @@ PRIMITIVE(db_record, X dbr, X atend, X key, X val, X result)
   check_type_SYMBOL(key);
   X str = slot_ref(key, 0);
   DB *db = (DB *)slot_ref(dbr, 0);
-  DB_ITEM *item = db_insert_item(db, (char *)objdata(str), string_length(str), val, atend != ZERO);
+  DB_ITEM *item = db_insert_item(db, (CHAR *)objdata(str), string_length(str), val, atend != ZERO);
   ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 1);
   b->d[ 0 ] = (X)item;
   return unify(result, (X)b);
@@ -2460,7 +2460,7 @@ PRIMITIVE(db_record, X dbr, X atend, X key, X val, X result)
 PRIMITIVE(file_exists, X name) 
 {
   struct stat info;
-  char *fname = to_string(name);
+  CHAR *fname = to_string(name);
   return !stat(fname, &info) && S_ISREG(info.st_mode);
 }
 
