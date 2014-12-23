@@ -1,6 +1,3 @@
-member(X, [X|_]).
-member(X, [_|R]) :- member(X, R).
-
 iota(N, L) :- iota(0, N, L).
 iota(N, N, []).
 iota(N, M, [N|R]) :-

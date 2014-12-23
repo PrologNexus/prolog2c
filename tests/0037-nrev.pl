@@ -1,6 +1,3 @@
-append([],X,X).
-append([X|Y],Z,[X|W]) :- append(Y,Z,W).  
-
 % nrev/2 - naive reverse.
 nrev([ ],[ ]).
 nrev([X|Xs],Zs) :-

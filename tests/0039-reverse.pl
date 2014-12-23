@@ -8,7 +8,3 @@ main :-
 	display(L), nl,
 	reverse(L, X),
 	display(X), nl.
-
-reverse(L, R) :- reverse(L, R, []).
-reverse([],Z,Z).
-reverse([H|T],Z,Acc) :- reverse(T,Z,[H|Acc]).

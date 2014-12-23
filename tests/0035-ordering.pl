@@ -1,6 +1,3 @@
-member(X, [X|_]).
-member(X, [_|R]) :- member(X, R).
-
 main :-
 	DATA = [123, 456, 1.23, 4.56, ABC, DEF, abc, def, ab, abc, [], [1, 2], [4, -1], foo(A, b),
 		bar(B, b), bar(1, 2), bar(1), '.'(1,2), '[]'],
