@@ -18,12 +18,19 @@ NOTES											              -*- Org -*-
 ** Deterministic goal in condition of if-then-else can drop CP dance
    - same for '\\+'/2
 * Things to test
-** TODO GC symbol-reclamation.
+** TODO GC symbol-reclamation
 ** TODO file:io.pl
 ** TODO file:rdb.pl
 ** TODO file:code/crypta.pl
 ** TODO test file:rdtok.pl, file:read.pl (self-compiled)
-*** TODO file:op.pl
+   - use of file:op.pl.
+** TODO select/3 (file:lists.pl)
+** TODO file:write.pl
+   - including file:op.pl
+** TODO stream/1
+   - file:tests/0027-type-predicates.pl
+** TODO tests for new macros and autoloads
+   - getenv, shell, erase
 ** TODO tests for stuff in file:code/
    - ordsets, queues, writef, write
 ** TODO Test on Mac, Windows (32 bit) and R/Pi
@@ -42,6 +49,11 @@ NOTES											              -*- Org -*-
     - declaration "trace(PI)", where PI may be atom, NAME/ARITY, or
       list of those.
 ** Library/Runtime
+*** TODO findall/3
+    - macro + library (file:findall.pl)
+*** TODO clause-DB
+    - file:cdb.pl
+*** TODO autoincludes for file:io.pl and file:op.pl
 *** Make it possible to embed compiled code
     - "suspend(IN, OUT)" saves state and suspends execution.
     - define alternative entry-point via macro and return procedure
@@ -51,18 +63,10 @@ NOTES											              -*- Org -*-
     - for complete support of clause/2 we would actually need the full
       source.
     - at least compiler could offer "call_predicate".
-*** Basic Edinburgh I/O
-    - "see", "seen", "seeing", "tell", "told", "telling", "get"
-    - stream-alias "user" (default I/O ports)
-    - add all as macros, auto-including library file:io.pl
 *** TODO Primitives needed
     | atom_codes(ATOM, LIST)              |
     | number_codes(NUMBER, LIST)          | 
-    | current_input(STREAM)               |
-    | current_output(STREAM)              |
-    | current_error_output(STREAM)        |
 *** TODO Non-standard predicates we need for bootstrapping
-    | getenv/1             | macro               |
     | atomic_list_concat/2 | add to file:misc.pl |
     | union/3              | file:sets.pl        |
 * Diagnostics
@@ -77,8 +81,6 @@ NOTES											              -*- Org -*-
 *** TODO Command-line option to set include-path
     - "-I PATH"
 *** TODO Improve and extend directives
-    - ensure_loaded :: like "include", but include only once (name
-                       without extension.)
     - determinate :: register as determinate, use this to find more
                     TCO opportunities and reduce temporary CPs in
                     if-then-else, not, etc.
@@ -123,26 +125,48 @@ NOTES											              -*- Org -*-
 * List of builtin and library predicates
   | Name                         | Type | Library  | Notes                                                                |
   |------------------------------+------+----------+----------------------------------------------------------------------|
-  | append(L1, L2, L3)           |      | lists.pl |                                                                      |
+  | append(L1, L2, L3)           | A    | lists.pl |                                                                      |
+  | atom(X)                      | P    |          |                                                                      |
+  | atomic(X)                    | P    |          |                                                                      |
   | command_line_arguments(LIST) | M    |          | Filters out runtime-options ("-:..."), does not include program name |
-  | compare(REL, X, Y)           |      | misc.pl  |                                                                      |
+  | compare(REL, X, Y)           | A    | misc.pl  |                                                                      |
+  | compound(X)                  | P    |          |                                                                      |
   | display(X)                   | M    |          |                                                                      |
   | erase(REF)                   | M    |          |                                                                      |
   | exists_file(NAME)            | M    |          | fails if nonexistent or not a regular file                           |
+  | float(X)                     | P    |          |                                                                      |
+  | foreign_call(TERM)           | P    |          |                                                                      |
   | garbage_collect              | M    |          |                                                                      |
-  | get0(BYTE)                   | M    |          | -1 on EOF                                                            |
+  | get(C)                       | A    | io.pl    | -1 on EOF                                                            |
+  | get0(C)                      | M    |          | -1 on EOF                                                            |
+  | get_global(ATOM, X)          | P    |          |                                                                      |
   | getenv(NAME, VALUE)          | M    |          | fails if variable doesn't exist                                      |
   | halt                         | M    |          | exits with code 0                                                    |
   | halt(CODE)                   | M    |          |                                                                      |
-  | length(LIST, NUM)            |      | lists.pl |                                                                      |
-  | member(X, LST)               |      | lists.pl |                                                                      |
+  | integer(X)                   | P    |          |                                                                      |
+  | length(LIST, NUM)            | A    | lists.pl |                                                                      |
+  | member(X, LST)               | A    | lists.pl |                                                                      |
   | nl                           | M    |          |                                                                      |
+  | nonvar(X)                    | P    |          |                                                                      |
+  | number(X)                    | P    |          |                                                                      |
   | peek(BYTE)                   | M    |          | -1 on EOF                                                            |
   | put(CHAR)                    | M    |          | CHAR may be fixnum or symbol                                         |
-  | reverse(LST1, LST2)          |      | lists.pl |                                                                      |
-  | shell(COMMAND)               | M    |          | expects exit-status 0                                                |
+  | reverse(LST1, LST2)          | A    | lists.pl |                                                                      |
+  | see(FILE)                    | A    | io.pl    | may also pass stream                                                 |
+  | seeing(FILE)                 | A    | io.pl    |                                                                      |
+  | seen                         | A    | io.pl    | does nothing if stdin                                                |
+  | select(ELEM, LIST1, LIST2)   | A    | lists.pl |                                                                      |
+  | set_global(ATOM, X)          | P    |          |                                                                      |
+  | shell(COMMAND)               | A    | misc.pl  | expects exit-status 0                                                |
   | shell(COMMAND, STATUS)       | M    |          |                                                                      |
-  - "M" = macro, "A" autoload
+  | skip(C)                      | A    | io.pl    |                                                                      |
+  | stream(X)                    | P    |          |                                                                      |
+  | tab(C)                       | A    | io.pl    |                                                                      |
+  | tell(FILE)                   | A    | io.pl    | may also pass stream                                                 |
+  | telling(STREAM)              | A    | io.pl    |                                                                      |
+  | told                         | A    | io.pl    | does nothing if stdout or stderr                                     |
+  | var(X)                       | P    |          |                                                                      |
+  - "M" = macro, "A" = autoload, "P" = primitive (in compiler)
 * Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
