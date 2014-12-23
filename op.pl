@@ -1,7 +1,8 @@
 %%% operator definitions
 
 
-:- pre_initialization(set_global(operator_table, o[op(700,xfx,'@=<'),
+:- global_variable(operator_table).
+:- pre_initialization(set_global(operator_table, [op(700,xfx,'@=<'),
 						   op(1100,xfy,';'),
 						   op(700,xfx,'@<'),
 						   op(1000,xfy,','),
@@ -18,13 +19,13 @@
 						   op(700,xfx,'=='),
 						   op(200,fy,'-'),
 						   op(500,yfx,'-'),
-						   op(1150,fx,'initialization'),
+						   op(1150,fx,('initialization')),
 						   op(900,fy,'\\+'),
 						   op(700,xfx,'=:='),
 						   op(700,xfx,'=\\='),
 						   op(500,yfx,'\\/'),
-						   op(1200,fx,':-'),
-						   op(1200,xfx,':-'),
+						   op(1200,fx,(':-')),
+						   op(1200,xfx,(':-')),
 						   op(700,xfx,'\='),
 						   op(200,fy,'\\'),
 						      op(500,yfx,'/\\'),
