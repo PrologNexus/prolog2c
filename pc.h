@@ -2169,6 +2169,19 @@ static char *to_string(X x)
 }
 
 
+// does not check for full heap, so make sure the string isn't too long
+static X string_to_list(CHAR *str, int len)
+{
+  X lst = END_OF_LIST_VAL;
+  CHAR *ptr = str + len;
+
+  while(len > 0)
+    lst = PAIR(word_to_fixnum(ptr[ --len ]), lst);
+
+  return lst;
+}
+
+
 /// VM operations
 
 #define CURRENT_NAME
