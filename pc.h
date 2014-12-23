@@ -275,9 +275,9 @@ static BLOCK END_OF_LIST_VAL_BLOCK = { END_OF_LIST_TAG, {0}};
 static STRING_BLOCK dot_name = { STRING_TYPE|3, "." };
 static BLOCK dot_atom = { SYMBOL_TYPE|3, { &dot_name, NULL, NULL } };
 
-static PORT_BLOCK default_input_port = { PORT_TAG|4, NULL, ONE, ZERO, ZERO };
-static PORT_BLOCK default_output_port = { PORT_TAG|4, NULL, ZERO, ZERO, ZERO };
-static PORT_BLOCK default_error_port = { PORT_TAG|4, NULL, ZERO, ZERO, ZERO };
+static PORT_BLOCK default_input_port = { PORT_TAG|4, NULL, ONE, ONE, ZERO };
+static PORT_BLOCK default_output_port = { PORT_TAG|4, NULL, ZERO, ONE, ZERO };
+static PORT_BLOCK default_error_port = { PORT_TAG|4, NULL, ZERO, ONE, ZERO };
 
 static X standard_input_port = (X)(&default_input_port);
 static X standard_output_port = (X)(&default_output_port);
