@@ -40,6 +40,16 @@ auto_include(select/3, 'lists.pl').
 auto_include(compare/3, 'misc.pl').
 auto_include(shell/1, 'misc.pl').
 
+auto_include(tab/1, 'io.pl').
+auto_include(skip/1, 'io.pl').
+auto_include(get/1, 'io.pl').
+auto_include(see/1, 'io.pl').
+auto_include(seen/1, 'io.pl').
+auto_include(seeing/1, 'io.pl').
+auto_include(tell/1, 'io.pl').
+auto_include(told/1, 'io.pl').
+auto_include(telling/1, 'io.pl').
+
 auto_include(_, _) :- fail.
 
 
