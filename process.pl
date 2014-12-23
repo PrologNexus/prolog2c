@@ -115,6 +115,8 @@ process_directive(global_variable(NAME), S, S) :-
 	mangle_name(NAME, MNAME),
 	recordz(global_variables, MNAME).
 
+process_directive(op(P, A, N), S, S) :-	op(P, A, N).
+
 process_directive(DECL, STATE, STATE) :-
 	error(['unrecognized directive: ', DECL]).
 
