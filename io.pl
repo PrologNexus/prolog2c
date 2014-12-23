@@ -28,3 +28,18 @@ told :-
 	foreign_call(current_output_stream(S)),
 	foreign_call(close_stream(S)),
 	foreign_call(set_current_output_stream(0)).
+
+tab(N) :- N > 0, !, put(32), N2 is N - 1, tab(N2).
+tab(_).
+
+get(C) :-
+	!, get0(C2),
+	(C2 =:= -1, C = -1
+	; C2 =\= 32, C = C2
+	; get(C)).
+
+skip(C) :-
+	!, get0(C2),
+	(C2 =:= -1
+	; C == C2
+	; skip(C)).
