@@ -19,8 +19,11 @@ NOTES											              -*- Org -*-
    - same for '\\+'/2
 * Things to test
 ** TODO GC symbol-reclamation.
+** TODO file:io.pl
+** TODO file:rdb.pl
 ** TODO file:code/crypta.pl
 ** TODO test file:rdtok.pl, file:read.pl (self-compiled)
+*** TODO file:op.pl
 ** TODO tests for stuff in file:code/
    - ordsets, queues, writef, write
 ** TODO Test on Mac, Windows (32 bit) and R/Pi
@@ -31,50 +34,10 @@ NOTES											              -*- Org -*-
     - remove that file afterwards.
 *** TODO current_op/3 and op-database
     - need some internal DB
-    - Operators
-      [700,xfx,@=<]
-      [1100,xfy,;]
-      [700,xfx,@<]
-      [1000,xfy,,]
-      [700,xfx,is]
-      [200,xfx,**]
-      [700,xfx,@>]
-      [400,yfx,<<]
-      [700,xfx,@>=]
-      [700,xfx,\==]
-      [200,fy,+]
-      [500,yfx,+]
-      [400,yfx,>>]
-      [700,xfx,==]
-      [400,yfx,\\]
-      [200,fy,-]
-      [500,yfx,-]
-      [1150,fx,initialization]
-      [900,fy,\+]
-      [700,xfx,=:=]
-      [700,xfx,=\=]
-      [500,yfx,\/]
-      [1200,fx,:-]
-      [1200,xfx,:-]
-      [700,xfx,\=]
-      [200,fy,\]
-      [500,yfx,/\]
-      [400,yfx,xor]
-      [700,xfx,=<]
-      [700,xfx,<]
-      [700,xfx,=..]
-      [700,xfx,=]
-      [400,yfx,//]
-      [400,yfx,/]
-      [1050,xfy,->]
-      [700,xfx,>]
-      [400,yfx,*]
-      [700,xfx,>=]
-    - later: 
-      [1200,xfx,-->]
-      [1105,xfy,|]
 *** Add support for DCGs
     - probably using file:code/dcg.pl
+*** TODO add auto-includes to file:macros.pl
+    - file:misc.pl, file:op.pl, file:io.pl, file:rdb.pl
 *** Allow selective tracing
     - declaration "trace(PI)", where PI may be atom, NAME/ARITY, or
       list of those.
@@ -93,11 +56,8 @@ NOTES											              -*- Org -*-
     - stream-alias "user" (default I/O ports)
     - add all as macros, auto-including library file:io.pl
 *** TODO Primitives needed
-    | open_stream(FILENAME, I/O?, STREAM) |
-    | close_sream(STREAM)                 |
-    | shell_command(STRING, EXITCODE)     |
-    | eof(STREAM)                         |
-    | getenv(ATOM)                        |
+    | atom_codes(ATOM, LIST)              |
+    | number_codes(NUMBER, LIST)          | 
     | current_input(STREAM)               |
     | current_output(STREAM)              |
     | current_error_output(STREAM)        |
@@ -135,7 +95,11 @@ NOTES											              -*- Org -*-
 * List of available primitives
   | basic_write(X)                      |
   | basic_writeq(X)                     |
+  | close_stream(S)                     |
   | command_line_arguments(X)           |
+  | current_error_stream(STREAM)        |
+  | current_input_stream(STREAM)        |
+  | current_output_stream(STREAM)       |
   | db_create(NAME, SIZE, DB)           |
   | db_erase(REF)                       |
   | db_find(DB, KEY, REF)               |
@@ -145,24 +109,39 @@ NOTES											              -*- Org -*-
   | debug_hook(X)                       |
   | gc                                  |
   | get_byte(BYTE)                      |
+  | get_environment_variable(NAME, VAL) |
   | halt(I)                             |
+  | open_stream(NAME, INPUT?, STREAM)   |
   | peek_byte(BYTE)                     |
   | put_byte(CHAR)                      |
   | put_string(STREAM, ATOM/LIST)       |
+  | set_current_error_stream(STREAM)    |
+  | set_current_input_stream(STREAM)    |
+  | set_current_output_stream(STREAM)   |
+  | shell_command(CMD, STATUS)          |
   | write_char(I)                       |
 * List of builtin and library predicates
-  | Name                         | Type | Library | Notes                                                                |
-  |------------------------------+------+---------+----------------------------------------------------------------------|
-  | command_line_arguments(LIST) | M    |         | Filters out runtime-options ("-:..."), does not include program name |
-  | display(X)                   | M    |         |                                                                      |
-  | exists_file(NAME)            | M    |         | fails if nonexistent or not a regular file                           |
-  | garbage_collect              | M    |         |                                                                      |
-  | get0(BYTE)                   | M    |         | -1 on EOF                                                            |
-  | halt                         | M    |         | exits with code 0                                                    |
-  | halt(CODE)                   | M    |         |                                                                      |
-  | nl                           | M    |         |                                                                      |
-  | peek(BYTE)                   | M    |         | -1 on EOF                                                            |
-  | put(CHAR)                    | M    |         | CHAR may be fixnum or symbol                                         |
+  | Name                         | Type | Library  | Notes                                                                |
+  |------------------------------+------+----------+----------------------------------------------------------------------|
+  | append(L1, L2, L3)           |      | lists.pl |                                                                      |
+  | command_line_arguments(LIST) | M    |          | Filters out runtime-options ("-:..."), does not include program name |
+  | compare(REL, X, Y)           |      | misc.pl  |                                                                      |
+  | display(X)                   | M    |          |                                                                      |
+  | erase(REF)                   | M    |          |                                                                      |
+  | exists_file(NAME)            | M    |          | fails if nonexistent or not a regular file                           |
+  | garbage_collect              | M    |          |                                                                      |
+  | get0(BYTE)                   | M    |          | -1 on EOF                                                            |
+  | getenv(NAME, VALUE)          | M    |          | fails if variable doesn't exist                                      |
+  | halt                         | M    |          | exits with code 0                                                    |
+  | halt(CODE)                   | M    |          |                                                                      |
+  | length(LIST, NUM)            |      | lists.pl |                                                                      |
+  | member(X, LST)               |      | lists.pl |                                                                      |
+  | nl                           | M    |          |                                                                      |
+  | peek(BYTE)                   | M    |          | -1 on EOF                                                            |
+  | put(CHAR)                    | M    |          | CHAR may be fixnum or symbol                                         |
+  | reverse(LST1, LST2)          |      | lists.pl |                                                                      |
+  | shell(COMMAND)               | M    |          | expects exit-status 0                                                |
+  | shell(COMMAND, STATUS)       | M    |          |                                                                      |
   - "M" = macro, "A" autoload
 * Test suites
 ** file:/archive/prologsuite.tar.gz
