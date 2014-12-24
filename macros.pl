@@ -50,6 +50,11 @@ auto_include(tell/1, 'io.pl').
 auto_include(told/1, 'io.pl').
 auto_include(telling/1, 'io.pl').
 
+auto_include(op/3, 'op.pl').
+auto_include(current_op/3, 'op.pl').
+
+auto_include(throw/1, 'misc.pl').
+
 auto_include(_, _) :- fail.
 
 
