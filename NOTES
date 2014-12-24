@@ -19,13 +19,13 @@ NOTES											              -*- Org -*-
    - same for '\\+'/2
 * Things to test
 ** TODO GC symbol-reclamation
-** TODO file:io.pl
 ** TODO file:rdb.pl
+** TODO some non-trivial tst for DCG rules
 ** TODO file:code/crypta.pl
 ** TODO test file:rdtok.pl, file:read.pl (self-compiled)
    - use of file:op.pl.
 ** TODO file:write.pl
-   - including file:op.pl
+   - also use of file:op.pl
 ** TODO tests for new macros and autoloads
    - erase
 ** TODO tests for stuff in file:code/
@@ -38,10 +38,8 @@ NOTES											              -*- Org -*-
     - remove that file afterwards.
 *** TODO current_op/3 and op-database
     - need some internal DB
-*** Add support for DCGs
-    - probably using file:code/dcg.pl
 *** TODO add auto-includes to file:macros.pl
-    - file:misc.pl, file:op.pl, file:io.pl, file:rdb.pl
+    - file:rdb.pl
 *** Allow selective tracing
     - declaration "trace(PI)", where PI may be atom, NAME/ARITY, or
       list of those.
@@ -50,7 +48,6 @@ NOTES											              -*- Org -*-
     - macro + library (file:findall.pl)
 *** TODO clause-DB
     - file:cdb.pl
-*** TODO autoincludes for file:io.pl and file:op.pl
 *** Make it possible to embed compiled code
     - "suspend(IN, OUT)" saves state and suspends execution.
     - define alternative entry-point via macro and return procedure
@@ -91,6 +88,8 @@ NOTES											              -*- Org -*-
     - tricky.
 *** TODO Should "make_term" deref it's args, especially the functor?
 *** TODO Is cycle-checking in =deref= really necessary?
+** Libraries
+*** TODO op/3 should throw ISO-compliant exception
 * List of available primitives
   | basic_write(X)                      |
   | basic_writeq(X)                     |
@@ -128,6 +127,7 @@ NOTES											              -*- Org -*-
   | command_line_arguments(LIST) | M    |          | Filters out runtime-options ("-:..."), does not include program name |
   | compare(REL, X, Y)           | A    | misc.pl  |                                                                      |
   | compound(X)                  | P    |          |                                                                      |
+  | current_op(P, A, N)          | A    | op.pl    |                                                                      |
   | display(X)                   | M    |          |                                                                      |
   | erase(REF)                   | M    |          |                                                                      |
   | exists_file(NAME)            | M    |          | fails if nonexistent or not a regular file                           |
@@ -146,6 +146,7 @@ NOTES											              -*- Org -*-
   | nl                           | M    |          |                                                                      |
   | nonvar(X)                    | P    |          |                                                                      |
   | number(X)                    | P    |          |                                                                      |
+  | op(P, A, N)                  | A    | op.pl    |                                                                      |
   | peek(BYTE)                   | M    |          | -1 on EOF                                                            |
   | put(CHAR)                    | M    |          | CHAR may be fixnum or symbol                                         |
   | reverse(LST1, LST2)          | A    | lists.pl |                                                                      |
@@ -161,6 +162,7 @@ NOTES											              -*- Org -*-
   | tab(C)                       | A    | io.pl    |                                                                      |
   | tell(FILE)                   | A    | io.pl    | may also pass stream                                                 |
   | telling(STREAM)              | A    | io.pl    |                                                                      |
+  | throw(X)                     | A    | misc.pl  | uncatchable, just to signal error                                    |
   | told                         | A    | io.pl    | does nothing if stdout or stderr                                     |
   | var(X)                       | P    |          |                                                                      |
   - "M" = macro, "A" = autoload, "P" = primitive (in compiler)
