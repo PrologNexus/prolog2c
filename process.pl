@@ -39,8 +39,11 @@ process_input([end_of_file], BLOCK, NA, STATE1) :-
 	compile_block(NA, BLOCK, STATE1, STATE2),
 	compile_file_finished(STATE2).
 
-
-%% a normal clause - check if it belongs to the block
+% detect DCG rules and expand
+process_input([(HEAD --> BODY)|MORE], BLOCK, NA, STATE) :-
+        dcg_rule((HEAD --> BODY), EXPANSION),
+	%writeq(EXPANSION), nl,
+	process_input([EXPANSION|MORE], BLOCK, NA, STATE).
 
 % matches N/A? add and continue
 process_input([(HEAD :- BODY)|MORE], BLOCK, NAME/ARITY, STATE) :-

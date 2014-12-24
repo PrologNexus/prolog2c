@@ -60,7 +60,8 @@ dcg_rule((NonTerminal --> GRBody), S0, S, (Head :- Body)) :-
 
 dcg_rule(Term, _, _, _) :-
 	throw(type_error(grammar_rule, Term)).
- % translates a grammar goal non-terminal:
+
+% translates a grammar goal non-terminal:
 
 dcg_non_terminal(NonTerminal, _, _, _) :-
 	\+ callable(NonTerminal),
@@ -73,10 +74,11 @@ dcg_non_terminal(NonTerminal, S0, S, Goal) :-
 
 % translates a terminal-sequence:
 
+/*
 dcg_terminals(Terminals, _, _, _) :-
-	\+ is_proper_list(Terminals),
+	+ is_proper_list(Terminals),
 	throw(type_error(list, Terminals)).
-
+*/
 dcg_terminals(Terminals, S0, S, S0 = List) :-
 	append(Terminals, S, List).
 
@@ -265,6 +267,7 @@ phrase/2 see section  8.1.1.4.
 
 **************************************************************************/
 
+/*
 phrase(GRBody, S0, S) :-
 	var(GRBody),
 	throw(error(instantiation_error, phrase(GRBody, S0, S))).
@@ -288,7 +291,7 @@ phrase(GRBody, S0, S) :-
 	dcg_body(GRBody, TS0, TS, Goal),
 	TS0 = S0, TS = S,
 	call(Goal).
-
+*/
 
 % The predicate dcg_body/4 is part of the grammar rule translator reference 
 % implementation, defined in section 11.1. An alternative, informal 
