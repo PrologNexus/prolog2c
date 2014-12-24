@@ -11,7 +11,7 @@ see(NAME) :-
 	foreign_call(open_stream(NAME, 1, S)),
 	foreign_call(set_current_input_stream(S)).
 
-seeing(S) :- goreign_call(current_input_stream(S)).
+seeing(S) :- foreign_call(current_input_stream(S)).
 
 seen :-
 	foreign_call(current_input_stream(S)),
