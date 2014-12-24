@@ -20,4 +20,5 @@ gensym(PREFIX, N, state(S1, X, Y), state(S2, X, Y)) :-
 %
 % - works in both directions: STATE1 is without, STATE2 is with added element
 
+%XXX can this be done with select/3 ?
 open_file_stack(F, state(X, Y, Z), state(X, Y, [F|Z])).
