@@ -262,7 +262,7 @@ typedef struct DB_ITEM
 #define fptr_to_ptr(fptr)       ((X)((fptr) << 1))
 
 #define ZERO     word_to_fixnum(0)
-#define ONE     word_to_fixnum(0)
+#define ONE     word_to_fixnum(1)
 
 #define PREVIOUS_SYMBOL  END_OF_LIST_VAL
 
