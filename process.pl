@@ -4,14 +4,13 @@
 compile_file(FILE) :-
 	initial_state(STATE),
 	see(FILE), !,
-	recorda(compiling_input, yes),
 	process_input([], [], _, STATE).
 compile_file(FILE) :-
 	error(['compilation of ', FILE, ' failed.']).
 
 compile_file_finished(STATE) :-
-	recorded(compiling_input, _, REF),
-	erase(REF),
+	process_boilerplate_code(STATE).
+compile_file_finished(STATE) :-
 	process_initialization_goals(STATE).
 compile_file_finished(STATE) :-
 	seen,
@@ -137,11 +136,17 @@ show_intermediate_code :-
 show_intermediate_code.
 
 
-%% add clause for (pre-)initialization goals
+%% add clauses for boilerplate code and (pre-)initialization goals
+
+process_boilerplate_code(STATE) :-
+	findall(B, (recorded(boilerplate, B, REF), erase(REF)), BOILERPLATE),
+	BOILERPLATE \= [],
+	process_input(BOILERPLATE, [], _, STATE).
 
 process_initialization_goals(STATE) :-
+	\+recorded(initialization_done, _),
 	(recorded(initialization_goal, GOAL); GOAL = main),
 	(recorded(pre_initialization_goal, IGOAL); IGOAL = true),
-	findall(B, recorded(boilerplate, B), BOILERPLATE),
+	recorda(initialization_done, true),
 	default_setting(entry_point, EP),
-	process_input([(EP :- IGOAL, GOAL)|BOILERPLATE], [], _, STATE).
+	process_input([(EP :- IGOAL, GOAL)], [], _, STATE).
