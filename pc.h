@@ -2582,5 +2582,119 @@ PRIMITIVE(set_current_error_stream, X stream)
   return 1;
 }
 
+PRIMITIVE(atom_codes, X atom, X lst)
+{
+  if(is_VAR(atom)) {
+    int len;
+    CHAR *ptr = to_string(lst, &len);
+    X str = STRING(len);
+    return unify(atom, intern(str));
+  }
+
+  int len;
+  CHAR *ptr;
+
+  if(atom == END_OF_LIST_VAL) {
+    len = 2;
+    ptr = "[]";
+  }
+  else {
+    check_type_SYMBOL(atom);
+    X str = slot_ref(atom, 0);
+    len = string_length(str);
+    ptr = (CHAR *)objdata(str);
+  }
+
+  X p = END_OF_LIST_VAL;
+
+  while(len)
+    p = PAIR(word_to_fixnum(ptr[ --len ]), p);
+
+  return unify(lst, p);
+}
+
+PRIMITIVE(number_codes, X num, X lst)
+{
+  if(is_VAR(num)) {
+    int len;
+    CHAR *ptr = to_string(lst, &len);
+    CHAR *endptr;
+    WORD n = strtol(ptr, &endptr, 10);
+
+    if(*endptr != '\0' || ((n == LONG_MIN || n == LONG_MAX) && errno == ERANGE) || !is_in_fixnum_range(n)) {
+      FLOAT f = strtod(ptr, &endptr);
+
+      if(*endptr != '\0' || ((f == 0 || f == HUGE_VAL || f == -HUGE_VAL) && errno == ERANGE)) 
+	return 0;
+
+      return unify(num, FLONUM(f));
+    }
+
+    return unify(num, word_to_fixnum(n));
+  }
+
+  check_number(num);
+
+  if(is_FIXNUM(num))
+    sprintf(string_buffer, WORD_OUTPUT_FORMAT, fixnum_to_word(num));
+  else
+    sprintf(string_buffer, FLOAT_OUTPUT_FORMAT, flonum_to_float(num));
+
+  int len = strlen(string_buffer);
+  X p = END_OF_LIST_VAL;
+
+  while(len)
+    p = PAIR(word_to_fixnum(string_buffer[ --len ]), p);
+
+  return unify(lst, p);
+}
+
+PRIMITIVE(functor, X term, X name, X arity)
+{
+  if(is_VAR(term)) {
+    check_fixnum(arity);
+    int n = fixnum_to_word(arity);
+    X x;
+
+    if(n == 0) {
+      check_atomic(name);
+      x = name;
+    }
+    else if(name == (X)&dot_atom && n == 2)
+      x = PAIR(make_var(), make_var());
+    else {
+      check_type_SYMBOL(name);
+      x = STRUCTURE(name, n);
+    
+      for(int i = 0; i < n; ++i) 
+	SLOT_SET(x, i + 1, make_var());
+    }
+
+    return unify(term, x);
+  }
+
+  if(is_PAIR(term))
+    return unify(arity, word_to_fixnum(2)) && unify((X)&dot_atom, name);
+  
+  if(is_atomic(term))
+    return unify(arity, word_to_fixnum(0)) && unify(term, name);
+
+  check_atomic_failed(term);
+  return 0;
+}
+
+PRIMITIVE(term_arg, X index, X term, X arg)
+{
+  check_fixnum(index);
+  WORD i = fixnum_to_word(index);
+
+  if(is_PAIR(term))
+    return i > 0 && i < 3 && unify(arg, slot_ref(term, i - 1));
+
+  check_type_STRUCTURE(term);
+  return i > 0 && i < objsize(term) && unify(arg, slot_ref(term, i));
+}
+
+
 #endif
 #endif
