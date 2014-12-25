@@ -19,6 +19,10 @@ macro(peek(BYTE), foreign_call(peek_byte(BYTE))).
 macro(erase(REF), foreign_call(db_erase(REF))).
 macro(getenv(NAME, VAL), foreign_call(get_environment_variable(NAME, VAL))).
 macro(shell(CMD, STATUS), foreign_call(shell_command(CMD, STATUS))).
+macro(atom_codes(A, LST), foreign_call(atom_codes(A, LST))).
+macro(number_codes(N, LST), foreign_call(number_codes(N, LST))).
+macro(functor(T, N, A), foreign_call(functor(T, N, A))).
+macro(arg(I, T, X), foreign_call(term_arg(I, T, X))).
 
 
 % nothing matches - tryi auto-include and finally, fail
@@ -54,6 +58,8 @@ auto_include(op/3, 'op.pl').
 auto_include(current_op/3, 'op.pl').
 
 auto_include(throw/1, 'misc.pl').
+
+auto_include(name/2, 'misc.pl').
 
 auto_include(_, _) :- fail.
 
