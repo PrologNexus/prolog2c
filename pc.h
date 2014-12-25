@@ -1432,16 +1432,15 @@ static X make_term(int arity, X functor, ...)
   functor = deref(functor);
   check_type(SYMBOL_TYPE, functor);
 
-  if(arity == 2 && !strcmp(".", (CHAR *)objdata(slot_ref(functor, 0)))) {
+  if(arity == 2 && functor == (X)(&dot_atom)) {
     X car = va_arg(va, X);
     return PAIR(car, va_arg(va, X));
   }
 
-  ALLOCATE_BLOCK(BLOCK *s, STRUCTURE_TYPE, arity + 1);
-  s->d[ 0 ] = functor;
+  X s = STRUCTURE(functor, arity);
 
   for(int i = 1; i <= arity; ++i)
-    s->d[ i ] = deref(va_arg(va, X));
+    SLOT_SET(s, i, va_arg(va, X));
 
   return (X)s;
 }
