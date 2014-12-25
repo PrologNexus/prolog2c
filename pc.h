@@ -638,7 +638,7 @@ static inline X check_range_STRING(X x, WORD i, WORD j)
 #define check_type_FLONUM(x)  check_type(FLONUM_TYPE, (x))
 #define check_type_SYMBOL(x)  check_type(SYMBOL_TYPE, (x))
 #define check_type_PORT(x)  check_type(PORT_TYPE, (x))
-#define check_type_STRUCTURE(x)  check_type(VECTOR_TYPE, (x))
+#define check_type_STRUCTURE(x)  check_type(STRUCTURE_TYPE, (x))
 #define check_type_DBREFERENCE(x)  check_type(DBREFERENCE_TYPE, (x))
 
 
