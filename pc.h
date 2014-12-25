@@ -2136,18 +2136,20 @@ static void db_erase_item(DB_ITEM *item)
 
 
 // assumes x is deref'd, returns pointer to char that should not be modified
-static char *to_string(X x)
+static CHAR *to_string(X x, int *size)
 {
   if(is_FIXNUM(x))
-    check_type_failed(SYMBOL_TYPE, x);
+    CRASH("bad argument type - can not convert to string");
 
   switch(objtype(x)) {
   case SYMBOL_TYPE:
-    return (char *)objdata(slot_ref(x, 0));
+    { X str = slot_ref(x, 0);
+      *size = string_length(str);
+      return (CHAR *)objdata(str); }
 
   case PAIR_TYPE:
     { int len = 0;
-      char *ptr = string_buffer;
+      CHAR *ptr = string_buffer;
       
       while(!is_FIXNUM(x) && objtype(x) == PAIR_TYPE) {
 	if(len >= string_buffer_length - 1) {
@@ -2164,7 +2166,11 @@ static char *to_string(X x)
 	x = slot_ref(x, 1);
       }
 
+      if(x != END_OF_LIST_VAL)
+	CRASH("bad argument type - not a proper list");
+
       *ptr = '\0';
+      *size = len;
       return string_buffer; }
 
   default:
@@ -2346,7 +2352,8 @@ PRIMITIVE(put_byte, X c)
 
 PRIMITIVE(put_string, X str)
 {
-  CHAR *ptr = to_string(str);
+  int len;
+  CHAR *ptr = to_string(str, &len);
   fputs(ptr, port_file(standard_output_port));
 }
 
@@ -2465,7 +2472,8 @@ PRIMITIVE(db_record, X dbr, X atend, X key, X val, X result)
 PRIMITIVE(file_exists, X name) 
 {
   struct stat info;
-  CHAR *fname = to_string(name);
+  int len;
+  CHAR *fname = to_string(name, &len);
   return !stat(fname, &info) && S_ISREG(info.st_mode);
 }
 
@@ -2487,7 +2495,8 @@ PRIMITIVE(peek_byte, X c)
 
 PRIMITIVE(open_stream, X name, X input, X result)
 {
-  CHAR *str = to_string(name);
+  int len;
+  CHAR *str = to_string(name, &len);
   FILE *fp = fopen(str, input == ZERO ? "wb" : "rb");
   X port = PORT(fp, input, ONE, ZERO);
   return unify(port, result);
@@ -2513,16 +2522,24 @@ PRIMITIVE(close_stream, X stream)
 
 PRIMITIVE(shell_command, X cmd, X status)
 {
-  CHAR *ptr = to_string(cmd);
+  int len;
+  CHAR *ptr = to_string(cmd, &len);
   int s = system(ptr);
   return unify(word_to_fixnum(s), status);
 }
 
 PRIMITIVE(get_environment_variable, X name, X result)
 {
-  CHAR *ptr = to_string(name);
+  int len;
+  CHAR *ptr = to_string(name, &len);
   CHAR *val = getenv(ptr);
-  return val && unify(intern(CSTRING(val)), result);
+
+  if(!val) return 0;
+
+  int slen = strlen(val);
+  X str = STRING(slen);
+  memcpy(objdata(str), val, slen);
+  return val && unify(intern(str), result);
 }
 
 PRIMITIVE(current_input_stream, X stream) { return unify(standard_input_port, stream); }
