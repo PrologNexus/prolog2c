@@ -135,7 +135,7 @@ typedef struct STRUCTURE_BLOCK {
 
 typedef struct FLONUM_BLOCK {
   WORD h;
-  double n;
+  FLOAT n;
 } FLONUM_BLOCK;
 
 typedef struct PORT_BLOCK {
@@ -1641,14 +1641,14 @@ static inline X num_float(X x)
 
 static inline X num_frac(X x)
 {
-  double i;
+  FLOAT i;
   return FLONUM(modf(flonum_to_float(check_type_FLONUM(deref(x))), &i));
 }
 
 
 static inline X num_int(X x)
 {
-  double i;
+  FLOAT i;
   modf(flonum_to_float(check_type_FLONUM(deref(x))), &i);
   return FLONUM(i);
 }
@@ -1674,7 +1674,7 @@ static inline X num_abs(X x)
     return fixnum_to_word(x) < 0 ? word_to_fixnum(-fixnum_to_word(x)) : x;
 
   if(is_FLONUM(x)) {
-    double n = flonum_to_float(x);
+    FLOAT n = flonum_to_float(x);
 
     if(n < 0) return FLONUM(-n);
     
@@ -1701,7 +1701,7 @@ static inline X num_sign(X x)
   }
 
   if(is_FLONUM(x)) {
-    double n = flonum_to_float(x);
+    FLOAT n = flonum_to_float(x);
 
     if(n < 0.0) return FLONUM(-1);
     
