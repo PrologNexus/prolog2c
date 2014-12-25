@@ -717,6 +717,12 @@ static inline X check_output_port(X x)
     SLOT_INIT((X)p_, 2, (prev));					\
     (X)p_; })
 
+// does not initialize args
+#define STRUCTURE(functor, arity)				\
+  ({ ALLOCATE_BLOCK(BLOCK *s_, STRUCTURE_TYPE, (arity) + 1);	\
+  SLOT_INIT((X)s_, 0, (functor));				\
+  (X)s_; })
+
 
 /// garbage collection
 
