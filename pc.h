@@ -262,9 +262,7 @@ typedef struct DB_ITEM
 #define fptr_to_ptr(fptr)       ((X)((fptr) << 1))
 
 #define ZERO     word_to_fixnum(0)
-#define ONE     word_to_fixnum(1)
-
-#define PREVIOUS_SYMBOL  END_OF_LIST_VAL
+#define ONE      word_to_fixnum(1)
 
 
 /// predefined literals and global variables
@@ -272,8 +270,12 @@ typedef struct DB_ITEM
 #ifdef COMPILED_PROLOG_PROGRAM
 static BLOCK END_OF_LIST_VAL_BLOCK = { END_OF_LIST_TAG, {0}};
 
-static STRING_BLOCK dot_name = { STRING_TYPE|3, "." };
-static BLOCK dot_atom = { SYMBOL_TYPE|3, { &dot_name, NULL, NULL } };
+#define END_OF_LIST_VAL  ((X)(&END_OF_LIST_VAL_BLOCK))
+
+static STRING_BLOCK dot_name = { STRING_TYPE|2, "." };
+static BLOCK dot_atom = { SYMBOL_TYPE|3, { &dot_name, END_OF_LIST_VAL, END_OF_LIST_VAL } };
+
+#define PREVIOUS_SYMBOL  (X)(&dot_atom)
 
 static PORT_BLOCK default_input_port = { PORT_TAG|4, NULL, ONE, ONE, ZERO };
 static PORT_BLOCK default_output_port = { PORT_TAG|4, NULL, ZERO, ONE, ZERO };
@@ -314,8 +316,6 @@ static CHAR *type_names[] = {
   "invalid", "fixnum", "null", "symbol", "flonum", "stream", "variable", "string", "structure", "pair", "dbreference"
 };
 #endif
-
-#define END_OF_LIST_VAL  ((X)(&END_OF_LIST_VAL_BLOCK))
 
 #define type_name(t)         (type_names[ (WORD)(t) & 0x1f ])
 #define tag_to_type_name(t)  type_name(objtype(t))
