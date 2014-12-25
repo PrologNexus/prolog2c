@@ -12,6 +12,8 @@ NOTES											              -*- Org -*-
 ** Arithmetic
    - deref all vars just once at start.
    - track types, use unboxed math.
+** With some sort of type/groundness analysis many primitives can be rewritten to simpler forms
+   - functor, arg, name, etc.
 ** Last clause of predicate with a single call can be treated as determinate (and enable TCO)
    - if we know about determinacy of library predicates, this could be
      generalized to multiple calls.
@@ -21,11 +23,14 @@ NOTES											              -*- Org -*-
 ** TODO GC symbol-reclamation
 ** TODO file:rdb.pl
 ** TODO some non-trivial tst for DCG rules
+** TODO name/2
+** TODO =../2
 ** TODO file:code/crypta.pl
 ** TODO test file:rdtok.pl, file:read.pl (self-compiled)
    - use of file:op.pl.
 ** TODO file:write.pl
-   - also use of file:op.pl
+   - also test correct use of file:op.pl
+** TODO test file:queue.pl, file:ordset.pl, file:sorts.pl
 ** TODO tests for new macros and autoloads
    - erase
 ** TODO tests for stuff in file:code/
@@ -44,6 +49,7 @@ NOTES											              -*- Org -*-
     - declaration "trace(PI)", where PI may be atom, NAME/ARITY, or
       list of those.
 ** Library/Runtime
+*** TODO univ ("=..")
 *** TODO findall/3
     - macro + library (file:findall.pl)
 *** TODO clause-DB
@@ -57,15 +63,12 @@ NOTES											              -*- Org -*-
     - for complete support of clause/2 we would actually need the full
       source.
     - at least compiler could offer "call_predicate".
-*** TODO Primitives needed
-    | atom_codes(ATOM, LIST)              |
-    | number_codes(NUMBER, LIST)          | 
 *** TODO Non-standard predicates we need for bootstrapping
     | atomic_list_concat/2 | add to file:misc.pl |
-    | union/3              | file:sets.pl        |
 * Diagnostics
 ** Detect singleton variables
 ** Detect redefinitions of primitives
+** Detect undefined predicate calls
 ** Detect non-contiguous predicates
 * TODO Once we have a suitable test, compare performance with other implementations
   - maybe file:queens.pl
@@ -82,6 +85,7 @@ NOTES											              -*- Org -*-
    - extend var-rep to hold name, in addition to index.
 *** TODO check fixnum range when emitting literals 
 ** Runtime
+*** TODO arg/3 in SWI allows unbound arg-value, but ISO doesn't say so
 *** TODO Reconsider default data-area sizes
 *** TODO trail-GC
     - and adjust CP-stack entries accordingly.
@@ -122,7 +126,9 @@ NOTES											              -*- Org -*-
   | Name                         | Type | Library  | Notes                                                                |
   |------------------------------+------+----------+----------------------------------------------------------------------|
   | append(L1, L2, L3)           | A    | lists.pl |                                                                      |
+  | arg(INDEX, TERM, X)          | M    |          |                                                                      |
   | atom(X)                      | P    |          |                                                                      |
+  | atom_codes(ATOM, LIST)       | M    |          |                                                                      |
   | atomic(X)                    | P    |          |                                                                      |
   | command_line_arguments(LIST) | M    |          | Filters out runtime-options ("-:..."), does not include program name |
   | compare(REL, X, Y)           | A    | misc.pl  |                                                                      |
@@ -132,20 +138,22 @@ NOTES											              -*- Org -*-
   | erase(REF)                   | M    |          |                                                                      |
   | exists_file(NAME)            | M    |          | fails if nonexistent or not a regular file                           |
   | float(X)                     | P    |          |                                                                      |
-  | foreign_call(TERM)           | P    |          |                                                                      |
+  | foreign_call(TERM)           | S    |          |                                                                      |
   | garbage_collect              | M    |          |                                                                      |
   | get(C)                       | A    | io.pl    | -1 on EOF                                                            |
   | get0(C)                      | M    |          | -1 on EOF                                                            |
-  | get_global(ATOM, X)          | P    |          |                                                                      |
+  | get_global(ATOM, X)          | S    |          |                                                                      |
   | getenv(NAME, VALUE)          | M    |          | fails if variable doesn't exist                                      |
   | halt                         | M    |          | exits with code 0                                                    |
   | halt(CODE)                   | M    |          |                                                                      |
   | integer(X)                   | P    |          |                                                                      |
   | length(LIST, NUM)            | A    | lists.pl |                                                                      |
   | member(X, LST)               | A    | lists.pl |                                                                      |
+  | name(X, LST)                 | A    | misc.pl  |                                                                      |
   | nl                           | M    |          |                                                                      |
   | nonvar(X)                    | P    |          |                                                                      |
   | number(X)                    | P    |          |                                                                      |
+  | number_codes(NUM, LIST)      | M    |          | uses strtol(3)/strtod(3), so allows leading space                    |
   | op(P, A, N)                  | A    | op.pl    |                                                                      |
   | peek(BYTE)                   | M    |          | -1 on EOF                                                            |
   | put(CHAR)                    | M    |          | CHAR may be fixnum or symbol                                         |
@@ -154,7 +162,7 @@ NOTES											              -*- Org -*-
   | seeing(FILE)                 | A    | io.pl    |                                                                      |
   | seen                         | A    | io.pl    | does nothing if stdin                                                |
   | select(ELEM, LIST1, LIST2)   | A    | lists.pl |                                                                      |
-  | set_global(ATOM, X)          | P    |          |                                                                      |
+  | set_global(ATOM, X)          | S    |          |                                                                      |
   | shell(COMMAND)               | A    | misc.pl  | expects exit-status 0                                                |
   | shell(COMMAND, STATUS)       | M    |          |                                                                      |
   | skip(C)                      | A    | io.pl    |                                                                      |
@@ -164,8 +172,10 @@ NOTES											              -*- Org -*-
   | telling(STREAM)              | A    | io.pl    |                                                                      |
   | throw(X)                     | A    | misc.pl  | uncatchable, just to signal error                                    |
   | told                         | A    | io.pl    | does nothing if stdout or stderr                                     |
+  | X =.. Y                      | A    | misc.pl  | "univ"                                                               |
   | var(X)                       | P    |          |                                                                      |
-  - "M" = macro, "A" = autoload, "P" = primitive (in compiler)
+  - "M" = macro, "A" = autoload, "P" = primitive (in compiler), "S" = special form / builtin
+** TODO Add operators provided by compiler in table above
 * Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
