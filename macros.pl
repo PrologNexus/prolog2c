@@ -23,6 +23,8 @@ macro(atom_codes(A, LST), foreign_call(atom_codes(A, LST))).
 macro(number_codes(N, LST), foreign_call(number_codes(N, LST))).
 macro(functor(T, N, A), foreign_call(functor(T, N, A))).
 macro(arg(I, T, X), foreign_call(term_arg(I, T, X))).
+macro(current_input(S), foreign_call(current_input_stream(S))).
+macro(current_output(S), foreign_call(current_output_stream(S))).
 
 
 % nothing matches - tryi auto-include and finally, fail
