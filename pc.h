@@ -2118,6 +2118,7 @@ static void db_erase_item(DB_ITEM *item)
 {
   DB_BUCKET *bucket = item->bucket;
 
+  // erase bucket, if this is the last item in it
   if(bucket->firstitem == item && bucket->lastitem == item) {
     if(bucket->previous) bucket->previous->next = bucket->next;
     
@@ -2125,9 +2126,11 @@ static void db_erase_item(DB_ITEM *item)
 
     bucket->db->table[ bucket->index ] = NULL;
     bucket->previous = bucket->next = NULL;
+    free(bucket->key);
     free(bucket);
   }
   else {
+    // otherwise insert into item-chain
     if(item->previous) item->previous->next = item->next;
   
     if(item->next) item->next->previous = item->previous;
