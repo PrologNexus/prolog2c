@@ -87,6 +87,11 @@ compile_term_for_unification('_var_'(N), DEST, BOUND, BOUND, S, S) :-
 	emit(local(N, DEST)).
 compile_term_for_unification('_var_'(N), DEST, BOUND, [N|BOUND], S, S) :-
 	emit(make_variable(DEST), assign(N, DEST)).
+% special case for '-<number>', returned by rdtok.pl as '-'(<number>)
+compile_term_for_unification(-(N), DEST, B1, B2, S1, S2) :-
+	number(N),
+	N2 is -N,
+	compile_term_for_unification(N2, DEST, B1, B2, S1, S2).
 compile_term_for_unification(X, DEST, BOUND, BOUND, S1, S2) :-
 	literal_term(X), 	% literal term not containing variables?
 	register_literal(X, N, S1, S2),
