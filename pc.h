@@ -1152,7 +1152,9 @@ static void unwind_trail(X *tp)
 {
   while(trail_top != tp) {
     BLOCK *var = (BLOCK *)(*(--trail_top));
-    //DRIBBLE("[detrail: _" WORD_OUTPUT_FORMAT "]\n", fixnum_to_word(slot_ref((X)var, 1)));
+#ifdef DUMPALL
+    DRIBBLE("[detrail: _" WORD_OUTPUT_FORMAT "]\n", fixnum_to_word(slot_ref((X)var, 1)));
+#endif
     SLOT_SET(var, 0, var);
   }
 }
@@ -1369,13 +1371,13 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
   WORD yt = is_FIXNUM(y) ? FIXNUM_TYPE : objtype(y);
 
   if(xt == VAR_TYPE) {
-    /*
+#ifdef DUMPALL
     if(verbose) {
       DRIBBLE("[binding _" WORD_OUTPUT_FORMAT " <- ", fixnum_to_word(slot_ref(x, 1)));
       basic_write_term(stderr, 1, 9999, 1, y);
       fputs("]\n", stderr);
     }
-    */
+#endif
 
     SLOT_SET(x, 0, y);
     push_trail(C0, x);
@@ -1383,13 +1385,13 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
   }
 
   if(yt == VAR_TYPE) {
-    /*
+#ifdef DUMPALL
     if(verbose) {
       DRIBBLE("[binding _" WORD_OUTPUT_FORMAT " <- ", fixnum_to_word(slot_ref(y, 1)));
       basic_write_term(stderr, 1, 9999, 1, x);
       fputs("]\n", stderr);
     }
-    */
+#endif
 
     SLOT_SET(y, 0, x);
     push_trail(C0, y);
