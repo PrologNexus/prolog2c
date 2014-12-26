@@ -2284,8 +2284,8 @@ static X string_to_list(CHAR *str, int len)
     R = C0->R;				     \
     E = C0->E;				     \
     env_top = C0->env_top;		     \
+    C = C0;				     \
     C0 = C0->C0;			     \
-    C = C0 + 1;				     \
     goto *R; }
 
 #define FAIL     { TRACE_FAIL(CURRENT_NAME, CURRENT_ARITY); goto fail; }
@@ -2298,13 +2298,13 @@ static X string_to_list(CHAR *str, int len)
     R = C0->R;						 \
     E = C0->E;						 \
     env_top = C0->env_top;				 \
+    C = C0;						 \
     C0 = C0->C0;					 \
-    C = C0 + 1;						 \
     goto lbl; }
 
 #define CHECK_LIMIT				\
   if(alloc_top > fromspace_limit) {		\
-    collect_garbage();		\
+    collect_garbage();				\
   }
 
 #define ENVIRONMENT(len)  { E = env_top; env_top += (len); }
