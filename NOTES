@@ -13,7 +13,7 @@ NOTES											              -*- Org -*-
    - deref all vars just once at start.
    - track types, use unboxed math.
 ** With some sort of type/groundness analysis many primitives can be rewritten to simpler forms
-   - functor, arg, name, etc.
+   - functor, arg, name, '=..', etc.
 ** Last clause of predicate with a single call can be treated as determinate (and enable TCO)
    - if we know about determinacy of library predicates, this could be
      generalized to multiple calls.
@@ -22,17 +22,13 @@ NOTES											              -*- Org -*-
 * Things to test
 ** TODO GC symbol-reclamation
 ** TODO file:rdb.pl
-** TODO some non-trivial tst for DCG rules
-** TODO name/2
-** TODO =../2
-** TODO file:code/crypta.pl
+** TODO some non-trivial test for DCG rules
+   - e.g. file:re.pl
+** TODO atomic_list_concat/2
 ** TODO test file:rdtok.pl, file:read.pl (self-compiled)
    - use of file:op.pl.
-** TODO file:write.pl
-   - also test correct use of file:op.pl
 ** TODO test file:queue.pl, file:ordset.pl, file:sorts.pl
-** TODO tests for new macros and autoloads
-   - erase
+** TODO file:code/writef.pl
 ** TODO tests for stuff in file:code/
    - ordsets, queues, writef, write
 ** TODO Test on Mac, Windows (32 bit) and R/Pi
@@ -49,7 +45,6 @@ NOTES											              -*- Org -*-
     - declaration "trace(PI)", where PI may be atom, NAME/ARITY, or
       list of those.
 ** Library/Runtime
-*** TODO univ ("=..")
 *** TODO findall/3
     - macro + library (file:findall.pl)
 *** TODO clause-DB
@@ -63,8 +58,6 @@ NOTES											              -*- Org -*-
     - for complete support of clause/2 we would actually need the full
       source.
     - at least compiler could offer "call_predicate".
-*** TODO Non-standard predicates we need for bootstrapping
-    | atomic_list_concat/2 | add to file:misc.pl |
 * Diagnostics
 ** Detect singleton variables
 ** Detect redefinitions of primitives
@@ -74,108 +67,139 @@ NOTES											              -*- Org -*-
   - maybe file:queens.pl
   - SWI, GNU-Prolog, BinProlog
 * Issues
+** TODO file:crypta.pl breaks
+   - env doesn't seem to be restored correctly.
 ** Compiler
-*** TODO Command-line option to set include-path
-    - "-I PATH"
-*** TODO Improve and extend directives
-    - determinate :: register as determinate, use this to find more
-                    TCO opportunities and reduce temporary CPs in
-                    if-then-else, not, etc.
 *** TODO Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
 *** TODO check fixnum range when emitting literals 
 ** Runtime
-*** TODO arg/3 in SWI allows unbound arg-value, but ISO doesn't say so
 *** TODO Reconsider default data-area sizes
 *** TODO trail-GC
     - and adjust CP-stack entries accordingly.
     - tricky.
-*** TODO Should "make_term" deref it's args, especially the functor?
 *** TODO Is cycle-checking in =deref= really necessary?
 ** Libraries
-*** TODO op/3 should throw ISO-compliant exception
-* List of available primitives
-  | basic_write(X)                      |
-  | basic_writeq(X)                     |
-  | close_stream(S)                     |
-  | command_line_arguments(X)           |
-  | current_error_stream(STREAM)        |
-  | current_input_stream(STREAM)        |
-  | current_output_stream(STREAM)       |
-  | db_create(NAME, SIZE, DB)           |
-  | db_erase(REF)                       |
-  | db_find(DB, KEY, REF)               |
-  | db_next(REF, REF2)                  |
-  | db_record(DB, ATEND, KEY, VAL, REF) |
-  | db_ref(REF, VAL)                    |
-  | debug_hook(X)                       |
-  | gc                                  |
-  | get_byte(BYTE)                      |
-  | get_environment_variable(NAME, VAL) |
-  | halt(I)                             |
-  | open_stream(NAME, INPUT?, STREAM)   |
-  | peek_byte(BYTE)                     |
-  | put_byte(CHAR)                      |
-  | put_string(STREAM, ATOM/LIST)       |
-  | set_current_error_stream(STREAM)    |
-  | set_current_input_stream(STREAM)    |
-  | set_current_output_stream(STREAM)   |
-  | shell_command(CMD, STATUS)          |
-  | write_char(I)                       |
+*** TODO Not sure about the implementation of memberchk/2 in file:lists.pl
+    - should this be built-in?
+*** TODO Use distinct directory or filename-prefix for auto-included libraries
+*** TODO op/3 should throw ISO-compliant exceptions
 * List of builtin and library predicates
-  | Name                         | Type | Library  | Notes                                                                |
-  |------------------------------+------+----------+----------------------------------------------------------------------|
-  | append(L1, L2, L3)           | A    | lists.pl |                                                                      |
-  | arg(INDEX, TERM, X)          | M    |          |                                                                      |
-  | atom(X)                      | P    |          |                                                                      |
-  | atom_codes(ATOM, LIST)       | M    |          |                                                                      |
-  | atomic(X)                    | P    |          |                                                                      |
-  | command_line_arguments(LIST) | M    |          | Filters out runtime-options ("-:..."), does not include program name |
-  | compare(REL, X, Y)           | A    | misc.pl  |                                                                      |
-  | compound(X)                  | P    |          |                                                                      |
-  | current_op(P, A, N)          | A    | op.pl    |                                                                      |
-  | display(X)                   | M    |          |                                                                      |
-  | erase(REF)                   | M    |          |                                                                      |
-  | exists_file(NAME)            | M    |          | fails if nonexistent or not a regular file                           |
-  | float(X)                     | P    |          |                                                                      |
-  | foreign_call(TERM)           | S    |          |                                                                      |
-  | garbage_collect              | M    |          |                                                                      |
-  | get(C)                       | A    | io.pl    | -1 on EOF                                                            |
-  | get0(C)                      | M    |          | -1 on EOF                                                            |
-  | get_global(ATOM, X)          | S    |          |                                                                      |
-  | getenv(NAME, VALUE)          | M    |          | fails if variable doesn't exist                                      |
-  | halt                         | M    |          | exits with code 0                                                    |
-  | halt(CODE)                   | M    |          |                                                                      |
-  | integer(X)                   | P    |          |                                                                      |
-  | length(LIST, NUM)            | A    | lists.pl |                                                                      |
-  | member(X, LST)               | A    | lists.pl |                                                                      |
-  | name(X, LST)                 | A    | misc.pl  |                                                                      |
-  | nl                           | M    |          |                                                                      |
-  | nonvar(X)                    | P    |          |                                                                      |
-  | number(X)                    | P    |          |                                                                      |
-  | number_codes(NUM, LIST)      | M    |          | uses strtol(3)/strtod(3), so allows leading space                    |
-  | op(P, A, N)                  | A    | op.pl    |                                                                      |
-  | peek(BYTE)                   | M    |          | -1 on EOF                                                            |
-  | put(CHAR)                    | M    |          | CHAR may be fixnum or symbol                                         |
-  | reverse(LST1, LST2)          | A    | lists.pl |                                                                      |
-  | see(FILE)                    | A    | io.pl    | may also pass stream                                                 |
-  | seeing(FILE)                 | A    | io.pl    |                                                                      |
-  | seen                         | A    | io.pl    | does nothing if stdin                                                |
-  | select(ELEM, LIST1, LIST2)   | A    | lists.pl |                                                                      |
-  | set_global(ATOM, X)          | S    |          |                                                                      |
-  | shell(COMMAND)               | A    | misc.pl  | expects exit-status 0                                                |
-  | shell(COMMAND, STATUS)       | M    |          |                                                                      |
-  | skip(C)                      | A    | io.pl    |                                                                      |
-  | stream(X)                    | P    |          |                                                                      |
-  | tab(C)                       | A    | io.pl    |                                                                      |
-  | tell(FILE)                   | A    | io.pl    | may also pass stream                                                 |
-  | telling(STREAM)              | A    | io.pl    |                                                                      |
-  | throw(X)                     | A    | misc.pl  | uncatchable, just to signal error                                    |
-  | told                         | A    | io.pl    | does nothing if stdout or stderr                                     |
-  | X =.. Y                      | A    | misc.pl  | "univ"                                                               |
-  | var(X)                       | P    |          |                                                                      |
+  | Name                           | Type | Library  | Notes                                                                |
+  |--------------------------------+------+----------+----------------------------------------------------------------------|
+  | X, Y                           | S    |          |                                                                      |
+  | X; Y                           | S    |          |                                                                      |
+  | X = Y                          | S    |          |                                                                      |
+  | X -> Y                         | S    |          |                                                                      |
+  | X -> Y; Z                      | S    |          |                                                                      |
+  | '!'                            | S    |          |                                                                      |
+  | \+ X                           | S    |          |                                                                      |
+  | X \= Y                         | S    |          |                                                                      |
+  | X == Y                         | S    |          |                                                                      |
+  | X \== Y                        | S    |          |                                                                      |
+  | EXP1 < EXP1                    | S    |          |                                                                      |
+  | EXP1 > EXP2                    | S    |          |                                                                      |
+  | EXP1 =< EXP2                   | S    |          |                                                                      |
+  | EXP1 >= EXP2                   | S    |          |                                                                      |
+  | EXP1 =:= EXP2                  | S    |          |                                                                      |
+  | EXP1 =\= EXP2                  | S    |          |                                                                      |
+  | X @< Y                         | S    |          |                                                                      |
+  | X @> Y                         | S    |          |                                                                      |
+  | X @=< Y                        | S    |          |                                                                      |
+  | X @>= Y                        | S    |          |                                                                      |
+  | append(L1, L2, L3)             | A    | lists.pl |                                                                      |
+  | arg(INDEX, TERM, X)            | M    |          |                                                                      |
+  | atom(X)                        | P    |          |                                                                      |
+  | atom_codes(ATOM, LIST)         | M    |          |                                                                      |
+  | atomic(X)                      | P    |          |                                                                      |
+  | atomic_list_concat(LIST, ATOM) | A    | misc.pl  | likely to be insufficient                                            |
+  | command_line_arguments(LIST)   | M    |          | Filters out runtime-options ("-:..."), does not include program name |
+  | compare(REL, X, Y)             | A    | misc.pl  |                                                                      |
+  | compound(X)                    | P    |          |                                                                      |
+  | current_input(S)               | M    |          |                                                                      |
+  | current_output(S)              | M    |          |                                                                      |
+  | current_op(P, A, N)            | A    | op.pl    |                                                                      |
+  | display(X)                     | M    |          |                                                                      |
+  | erase(REF)                     | M    |          |                                                                      |
+  | exists_file(NAME)              | M    |          | fails if nonexistent or not a regular file                           |
+  | fail                           | S    |          |                                                                      |
+  | float(X)                       | P    |          |                                                                      |
+  | foreign_call(TERM)             | S    |          |                                                                      |
+  | garbage_collect                | M    |          |                                                                      |
+  | get(C)                         | A    | io.pl    | -1 on EOF                                                            |
+  | get0(C)                        | M    |          | -1 on EOF                                                            |
+  | get_global(ATOM, X)            | S    |          |                                                                      |
+  | getenv(NAME, VALUE)            | M    |          | fails if variable doesn't exist                                      |
+  | halt                           | M    |          | exits with code 0                                                    |
+  | halt(CODE)                     | M    |          |                                                                      |
+  | integer(X)                     | P    |          |                                                                      |
+  | intersection(X, Y, Z)          | A    | sets.pl  |                                                                      |
+  | X is EXP                       | S    |          |                                                                      |
+  | length(LIST, NUM)              | A    | lists.pl |                                                                      |
+  | member(X, LST)                 | A    | lists.pl |                                                                      |
+  | memberchk(X, LST)              | A    | lists.pl |                                                                      |
+  | name(X, LST)                   | A    | misc.pl  |                                                                      |
+  | nl                             | M    |          |                                                                      |
+  | nonvar(X)                      | P    |          |                                                                      |
+  | number(X)                      | P    |          |                                                                      |
+  | number_codes(NUM, LIST)        | M    |          | uses strtol(3)/strtod(3), so allows leading space                    |
+  | op(P, A, N)                    | A    | op.pl    |                                                                      |
+  | peek(BYTE)                     | M    |          | -1 on EOF                                                            |
+  | put(CHAR)                      | M    |          | CHAR may be fixnum or symbol                                         |
+  | repeat                         | S    |          |                                                                      |
+  | reverse(LST1, LST2)            | A    | lists.pl |                                                                      |
+  | see(FILE)                      | A    | io.pl    | may also pass stream                                                 |
+  | seeing(FILE)                   | A    | io.pl    |                                                                      |
+  | seen                           | A    | io.pl    | does nothing if stdin                                                |
+  | select(ELEM, LIST1, LIST2)     | A    | sets.pl  |                                                                      |
+  | set_global(ATOM, X)            | S    |          |                                                                      |
+  | shell(COMMAND)                 | A    | misc.pl  | expects exit-status 0                                                |
+  | shell(COMMAND, STATUS)         | M    |          |                                                                      |
+  | skip(C)                        | A    | io.pl    |                                                                      |
+  | stream(X)                      | P    |          |                                                                      |
+  | subtract(X, Y, Z)              | A    | sets.pl  |                                                                      |
+  | tab(C)                         | A    | io.pl    |                                                                      |
+  | tell(FILE)                     | A    | io.pl    | may also pass stream                                                 |
+  | telling(STREAM)                | A    | io.pl    |                                                                      |
+  | throw(X)                       | A    | misc.pl  | uncatchable, just to signal error                                    |
+  | told                           | A    | io.pl    | does nothing if stdout or stderr                                     |
+  | true                           | S    |          |                                                                      |
+  | union(X, Y, Z)                 | A    | sets.pl  |                                                                      |
+  | X =.. Y                        | A    | misc.pl  | "univ"                                                               |
+  | var(X)                         | P    |          |                                                                      |
+  | write(X)                       | A    | write.pl |                                                                      |
+  | writeq(X)                      | A    | write.pl |                                                                      |
+  #+TBLFM: $1=
   - "M" = macro, "A" = autoload, "P" = primitive (in compiler), "S" = special form / builtin
-** TODO Add operators provided by compiler in table above
+* List of arithmetic operators
+  | - X                      |
+  | \ X                      |
+  | X + Y                    |
+  | X - Y                    |
+  | X * Y                    |
+  | X / Y                    |
+  | X // Y                   |
+  | X \\ Y                   |
+  | X /\ Y                   |
+  | X \/ Y                   |
+  | X >> Y                   |
+  | X << Y                   |
+  | X ** Y                   |
+  | abs(X)                   |
+  | atan(X)                  |
+  | ceiling(X)               |
+  | cos(X)                   |
+  | exp(X)                   |
+  | float(X)                 |
+  | float_fractional_part(X) |
+  | float_integer_part(X)    |
+  | floor(X)                 |
+  | log(X)                   |
+  | round(X)                 |
+  | sign(X)                  |
+  | sin(X)                   |
+  | sqrt(X)                  |
+  | truncate(X)              |
 * Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
