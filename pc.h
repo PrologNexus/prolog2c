@@ -264,18 +264,16 @@ typedef struct DB_ITEM
 #define ZERO     word_to_fixnum(0)
 #define ONE      word_to_fixnum(1)
 
+#define END_OF_LIST_VAL  ((X)(&END_OF_LIST_VAL_BLOCK))
+
+#define PREVIOUS_SYMBOL  END_OF_LIST_VAL
+
 
 /// predefined literals and global variables
 
 #ifdef COMPILED_PROLOG_PROGRAM
 static BLOCK END_OF_LIST_VAL_BLOCK = { END_OF_LIST_TAG, {0}};
-
-#define END_OF_LIST_VAL  ((X)(&END_OF_LIST_VAL_BLOCK))
-
-static STRING_BLOCK dot_name = { STRING_TYPE|2, "." };
-static BLOCK dot_atom = { SYMBOL_TYPE|3, { &dot_name, END_OF_LIST_VAL, END_OF_LIST_VAL } };
-
-#define PREVIOUS_SYMBOL  (X)(&dot_atom)
+static X dot_atom;
 
 static PORT_BLOCK default_input_port = { PORT_TAG|4, NULL, ONE, ONE, ZERO };
 static PORT_BLOCK default_output_port = { PORT_TAG|4, NULL, ZERO, ONE, ZERO };
@@ -783,6 +781,9 @@ static void collect_garbage()
   for(int i = 0; i < global_variable_counter; ++i)
     mark1(&(global_variables[ i ]));
 
+  // mark special symbols
+  mark1(&dot_atom);
+
   //XXX preliminary - later don't mark and remove unforwarded items
   //    (adjusting trail-pointers in CP-stack accordingly)
   for(X *p = trail_stack; p < trail_top; ++p)
@@ -962,6 +963,8 @@ static void intern_static_symbols(X sym1)
     symbol_table[ key ] = sym;
     sym1 = nextsym;
   }
+
+  dot_atom = intern(CSTRING("."));
 }
 
 
@@ -1432,7 +1435,7 @@ static X make_term(int arity, X functor, ...)
   functor = deref(functor);
   check_type(SYMBOL_TYPE, functor);
 
-  if(arity == 2 && functor == (X)(&dot_atom)) {
+  if(arity == 2 && functor == dot_atom) {
     X car = va_arg(va, X);
     return PAIR(car, va_arg(va, X));
   }
@@ -1854,7 +1857,7 @@ static int compare_terms(X x, X y)
 
       if(d != 0) return d;
 
-      d = compare_terms(slot_ref(x, 0), (X)&dot_atom);
+      d = compare_terms(slot_ref(x, 0), dot_atom);
 
       if(d != 0) return d;
 
@@ -1873,7 +1876,7 @@ static int compare_terms(X x, X y)
 
       if(d != 0) return d;
 
-      d = compare_terms((X)&dot_atom, slot_ref(y, 0));
+      d = compare_terms(dot_atom, slot_ref(y, 0));
 
       if(d != 0) return d;
 
@@ -2660,7 +2663,7 @@ PRIMITIVE(functor, X term, X name, X arity)
       check_atomic(name);
       x = name;
     }
-    else if(name == (X)&dot_atom && n == 2)
+    else if(name == dot_atom && n == 2)
       x = PAIR(make_var(), make_var());
     else {
       check_type_SYMBOL(name);
@@ -2674,13 +2677,13 @@ PRIMITIVE(functor, X term, X name, X arity)
   }
 
   if(is_PAIR(term))
-    return unify(arity, word_to_fixnum(2)) && unify((X)&dot_atom, name);
+    return unify(arity, word_to_fixnum(2)) && unify(dot_atom, name);
   
   if(is_atomic(term))
     return unify(arity, word_to_fixnum(0)) && unify(term, name);
 
-  check_atomic_failed(term);
-  return 0;
+  check_type_STRUCTURE(term);
+  return unify(word_to_fixnum(objsize(term) - 1), arity) && unify(name, slot_ref(term, 0));
 }
 
 PRIMITIVE(term_arg, X index, X term, X arg)
