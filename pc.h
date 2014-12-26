@@ -1462,7 +1462,7 @@ static X make_term(int arity, X functor, ...)
     y = deref(y); \
     if(is_FIXNUM(x)) {					\
       if(is_FIXNUM(y))					\
-	return x op y;					\
+	return fixnum_to_word(x) op fixnum_to_word(y);	\
       if(is_FLONUM(y))					\
 	return fixnum_to_float(x) op flonum_to_float(y);	\
       check_number_failed(y); }					\
