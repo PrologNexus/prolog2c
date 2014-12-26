@@ -2594,6 +2594,7 @@ PRIMITIVE(atom_codes, X atom, X lst)
     int len;
     CHAR *ptr = to_string(lst, &len);
     X str = STRING(len);
+    memcpy(objdata(str), ptr, len);
     return unify(atom, intern(str));
   }
 
