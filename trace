@@ -15,5 +15,5 @@
   (unless (string=? "c" s)
     (run (./pc ,file -o ,cfile))))
 
-(run (gcc -std=gnu99 -I. -save-temps=obj -g ,cfile -o ,xfile -DTRACE -lm))
+(run (gcc -std=gnu99 -I. -save-temps=obj -g ,cfile -o ,xfile -DTRACE -lm ,@(cdr args)))
 (exit (run* (,(string-append "./" xfile))))
