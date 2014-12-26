@@ -60,9 +60,10 @@ auto_include(op/3, 'op.pl').
 auto_include(current_op/3, 'op.pl').
 
 auto_include(throw/1, 'misc.pl').
-
 auto_include(name/2, 'misc.pl').
-
+auto_include(atomic_list_concat/2, 'misc.pl').
+auto_include('=..'/2, 'misc.pl').
+	     
 auto_include(_, _) :- fail.
 
 
