@@ -70,15 +70,6 @@ maybe_space(_, _).
 
 
 
-%   put_string(S)
-%   writes a list of character codes.
-
-put_string([]).
-put_string([H|T]) :-
-	put(H),
-	put_string(T).
-
-
 %   put_string(S, Q)
 %   writes a quoted list of character codes, where the first
 %   quote has already been written.  Instances of Q in S are doubled.
@@ -98,10 +89,7 @@ put_string([H|T], Q) :-
 %   is system dependent.  This just uses whatever Prolog supplies.
 
 write_variable(V) :-
-	variable_name(V, A),
-	name(A, S),
-	put_string(S).
-
+	display(V).
 
 %   write_out(Term, Style, Priority, Ci, Co)
 %   writes out a Term in a given Style (display,write,writeq,print)
@@ -124,8 +112,7 @@ write_out(N, _, _, Ci, alpha) :-
 	(   N < 0, maybe_space(Ci, other)
 	;   maybe_space(Ci, alpha)
 	),  !,
-	name(N, String),
-	put_string(String).
+	display(N).
 /*
 write_out(Term, print, _, Ci, alpha) :-
 	portray(Term),
@@ -138,7 +125,7 @@ write_out(Atom, Style, Prio, _, punct) :-
 	!,
 	put(40),
 	(   Style = writeq, write_atom(Atom, Style, punct, _)
-	;   name(Atom, String), put_string(String)
+	;   display(Atom)
 	),  !,
 	put(41).
 write_out(Atom, Style, _, Ci, Co) :-
