@@ -40,8 +40,8 @@ macro(TERM, TERM) :-
 auto_include(length/2, 'lists.pl').
 auto_include(append/3, 'lists.pl').
 auto_include(member/2, 'lists.pl').
+auto_include(memberchk/2, 'lists.pl').
 auto_include(reverse/2, 'lists.pl').
-auto_include(select/3, 'lists.pl').
 
 auto_include(compare/3, 'misc.pl').
 auto_include(shell/1, 'misc.pl').
@@ -63,7 +63,15 @@ auto_include(throw/1, 'misc.pl').
 auto_include(name/2, 'misc.pl').
 auto_include(atomic_list_concat/2, 'misc.pl').
 auto_include('=..'/2, 'misc.pl').
-	     
+
+auto_include(union/3, 'sets.pl').
+auto_include(intersection/3, 'sets.pl').
+auto_include(subtract/3, 'sets.pl').
+auto_include(select/3, 'sets.pl').
+
+auto_include(write/1, 'write.pl').
+auto_include(writeq/1, 'write.pl').
+
 auto_include(_, _) :- fail.
 
 

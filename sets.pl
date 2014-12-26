@@ -9,6 +9,10 @@ intersection([], X, []).
 intersection([X|R], Y, [X|Z]) :- member(X, Y), !, intersection(R, Y, Z).
 intersection([X|R], Y, Z) :- intersection(R, Y, Z).
 
-difference([], _, []) :- !.
-difference([A|C], B, D) :- member(A, B), !, difference(C, B, D).
-difference([A|B], C, [A|D]) :- difference(B, C, D).
+subtract([], _, []) :- !.
+subtract([A|C], B, D) :- member(A, B), !, subtract(C, B, D).
+subtract([A|B], C, [A|D]) :- subtract(B, C, D).
+
+select(X, [X|Tail], Tail).
+select(Elem, [Head|Tail], [Head|Rest]) :-
+	select(Elem, Tail, Rest).
