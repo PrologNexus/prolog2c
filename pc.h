@@ -1343,7 +1343,7 @@ static void trace_write(char *title, char *name, int arity, X *A, CHOICE_POINT *
 # define TRACE_ENTER(name, arity)  trace_write("CALL", name, arity, C0->A, C)
 # define TRACE_REDO(name, arity)   trace_write("REDO", name, arity, C0->A, C)
 # define TRACE_EXIT(name, arity)   trace_write("EXIT", name, arity, C0->A, C)
-# define TRACE_FAIL(name, arity)   { if(C0 == C) trace_write("FAIL", name, arity, C0->A, C); }
+# define TRACE_FAIL(name, arity)   { if(C0->P == NULL) trace_write("FAIL", name, arity, C0->A, C); }
 # define TRACE_DETERMINATE_CALL(name, arity)  trace_write("TAIL", name, arity, C0->A, C);
 #else
 # define TRACE_ENTER(name, arity)
