@@ -2288,6 +2288,8 @@ static X string_to_list(CHAR *str, int len)
     C0 = C0->C0;			     \
     goto *R; }
 
+#define CALL(lbl, ret)   { R = ret; goto lbl; }
+
 #define FAIL     { TRACE_FAIL(CURRENT_NAME, CURRENT_ARITY); goto fail; }
 #define REDO     TRACE_REDO(CURRENT_NAME, CURRENT_ARITY)
 

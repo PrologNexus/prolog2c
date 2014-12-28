@@ -103,9 +103,8 @@ assemble(call(NAME, RLIST, LABEL), S, S) :-
 	(ARITY > 0 -> gen('A=arg_top;\n'); true),
 	assemble_arguments(RLIST, 0),
 	mangle_name(NAME, MNAME),
-	gen('R=&&', LABEL, ';\ngoto '),
-	gen(MNAME, '$', ARITY),
-	gen(';}\n', LABEL, ':{\n').
+	gen('CALL(', MNAME, '$', ARITY, ',&&'),
+	gen(LABEL, ');}\n', LABEL, ':{\n').
 
 assemble(determinate_call(NAME, RLIST), S, S) :-
 	length(RLIST, ARITY),
