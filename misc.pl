@@ -42,13 +42,3 @@ X =.. [N|ARGS] :-
 	arg(I, TERM, X),
 	I2 is I + 1,
 	'$univ_args'(TERM, I2, N, MORE).
-
-%XXX inefficient, not steadfast, and probably broken
-atomic_list_concat(LIST, ATOM) :-
-	'$atomic_list_concat'(LIST, ALL),
-	atom_codes(LIST, ALL).
-'$atomic_list_concat'([], []) :- !.
-'$atomic_list_concat'([X|R], ALL) :-
-	name(X, XLIST),
-	'$atomic_list_concat'(R, REST),
-	append(XLIST, REST, ALL).
