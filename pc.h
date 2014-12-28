@@ -1152,7 +1152,7 @@ static void unwind_trail(X *tp)
 {
   while(trail_top != tp) {
     BLOCK *var = (BLOCK *)(*(--trail_top));
-#ifdef DUMPALL
+#ifdef DEBUGGING
     DRIBBLE("[detrail: _" WORD_OUTPUT_FORMAT "]\n", fixnum_to_word(slot_ref((X)var, 1)));
 #endif
     SLOT_SET(var, 0, var);
@@ -1371,7 +1371,7 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
   WORD yt = is_FIXNUM(y) ? FIXNUM_TYPE : objtype(y);
 
   if(xt == VAR_TYPE) {
-#ifdef DUMPALL
+#ifdef DEBUGGING
     if(verbose) {
       DRIBBLE("[binding _" WORD_OUTPUT_FORMAT " <- ", fixnum_to_word(slot_ref(x, 1)));
       basic_write_term(stderr, 1, 9999, 1, y);
@@ -1385,7 +1385,7 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
   }
 
   if(yt == VAR_TYPE) {
-#ifdef DUMPALL
+#ifdef DEBUGGING
     if(verbose) {
       DRIBBLE("[binding _" WORD_OUTPUT_FORMAT " <- ", fixnum_to_word(slot_ref(y, 1)));
       basic_write_term(stderr, 1, 9999, 1, x);
