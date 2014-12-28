@@ -2414,8 +2414,9 @@ PRIMITIVE(db_create, X name, X size, X result)
   X str = slot_ref(name, 0);
   DB *db = create_db((CHAR *)objdata(str), string_length(str), fixnum_to_word(size));
   // this is a fake db-reference, not usable for lookup
-  ALLOCATE_BLOCK(BLOCK *dbr, DBREFERENCE_TYPE, 1);
+  ALLOCATE_BLOCK(BLOCK *dbr, DBREFERENCE_TYPE, 2);
   dbr->d[ 0 ] = (X)db;
+  dbr->d[ 1 ] = (X)NULL;	/* marks dbref as ptr to db (not item) */
   return unify(result, (X)dbr);
 }
 
@@ -2428,8 +2429,9 @@ PRIMITIVE(db_find, X dbr, X key, X ref)
   DB_ITEM *item = db_find_first_item(db, (CHAR *)objdata(str), string_length(str));
 
   if(item) {
-    ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 1);
+    ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 2);
     b->d[ 0 ] = (X)item;
+    b->d[ 1 ] = (X)1;
     return unify(ref, (X)b);
   }
 
@@ -2441,9 +2443,12 @@ PRIMITIVE(db_next, X ref, X result)
   check_type_DBREFERENCE(ref);
   DB_ITEM *item = ((DB_ITEM *)slot_ref(ref, 0))->next;
 
+  while(item && item->erased) item = item->next;
+
   if(item != NULL) {
-    ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 1);
+    ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 2);
     b->d[ 0 ] = (X)item;
+    b->d[ 1 ] = (X)1;
     return unify(result, (X)b);
   }
 
@@ -2474,8 +2479,9 @@ PRIMITIVE(db_record, X dbr, X atend, X key, X val, X result)
   X str = slot_ref(key, 0);
   DB *db = (DB *)slot_ref(dbr, 0);
   DB_ITEM *item = db_insert_item(db, (CHAR *)objdata(str), string_length(str), val, atend != ZERO);
-  ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 1);
+  ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 2);
   b->d[ 0 ] = (X)item;
+  b->d[ 1 ] = (X)1;
   return unify(result, (X)b);
 }
 
