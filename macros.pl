@@ -71,6 +71,13 @@ auto_include(select/3, 'sets.pl').
 auto_include(write/1, 'write.pl').
 auto_include(writeq/1, 'write.pl').
 
+auto_include(recorda/2, 'rdb.pl').
+auto_include(recorda/3, 'rdb.pl').
+auto_include(recordz/2, 'rdb.pl').
+auto_include(recordz/3, 'rdb.pl').
+auto_include(recorded/2, 'rdb.pl').
+auto_include(recorded/3, 'rdb.pl').
+
 auto_include(_, _) :- fail.
 
 
