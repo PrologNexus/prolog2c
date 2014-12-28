@@ -2336,7 +2336,7 @@ static X string_to_list(CHAR *str, int len)
   goto INIT_GOAL;					\
 fail: INVOKE_CHOICE_POINT;				\
 fail_exit: fprintf(stderr, "no.\n"); terminate(1);	\
-success_exit: DRIBBLE("yes.\n"); terminate(0);
+success_exit: terminate(0);
 
 
 ////////////////////////////////////////////////////////////////////////////////
