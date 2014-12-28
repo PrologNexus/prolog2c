@@ -2171,7 +2171,7 @@ static CHAR *to_string(X x, int *size)
 	check_fixnum(c);
 	*(ptr++) = fixnum_to_word(c);
 	++len;
-	x = slot_ref(x, 1);
+	x = deref(slot_ref(x, 1));
       }
 
       if(x != END_OF_LIST_VAL)
