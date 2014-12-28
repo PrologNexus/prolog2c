@@ -233,7 +233,7 @@ typedef struct DB_ITEM
 #define STRING_TYPE  0x27
 #define STRUCTURE_TYPE  8
 #define PAIR_TYPE  9
-#define DBREFERENCE_TYPE 0x4a
+#define DBREFERENCE_TYPE 0x2a
 
 #define TYPE_TO_TAG(t)  ((WORD)(t) << TYPE_SHIFT)
 #define TAG_TO_TYPE(t)  ((WORD)(t) >> TYPE_SHIFT)
