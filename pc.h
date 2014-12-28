@@ -180,8 +180,11 @@ typedef struct DB_BUCKET
 typedef struct DB_ITEM 
 {
   X val;
+  WORD refcount;
+  WORD erased;
   DB_BUCKET *bucket;
   struct DB_ITEM *previous, *next;
+  struct DB_ITEM *next_deleted;
 } DB_ITEM;
 
 
@@ -306,6 +309,7 @@ static int freeze_term_var_counter;
 static int global_variable_counter = 0;
 static char *string_buffer;
 static int string_buffer_length;
+static DB_ITEM *deleted_db_items = NULL;
 
 // externally visible (the only one that is)
 X global_variables[ MAX_GLOBAL_VARIABLES ];
@@ -722,6 +726,438 @@ static inline X check_output_port(X x)
   (X)s_; })
 
 
+/// symbol-table management
+
+static WORD hash_name(CHAR *name, int len)
+{
+  unsigned long key = 0;
+
+  while(len--)
+    key ^= (key << 6) + (key >> 2) + *(name++);
+
+  return (WORD)(key & 0x7fffffff);
+}
+
+
+static X intern(X name)
+{
+  WORD len = string_length(name);
+  WORD key = hash_name((CHAR *)objdata(name), len) % SYMBOL_TABLE_SIZE;
+
+  for(X sym = symbol_table[ key ]; sym != END_OF_LIST_VAL; sym = slot_ref(sym, 1)) {
+    X name2 = slot_ref(sym, 0);
+
+    if(string_length(name2) == len &&
+       !strncmp((CHAR *)objdata(name), (CHAR *)objdata(name2), len)) //UUU
+      return sym;
+  }
+
+  X oldsym = symbol_table[ key ];
+  X sym = SYMBOL(name, oldsym, END_OF_LIST_VAL);
+
+  if(oldsym != END_OF_LIST_VAL)
+    SLOT_SET(oldsym, 2, sym);
+
+  symbol_table[ key ] = sym;
+  return sym;
+}
+
+
+static void intern_static_symbols(X sym1)
+{
+  while(sym1 != END_OF_LIST_VAL) {
+    X name = slot_ref(sym1, 0);
+    WORD len = string_length(name);
+    WORD key = hash_name((CHAR *)objdata(name), len) % SYMBOL_TABLE_SIZE;
+    X sym = symbol_table[ key ];
+    X nextsym = slot_ref(sym1, 1);
+    SLOT_SET(sym1, 1, sym);
+
+    if(sym != END_OF_LIST_VAL) 
+      SLOT_SET(sym, 2, sym1);
+
+    symbol_table[ key ] = sym1;
+    sym1 = nextsym;
+  }
+
+  dot_atom = intern(CSTRING("."));
+}
+
+
+/// Variable + trail handling
+
+static inline X make_var()
+{
+  ALLOCATE_BLOCK(BLOCK *v, VAR_TYPE, 3);
+  v->d[ 0 ] = (X)v;
+  v->d[ 1 ] = word_to_fixnum(variable_counter++);
+  v->d[ 2 ] = word_to_fixnum(clock_ticks++);
+  return v;
+}
+
+
+static void unwind_trail(X *tp)
+{
+  while(trail_top != tp) {
+    BLOCK *var = (BLOCK *)(*(--trail_top));
+#ifdef DEBUGGING
+    DRIBBLE("[detrail: _" WORD_OUTPUT_FORMAT "]\n", fixnum_to_word(slot_ref((X)var, 1)));
+#endif
+    SLOT_SET(var, 0, var);
+  }
+}
+
+
+static inline void push_trail(CHOICE_POINT *C0, X var)
+{
+  // trail-check
+  if(fixnum_to_word(slot_ref(var, 2)) < C0->timestamp) {
+#ifndef UNSAFE
+    if(trail_top >= trail_stack + TRAIL_STACK_SIZE)
+      CRASH("trail-stack overflow.");
+#endif
+
+    *(trail_top++) = var;
+  }
+}
+
+
+#define deref(x)   ({ X _x = (x); is_FIXNUM(_x) ? _x : deref1(_x); })
+
+static X deref1(X val)
+{
+  static X stack[ DEREF_STACK_SIZE ];
+  X *sp = stack;
+
+  for(;;) {
+    if(is_FIXNUM(val) || objtype(val) != VAR_TYPE)
+      return val;
+
+    for(X *p = sp - 1; p >= stack; --p) {
+      if(*p == val) 
+	return val;
+    }
+
+    *(sp++) = val;
+    val = slot_ref(val, 0);
+
+#ifndef UNSAFE
+    if(sp >= stack + DEREF_STACK_SIZE)
+      CRASH("deref-stack overflow");
+#endif
+  }
+}
+
+
+/// Databases
+
+// evict into malloc'd memory, replacing variables with new ones with indexes from 0 to N
+// note: only variables are shared, other items loose their identity and may be duplicated.
+static X freeze_term_recursive(X x)
+{
+  x = deref(x);
+
+  if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return x;
+
+  if(is_VAR(x)) {
+    //XXX could use hashing, but probably not worth it
+    for(int i = 0; i < freeze_term_var_counter; i += 2) {
+      if(x == freeze_term_var_table[ i ]) 
+	return freeze_term_var_table[ i + 1 ];
+    }
+
+    ASSERT(freeze_term_var_counter < FREEZE_TERM_VAR_TABLE_SIZE, "can not freeze term - too many variables");
+    freeze_term_var_table[ freeze_term_var_counter++ ] = x;
+    BLOCK *newvar = (BLOCK *)malloc(sizeof(WORD) * 4);
+    ASSERT(newvar, "out of memory - can mot freeze term");
+    newvar->h = VAR_TAG | 3;
+    newvar->d[ 0 ] = (X)newvar;
+    newvar->d[ 1 ] = word_to_fixnum(freeze_term_var_counter / 2);
+    newvar->d[ 2 ] = word_to_fixnum(0);
+    freeze_term_var_table[ freeze_term_var_counter++ ] = (X)newvar;
+    return (X)newvar;
+  }
+
+  if(is_byteblock(x)) {
+    WORD size = objsize(x);
+    BYTEBLOCK *b = (BYTEBLOCK *)malloc(sizeof(WORD) + size);
+    ASSERT(b, "out of memory - can not allocate byteblock");
+    b->h = objbits(x);
+    memcpy(b->d, objdata(x), size);
+    return (X)b;
+  }
+
+  WORD size = objsize(x);
+  WORD i = 0;
+  BLOCK *b = (BLOCK *)malloc(sizeof(WORD) * (size + 1));
+  ASSERT(b, "out of memory - can not allocate block");
+  b->h = objbits(x);
+
+  if(is_specialblock(x)) {
+    ++i;
+    b->d[ 0 ] = slot_ref(x, 0);
+  }
+
+  for(;i < size; ++i)
+    b->d[ i ] = freeze_term_recursive(slot_ref(x, i));
+
+  return (X)b;
+}
+
+
+static X freeze_term(X x)
+{
+  freeze_term_var_counter = 0;
+  X y = freeze_term_recursive(x);
+  memset(freeze_term_var_table, 0, freeze_term_var_counter * 2 * sizeof(X));
+  return y;
+}
+
+
+// copy object back into GC'd memory - this will return 0, if heap-space is insufficient
+// note: also re-interns symbols (atoms)
+// another note: previously stored compound items will not be identical, with the exceptions of atoms
+static int thaw_term_recursive(X *xp)
+{
+  X x = *xp;
+
+  if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return 1;
+
+  if(is_VAR(x)) {
+    WORD index = fixnum_to_word(slot_ref(x, 1));
+
+    if(freeze_term_var_table[ index ] != NULL) {
+      *xp = freeze_term_var_table[ index ];
+      return 1;
+    }
+
+    if(alloc_top + objsize(x) + 1 > fromspace_limit) return 0;
+
+    *xp = make_var();
+    freeze_term_var_table[ index ] = *xp;
+    return 1;
+  }
+
+  if(is_byteblock(x)) {
+    WORD size = objsize(x);
+
+    if(alloc_top + bytes_to_words(size + 1) > fromspace_limit)
+      return 0;
+
+    ALLOCATE_BYTEBLOCK(BYTEBLOCK *b, objtype(x), size);
+    memcpy(b->d, objdata(x), size);
+    *xp = (X)b;
+    return 1;
+  }
+
+  WORD i = 0;
+  WORD size = objsize(x);
+
+  if(alloc_top + size + 1 > fromspace_limit) return 0;
+
+  ALLOCATE_BLOCK(BLOCK *b, objtype(x), size);
+  
+  // initialize, in case thawing elements fails
+  for(i = 0; i < size; ++i)
+    b->d[ i ] = ZERO;
+  
+  if(is_specialblock(x)) {
+    i = 1;
+    b->d[ 0 ] = slot_ref(x, 0);
+  }
+  else i = 0;
+
+  for(;i < size; ++i) {
+    b->d[ i ] = slot_ref(x, i);
+    
+    if(!thaw_term_recursive(&(b->d[ i ]))) {
+      b->d[ i ] = ZERO;
+      return 0;
+    }
+  }
+
+  if(is_SYMBOL(x)) *xp = intern(b->d[ 0 ]);
+  else *xp = (X)b;
+
+  return 1;
+}
+
+
+static X thaw_term(X x, int *failed)
+{
+  X y = x;
+  freeze_term_var_counter = 0;
+  *failed = !thaw_term_recursive(&y);
+  memset(freeze_term_var_table, 0, freeze_term_var_counter * sizeof(X));
+  return y;
+}
+
+
+// delete frozen term, recursively
+static void delete_term(X x)
+{
+  if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return;
+
+  if(is_VAR(x)) {
+    WORD index = fixnum_to_word(slot_ref(x, 1));
+
+    if(freeze_term_var_table[ index ] != NULL) 
+      return;			/*  already deleted */
+
+    free(x);
+    freeze_term_var_table[ index ] = (X)1;
+    return;
+  }
+
+  if(is_byteblock(x)) {
+    free(x);
+    return;
+  }
+
+  WORD i = 0;
+  WORD size = objsize(x);
+
+  if(is_specialblock(x)) i = 1;
+
+  for(;i < size; ++i)
+    delete_term(slot_ref(x, i));
+
+  free(x);
+}
+
+
+static DB *create_db(char *name, int namelen, WORD tablesize)
+{
+  DB *db = (DB *)malloc(sizeof(DB));
+  ASSERT(db, "out of memory - can not create database");
+  db->name = strndup(name, namelen);
+  db->tablesize = tablesize;
+  db->table = (DB_BUCKET **)malloc(sizeof(DB_BUCKET *) * tablesize);
+  ASSERT(db->table, "out of memory - can not allocate database table");
+
+  for(WORD i = 0; i < tablesize; ++i)
+    db->table[ i ] = NULL;
+
+  return db;
+}
+
+
+static DB_ITEM *db_insert_item(DB *db, char *key, int keylen, X val, int atend)
+{
+  WORD hash = hash_name(key, keylen) % db->tablesize;
+  DB_ITEM *item = (DB_ITEM *)malloc(sizeof(DB_ITEM));
+  ASSERT(item, "out of memory - can not allocate db-item");
+  item->val = freeze_term(val);
+  item->erased = 0;
+  item->next_deleted = NULL;
+
+  for(DB_BUCKET *bucket = db->table[ hash ]; bucket != NULL; bucket = bucket->next) {
+    if(bucket->keylen == keylen && !strncmp(key, bucket->key, keylen)) {
+      item->bucket = bucket;
+
+      if(atend) {
+	item->previous = bucket->lastitem;
+	item->next = NULL;
+	bucket->lastitem->next = item;
+	bucket->lastitem = item;
+      }
+      else {
+	item->previous = NULL;
+	item->next = bucket->firstitem;
+	bucket->firstitem->previous = item;
+	bucket->firstitem = item;
+      }
+
+      return item;
+    }
+  }
+
+  DB_BUCKET *bucket = (DB_BUCKET *)malloc(sizeof(DB_BUCKET));
+  ASSERT(bucket, "out of memory - can not allocate db-bucket");
+  bucket->db = db;
+  bucket->index = hash;
+  bucket->key = strndup(key, keylen);
+  bucket->keylen = keylen;
+  bucket->firstitem = item;
+  item->next = NULL;
+  item->bucket = bucket;
+  bucket->lastitem = item;
+  bucket->previous = NULL;
+  bucket->next = db->table[ hash ];
+  db->table[ hash ] = bucket;
+  return item;
+}
+
+
+static DB_ITEM *db_find_first_item(DB *db, char *key, int keylen)
+{
+  WORD hash = hash_name(key, keylen) % db->tablesize;
+
+  for(DB_BUCKET *bucket = db->table[ hash ]; bucket != NULL; bucket = bucket->next) {
+    if(bucket->keylen == keylen && !strncmp(key, bucket->key, keylen)) {
+      DB_ITEM *item = bucket->firstitem; 
+
+      while(item && item->erased) item = item->next;
+
+      return item;
+    }
+  }
+
+  return NULL;
+}
+
+
+static void db_mark_item_as_erased(DB_ITEM *item)
+{
+  item->erased = 1;
+  item->next_deleted = deleted_db_items;
+  deleted_db_items = item;
+}
+
+
+static void db_mark_bucket_as_erased(DB_ITEM *item)
+{
+  // item must be first
+  ASSERT(item->previous == NULL, "db_erase_bucket: item is not the first");
+  DB_BUCKET *bucket = item->bucket;
+
+  // mark all items as erased
+  while(item != NULL) {
+    db_mark_item_as_erased(item);
+    item = item->next;
+  }
+}
+
+
+static void db_erase_item(DB_ITEM *item)
+{
+  DB_BUCKET *bucket = item->bucket;
+  delete_term(item->val);
+
+  // erase bucket, if this is the last item in it
+  if(bucket->firstitem == item && bucket->lastitem == item) {
+    if(bucket->previous) bucket->previous->next = bucket->next;
+    
+    if(bucket->next) bucket->next->previous = bucket->previous;
+
+    bucket->db->table[ bucket->index ] = NULL;
+    bucket->previous = bucket->next = NULL;
+    free(bucket->key);
+    free(bucket);
+  }
+  else {
+    // otherwise remove from item-chain
+    if(item->previous) item->previous->next = item->next;
+  
+    if(item->next) item->next->previous = item->previous;
+  }
+
+  item->next = item->previous = NULL;
+  item->bucket = NULL;
+  free(item);
+}
+
+
 /// garbage collection
 
 static void mark(X *addr) 
@@ -740,12 +1176,18 @@ static void mark(X *addr)
   else
     size = ALIGN(size);
 
-#ifndef SIXTYFOUR
   WORD t = TAG_TO_TYPE(h);
 
+#ifndef SIXTYFOUR
   if((t == FLONUM_TYPE || t == PACKEDFLOATVECTOR_TYPE) && !FPALIGNED(tospace_top))
     *(tospace_top++) = ALIGNMENT_HOLE_MARKER;
 #endif
+
+  if(t == DBREFERENCE_TYPE && slot_ref(*addr, 1) != NULL) {
+    // increase refcount if DB-reference, to detect unreferenced ones that can be completely deleted
+    DB_ITEM *item = (DB_ITEM *)slot_ref(*addr, 0);
+    ++item->refcount;
+  }
 
   X nptr = tospace_top;
   WORD fptr = ptr_to_fptr(tospace_top);
@@ -768,6 +1210,10 @@ static void collect_garbage()
   DRIBBLE("[GC ... ");							
   tospace_top = tospace; 
   scan_ptr = tospace_top;				
+
+  // clear ref-counts of all deleted DB items
+  for(DB_ITEM *item = deleted_db_items; item != NULL; item = item->next_deleted)
+    item->refcount = 0;
 
   // mark local environments
   for(X *p = environment_stack; p < env_top; ++p)
@@ -897,6 +1343,30 @@ static void collect_garbage()
       fp = fp2;
     }
   }
+
+  // really erase DB items that are not referenced
+  DB_ITEM *previtem = NULL;
+  int deleted = 0;
+  DB_ITEM *item = deleted_db_items; 
+
+  while(item != NULL) {
+    if(item->refcount == 0) {
+      DB_ITEM *next = item->next_deleted;
+
+      if(previtem) 
+	previtem->next_deleted = next;
+      else
+	deleted_db_items = next;
+
+      db_erase_item(item);
+      ++deleted;
+      item = next;
+    }
+    else previtem = item;
+  }
+
+  if(deleted > 0)
+    DRIBBLE("[%d db-items deleted]\n", deleted);
 }
 
 
@@ -907,64 +1377,6 @@ static void set_finalizer(X x, void (*fn)(X))
   fp->finalizer = fn;
   fp->object = x;
   active_finalizers = fp;
-}
-
-
-/// symbol-table management
-
-static WORD hash_name(CHAR *name, int len)
-{
-  unsigned long key = 0;
-
-  while(len--)
-    key ^= (key << 6) + (key >> 2) + *(name++);
-
-  return (WORD)(key & 0x7fffffff);
-}
-
-
-static X intern(X name)
-{
-  WORD len = string_length(name);
-  WORD key = hash_name((CHAR *)objdata(name), len) % SYMBOL_TABLE_SIZE;
-
-  for(X sym = symbol_table[ key ]; sym != END_OF_LIST_VAL; sym = slot_ref(sym, 1)) {
-    X name2 = slot_ref(sym, 0);
-
-    if(string_length(name2) == len &&
-       !strncmp((CHAR *)objdata(name), (CHAR *)objdata(name2), len)) //UUU
-      return sym;
-  }
-
-  X oldsym = symbol_table[ key ];
-  X sym = SYMBOL(name, oldsym, END_OF_LIST_VAL);
-
-  if(oldsym != END_OF_LIST_VAL)
-    SLOT_SET(oldsym, 2, sym);
-
-  symbol_table[ key ] = sym;
-  return sym;
-}
-
-
-static void intern_static_symbols(X sym1)
-{
-  while(sym1 != END_OF_LIST_VAL) {
-    X name = slot_ref(sym1, 0);
-    WORD len = string_length(name);
-    WORD key = hash_name((CHAR *)objdata(name), len) % SYMBOL_TABLE_SIZE;
-    X sym = symbol_table[ key ];
-    X nextsym = slot_ref(sym1, 1);
-    SLOT_SET(sym1, 1, sym);
-
-    if(sym != END_OF_LIST_VAL) 
-      SLOT_SET(sym, 2, sym1);
-
-    symbol_table[ key ] = sym;
-    sym1 = nextsym;
-  }
-
-  dot_atom = intern(CSTRING("."));
 }
 
 
@@ -1106,71 +1518,6 @@ static void terminate(int code)
 {
   DRIBBLE("[trail size: " WORD_OUTPUT_FORMAT ", terminating]\n", trail_top - trail_stack);
   exit(code);
-}
-
-
-/// variable + trail handling
-
-static inline X make_var()
-{
-  ALLOCATE_BLOCK(BLOCK *v, VAR_TYPE, 3);
-  v->d[ 0 ] = (X)v;
-  v->d[ 1 ] = word_to_fixnum(variable_counter++);
-  v->d[ 2 ] = word_to_fixnum(clock_ticks++);
-  return v;
-}
-
-
-#define deref(x)   ({ X _x = (x); is_FIXNUM(_x) ? _x : deref1(_x); })
-
-static X deref1(X val)
-{
-  static X stack[ DEREF_STACK_SIZE ];
-  X *sp = stack;
-
-  for(;;) {
-    if(is_FIXNUM(val) || objtype(val) != VAR_TYPE)
-      return val;
-
-    for(X *p = sp - 1; p >= stack; --p) {
-      if(*p == val) 
-	return val;
-    }
-
-    *(sp++) = val;
-    val = slot_ref(val, 0);
-
-#ifndef UNSAFE
-    if(sp >= stack + DEREF_STACK_SIZE)
-      CRASH("deref-stack overflow");
-#endif
-  }
-}
-
-
-static void unwind_trail(X *tp)
-{
-  while(trail_top != tp) {
-    BLOCK *var = (BLOCK *)(*(--trail_top));
-#ifdef DEBUGGING
-    DRIBBLE("[detrail: _" WORD_OUTPUT_FORMAT "]\n", fixnum_to_word(slot_ref((X)var, 1)));
-#endif
-    SLOT_SET(var, 0, var);
-  }
-}
-
-
-static inline void push_trail(CHOICE_POINT *C0, X var)
-{
-  // trail-check
-  if(fixnum_to_word(slot_ref(var, 2)) < C0->timestamp) {
-#ifndef UNSAFE
-    if(trail_top >= trail_stack + TRAIL_STACK_SIZE)
-      CRASH("trail-stack overflow.");
-#endif
-
-    *(trail_top++) = var;
-  }
 }
 
 
@@ -1905,244 +2252,6 @@ static int compare_terms(X x, X y)
 }
 
 
-/// Databases
-
-// evict into malloc'd memory, replacing variables with new ones with indexes from 0 to N
-static X freeze_term_recursive(X x)
-{
-  x = deref(x);
-
-  if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return x;
-
-  if(is_VAR(x)) {
-    //XXX could use hashing, but probably not worth it
-    for(int i = 0; i < freeze_term_var_counter; i += 2) {
-      if(x == freeze_term_var_table[ i ]) 
-	return freeze_term_var_table[ i + 1 ];
-    }
-
-    ASSERT(freeze_term_var_counter < FREEZE_TERM_VAR_TABLE_SIZE, "can not freeze term - too many variables");
-    freeze_term_var_table[ freeze_term_var_counter++ ] = x;
-    BLOCK *newvar = (BLOCK *)malloc(sizeof(WORD) * 4);
-    ASSERT(newvar, "out of memory - can mot freeze term");
-    newvar->h = VAR_TAG | 3;
-    newvar->d[ 0 ] = (X)newvar;
-    newvar->d[ 1 ] = word_to_fixnum(freeze_term_var_counter / 2);
-    newvar->d[ 2 ] = word_to_fixnum(0);
-    freeze_term_var_table[ freeze_term_var_counter++ ] = (X)newvar;
-    return (X)newvar;
-  }
-
-  if(is_byteblock(x)) {
-    WORD size = objsize(x);
-    BYTEBLOCK *b = (BYTEBLOCK *)malloc(sizeof(WORD) + size);
-    ASSERT(b, "out of memory - can not allocate byteblock");
-    b->h = objbits(x);
-    memcpy(b->d, objdata(x), size);
-    return (X)b;
-  }
-
-  WORD size = objsize(x);
-  WORD i = 0;
-  BLOCK *b = (BLOCK *)malloc(sizeof(WORD) * (size + 1));
-  ASSERT(b, "out of memory - can not allocate block");
-  b->h = objbits(x);
-
-  if(is_specialblock(x)) {
-    ++i;
-    b->d[ 0 ] = slot_ref(x, 0);
-  }
-
-  for(;i < size; ++i)
-    b->d[ i ] = freeze_term_recursive(slot_ref(x, i));
-
-  return (X)b;
-}
-
-
-static X freeze_term(X x)
-{
-  freeze_term_var_counter = 0;
-  X y = freeze_term_recursive(x);
-  memset(freeze_term_var_table, 0, freeze_term_var_counter * 2 * sizeof(X));
-  return y;
-}
-
-
-// copy object back into GC'd memory - this will set "failed" to true, if heap-space is inusfficient
-static int thaw_term_recursive(X *xp)
-{
-  X x = *xp;
-
-  if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return 1;
-
-  if(is_VAR(x)) {
-    WORD index = fixnum_to_word(slot_ref(x, 1));
-
-    if(freeze_term_var_table[ index ] != NULL) {
-      *xp = freeze_term_var_table[ index ];
-      return 1;
-    }
-
-    if(alloc_top + objsize(x) + 1 > fromspace_limit) return 0;
-
-    *xp = make_var();
-    freeze_term_var_table[ index ] = *xp;
-    return 1;
-  }
-
-  if(is_byteblock(x)) {
-    WORD size = objsize(x);
-
-    if(alloc_top + bytes_to_words(size + 1) > fromspace_limit)
-      return 0;
-
-    ALLOCATE_BYTEBLOCK(BYTEBLOCK *b, objtype(x), size);
-    memcpy(b->d, objdata(x), size);
-    *xp = (X)b;
-    return 1;
-  }
-
-  WORD i = 0;
-  WORD size = objsize(x);
-
-  if(alloc_top + size + 1 > fromspace_limit) return 0;
-
-  ALLOCATE_BLOCK(BLOCK *b, objtype(x), size);
-  
-  // initialize, in case thawing fails
-  for(i = 0; i < size; ++i)
-    b->d[ i ] = ZERO;
-  
-  if(is_specialblock(x)) {
-    i = 1;
-    b->d[ 0 ] = slot_ref(x, 0);
-  }
-  else i = 0;
-
-  for(;i < size; ++i) {
-    b->d[ i ] = slot_ref(x, i);
-    
-    if(!thaw_term_recursive(&(b->d[ i ]))) {
-      b->d[ i ] = ZERO;
-      return 0;
-    }
-  }
-
-  *xp = (X)b;
-  return 1;
-}
-
-
-static X thaw_term(X x, int *failed)
-{
-  X y = x;
-  freeze_term_var_counter = 0;
-  *failed = !thaw_term_recursive(&y);
-  memset(freeze_term_var_table, 0, freeze_term_var_counter * sizeof(X));
-  return y;
-}
-
-
-static DB *create_db(char *name, int namelen, WORD tablesize)
-{
-  DB *db = (DB *)malloc(sizeof(DB));
-  ASSERT(db, "out of memory - can not create database");
-  db->name = strndup(name, namelen);
-  db->tablesize = tablesize;
-  db->table = (DB_BUCKET **)malloc(sizeof(DB_BUCKET *) * tablesize);
-  ASSERT(db->table, "out of memory - can not allocate database table");
-
-  for(WORD i = 0; i < tablesize; ++i)
-    db->table[ i ] = NULL;
-
-  return db;
-}
-
-
-static DB_ITEM *db_insert_item(DB *db, char *key, int keylen, X val, int atend)
-{
-  WORD hash = hash_name(key, keylen) % db->tablesize;
-  DB_ITEM *item = (DB_ITEM *)malloc(sizeof(DB_ITEM));
-  ASSERT(item, "out of memory - can not allocate db-item");
-  item->val = freeze_term(val);
-
-  for(DB_BUCKET *bucket = db->table[ hash ]; bucket != NULL; bucket = bucket->next) {
-    if(bucket->keylen == keylen && !strncmp(key, bucket->key, keylen)) {
-      item->bucket = bucket;
-
-      if(atend) {
-	item->previous = bucket->lastitem;
-	item->next = NULL;
-	bucket->lastitem->next = item;
-	bucket->lastitem = item;
-      }
-      else {
-	item->previous = NULL;
-	item->next = bucket->firstitem;
-	bucket->firstitem = item;
-      }
-
-      return item;
-    }
-  }
-
-  DB_BUCKET *bucket = (DB_BUCKET *)malloc(sizeof(DB_BUCKET));
-  ASSERT(bucket, "out of memory - can not allocate db-bucket");
-  bucket->db = db;
-  bucket->index = hash;
-  bucket->key = strndup(key, keylen);
-  bucket->keylen = keylen;
-  bucket->firstitem = item;
-  item->next = NULL;
-  bucket->lastitem = item;
-  bucket->previous = NULL;
-  bucket->next = db->table[ hash ];
-  db->table[ hash ] = bucket;
-  return item;
-}
-
-
-static DB_ITEM *db_find_first_item(DB *db, char *key, int keylen)
-{
-  WORD hash = hash_name(key, keylen) % db->tablesize;
-
-  for(DB_BUCKET *bucket = db->table[ hash ]; bucket != NULL; bucket = bucket->next) {
-    if(bucket->keylen == keylen && !strncmp(key, bucket->key, keylen))
-      return bucket->firstitem;
-  }
-
-  return NULL;
-}
-
-
-static void db_erase_item(DB_ITEM *item)
-{
-  DB_BUCKET *bucket = item->bucket;
-
-  // erase bucket, if this is the last item in it
-  if(bucket->firstitem == item && bucket->lastitem == item) {
-    if(bucket->previous) bucket->previous->next = bucket->next;
-    
-    if(bucket->next) bucket->next->previous = bucket->previous;
-
-    bucket->db->table[ bucket->index ] = NULL;
-    bucket->previous = bucket->next = NULL;
-    free(bucket->key);
-    free(bucket);
-  }
-  else {
-    // otherwise insert into item-chain
-    if(item->previous) item->previous->next = item->next;
-  
-    if(item->next) item->next->previous = item->previous;
-  }
-
-  item->next = item->previous = NULL;
-  free(item);
-}
-
-
 // assumes x is deref'd, returns pointer to char that should not be modified
 static CHAR *to_string(X x, int *size)
 {
@@ -2461,6 +2570,8 @@ PRIMITIVE(db_ref, X ref, X result)
   check_type_DBREFERENCE(ref);
   DB_ITEM *item = (DB_ITEM *)slot_ref(ref, 0);
   int failed;
+  ASSERT(slot_ref(ref, 1) != NULL, "attempting to reference database pointer");
+  ASSERT(!item->erased, "attempting to reference erased database item");
   X x = thaw_term(item->val, &failed);
   return !failed && unify(result, x);
 }
@@ -2469,7 +2580,7 @@ PRIMITIVE(db_erase, X ref)
 {
   check_type_DBREFERENCE(ref);
   DB_ITEM *item = (DB_ITEM *)slot_ref(ref, 0);
-  db_erase_item(item);
+  db_mark_item_as_erased(item);
   return 1;
 }
 
