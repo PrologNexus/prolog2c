@@ -2258,15 +2258,17 @@ static X string_to_list(CHAR *str, int len)
     C0->P = *(--ifthen_top);	 \
     E = *(--ifthen_top);	 \
     env_top = *(--ifthen_top);	 \
-    arg_top = *(--ifthen_top); }
+    arg_top = *(--ifthen_top);						\
+    ASSERT(ifthen_top >= ifthen_stack, "if-then stack underflow"); }
 
 #define INVOKE_CHOICE_POINT			\
-  { for(C0 = C - 1; C0->P == NULL; --C0);	\
+  { for(C0 = C - 1; C0->P == NULL; --C0) {	\
+    E = C0->E;					\
+    env_top = C0->env_top; }			\
     C = C0 + 1;					\
     unwind_trail(C0->T);			\
     A = C0->A;					\
     arg_top = C0->arg_top;			\
-    env_top = C0->env_top;			\
     goto *(C0->P); }
 
 #define POP_CHOICE_POINT        C0 = C0->C0
@@ -2275,7 +2277,6 @@ static X string_to_list(CHAR *str, int len)
   { TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY); \
     R = C0->R;				     \
     E = C0->E;				     \
-    env_top = C0->env_top;		     \
     C0 = C0->C0;			     \
     goto *R; }
 
