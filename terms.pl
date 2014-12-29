@@ -3,24 +3,24 @@
 
 %% gather list of variables, assigning indices by unifying each var with '_var_'(INDEX)
 
-gather_variables(X, VARS) :- gather_variables(X, 0, _, VARS).
+index_variables(X, VARS) :- index_variables(X, 0, _, VARS).
 					      
-gather_variables(X, C1, C2, [X]) :-
+index_variables(X, C1, C2, [X]) :-
 	var(X), !, X = '_var_'(C1), C2 is C1 + 1.
 
-gather_variables(X, C, C, []) :- atomic(X), !.
+index_variables(X, C, C, []) :- atomic(X), !.
 
-gather_variables([], C, C, []).
+index_variables([], C, C, []).
 
-gather_variables([X|R], C1, C2, L) :-
-	gather_variables(X, C1, Cx, L1),
-	gather_variables(R, Cx, C2, L2),
+index_variables([X|R], C1, C2, L) :-
+	index_variables(X, C1, Cx, L1),
+	index_variables(R, Cx, C2, L2),
 	append(L1, L2, L), !.
 
-gather_variables(T, C1, C2, V) :-
-	T =.. L, gather_variables(L, C1, C2, V).
+index_variables(T, C1, C2, V) :-
+	T =.. L, index_variables(L, C1, C2, V).
 
-gather_variables(_, C, C, []).
+index_variables(_, C, C, []).
 
 
 %% check if term contains variables
@@ -34,16 +34,42 @@ literal_term(X) :-
 	literal_term(LST).
 
 
-%% collect instances of '_var_'(N)
+%% collect instances of '_var_'(N) into lists of indexes
 
-collect_var_instances('_var_'(N), [N]) :- !.
-collect_var_instances(X, []) :- atomic(X), !.
-collect_var_instances(X, NS) :-
+collect_indexed_variables('_var_'(N), [N]) :- !.
+collect_indexed_variables(X, []) :- atomic(X), !.
+collect_indexed_variables(X, NS) :-
 	X =.. [_|ARGS],
-	collect_var_instances(ARGS, [], NS).
+	collect_indexed_variables(ARGS, [], NS).
 
-collect_var_instances([], NS, NS).
-collect_var_instances([X|Y], NS1, NS) :-
-	collect_var_instances(X, NS2),
-	append(NS1, NS2, NS3),
-	collect_var_instances(Y, NS3, NS).
+collect_indexed_variables([], NS, NS).
+collect_indexed_variables([X|Y], NS1, NS) :-
+	collect_indexed_variables(X, NS2),
+	union(NS1, NS2, NS3),
+	collect_indexed_variables(Y, NS3, NS).
+
+
+%% using a map of variable-indices and real variables, build a new term with instances
+%% of '_var_'(N) replaced by the real variables
+
+map_indexed_variables_to_real_variables('_var_'(I), VLIST, V) :-
+	!,
+	member(I/V, VLIST).
+map_indexed_variables_to_real_variables(X, _, X) :-
+	atomic(X),
+	!.
+map_indexed_variables_to_real_variables([X|Y], VLIST, [Z|U]) :-
+	!,
+	map_indexed_variables_to_real_variables(X, VLIST, Z),
+	map_indexed_variables_to_real_variables(Y, VLIST, U).
+map_indexed_variables_to_real_variables(X, VLIST, Y) :-
+	X =.. [N|ARGS],
+	map_indexed_variables_to_real_variables(ARGS, VLIST, ARGS2),
+	Y =.. [N|ARGS2].
+
+
+%% collect list of variables - this doesn't use findall/3, to avoid renaming
+
+find_unbound_variables([], []).
+find_unbound_variables([_/V|MORE], [V|REST]) :-
+	find_unbound_variables(MORE, REST).

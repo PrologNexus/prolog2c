@@ -80,6 +80,8 @@ auto_include(recordz/3, 'rdb.pl').
 auto_include(recorded/2, 'rdb.pl').
 auto_include(recorded/3, 'rdb.pl').
 
+auto_include(findall_start/0, 'findall.pl').
+
 auto_include(_, _) :- fail.
 
 

@@ -26,7 +26,7 @@ compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, S1, S2) :-
 	I2 is I + 1,
 	clause_label(NAME, ARITY, I2, L),
 	compile_redo(LAST, L),
-	gather_variables([HEAD, BODY], VARS),
+	index_variables([HEAD, BODY], VARS),
 	length(VARS, N),
 	(N > 0 -> emit(environment(N)); true),
 	compile_head(HEAD, BOUND, S1, S),
@@ -140,8 +140,8 @@ compile_body_expression((X -> Y; Z), TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
 	emit(save_choice_points, push_choice_point(L1)),
 	compile_body_expression(X, nontail, LAST, D1, D3, B1, B3, S4, S5),
 	emit(restore_choice_points),
-	collect_var_instances(Y, BY1), subtract(BY1, B3, BY),
-	collect_var_instances(Z, BZ1), subtract(BZ1, B3, BZ),
+	collect_indexed_variables(Y, BY1), subtract(BY1, B3, BY),
+	collect_indexed_variables(Z, BZ1), subtract(BZ1, B3, BZ),
 	compile_body_expression(Y, TAIL, LAST, D3, D4, B3, B4, S5, S6),
 	make_unbound_vars(BY, BZ, S6, S7),
 	emit(jump(L2), label(L1), restore_choice_points),
@@ -156,8 +156,8 @@ compile_body_expression((X; Y), TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
 	emit(copy_choice_point(L1)),
-	collect_var_instances(X, BX1), subtract(BX1, B1, BX),
-	collect_var_instances(Y, BY1), subtract(BY1, B1, BY),
+	collect_indexed_variables(X, BX1), subtract(BX1, B1, BX),
+	collect_indexed_variables(Y, BY1), subtract(BY1, B1, BY),
 	compile_body_expression(X, nontail, LAST, D1, D3, B1, B3, S4, S5),
 	make_unbound_vars(BX, BY, S5, S6),
 	emit(jump(L2), label(L1), no_redo, pop_choice_point),
@@ -191,6 +191,22 @@ compile_body_expression(\+X, _, LAST, D1, D2, B1, B2, S1, S2) :-
 	emit(save_choice_points, push_choice_point(L1)),
 	compile_body_expression(X, nontail, LAST, D1, D2, B1, B2, S3, S2),
 	emit(restore_choice_points, fail, label(L1), restore_choice_points).
+
+% findall
+compile_body_expression(findall(T, G, L), TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
+	compile_body_expression(findall_start, nontail, notlast, nondet, _, B1, _, S1, S4),
+	gensym('$findall_', P, S4, S5),
+	collect_indexed_variables(G/T, GVARS),
+	findall(I/_, member(I, GVARS), VLIST),
+	map_indexed_variables_to_real_variables(G, VLIST, G2),
+	map_indexed_variables_to_real_variables(T, VLIST, T2),
+	findall('_var_'(I), member(I/_, VLIST), IARGS),
+	find_unbound_variables(VLIST, VARGS),
+	HEAD =.. [P|VARGS],
+	add_boilerplate(P, (HEAD :- G2, findall_push(T2), fail)),
+	HEAD2 =.. [P|IARGS],
+	compile_body_expression(\+HEAD2, nontail, notlast, D1, D3, B1, B3, S5, S6),
+	compile_body_expression(findall_collect(L), TAIL, LAST, D3, D2, B3, B2, S6, S2).
 
 % if-then
 compile_body_expression(X -> Y, TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
