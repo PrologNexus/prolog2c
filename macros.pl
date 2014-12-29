@@ -62,6 +62,8 @@ auto_include(current_op/3, 'op.pl').
 auto_include(throw/1, 'misc.pl').
 auto_include(name/2, 'misc.pl').
 auto_include('=..'/2, 'misc.pl').
+auto_include(deref_term/3, 'misc.pl').
+auto_include(copy_term/2, 'misc.pl').
 
 auto_include(union/3, 'sets.pl').
 auto_include(intersection/3, 'sets.pl').

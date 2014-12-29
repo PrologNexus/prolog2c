@@ -42,3 +42,13 @@ X =.. [N|ARGS] :-
 	arg(I, TERM, X),
 	I2 is I + 1,
 	'$univ_args'(TERM, I2, N, MORE).
+
+deref_term(X, L, Y) :-
+	(foreign_call(deref_term(X, L, Y1))
+	; garbage_collect, deref_term(X, L, Y1)),
+	!, Y = Y1.
+
+copy_term(X, Y) :-
+	var(X), !, deref_term(Y, 999999, X).
+copy_term(X, Y) :-
+	deref_term(X, 999999, Y).
