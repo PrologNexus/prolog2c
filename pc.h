@@ -830,7 +830,7 @@ static X deref1(X val)
   X *sp = stack;
 
   for(;;) {
-    if(is_FIXNUM(val) || objtype(val) != VAR_TYPE)
+    if(is_FIXNUM(val) || !is_VAR(val))
       return val;
 
     for(X *p = sp - 1; p >= stack; --p) {
