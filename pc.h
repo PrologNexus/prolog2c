@@ -849,6 +849,87 @@ static X deref1(X val)
 }
 
 
+static X find_frozen_variable(X var)
+{
+  //XXX could use hashing, but probably not worth the trouble
+  for(int i = 0; i < freeze_term_var_counter; i += 2) {
+    if(var == freeze_term_var_table[ i ]) 
+      return freeze_term_var_table[ i + 1 ];
+  }
+
+  return (X)NULL;
+}
+
+
+// deref recursively, needed for global variables (or the assigned value may not survive backtracking)
+static X deref_recursive(X val, int limit, int *failed)
+{
+  *failed = 0;
+
+  if(limit <= 0 || is_FIXNUM(val)) return val;
+
+  if(is_VAR(val)) {
+    val = deref1(val);
+
+    if(is_VAR(val)) {
+      X x = find_frozen_variable(val);
+
+      if(x == NULL) {
+	ASSERT(freeze_term_var_counter < FREEZE_TERM_VAR_TABLE_SIZE, "can not copy term - too many variables");
+	freeze_term_var_table[ freeze_term_var_counter++ ] = val;
+
+	if(alloc_top + 5 > fromspace_limit) {
+	  *failed = 1;
+	  return val;
+	}
+
+	ALLOCATE_BLOCK(BLOCK *newvar, VAR_TYPE, 4);
+	newvar->d[ 0 ] = (X)newvar;
+	newvar->d[ 1 ] = word_to_fixnum(variable_counter++);
+	newvar->d[ 2 ] = word_to_fixnum(clock_ticks++);
+	freeze_term_var_table[ freeze_term_var_counter++ ] = (X)newvar;
+	return (X)newvar;
+      }
+
+      return x;
+    }
+  }
+
+  if(is_FIXNUM(val) || val == END_OF_LIST_VAL || is_byteblock(val) || is_SYMBOL(val) || !IS_IN_HEAP(val)) 
+    return val;
+
+  WORD s = objsize(val);
+
+  if(alloc_top + s + 1 > fromspace_limit) {
+    *failed = 1;
+    return val;
+  }
+
+  ALLOCATE_BLOCK(BLOCK *p, objtype(val), s);
+  --limit;
+
+  for(int i = 0; i < s; ++i)
+    p->d[ i ] = slot_ref(val, i);
+
+  for(int i = is_specialblock(val) ? 1 : 0; i < s; ++i) {
+    p->d[ i ] = deref_recursive(p->d[ i ], limit, failed);
+
+    if(*failed) return val;
+  }
+
+  return (X)p;
+}
+
+
+static X deref_all(X val, int limit, int *failed)
+{
+  freeze_term_var_counter = 0;
+  X y = deref_recursive(val, limit, failed);
+  memset(freeze_term_var_table, 0, freeze_term_var_counter * 2 * sizeof(X));
+  return y;
+}
+
+
 /// Databases
 
 // evict into malloc'd memory, replacing variables with new ones with indexes from 0 to N
@@ -860,22 +941,22 @@ static X freeze_term_recursive(X x)
   if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return x;
 
   if(is_VAR(x)) {
-    //XXX could use hashing, but probably not worth it
-    for(int i = 0; i < freeze_term_var_counter; i += 2) {
-      if(x == freeze_term_var_table[ i ]) 
-	return freeze_term_var_table[ i + 1 ];
+    X y = find_frozen_variable(x);
+
+    if(y == NULL) {
+      ASSERT(freeze_term_var_counter < FREEZE_TERM_VAR_TABLE_SIZE, "can not freeze term - too many variables");
+      freeze_term_var_table[ freeze_term_var_counter++ ] = x;
+      BLOCK *newvar = (BLOCK *)malloc(sizeof(WORD) * 4);
+      ASSERT(newvar, "out of memory - can mot freeze term");
+      newvar->h = VAR_TAG | 3;
+      newvar->d[ 0 ] = (X)newvar;
+      newvar->d[ 1 ] = word_to_fixnum(variable_counter++);
+      newvar->d[ 2 ] = word_to_fixnum(0);
+      freeze_term_var_table[ freeze_term_var_counter++ ] = (X)newvar;
+      return (X)newvar;
     }
 
-    ASSERT(freeze_term_var_counter < FREEZE_TERM_VAR_TABLE_SIZE, "can not freeze term - too many variables");
-    freeze_term_var_table[ freeze_term_var_counter++ ] = x;
-    BLOCK *newvar = (BLOCK *)malloc(sizeof(WORD) * 4);
-    ASSERT(newvar, "out of memory - can mot freeze term");
-    newvar->h = VAR_TAG | 3;
-    newvar->d[ 0 ] = (X)newvar;
-    newvar->d[ 1 ] = word_to_fixnum(freeze_term_var_counter / 2);
-    newvar->d[ 2 ] = word_to_fixnum(0);
-    freeze_term_var_table[ freeze_term_var_counter++ ] = (X)newvar;
-    return (X)newvar;
+    x = y;
   }
 
   if(is_byteblock(x)) {
@@ -2824,6 +2905,13 @@ PRIMITIVE(term_arg, X index, X term, X arg)
   return i > 0 && i < objsize(term) && unify(arg, slot_ref(term, i));
 }
 
+PRIMITIVE(deref_term, X in, X limit, X out)
+{
+  check_fixnum(limit);
+  int failed;
+  X x = deref_all(in, fixnum_to_word(limit), &failed);
+  return !failed && unify(x, out);
+}
 
 #endif
 #endif
