@@ -380,7 +380,7 @@ static CHAR *type_names[] = {
 #define is_DBREFERENCE(x)  is(DBREFERENCE_TYPE, (x))
 
 #define GLOBAL_REF(index)  global_variables[ index ]
-#define GLOBAL_SET(index, x)  global_variables[ index ] = (x)
+#define GLOBAL_SET(index, x)  global_variables[ index ] = deref(x)
 
 
 static inline int is_number(X x)
