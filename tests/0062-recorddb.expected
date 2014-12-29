@@ -1,11 +1,11 @@
 abc
 once:
-another(_110, _111, _110, _111)
+another(_117, _118, _117, _118)
 another
 some(term)
 [list, 1]
 twice:
-another(_110, _111, _110, _111)
+another(_117, _118, _117, _118)
 another
 [list, 1]
 1
