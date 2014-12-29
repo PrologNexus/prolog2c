@@ -60,9 +60,7 @@ op(P, A, N) :-
 
 '$op'(P, A, N) :-
 	get_global(operator_table, OT),
-	select(op(_, _, N), OT, OT2),
+	(select(op(_, _, N), OT, OT2); OT2 = OT),
 	!,
-	set_global(operator_table, [op(P, A, N)|OT2]).
-'$op'(P, A, N) :-
-	get_global(operator_table, OT),
-	set_global(operator_table, [op(P, A, N)|OT]).
+	copy_term(op(P, A, N), X),
+	set_global(operator_table, [X|OT2]).
