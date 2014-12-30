@@ -4,6 +4,7 @@ NOTES											              -*- Org -*-
 * Optimization opportunities
 ** Anonymous variables could get special handling when in argument position
    - unification is a noop, unless nested in another term.
+** Implement memberchk/2 as primitive
 ** Mode-declarations
 ** Determinacy declarations
    - i.e. ":- determinate(PI)."
@@ -25,7 +26,7 @@ NOTES											              -*- Org -*-
 ** TODO GC symbol-reclamation
 ** TODO some non-trivial test for DCG rules
    - for example file:re.pl
-** TODO test file:queue.pl, file:ordset.pl, file:sorts.pl
+** TODO test file:ordset.pl, file:sorts.pl
 ** TODO file:code/writef.pl
 ** TODO tests for stuff in file:code/
    - ordsets, queues, writef, write
@@ -70,8 +71,6 @@ NOTES											              -*- Org -*-
     - tricky.
 *** TODO Is cycle-checking in =deref= really necessary?
 ** Libraries
-*** TODO Implement memberchk/2 as primitive
-*** TODO Use distinct directory or filename-prefix for auto-included libraries
 *** TODO op/3 should throw ISO-compliant exceptions
 * List of builtin and library predicates
   | Name                         | Type | Library  | Notes                                                                |
@@ -125,9 +124,11 @@ NOTES											              -*- Org -*-
   | integer(X)                   | P    |          |                                                                      |
   | intersection(X, Y, Z)        | A    | sets.pl  |                                                                      |
   | X is EXP                     | S    |          |                                                                      |
+  | keysort(S, R)                | A    | sorts.pl |                                                                      |
   | length(LIST, NUM)            | A    | lists.pl |                                                                      |
   | member(X, LST)               | A    | lists.pl |                                                                      |
   | memberchk(X, LST)            | A    | lists.pl |                                                                      |
+  | merge(S1, S2, R)             | A    | sorts.pl |                                                                      |
   | name(X, LST)                 | A    | misc.pl  |                                                                      |
   | nl                           | M    |          |                                                                      |
   | nonvar(X)                    | P    |          |                                                                      |
@@ -152,6 +153,7 @@ NOTES											              -*- Org -*-
   | shell(COMMAND)               | A    | misc.pl  | expects exit-status 0                                                |
   | shell(COMMAND, STATUS)       | M    |          |                                                                      |
   | skip(C)                      | A    | io.pl    |                                                                      |
+  | sort(S, R)                   | A    | sorts.pl |                                                                      |
   | stream(X)                    | P    |          |                                                                      |
   | subtract(X, Y, Z)            | A    | sets.pl  |                                                                      |
   | tab(C)                       | A    | io.pl    |                                                                      |

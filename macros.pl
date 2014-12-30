@@ -82,6 +82,10 @@ auto_include(recorded/3, 'lib/rdb.pl').
 
 auto_include(findall_start/0, 'lib/findall.pl').
 
+auto_include(sort/2, 'lib/sorts.pl').
+auto_include(keysort/2, 'lib/sorts.pl').
+auto_include(merge/3, 'lib/sorts.pl').
+
 auto_include(_, _) :- fail.
 
 

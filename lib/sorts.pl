@@ -67,9 +67,10 @@ keysort(R, S) :-
 	sort(1, =<, R, S).
 
 
-msort(R, S) :-
+/*
+  msort(R, S) :-
 	sort(0, =<, R, S).
-
+*/
 
 sort(R, S) :-
 	sort(0, <, R, S).
