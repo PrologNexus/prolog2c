@@ -25,26 +25,6 @@ list_to_ord_set(List, Set) :-
 	sort(List, Set).
 
 
-%   merge(+List1, +List2, -Merged)
-%   is true when Merged is the stable merge of the two given lists.
-%   If the two lists are not ordered, the merge doesn't mean a great
-%   deal.  Merging is perfectly well defined when the inputs contain
-%   duplicates, and all copies of an element are preserved in the
-%   output, e.g. merge("122357", "34568", "12233455678").  Study this
-%   routine carefully, as it is the basis for all the rest.
-
-/*
-merge([Head1|Tail1], [Head2|Tail2], [Head2|Merged]) :-
-	Head1 @> Head2, !,
-	merge([Head1|Tail1], Tail2, Merged).
-merge([Head1|Tail1], List2, [Head1|Merged]) :-
-	List2 \== [], !,
-	merge(Tail1, List2, Merged).
-merge([], List2, List2) :- !.
-merge(List1, [], List1).
-*/
-
-
 %   ord_disjoint(+Set1, +Set2)
 %   is true when the two ordered sets have no element in common.  If the
 %   arguments are not ordered, I have no idea what happens.

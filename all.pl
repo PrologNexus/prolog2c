@@ -3,8 +3,8 @@
 
 :- include('swi.pl').
 :- include('settings.pl').
-:- include('rdtok.pl').
-:- include('read.pl').
+:- include('lib/rdtok.pl').
+:- include('lib/read.pl').
 :- include('support.pl').
 :- include('state.pl').
 :- include('terms.pl').
