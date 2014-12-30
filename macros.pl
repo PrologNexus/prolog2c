@@ -37,50 +37,50 @@ macro(TERM, TERM) :-
 
 %% auto-include definitions
 
-auto_include(length/2, 'lists.pl').
-auto_include(append/3, 'lists.pl').
-auto_include(member/2, 'lists.pl').
-auto_include(memberchk/2, 'lists.pl').
-auto_include(reverse/2, 'lists.pl').
+auto_include(length/2, 'lib/lists.pl').
+auto_include(append/3, 'lib/lists.pl').
+auto_include(member/2, 'lib/lists.pl').
+auto_include(memberchk/2, 'lib/lists.pl').
+auto_include(reverse/2, 'lib/lists.pl').
 
-auto_include(compare/3, 'misc.pl').
-auto_include(shell/1, 'misc.pl').
+auto_include(compare/3, 'lib/misc.pl').
+auto_include(shell/1, 'lib/misc.pl').
 
-auto_include(tab/1, 'io.pl').
-auto_include(skip/1, 'io.pl').
-auto_include(get/1, 'io.pl').
-auto_include(see/1, 'io.pl').
-auto_include(seen/1, 'io.pl').
-auto_include(seeing/1, 'io.pl').
-auto_include(tell/1, 'io.pl').
-auto_include(told/1, 'io.pl').
-auto_include(telling/1, 'io.pl').
+auto_include(tab/1, 'lib/io.pl').
+auto_include(skip/1, 'lib/io.pl').
+auto_include(get/1, 'lib/io.pl').
+auto_include(see/1, 'lib/io.pl').
+auto_include(seen/1, 'lib/io.pl').
+auto_include(seeing/1, 'lib/io.pl').
+auto_include(tell/1, 'lib/io.pl').
+auto_include(told/1, 'lib/io.pl').
+auto_include(telling/1, 'lib/io.pl').
 
-auto_include(op/3, 'op.pl').
-auto_include(current_op/3, 'op.pl').
+auto_include(op/3, 'lib/op.pl').
+auto_include(current_op/3, 'lib/op.pl').
 
-auto_include(throw/1, 'misc.pl').
-auto_include(name/2, 'misc.pl').
-auto_include('=..'/2, 'misc.pl').
-auto_include(deref_term/3, 'misc.pl').
-auto_include(copy_term/2, 'misc.pl').
+auto_include(throw/1, 'lib/misc.pl').
+auto_include(name/2, 'lib/misc.pl').
+auto_include('=..'/2, 'lib/misc.pl').
+auto_include(deref_term/3, 'lib/misc.pl').
+auto_include(copy_term/2, 'lib/misc.pl').
 
-auto_include(union/3, 'sets.pl').
-auto_include(intersection/3, 'sets.pl').
-auto_include(subtract/3, 'sets.pl').
-auto_include(select/3, 'sets.pl').
+auto_include(union/3, 'lib/sets.pl').
+auto_include(intersection/3, 'lib/sets.pl').
+auto_include(subtract/3, 'lib/sets.pl').
+auto_include(select/3, 'lib/sets.pl').
 
-auto_include(write/1, 'write.pl').
-auto_include(writeq/1, 'write.pl').
+auto_include(write/1, 'lib/write.pl').
+auto_include(writeq/1, 'lib/write.pl').
 
-auto_include(recorda/2, 'rdb.pl').
-auto_include(recorda/3, 'rdb.pl').
-auto_include(recordz/2, 'rdb.pl').
-auto_include(recordz/3, 'rdb.pl').
-auto_include(recorded/2, 'rdb.pl').
-auto_include(recorded/3, 'rdb.pl').
+auto_include(recorda/2, 'lib/rdb.pl').
+auto_include(recorda/3, 'lib/rdb.pl').
+auto_include(recordz/2, 'lib/rdb.pl').
+auto_include(recordz/3, 'lib/rdb.pl').
+auto_include(recorded/2, 'lib/rdb.pl').
+auto_include(recorded/3, 'lib/rdb.pl').
 
-auto_include(findall_start/0, 'findall.pl').
+auto_include(findall_start/0, 'lib/findall.pl').
 
 auto_include(_, _) :- fail.
 
