@@ -26,7 +26,7 @@ NOTES											              -*- Org -*-
 ** TODO GC symbol-reclamation
 ** TODO some non-trivial test for DCG rules
    - for example file:re.pl
-** TODO test file:ordset.pl, file:sorts.pl
+** TODO test file:ordset.pl and add
 ** TODO file:code/writef.pl
 ** TODO tests for stuff in file:code/
    - ordsets, queues, writef, write
@@ -73,100 +73,112 @@ NOTES											              -*- Org -*-
 ** Libraries
 *** TODO op/3 should throw ISO-compliant exceptions
 * List of builtin and library predicates
-  | Name                         | Type | Library  | Notes                                                                |
-  |------------------------------+------+----------+----------------------------------------------------------------------|
-  | X, Y                         | S    |          |                                                                      |
-  | X; Y                         | S    |          |                                                                      |
-  | X = Y                        | S    |          |                                                                      |
-  | X -> Y                       | S    |          |                                                                      |
-  | X -> Y; Z                    | S    |          |                                                                      |
-  | '!'                          | S    |          |                                                                      |
-  | \+ X                         | S    |          |                                                                      |
-  | X \= Y                       | S    |          |                                                                      |
-  | X == Y                       | S    |          |                                                                      |
-  | X \== Y                      | S    |          |                                                                      |
-  | EXP1 < EXP1                  | S    |          |                                                                      |
-  | EXP1 > EXP2                  | S    |          |                                                                      |
-  | EXP1 =< EXP2                 | S    |          |                                                                      |
-  | EXP1 >= EXP2                 | S    |          |                                                                      |
-  | EXP1 =:= EXP2                | S    |          |                                                                      |
-  | EXP1 =\= EXP2                | S    |          |                                                                      |
-  | X @< Y                       | S    |          |                                                                      |
-  | X @> Y                       | S    |          |                                                                      |
-  | X @=< Y                      | S    |          |                                                                      |
-  | X @>= Y                      | S    |          |                                                                      |
-  | append(L1, L2, L3)           | A    | lists.pl |                                                                      |
-  | arg(INDEX, TERM, X)          | M    |          |                                                                      |
-  | atom(X)                      | P    |          |                                                                      |
-  | atom_codes(ATOM, LIST)       | M    |          |                                                                      |
-  | atomic(X)                    | P    |          |                                                                      |
-  | command_line_arguments(LIST) | M    |          | Filters out runtime-options ("-:..."), does not include program name |
-  | compare(REL, X, Y)           | A    | misc.pl  |                                                                      |
-  | compound(X)                  | P    |          |                                                                      |
-  | copy_term(X, Y)              | A    | misc.pl  |                                                                      |
-  | current_input(S)             | M    |          |                                                                      |
-  | current_output(S)            | M    |          |                                                                      |
-  | current_op(P, A, N)          | A    | op.pl    |                                                                      |
-  | display(X)                   | M    |          |                                                                      |
-  | erase(REF)                   | M    |          |                                                                      |
-  | exists_file(NAME)            | M    |          | fails if nonexistent or not a regular file                           |
-  | fail                         | S    |          |                                                                      |
-  | findall(T, G, L)             | S    |          | G must be a callable term, uses library "findall.pl"                 |
-  | float(X)                     | P    |          |                                                                      |
-  | foreign_call(TERM)           | S    |          |                                                                      |
-  | garbage_collect              | M    |          | GC is triggered on next allocation                                   |
-  | get(C)                       | A    | io.pl    | -1 on EOF                                                            |
-  | get0(C)                      | M    |          | -1 on EOF                                                            |
-  | get_global(ATOM, X)          | S    |          |                                                                      |
-  | getenv(NAME, VALUE)          | M    |          | fails if variable doesn't exist                                      |
-  | halt                         | M    |          | exits with code 0                                                    |
-  | halt(CODE)                   | M    |          |                                                                      |
-  | integer(X)                   | P    |          |                                                                      |
-  | intersection(X, Y, Z)        | A    | sets.pl  |                                                                      |
-  | X is EXP                     | S    |          |                                                                      |
-  | keysort(S, R)                | A    | sorts.pl |                                                                      |
-  | length(LIST, NUM)            | A    | lists.pl |                                                                      |
-  | member(X, LST)               | A    | lists.pl |                                                                      |
-  | memberchk(X, LST)            | A    | lists.pl |                                                                      |
-  | merge(S1, S2, R)             | A    | sorts.pl |                                                                      |
-  | name(X, LST)                 | A    | misc.pl  |                                                                      |
-  | nl                           | M    |          |                                                                      |
-  | nonvar(X)                    | P    |          |                                                                      |
-  | number(X)                    | P    |          |                                                                      |
-  | number_codes(NUM, LIST)      | M    |          | uses strtol(3)/strtod(3), so allows leading space                    |
-  | op(P, A, N)                  | A    | op.pl    |                                                                      |
-  | peek(BYTE)                   | M    |          | -1 on EOF                                                            |
-  | put(CHAR)                    | M    |          | CHAR may be fixnum or symbol                                         |
-  | recorda(KEY, VAL)            | A    | rdb.pl   |                                                                      |
-  | recorda(KEY, VAL, REF)       | A    | rdb.pl   |                                                                      |
-  | recorded(KEY, VAL)           | A    | rdb.pl   |                                                                      |
-  | recorded(KEY, VAL, REF)      | A    | rdb.pl   |                                                                      |
-  | recordz(KEY, VAL)            | A    | rdb.pl   |                                                                      |
-  | recordz(KEY, VAL, REF)       | A    | rdb.pl   |                                                                      |
-  | repeat                       | S    |          |                                                                      |
-  | reverse(LST1, LST2)          | A    | lists.pl |                                                                      |
-  | see(FILE)                    | A    | io.pl    | may also pass stream                                                 |
-  | seeing(FILE)                 | A    | io.pl    |                                                                      |
-  | seen                         | A    | io.pl    | does nothing if stdin                                                |
-  | select(ELEM, LIST1, LIST2)   | A    | sets.pl  |                                                                      |
-  | set_global(ATOM, X)          | S    |          |                                                                      |
-  | shell(COMMAND)               | A    | misc.pl  | expects exit-status 0                                                |
-  | shell(COMMAND, STATUS)       | M    |          |                                                                      |
-  | skip(C)                      | A    | io.pl    |                                                                      |
-  | sort(S, R)                   | A    | sorts.pl |                                                                      |
-  | stream(X)                    | P    |          |                                                                      |
-  | subtract(X, Y, Z)            | A    | sets.pl  |                                                                      |
-  | tab(C)                       | A    | io.pl    |                                                                      |
-  | tell(FILE)                   | A    | io.pl    | may also pass stream                                                 |
-  | telling(STREAM)              | A    | io.pl    |                                                                      |
-  | throw(X)                     | A    | misc.pl  | uncatchable, just to signal error                                    |
-  | told                         | A    | io.pl    | does nothing if stdout or stderr                                     |
-  | true                         | S    |          |                                                                      |
-  | union(X, Y, Z)               | A    | sets.pl  |                                                                      |
-  | X =.. Y                      | A    | misc.pl  | "univ"                                                               |
-  | var(X)                       | P    |          |                                                                      |
-  | write(X)                     | A    | write.pl |                                                                      |
-  | writeq(X)                    | A    | write.pl |                                                                      |
+  | Name                         | Type | Library   | Notes                                                                |
+  |------------------------------+------+-----------+----------------------------------------------------------------------|
+  | X, Y                         | S    |           |                                                                      |
+  | X; Y                         | S    |           |                                                                      |
+  | X = Y                        | S    |           |                                                                      |
+  | X -> Y                       | S    |           |                                                                      |
+  | X -> Y; Z                    | S    |           |                                                                      |
+  | '!'                          | S    |           |                                                                      |
+  | \+ X                         | S    |           |                                                                      |
+  | X \= Y                       | S    |           |                                                                      |
+  | X == Y                       | S    |           |                                                                      |
+  | X \== Y                      | S    |           |                                                                      |
+  | EXP1 < EXP1                  | S    |           |                                                                      |
+  | EXP1 > EXP2                  | S    |           |                                                                      |
+  | EXP1 =< EXP2                 | S    |           |                                                                      |
+  | EXP1 >= EXP2                 | S    |           |                                                                      |
+  | EXP1 =:= EXP2                | S    |           |                                                                      |
+  | EXP1 =\= EXP2                | S    |           |                                                                      |
+  | X @< Y                       | S    |           |                                                                      |
+  | X @> Y                       | S    |           |                                                                      |
+  | X @=< Y                      | S    |           |                                                                      |
+  | X @>= Y                      | S    |           |                                                                      |
+  | append(L1, L2, L3)           | A    | lists.pl  |                                                                      |
+  | arg(INDEX, TERM, X)          | M    |           |                                                                      |
+  | atom(X)                      | P    |           |                                                                      |
+  | atom_codes(ATOM, LIST)       | M    |           |                                                                      |
+  | atomic(X)                    | P    |           |                                                                      |
+  | command_line_arguments(LIST) | M    |           | Filters out runtime-options ("-:..."), does not include program name |
+  | compare(REL, X, Y)           | A    | misc.pl   |                                                                      |
+  | compound(X)                  | P    |           |                                                                      |
+  | copy_term(X, Y)              | A    | misc.pl   |                                                                      |
+  | current_input(S)             | M    |           |                                                                      |
+  | current_output(S)            | M    |           |                                                                      |
+  | current_op(P, A, N)          | A    | op.pl     |                                                                      |
+  | display(X)                   | M    |           |                                                                      |
+  | erase(REF)                   | M    |           |                                                                      |
+  | exists_file(NAME)            | M    |           | fails if nonexistent or not a regular file                           |
+  | fail                         | S    |           |                                                                      |
+  | findall(T, G, L)             | S    |           | G must be a callable term, uses library "findall.pl"                 |
+  | float(X)                     | P    |           |                                                                      |
+  | foreign_call(TERM)           | S    |           |                                                                      |
+  | garbage_collect              | M    |           | GC is triggered on next allocation                                   |
+  | get(C)                       | A    | io.pl     | -1 on EOF                                                            |
+  | get0(C)                      | M    |           | -1 on EOF                                                            |
+  | get_global(ATOM, X)          | S    |           |                                                                      |
+  | getenv(NAME, VALUE)          | M    |           | fails if variable doesn't exist                                      |
+  | halt                         | M    |           | exits with code 0                                                    |
+  | halt(CODE)                   | M    |           |                                                                      |
+  | integer(X)                   | P    |           |                                                                      |
+  | intersection(X, Y, Z)        | A    | sets.pl   |                                                                      |
+  | X is EXP                     | S    |           |                                                                      |
+  | keysort(S, R)                | A    | sorts.pl  |                                                                      |
+  | length(LIST, NUM)            | A    | lists.pl  |                                                                      |
+  | list_to_ord_set(L, S)        | A    | ordset.pl |                                                                      |
+  | member(X, LST)               | A    | lists.pl  |                                                                      |
+  | memberchk(X, LST)            | A    | lists.pl  |                                                                      |
+  | merge(S1, S2, R)             | A    | sorts.pl  |                                                                      |
+  | name(X, LST)                 | A    | misc.pl   |                                                                      |
+  | nl                           | M    |           |                                                                      |
+  | nonvar(X)                    | P    |           |                                                                      |
+  | number(X)                    | P    |           |                                                                      |
+  | number_codes(NUM, LIST)      | M    |           | uses strtol(3)/strtod(3), so allows leading space                    |
+  | op(P, A, N)                  | A    | op.pl     |                                                                      |
+  | ord_disjoint(S1, S2)         | A    | ordset.pl |                                                                      |
+  | ord_insert(S1, ELT, S2)      | A    | ordset.pl |                                                                      |
+  | ord_intersect(S1, S2)        | A    | ordset.pl |                                                                      |
+  | ord_intersect(S1, S2, IS)    | A    | ordset.pl |                                                                      |
+  | ord_seteq(S1, S2)            | A    | ordset.pl |                                                                      |
+  | ord_subset(S1, S2)           | A    | ordset.pl |                                                                      |
+  | ord_subtract(S1, S2, DS)     | A    | ordset.pl |                                                                      |
+  | ord_symdiff(S1, S2, DS)      | A    | ordset.pl |                                                                      |
+  | ord_union(S1, S2)            | A    | ordset.pl |                                                                      |
+  | peek(BYTE)                   | M    |           | -1 on EOF                                                            |
+  | put(CHAR)                    | M    |           | CHAR may be fixnum or symbol                                         |
+  | read(TERM)                   | M/A  | read.pl   | expands into read1/1, which is auto-included                         |
+  | read_tokens(TOKENS, VARS)    | A    | rdtok.pl  |                                                                      |
+  | recorda(KEY, VAL)            | A    | rdb.pl    |                                                                      |
+  | recorda(KEY, VAL, REF)       | A    | rdb.pl    |                                                                      |
+  | recorded(KEY, VAL)           | A    | rdb.pl    |                                                                      |
+  | recorded(KEY, VAL, REF)      | A    | rdb.pl    |                                                                      |
+  | recordz(KEY, VAL)            | A    | rdb.pl    |                                                                      |
+  | recordz(KEY, VAL, REF)       | A    | rdb.pl    |                                                                      |
+  | repeat                       | S    |           |                                                                      |
+  | reverse(LST1, LST2)          | A    | lists.pl  |                                                                      |
+  | see(FILE)                    | A    | io.pl     | may also pass stream                                                 |
+  | seeing(FILE)                 | A    | io.pl     |                                                                      |
+  | seen                         | A    | io.pl     | does nothing if stdin                                                |
+  | select(ELEM, LIST1, LIST2)   | A    | sets.pl   |                                                                      |
+  | set_global(ATOM, X)          | S    |           |                                                                      |
+  | shell(COMMAND)               | A    | misc.pl   | expects exit-status 0                                                |
+  | shell(COMMAND, STATUS)       | M    |           |                                                                      |
+  | skip(C)                      | A    | io.pl     |                                                                      |
+  | sort(S, R)                   | A    | sorts.pl  |                                                                      |
+  | stream(X)                    | P    |           |                                                                      |
+  | subtract(X, Y, Z)            | A    | sets.pl   |                                                                      |
+  | tab(C)                       | A    | io.pl     |                                                                      |
+  | tell(FILE)                   | A    | io.pl     | may also pass stream                                                 |
+  | telling(STREAM)              | A    | io.pl     |                                                                      |
+  | throw(X)                     | A    | misc.pl   | uncatchable, just to signal error                                    |
+  | told                         | A    | io.pl     | does nothing if stdout or stderr                                     |
+  | true                         | S    |           |                                                                      |
+  | union(X, Y, Z)               | A    | sets.pl   |                                                                      |
+  | X =.. Y                      | A    | misc.pl   | "univ"                                                               |
+  | var(X)                       | P    |           |                                                                      |
+  | write(X)                     | A    | write.pl  |                                                                      |
+  | writeq(X)                    | A    | write.pl  |                                                                      |
   #+TBLFM: $1=
   - "M" = macro, "A" = autoload, "P" = primitive (in compiler), "S" = special form / builtin
 * List of arithmetic operators
@@ -198,6 +210,12 @@ NOTES											              -*- Org -*-
   | sin(X)                   |
   | sqrt(X)                  |
   | truncate(X)              |
+* List of directives
+  | global_variable(NAME)    |
+  | include(FILENAME)        |
+  | initialization GOAL      |
+  | op(P, A, N)              |
+  | pre_initialization(GOAL) |
 * Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
