@@ -57,4 +57,4 @@ locate_file(NAME, [DIR|_], REALNAME) :-
 	atomic_list_concat([DIR, '/', NAME, '.pl'], REALNAME),
 	exists_file(REALNAME).
 locate_file(NAME, [_|MORE], REALNAME) :-
-	locate_file(NAME, MORE; REALNAME).
+	locate_file(NAME, MORE, REALNAME).
