@@ -151,16 +151,7 @@
 %
 
 
-			% Print (therefore use pretty printing) onto
-			%  the terminal (no-one uses this routine).
-
-ttyprint(X) :-		% fwritef(user, '%p', [X])
-	telling(Old),
-	tell(user),
-	print(X),
-	tell(Old).
-
-
+print(X) :- write(X).
 
 			% Print a list, one element per line
 
