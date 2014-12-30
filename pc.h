@@ -1198,9 +1198,8 @@ static void db_mark_item_as_erased(DB_ITEM *item)
 
 static void db_mark_bucket_as_erased(DB_ITEM *item)
 {
-  // item must be first
-  ASSERT(item->previous == NULL, "db_erase_bucket: item is not the first");
   DB_BUCKET *bucket = item->bucket;
+  item = bucket->firstitem;
 
   // mark all items as erased
   while(item != NULL) {
