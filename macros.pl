@@ -25,6 +25,7 @@ macro(functor(T, N, A), foreign_call(functor(T, N, A))).
 macro(arg(I, T, X), foreign_call(term_arg(I, T, X))).
 macro(current_input(S), foreign_call(current_input_stream(S))).
 macro(current_output(S), foreign_call(current_output_stream(S))).
+macro(read(T), read1(T)).
 
 
 % nothing matches - tryi auto-include and finally, fail
@@ -85,6 +86,20 @@ auto_include(findall_start/0, 'lib/findall.pl').
 auto_include(sort/2, 'lib/sorts.pl').
 auto_include(keysort/2, 'lib/sorts.pl').
 auto_include(merge/3, 'lib/sorts.pl').
+
+auto_include(list_to_ord_set/2, 'lib/ordset.pl').
+auto_include(ord_disjoint/2, 'lib/ordset.pl').
+auto_include(ord_insert/3, 'lib/ordset.pl').
+auto_include(ord_intersect/2, 'lib/ordset.pl').
+auto_include(ord_intersect/3, 'lib/ordset.pl').
+auto_include(ord_seteq/2, 'lib/ordset.pl').
+auto_include(ord_subset/2, 'lib/ordset.pl').
+auto_include(ord_symdiff/2, 'lib/ordset.pl').
+auto_include(ord_union/2, 'lib/ordset.pl').
+auto_include(ord_subtract/2, 'lib/ordset.pl').
+
+auto_include(read_tokens/2, 'lib/rdtok.pl').
+auto_include(read1/1, 'lib/read.pl').
 
 auto_include(_, _) :- fail.
 
