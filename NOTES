@@ -37,8 +37,6 @@ NOTES											              -*- Org -*-
     - declaration "trace(PI)", where PI may be atom, NAME/ARITY, or
       list of those.
 ** Library/Runtime
-*** TODO findall/3
-    - macro + library (file:findall.pl)
 *** TODO clause-DB
     - file:cdb.pl
 *** Make it possible to embed compiled code
@@ -106,6 +104,7 @@ NOTES											              -*- Org -*-
   | command_line_arguments(LIST) | M    |          | Filters out runtime-options ("-:..."), does not include program name |
   | compare(REL, X, Y)           | A    | misc.pl  |                                                                      |
   | compound(X)                  | P    |          |                                                                      |
+  | copy_term(X, Y)              | A    | misc.pl  |                                                                      |
   | current_input(S)             | M    |          |                                                                      |
   | current_output(S)            | M    |          |                                                                      |
   | current_op(P, A, N)          | A    | op.pl    |                                                                      |
@@ -113,6 +112,7 @@ NOTES											              -*- Org -*-
   | erase(REF)                   | M    |          |                                                                      |
   | exists_file(NAME)            | M    |          | fails if nonexistent or not a regular file                           |
   | fail                         | S    |          |                                                                      |
+  | findall(T, G, L)             | S    |          | G must be a callable term, uses library "findall.pl"                 |
   | float(X)                     | P    |          |                                                                      |
   | foreign_call(TERM)           | S    |          |                                                                      |
   | garbage_collect              | M    |          | GC is triggered on next allocation                                   |
