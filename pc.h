@@ -2184,7 +2184,11 @@ static int is_recursively_identical(X x, X y)
 
   if(is_FIXNUM(x) || is_FIXNUM(y)) return 0;
 
-  if(objtype(x) != objtype(y)) return 0;
+  WORD t = objtype(x);
+
+  if(t != objtype(y)) return 0;
+
+  if(t == SYMBOL_TYPE) return 0;
 
   WORD s = objsize(x);
 
