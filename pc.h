@@ -2173,13 +2173,53 @@ static inline X num_not(X x)
 }
 
 
-/// term comparison
+/// Term comparison
+
+static int is_recursively_identical(X x, X y)
+{
+  x = deref(x);
+  y = deref(y);
+
+  if(x == y) return 1;
+
+  if(is_FIXNUM(x) || is_FIXNUM(y)) return 0;
+
+  if(objtype(x) != objtype(y)) return 0;
+
+  WORD s = objsize(x);
+
+  if(s != objsize(y)) return 0;
+
+  if(is_byteblock(x))
+    return !memcmp(objdata(x), objdata(y), s);
+
+  WORD i = 0;
+
+  if(is_specialblock(x)) {
+    if(slot_ref(x, 0) != slot_ref(y, 0)) return 0;
+
+    i = 1;
+  }
+
+  while(i < s) {
+    X x2 = slot_ref(x, i);
+    X y2 = slot_ref(y, i);
+
+    if(x2 != y2 && !is_recursively_identical(x2, y2)) 
+      return 0;
+
+    ++i;
+  }
+
+  return 1;
+}
+
 
 static inline int is_identical(X x, X y)
 {
   if(x == y) return 1;
   
-  return deref(x) == deref(y);
+  return is_recursively_identical(x, y);
 }
 
 
