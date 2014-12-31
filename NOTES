@@ -25,10 +25,11 @@ NOTES											              -*- Org -*-
 ** TODO some non-trivial test for DCG rules
    - file:re.pl
 ** TODO Test on Mac, Windows (32 bit) and R/Pi
+** TODO test retract-loop
+   - file:tests/0069-cdb.pl
 * Missing features
 ** Compiler
 *** TODO Replace use of atomic_list_concat/2 with hand-written, simpler operations
-*** TODO Replace uses of maplist + forall
 *** Allow selective tracing
     - declaration "trace(PI)", where PI may be atom, NAME/ARITY, or
       list of those.
@@ -66,6 +67,8 @@ NOTES											              -*- Org -*-
 *** TODO db_find: handle case where a ref is given
     - unify key/term directly.
 ** Libraries
+*** TODO May a PI (predicate-indicator) be an atom, refering to all available arities?
+    - would need to be added to abolish/1.
 *** TODO op/3 should throw ISO-compliant exceptions
 * List of builtin and library predicates
   | Name                         | Type | Library   | Notes                                                                |
@@ -115,6 +118,7 @@ NOTES											              -*- Org -*-
   | fail                         | S    |           |                                                                      |
   | findall(T, G, L)             | S    |           | G must be a callable term, uses library "findall.pl"                 |
   | float(X)                     | P    |           |                                                                      |
+  | forall(G, A)                 | S    |           |                                                                      |
   | foreign_call(TERM)           | S    |           |                                                                      |
   | garbage_collect              | M    |           | GC is triggered on next allocation                                   |
   | get(C)                       | A    | io.pl     | -1 on EOF                                                            |
