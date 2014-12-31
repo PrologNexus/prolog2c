@@ -13,10 +13,6 @@ error(MSG) :-
 	forall(member(X, MSG), write(X)), nl,
 	halt(1).
 
-map(_, [], []) :- !.
-map(G, [X|Y], [X2|Y2]) :-
-	call(G, X, X2), !, map(G, Y, Y2).
-
 iota(N, L) :- iota(0, N, L).
 iota(N, N, []).
 iota(N, M, [N|R]) :-
@@ -27,7 +23,7 @@ file_name_string(IFILE, IFILE).
 
 mangle_name(NAME, MNAME) :-
 	name(NAME, STRING),
-	map(mangle_char, STRING, MSTRING),
+	findall(CS, (member(C, STRING), mangle_char(C, CS)), MSTRING),
 	concatenate(["___"|MSTRING], MSTRING2),
 	name(MNAME, MSTRING2).
 
