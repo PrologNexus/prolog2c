@@ -1,4 +1,4 @@
-%%%% Support code for SWI Prolog
+%%% Support code for SWI Prolog
 
 
 :- op(400, yfx, '\\\\').
