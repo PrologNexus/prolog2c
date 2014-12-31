@@ -8,6 +8,7 @@ main :-
 	show(foo),
 	nl, show(hello(_)),
 	abolish([foo/0, hello/1]),
+	nl, show(foo),
 	nl, show(hello(_, _)),
 	erase(REF),
 	nl, show(hello(_, _)).
