@@ -21,7 +21,7 @@ compile_clause_list([CLAUSE|MORE], NAME/ARITY, I, S1, S2) :-
 
 % rule
 compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, S1, S2) :-
-        show_compiled_clause(HEAD :- BODY),
+        show_compiled_clause((HEAD :- BODY)),
 	!,			% avoid match of next clause
 	I2 is I + 1,
 	clause_label(NAME, ARITY, I2, L),
@@ -223,7 +223,7 @@ compile_body_expression(forall(G, A), TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
 	compile_body_expression(\+HEAD2, TAIL, LAST, D1, D2, B1, B2, S3, S2).
 
 % if-then
-compile_body_expression(X -> Y, TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
+compile_body_expression((X -> Y), TAIL, LAST, D1, D2, B1, B2, S1, S2) :-
 	compile_body_expression((X -> Y; fail), TAIL, LAST, D1, D2, B1, B2, S1, S2).
 
 % inline-unification
