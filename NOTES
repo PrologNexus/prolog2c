@@ -21,25 +21,18 @@ NOTES											              -*- Org -*-
 ** Deterministic goal in condition of if-then-else can drop CP dance
    - same for '\\+'/2
 * Things to test
-** TODO test file:rdtok.pl, file:read.pl (self-compiled)
-   - use of file:op.pl
 ** TODO GC symbol-reclamation
 ** TODO some non-trivial test for DCG rules
-   - for example file:re.pl
-** TODO test file:ordset.pl and add
-** TODO file:code/writef.pl
-** TODO tests for stuff in file:code/
-   - ordsets, queues, writef, write
+   - file:re.pl
 ** TODO Test on Mac, Windows (32 bit) and R/Pi
 * Missing features
 ** Compiler
 *** TODO Replace use of atomic_list_concat/2 with hand-written, simpler operations
+*** TODO Replace uses of maplist + forall
 *** Allow selective tracing
     - declaration "trace(PI)", where PI may be atom, NAME/ARITY, or
       list of those.
 ** Library/Runtime
-*** TODO clause-DB
-    - file:cdb.pl
 *** Make it possible to embed compiled code
     - "suspend(IN, OUT)" saves state and suspends execution.
     - define alternative entry-point via macro and return procedure
@@ -70,6 +63,8 @@ NOTES											              -*- Org -*-
     - and adjust CP-stack entries accordingly.
     - tricky.
 *** TODO Is cycle-checking in =deref= really necessary?
+*** TODO db_find: handle case where a ref is given
+    - unify key/term directly.
 ** Libraries
 *** TODO op/3 should throw ISO-compliant exceptions
 * List of builtin and library predicates
@@ -95,11 +90,18 @@ NOTES											              -*- Org -*-
   | X @> Y                       | S    |           |                                                                      |
   | X @=< Y                      | S    |           |                                                                      |
   | X @>= Y                      | S    |           |                                                                      |
+  | abolish(PI)                  | A    | cdb.pl    |                                                                      |
   | append(L1, L2, L3)           | A    | lists.pl  |                                                                      |
   | arg(INDEX, TERM, X)          | M    |           |                                                                      |
+  | asserta(CLAUSE)              | A    | cdb.pl    |                                                                      |
+  | asserta(CLAUSE, REF)         | A    | cdb.pl    |                                                                      |
+  | assertz(CLAUSE)              | A    | cdb.pl    |                                                                      |
+  | assertz(CLAUSE, REF)         | A    | cdb.pl    |                                                                      |
   | atom(X)                      | P    |           |                                                                      |
   | atom_codes(ATOM, LIST)       | M    |           |                                                                      |
   | atomic(X)                    | P    |           |                                                                      |
+  | clause(HEAD, BODY)           | A    | cdb.pl    |                                                                      |
+  | clause(HEAD, BODY, REF)      | A    | cdb.pl    |                                                                      |
   | command_line_arguments(LIST) | M    |           | Filters out runtime-options ("-:..."), does not include program name |
   | compare(REL, X, Y)           | A    | misc.pl   |                                                                      |
   | compound(X)                  | P    |           |                                                                      |
@@ -156,6 +158,7 @@ NOTES											              -*- Org -*-
   | recordz(KEY, VAL)            | A    | rdb.pl    |                                                                      |
   | recordz(KEY, VAL, REF)       | A    | rdb.pl    |                                                                      |
   | repeat                       | S    |           |                                                                      |
+  | retract(CLAUSE)              | A    | cdb.pl    |                                                                      |
   | reverse(LST1, LST2)          | A    | lists.pl  |                                                                      |
   | see(FILE)                    | A    | io.pl     | may also pass stream                                                 |
   | seeing(FILE)                 | A    | io.pl     |                                                                      |
