@@ -2190,6 +2190,9 @@ static int is_recursively_identical(X x, X y)
 
   if(t == SYMBOL_TYPE) return 0;
 
+  if(t == VAR_TYPE) 
+    return slot_ref(x, 1) == slot_ref(y, 1);
+
   WORD s = objsize(x);
 
   if(s != objsize(y)) return 0;
