@@ -101,6 +101,15 @@ auto_include(ord_subtract/2, 'lib/ordset.pl').
 auto_include(read_tokens/2, 'lib/rdtok.pl').
 auto_include(read1/1, 'lib/read.pl').
 
+auto_include(clause/2, 'lib/cdb.pl').
+auto_include(clause/3, 'lib/cdb.pl').
+auto_include(retract/1, 'lib/cdb.pl').
+auto_include(abolish/1, 'lib/cdb.pl').
+auto_include(asserta/1, 'lib/cdb.pl').
+auto_include(asserta/2, 'lib/cdb.pl').
+auto_include(assertz/1, 'lib/cdb.pl').
+auto_include(assertz/2, 'lib/cdb.pl').
+
 auto_include(_, _) :- fail.
 
 
