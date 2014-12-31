@@ -1,0 +1,8 @@
+_19
+foo :- baz
+foo :- bar
+
+hello(1) :- true
+
+hello(no,ok) :- true
+
