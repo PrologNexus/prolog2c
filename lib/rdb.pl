@@ -21,15 +21,15 @@ recorded(KEY, TERM, REF) :-
 	'$record_db_key'(KEY, KEY2),
 	foreign_call(db_find(DB, KEY2, REF1)),
 	!,
-	'$db_match'(REF1, TERM, REF).
+	'$record_db_match'(REF1, TERM, REF).
 
-'$db_match'(REF, TERM, REF) :-
+'$record_db_match'(REF, TERM, REF) :-
 	(foreign_call(db_ref(REF, X)) -> X = TERM
-	; garbage_collect, '$db_match'(REF, TERM, REF)).
-'$db_match'(REF1, TERM, REF) :-
+	; garbage_collect, '$record_db_match'(REF, TERM, REF)).
+'$record_db_match'(REF1, TERM, REF) :-
 	foreign_call(db_next(REF1, REF2)),
 	!,
-	'$db_match'(REF2, TERM, REF).
+	'$record_db_match'(REF2, TERM, REF).
 
 '$record_db_key'(K1, K2) :-
 	compound(K1),
