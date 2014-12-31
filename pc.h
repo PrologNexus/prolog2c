@@ -2708,6 +2708,14 @@ PRIMITIVE(db_erase, X ref)
   return 1;
 }
 
+PRIMITIVE(db_erase_all, X ref)
+{
+  check_type_DBREFERENCE(ref);
+  DB_ITEM *item = (DB_ITEM *)slot_ref(ref, 0);
+  db_mark_bucket_as_erased(item);
+  return 1;
+}
+
 PRIMITIVE(db_record, X dbr, X atend, X key, X val, X result)
 {
   check_type_DBREFERENCE(dbr);
