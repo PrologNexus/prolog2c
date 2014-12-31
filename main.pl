@@ -11,7 +11,6 @@
 % equivalent to -L <FILENAME>.
 
 
-:- include('all.pl').
 :- initialization(main).
 
 main :-

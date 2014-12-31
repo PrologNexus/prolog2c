@@ -1,2 +1,2 @@
 #!/bin/sh
-exec swipl -q -s main.pl -- $@
+exec swipl -q -s all.pl -- $@

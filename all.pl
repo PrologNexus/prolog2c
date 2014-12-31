@@ -1,4 +1,4 @@
-%%% loader for compiler files
+%%% Loader for running compiler with SWI prolog
 
 
 :- include('swi.pl').
@@ -13,3 +13,4 @@
 :- include('process.pl').
 :- include('compile.pl').
 :- include('assemble.pl').
+:- include('main.pl').
