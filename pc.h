@@ -857,12 +857,11 @@ static X *lookup_circular_term(X x)
 {
   WORD key = (WORD)x % CIRCULAR_TERM_TABLE_SIZE;
   int f = 0;
+  key *= 2;
 
   while(circular_term_table[ key ] != x) {
-    if(circular_term_table[ key ] == NULL) { /* unused entry? */
-      circular_term_counter = key + 2;
-      return &(circular_term_table[ key ]);
-    }
+    if(circular_term_table[ key ] == NULL) /* unused entry? */
+      break;
 
     // try next
     key += 2;
@@ -873,15 +872,14 @@ static X *lookup_circular_term(X x)
       f = 1;
       key = 0;			/* start over from the beginning */
     }
-    else if(key >= circular_term_counter) { /* in unused table part? */
-      circular_term_table[ key ] = NULL;
-      circular_term_table[ key + 1 ] = NULL;
-      circular_term_counter += 2;
-      return &(circular_term_table[ key - 2 ]);
-    }
+    else if(key >= circular_term_counter) /* in unused table part? */
+      break;
   }
 
-  return &(circular_term_table[ key ]);
+  if(key > circular_term_counter)
+    circular_term_counter = key + 2;
+
+  return &(circular_term_table[ key ]); /* entry found */
 } 
 
 
