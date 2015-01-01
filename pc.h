@@ -1005,20 +1005,29 @@ static X freeze_term_recursive(X x)
     x = y;
   }
 
-  if(is_byteblock(x)) {
-    WORD size = objsize(x);
-    BYTEBLOCK *b = (BYTEBLOCK *)malloc(sizeof(WORD) + size);
-    ASSERT(b, "out of memory - can not allocate byteblock");
-    b->h = objbits(x);
-    memcpy(b->d, objdata(x), size);
-    return (X)b;
-  }
-
   X *tp = lookup_circular_term(x);
 
   if(*tp == x) return tp[ 1 ];
 
   *tp = x;
+
+  if(is_byteblock(x)) {
+    WORD size = objsize(x);
+    BYTEBLOCK *b = (BYTEBLOCK *)malloc(sizeof(WORD) + size);
+    ASSERT(b, "out of memory - can not allocate byteblock");
+    tp[ 1 ] = (X)b;
+    b->h = objbits(x);
+    memcpy(b->d, objdata(x), size);
+    return (X)b;
+  }
+
+  if(is_SYMBOL(x)) {
+    // just freeze string - it will be interned when thawed
+    X y = freeze_term_recursive(slot_ref(x, 0));
+    tp[ 1 ] = y;
+    return y;
+  }
+
   WORD size = objsize(x);
   WORD i = 0;
   BLOCK *b = (BLOCK *)malloc(sizeof(WORD) * (size + 1));
@@ -1073,6 +1082,13 @@ static int thaw_term_recursive(X *xp)
     return 1;
   }
 
+  X *tp = lookup_circular_term(x);
+
+  if(*tp == x) {
+    *xp = tp[ 1 ];
+    return 1;
+  }
+
   if(is_byteblock(x)) {
     WORD size = objsize(x);
 
@@ -1081,14 +1097,11 @@ static int thaw_term_recursive(X *xp)
 
     ALLOCATE_BYTEBLOCK(BYTEBLOCK *b, objtype(x), size);
     memcpy(b->d, objdata(x), size);
-    *xp = (X)b;
-    return 1;
-  }
 
-  X *tp = lookup_circular_term(x);
+    if(is_STRING(x)) *xp = intern((X)b);
+    else *xp = (X)b;
 
-  if(*tp == x) {
-    *xp = tp[ 1 ];
+    tp[ 1 ] = *xp;
     return 1;
   }
 
@@ -1120,9 +1133,7 @@ static int thaw_term_recursive(X *xp)
     }
   }
 
-  if(is_SYMBOL(x)) *xp = intern(b->d[ 0 ]);
-  else *xp = (X)b;
-
+  *xp = (X)b;
   return 1;
 }
 
@@ -1154,6 +1165,13 @@ static void delete_term(X x)
     freeze_term_var_table[ index ] = (X)1;
     return;
   }
+
+  X *tp = lookup_circular_term(x);
+
+  if(*tp == x) return;
+
+  *tp = x;
+  tp[ 1 ] = x;			/* just mark as already deleted */
 
   if(is_byteblock(x)) {
     free(x);
