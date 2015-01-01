@@ -133,7 +133,7 @@ compile_block(NA, BLOCK, STATE1, STATE2) :-
 %% list generated intermediate code
 
 show_intermediate_code :-
-	retract(code(OP)),
+	recorded(code, OP, REF), erase(REF),
 	writeq(OP), put(46), nl,
 	fail.
 show_intermediate_code.

@@ -28,7 +28,7 @@ assemble_global_variables(I, N) :-
 assemble_global_variables(N, N).
 
 assemble_instructions(STATE) :-
-	retract(code(OP)),
+	recorded(code, OP, REF), erase(REF),
 	assemble(OP, STATE, S2),
 	assemble_instructions(S2).
 assemble_instructions(_).
@@ -188,7 +188,7 @@ assemble_arguments([X|MORE], I) :-
 %% generate literal data
 
 assemble_literals(S1, S2) :-
-	retract(literal(INDEX, TERM)),
+	recorded(literal, [INDEX|TERM], REF), erase(REF),
 	generate_static_literal(INDEX, TERM, S1, S),
 	!, assemble_literals(S, S2). % force tail call
 assemble_literals(S, S).

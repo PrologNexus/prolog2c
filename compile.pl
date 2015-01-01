@@ -440,7 +440,7 @@ compile_arithmetic_operation_arguments([ARG1, ARG2], [T1, T2], B, S1, S2) :-
 	
 %% adding code to compiled-code-database
 
-emit(T) :- assertz(code(T)).
+emit(T) :- recordz(code, T).
 emit(T1, T2) :- emit(T1), emit(T2).
 emit(T1, T2, T3) :- emit(T1, T2), emit(T3).
 emit(T1, T2, T3, T4) :- emit(T1, T2, T3), emit(T4).
@@ -455,10 +455,11 @@ both_determinate(_, _, nondet).
 
 %% register literal data
 
-register_literal(TERM, N, S, S) :- clause(literal(N, TERM), _), !.
+register_literal(TERM, N, S, S) :-
+	recorded(literal, [N|TERM]), !.
 register_literal(TERM, N, S1, S2) :-
 	gen_literal_index(N, S1, S2),
-	assertz(literal(N, TERM)).
+	recordz(literal, [N|TERM]).
 
 
 %% create variables that are in the 2nd set but not in the first
