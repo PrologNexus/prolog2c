@@ -2,8 +2,6 @@
 
 
 :- include('settings.pl').
-:- include('lib/rdtok.pl').
-:- include('lib/read.pl').
 :- include('support.pl').
 :- include('state.pl').
 :- include('terms.pl').
