@@ -1417,12 +1417,11 @@ static void collect_garbage(CHOICE_POINT *C0)
     X prevsym = END_OF_LIST_VAL;
 
     for(X sym = symbol_table[ i ]; sym != END_OF_LIST_VAL; sym = slot_ref(sym, 1)) {
-      // all further symbols in this chain will be static
       if(!IS_IN_HEAP(sym)) {
 	if(prevsym != END_OF_LIST_VAL)
 	  SLOT_SET(prevsym, 1, sym);
 
-	break;
+	break;	// all further symbols in this chain will be static
       }
 
       if(is_forwarded(sym)) {
