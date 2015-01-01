@@ -6,6 +6,45 @@
 (run-verbose #t)
 
 
+(define source-files 
+  '("settings.pl"
+    "support.pl"
+    "state.pl"
+    "terms.pl"
+    "dcg.pl"
+    "macros.pl"
+    "process.pl"
+    "compile.pl"
+    "assemble.pl"
+    "main.pl"
+    "lib/lists.pl"
+    "lib/misc.pl"
+    "lib/write.pl"
+    "lib/rdtok.pl"
+    "lib/op.pl"
+    "lib/rdb.pl"
+    "lib/io.pl"
+    "lib/findall.pl"
+    "lib/sets.pl"
+    "lib/read.pl"
+    "lib/cdb.pl"
+    "main.pl"
+    "pc.pl"))
+
+
+(define (all) (pc1))
+
+(define (pc1.c)
+  (make/proc (list (list "pc1" source-files
+			 (lambda ()
+			   (run (./pc pc.pl -o pc1.c)))))
+	     "pc1"))
+
+(define (pc1)
+  (pc1.c)
+  (make (("pc1" ("pc1.c" "pc.h")
+	  (run (gcc -std=gnu99 -I. -g pc1.c -lm -lrt -o pc1))))))
+
 (define (tags)
   (run (etags -l prolog *.pl)))
 
