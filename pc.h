@@ -1432,10 +1432,15 @@ static void collect_garbage(CHOICE_POINT *C0)
 
 	if(prevsym != END_OF_LIST_VAL) 
 	  SLOT_SET(prevsym, 1, sym);
+	else
+	  symbol_table[ i ] = sym;
 
 	prevsym = sym;
       }
-      else ++gcdsyms;
+      else {
+	// DRIBBLE("reclaimed symbol: \'%s\'\n", (CHAR *)objdata(slot_ref(sym, 0)));
+	++gcdsyms;
+      }
     }
   }
 
