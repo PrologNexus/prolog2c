@@ -107,10 +107,6 @@ dcg_body({Goal}, S0, S, (call(Goal), S0 = S)) :-
 	var(Goal),
 	!.
 
-dcg_body({Goal}, _, _, _) :-
-	\+ callable(Goal),
-	throw(type_error(callable, Goal)).
-
 dcg_body({Goal}, S0, S, (Goal, S0 = S)) :-
 	!.
 
