@@ -917,7 +917,7 @@ static X deref_recursive(X val, int limit, int *failed)
 	  return val;
 	}
 
-	ALLOCATE_BLOCK(BLOCK *newvar, VAR_TYPE, 4);
+	ALLOCATE_BLOCK(BLOCK *newvar, VAR_TYPE, 3);
 	newvar->d[ 0 ] = (X)newvar;
 	newvar->d[ 1 ] = word_to_fixnum(variable_counter++);
 	newvar->d[ 2 ] = word_to_fixnum(clock_ticks++);
