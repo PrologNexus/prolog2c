@@ -1649,6 +1649,7 @@ static void initialize(int argc, char *argv[])
   env_top = environment_stack;
   arg_top = argument_stack;
   memset(freeze_term_var_table, 0, FREEZE_TERM_VAR_TABLE_SIZE * 2 * sizeof(X));
+  memset(circular_term_table, 0, CIRCULAR_TERM_TABLE_SIZE * 2 * sizeof(X));
   string_buffer = malloc(string_buffer_length = STRING_BUFFER_SIZE);
   ASSERT(argument_stack, "out of memory - can not allocate string buffer");
 
