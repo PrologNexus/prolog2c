@@ -947,14 +947,19 @@ static X deref_recursive(X val, int limit, int *failed)
   ALLOCATE_BLOCK(BLOCK *p, objtype(val), s);
   tp[ 1 ] = (X)p;
   --limit;
+  int i = 0;
 
-  for(int i = 0; i < s; ++i)
-    p->d[ i ] = slot_ref(val, i);
+  if(is_specialblock(val)) {
+    p->d[ 0 ] = slot_ref(val, 0);
+    i = 1;
+  }
 
-  for(int i = is_specialblock(val) ? 1 : 0; i < s; ++i) {
-    p->d[ i ] = deref_recursive(p->d[ i ], limit, failed);
+  while(i < s) {
+    p->d[ i ] = deref_recursive(slot_ref(val, i), limit, failed);
 
     if(*failed) return val;
+
+    ++i;
   }
 
   return (X)p;
