@@ -69,6 +69,7 @@
 #define DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT 10
 #define TRACE_DEBUG_WRITE_LIMIT 5
 #define FREEZE_TERM_VAR_TABLE_SIZE 1000
+#define CIRCULAR_TERM_TABLE_SIZE 1000
 #define MAX_GLOBAL_VARIABLES 256
 #define STRING_BUFFER_SIZE   1024
 
@@ -307,6 +308,8 @@ static WORD clock_ticks = 0;
 static X freeze_term_var_table[ FREEZE_TERM_VAR_TABLE_SIZE * 2 ];
 static int freeze_term_var_counter;
 static int global_variable_counter = 0;
+static X circular_term_table[ CIRCULAR_TERM_TABLE_SIZE * 2 ];
+static int circular_term_counter = 0;
 static char *string_buffer;
 static int string_buffer_length;
 static DB_ITEM *deleted_db_items = NULL;
@@ -849,6 +852,39 @@ static X deref1(X val)
 }
 
 
+// returns location of associated key + value in circular-term-table
+static X *lookup_circular_term(X x)
+{
+  WORD key = (WORD)x % CIRCULAR_TERM_TABLE_SIZE;
+  int f = 0;
+
+  while(circular_term_table[ key ] != x) {
+    if(circular_term_table[ key ] == NULL) { /* unused entry? */
+      circular_term_counter = key + 2;
+      return &(circular_term_table[ key ]);
+    }
+
+    // try next
+    key += 2;
+
+    if(key >= (CIRCULAR_TERM_TABLE_SIZE * 2)) { /* beyond table size? */
+      if(f) CRASH("circular-term table overflow"); /* already started from the beginning? */
+      
+      f = 1;
+      key = 0;			/* start over from the beginning */
+    }
+    else if(key >= circular_term_counter) { /* in unused table part? */
+      circular_term_table[ key ] = NULL;
+      circular_term_table[ key + 1 ] = NULL;
+      circular_term_counter += 2;
+      return &(circular_term_table[ key - 2 ]);
+    }
+  }
+
+  return &(circular_term_table[ key ]);
+} 
+
+
 static X find_frozen_variable(X var)
 {
   //XXX could use hashing, but probably not worth the trouble
@@ -898,6 +934,11 @@ static X deref_recursive(X val, int limit, int *failed)
   if(is_FIXNUM(val) || val == END_OF_LIST_VAL || is_byteblock(val) || is_SYMBOL(val) || !IS_IN_HEAP(val)) 
     return val;
 
+  X *tp = lookup_circular_term(val);
+
+  if(*tp == val) return tp[ 1 ];
+
+  *tp = val;
   WORD s = objsize(val);
 
   if(alloc_top + s + 1 > fromspace_limit) {
@@ -906,6 +947,7 @@ static X deref_recursive(X val, int limit, int *failed)
   }
 
   ALLOCATE_BLOCK(BLOCK *p, objtype(val), s);
+  tp[ 1 ] = (X)p;
   --limit;
 
   for(int i = 0; i < s; ++i)
@@ -924,8 +966,10 @@ static X deref_recursive(X val, int limit, int *failed)
 static X deref_all(X val, int limit, int *failed)
 {
   freeze_term_var_counter = 0;
+  circular_term_counter = 0;
   X y = deref_recursive(val, limit, failed);
   memset(freeze_term_var_table, 0, freeze_term_var_counter * 2 * sizeof(X));
+  memset(circular_term_table, 0, circular_term_counter * sizeof(X));
   return y;
 }
 
@@ -933,7 +977,6 @@ static X deref_all(X val, int limit, int *failed)
 /// Databases
 
 // evict into malloc'd memory, replacing variables with new ones with indexes from 0 to N
-// note: only variables are shared, other items loose their identity and may be duplicated.
 static X freeze_term_recursive(X x)
 {
   x = deref(x);
@@ -968,10 +1011,16 @@ static X freeze_term_recursive(X x)
     return (X)b;
   }
 
+  X *tp = lookup_circular_term(x);
+
+  if(*tp == x) return tp[ 1 ];
+
+  *tp = x;
   WORD size = objsize(x);
   WORD i = 0;
   BLOCK *b = (BLOCK *)malloc(sizeof(WORD) * (size + 1));
   ASSERT(b, "out of memory - can not allocate block");
+  tp[ 1 ] = (X)b;
   b->h = objbits(x);
 
   if(is_specialblock(x)) {
@@ -988,9 +1037,11 @@ static X freeze_term_recursive(X x)
 
 static X freeze_term(X x)
 {
+  circular_term_counter = 0;
   freeze_term_var_counter = 0;
   X y = freeze_term_recursive(x);
   memset(freeze_term_var_table, 0, freeze_term_var_counter * 2 * sizeof(X));
+  memset(circular_term_table, 0, circular_term_counter * sizeof(X));
   return y;
 }
 
@@ -1031,12 +1082,21 @@ static int thaw_term_recursive(X *xp)
     return 1;
   }
 
+  X *tp = lookup_circular_term(x);
+
+  if(*tp == x) {
+    *xp = tp[ 1 ];
+    return 1;
+  }
+
+  *tp = x;
   WORD i = 0;
   WORD size = objsize(x);
 
   if(alloc_top + size + 1 > fromspace_limit) return 0;
 
   ALLOCATE_BLOCK(BLOCK *b, objtype(x), size);
+  tp[ 1 ] = (X)b;
   
   // initialize, in case thawing elements fails
   for(i = 0; i < size; ++i)
@@ -1068,8 +1128,10 @@ static X thaw_term(X x, int *failed)
 {
   X y = x;
   freeze_term_var_counter = 0;
+  circular_term_counter = 0;
   *failed = !thaw_term_recursive(&y);
   memset(freeze_term_var_table, 0, freeze_term_var_counter * sizeof(X));
+  memset(circular_term_table, 0, circular_term_counter * sizeof(X));
   return y;
 }
 
