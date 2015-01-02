@@ -1371,7 +1371,7 @@ static inline void mark1(X *addr)
 }
 
 
-static void collect_garbage(CHOICE_POINT *C0)
+static void collect_garbage(CHOICE_POINT *C)
 {
   DRIBBLE("[GC ... ");							
   tospace_top = tospace; 
@@ -1482,7 +1482,7 @@ static void collect_garbage(CHOICE_POINT *C0)
 	  ", C: " WORD_OUTPUT_FORMAT ", A: " WORD_OUTPUT_FORMAT ", E: " WORD_OUTPUT_FORMAT ")]\n",
 	  ((WORD)((char *)tospace_top - (char *)fromspace)),
 	  (WORD)(trail_top - trail_stack),
-	  (WORD)(C0 - choice_point_stack),
+	  (WORD)(C - choice_point_stack),
 	  (WORD)(arg_top - argument_stack),
 	  (WORD)(env_top - environment_stack));
   ++gc_count;
@@ -2638,7 +2638,7 @@ static X string_to_list(CHAR *str, int len)
 
 #define CHECK_LIMIT				\
   { if(alloc_top > fromspace_limit)			\
-      collect_garbage(C0);				\
+      collect_garbage(C);				\
     ASSERT((char *)arg_top < (char *)argument_stack + ARGUMENT_STACK_SIZE, "argument-stack overflow"); } 
 
 #define ENVIRONMENT(len)  { E = env_top; env_top += (len); }
