@@ -132,6 +132,10 @@ write_out(Atom, Style, _, Ci, Co) :-
 	atom(Atom),
 	!,
 	write_atom(Atom, Style, Ci, Co).
+write_out(Stream, _, _, _, alpha) :-
+	stream(Stream),
+	!,
+	display(Stream).
 write_out(Term, display, _, Ci, punct) :- !,
 	functor(Term, Fsymbol, Arity),
 	write_atom(Fsymbol, display, Ci, _),
