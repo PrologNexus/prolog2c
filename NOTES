@@ -21,7 +21,8 @@ NOTES											              -*- Org -*-
 ** Deterministic goal in condition of if-then-else can drop CP dance
    - same for '\\+'/2
 * Things to test
-** TODO GC symbol-reclamation
+** TODO Test self-sef-compile
+** TODO Test UNSAFE mode
 ** TODO some non-trivial test for DCG rules
    - file:re.pl
 ** TODO Test on Mac, Windows (32 bit) and R/Pi
@@ -59,7 +60,9 @@ NOTES											              -*- Org -*-
    - extend var-rep to hold name, in addition to index.
 *** TODO check fixnum range when emitting literals 
 ** Runtime
-*** TODO Reconsider default data-area sizes
+*** TODO Reconsider data area default sizes
+*** TODO env_top is only reduced by failing
+    - CUT could set env_top to E + <current envsize>
 *** TODO trail-GC
     - and adjust CP-stack entries accordingly.
     - tricky.
@@ -113,6 +116,7 @@ NOTES											              -*- Org -*-
   | current_output(S)            | M    |           |                                                                      |
   | current_op(P, A, N)          | A    | op.pl     |                                                                      |
   | display(X)                   | M    |           |                                                                      |
+  | enable_trace(F)              | M    |           |                                                                      |
   | erase(REF)                   | M    |           |                                                                      |
   | exists_file(NAME)            | M    |           | fails if nonexistent or not a regular file                           |
   | fail                         | S    |           |                                                                      |
