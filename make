@@ -35,15 +35,15 @@
 (define (all) (pc1))
 
 (define (pc1.c)
-  (make/proc (list (list "pc1" source-files
+  (make/proc (list (list "pc1.c" source-files
 			 (lambda ()
 			   (run (./pc pc.pl -o pc1.c)))))
-	     "pc1"))
+	     "pc1.c"))
 
 (define (pc1)
   (pc1.c)
   (make (("pc1" ("pc1.c" "pc.h")
-	  (run (gcc -std=gnu99 -I. -g pc1.c -lm -lrt -o pc1))))))
+	  (run (gcc -std=gnu99 -I. -g pc1.c -lm -lrt -o pc1 -DTRACE))))))
 
 (define (tags)
   (run (etags -l prolog *.pl)))
