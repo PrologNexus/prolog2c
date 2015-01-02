@@ -8,3 +8,5 @@ command_line_arguments(ARGS) :-
 	append(_, ['--'|ARGS], X), !.
 
 stream(X) :- blob(X, stream).
+
+enable_trace(_).

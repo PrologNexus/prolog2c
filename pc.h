@@ -3063,5 +3063,13 @@ PRIMITIVE(deref_term, X in, X limit, X out)
   return !failed && unify(x, out);
 }
 
+PRIMITIVE(enable_trace, X flag)
+{
+  check_fixnum(flag);
+  debugging = fixnum_to_word(flag);
+  return 1;
+}
+
+
 #endif
 #endif
