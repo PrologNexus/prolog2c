@@ -316,6 +316,8 @@ static int circular_term_counter = 0;
 static char *string_buffer;
 static int string_buffer_length;
 static DB_ITEM *deleted_db_items = NULL;
+static int debugging = 0;
+static WORD environment_stack_size, argument_stack_size, choice_point_stack_size, trail_stack_size, ifthen_stack_size;
 
 // externally visible (the only one that is)
 X global_variables[ MAX_GLOBAL_VARIABLES ];
@@ -819,7 +821,7 @@ static inline void push_trail(CHOICE_POINT *C0, X var)
   // trail-check
   if(fixnum_to_word(slot_ref(var, 2)) < C0->timestamp) {
 #ifndef UNSAFE
-    if(trail_top >= trail_stack + TRAIL_STACK_SIZE)
+    if(trail_top >= trail_stack + trail_stack_size)
       CRASH("trail-stack overflow.");
 #endif
 
@@ -1580,11 +1582,11 @@ static WORD numeric_arg(char *arg)
 static void initialize(int argc, char *argv[])
 {
   WORD heapsize = HEAP_SIZE;
-  WORD environment_stack_size = ENVIRONMENT_STACK_SIZE;
-  WORD ifthen_stack_size = IFTHEN_STACK_SIZE;
-  WORD choice_point_stack_size = CHOICE_POINT_STACK_SIZE;
-  WORD trail_stack_size = TRAIL_STACK_SIZE;
-  WORD argument_stack_size = ARGUMENT_STACK_SIZE;
+  environment_stack_size = ENVIRONMENT_STACK_SIZE;
+  ifthen_stack_size = IFTHEN_STACK_SIZE;
+  choice_point_stack_size = CHOICE_POINT_STACK_SIZE;
+  trail_stack_size = TRAIL_STACK_SIZE;
+  argument_stack_size = ARGUMENT_STACK_SIZE;
   global_argc = argc;
   global_argv = argv;
 
@@ -1604,6 +1606,10 @@ static void initialize(int argc, char *argv[])
 
       case 'm':
 	mmapped_heap = arg + 3;
+	break;
+
+      case 'd':
+	debugging = 1;
 	break;
 
       case 'A':
@@ -1691,7 +1697,7 @@ static void initialize(int argc, char *argv[])
 
 static void terminate(int code)
 {
-  DRIBBLE("[trail size: " WORD_OUTPUT_FORMAT ", terminating]\n", trail_top - trail_stack);
+  DRIBBLE("[terminating]\n");
   exit(code);
 }
 
@@ -1862,11 +1868,11 @@ static void trace_write(char *title, char *name, int arity, X *A, CHOICE_POINT *
 
 
 #ifdef TRACE
-# define TRACE_ENTER(name, arity)  trace_write("CALL", name, arity, C0->A, C)
-# define TRACE_REDO(name, arity)   trace_write("REDO", name, arity, C0->A, C)
-# define TRACE_EXIT(name, arity)   trace_write("EXIT", name, arity, C0->A, C)
-# define TRACE_FAIL(name, arity)   { if(C0->P == NULL) trace_write("FAIL", name, arity, C0->A, C); }
-# define TRACE_DETERMINATE_CALL(name, arity)  trace_write("TAIL", name, arity, C0->A, C);
+# define TRACE_ENTER(name, arity)  { if(debugging) trace_write("CALL", name, arity, C0->A, C); }
+# define TRACE_REDO(name, arity)   { if(debugging) trace_write("REDO", name, arity, C0->A, C); }
+# define TRACE_EXIT(name, arity)   { if(debugging) trace_write("EXIT", name, arity, C0->A, C); }
+# define TRACE_FAIL(name, arity)   { if(debugging && C0->P == NULL) trace_write("FAIL", name, arity, C0->A, C); }
+# define TRACE_DETERMINATE_CALL(name, arity)  { if(debugging) trace_write("TAIL", name, arity, C0->A, C); }
 #else
 # define TRACE_ENTER(name, arity)
 # define TRACE_REDO(name, arity)
@@ -2553,7 +2559,7 @@ static X string_to_list(CHAR *str, int len)
     C->C0 = C0;							\
     C->P = lbl;							\
     C0 = C++;							\
-    ASSERT(C < choice_point_stack + CHOICE_POINT_STACK_SIZE, "choice-point stack overflow"); }
+    ASSERT((WORD)C < (WORD)choice_point_stack + choice_point_stack_size, "choice-point stack overflow"); }
 
 #define COPY_CHOICE_POINT(lbl)						\
   { C->T = trail_top;							\
@@ -2566,7 +2572,7 @@ static X string_to_list(CHAR *str, int len)
     C->C0 = C0;								\
     C->P = lbl;								\
     ++C;								\
-    ASSERT(C < choice_point_stack + CHOICE_POINT_STACK_SIZE, "choice-point stack overflow"); }
+    ASSERT((WORD)C < (WORD)choice_point_stack + choice_point_stack_size, "choice-point stack overflow"); }
 
 #define ADJUST_CHOICE_POINT(lbl)						\
   { C0->T = trail_top;							\
@@ -2581,7 +2587,7 @@ static X string_to_list(CHAR *str, int len)
     *(ifthen_top++) = C0->P;						\
     *(ifthen_top++) = C0;						\
     *(ifthen_top++) = C;						\
-    ASSERT(ifthen_top < ifthen_stack + IFTHEN_STACK_SIZE, "if-then stack overflow"); }
+    ASSERT((WORD)ifthen_top < (WORD)ifthen_stack + ifthen_stack_size, "if-then stack overflow"); }
 
 #define RESTORE_CHOICE_POINTS	 \
   { C = *(--ifthen_top);	 \
@@ -2639,7 +2645,7 @@ static X string_to_list(CHAR *str, int len)
 #define CHECK_LIMIT				\
   { if(alloc_top > fromspace_limit)			\
       collect_garbage(C);				\
-    ASSERT((char *)arg_top < (char *)argument_stack + ARGUMENT_STACK_SIZE, "argument-stack overflow"); } 
+    ASSERT((char *)arg_top < (char *)argument_stack + argument_stack_size, "argument-stack overflow"); } 
 
 #define ENVIRONMENT(len)  { E = env_top; env_top += (len); }
 
