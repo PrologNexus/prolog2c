@@ -2622,6 +2622,7 @@ static X string_to_list(CHAR *str, int len)
     R = C0->R;				     \
     E = C0->E;				     \
     env_top = C0->env_top;		     \
+    arg_top = C0->arg_top - CURRENT_ARITY;   \
     C = C0;				     \
     C0 = C0->C0;			     \
     goto *R; }
@@ -2650,7 +2651,7 @@ static X string_to_list(CHAR *str, int len)
 #define ENVIRONMENT(len)  { E = env_top; env_top += (len); }
 
 #define SET_REDO(lbl)   C0->P = (lbl)
-#define CUT             { C = C0 + 1; SET_REDO(NULL); }
+#define CUT             { C = C0 + 1; arg_top = C0->arg_top - CURRENT_ARITY; SET_REDO(NULL); }
 
 
 /// Boilerplate code
