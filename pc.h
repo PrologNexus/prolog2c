@@ -1447,8 +1447,9 @@ static void collect_garbage(CHOICE_POINT *C)
 
   for(int i = 0; i < SYMBOL_TABLE_SIZE; ++i) {
     X prevsym = END_OF_LIST_VAL;
+    X sym = symbol_table[ i ];
 
-    for(X sym = symbol_table[ i ]; sym != END_OF_LIST_VAL; sym = slot_ref(sym, 1)) {
+    while(sym != END_OF_LIST_VAL) {
       if(!IS_IN_HEAP(sym)) {
 	if(prevsym != END_OF_LIST_VAL)
 	  SLOT_SET(prevsym, 1, sym);
@@ -1459,6 +1460,7 @@ static void collect_garbage(CHOICE_POINT *C)
       if(is_forwarded(sym)) {
 	sym = fptr_to_ptr(objbits(sym));
 	SLOT_SET(sym, 2, prevsym);
+	X next = slot_ref(sym, 1);
 	SLOT_SET(sym, 1, END_OF_LIST_VAL);
 
 	if(prevsym != END_OF_LIST_VAL) 
@@ -1467,16 +1469,18 @@ static void collect_garbage(CHOICE_POINT *C)
 	  symbol_table[ i ] = sym;
 
 	prevsym = sym;
+	sym = next;
       }
       else {
 	// DRIBBLE("reclaimed symbol: \'%s\'\n", (CHAR *)objdata(slot_ref(sym, 0)));
 	++gcdsyms;
+	sym = slot_ref(sym, 1);
       }
     }
   }
 
   if(gcdsyms > 0)
-    DRIBBLE("%d symbols reclaimed ", gcdsyms);
+    DRIBBLE("%d symbol(s) reclaimed ... ", gcdsyms);
 
   void *tmp = fromspace; 
   fromspace = tospace; 
