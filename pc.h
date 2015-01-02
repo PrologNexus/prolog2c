@@ -2872,9 +2872,10 @@ PRIMITIVE(close_stream, X stream)
     SLOT_SET(stream, 2, ZERO);
   }
 
-  if(stream == standard_input_port) stream = &default_input_port;
-  else if(stream == standard_output_port) stream = &default_output_port;
-  else if(stream == standard_error_port) stream = &default_error_port;
+  if(stream == standard_input_port) standard_input_port = &default_input_port;
+  else if(stream == standard_output_port) standard_output_port = &default_output_port;
+  else if(stream == standard_error_port) standard_error_port = &default_error_port;
+
   return 1;
 }
 
