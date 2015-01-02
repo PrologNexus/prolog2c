@@ -1841,6 +1841,27 @@ static void write_hook(X x)
 }
 
 
+static void dump_symbol_table()
+{
+  for(int i = 0; i < SYMBOL_TABLE_SIZE; ++i) {
+    int f = 0;
+
+    for(X sym = symbol_table[ i ]; sym != END_OF_LIST_VAL; sym = slot_ref(sym, 1)) {
+      X name2 = slot_ref(sym, 0);
+
+      if(!f) {
+	fprintf(stderr, "\n%d: ", i);
+	f = 1;
+      }
+
+      fprintf(stderr, "'%s' ", (CHAR *)objdata(name2));
+    }
+  }
+
+  fputc('\n', stderr);
+}
+
+
 static void trace_write(char *title, char *name, int arity, X *A, CHOICE_POINT *C)
 {
   FILE *fp = port_file(standard_error_port);
