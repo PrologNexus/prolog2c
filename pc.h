@@ -1045,8 +1045,10 @@ static X freeze_term_recursive(X x)
     b->d[ 0 ] = slot_ref(x, 0);
   }
 
-  for(;i < size; ++i)
+  while(i < size) {
     b->d[ i ] = freeze_term_recursive(slot_ref(x, i));
+    ++i;
+  }
 
   return (X)b;
 }
@@ -1129,13 +1131,15 @@ static int thaw_term_recursive(X *xp)
   }
   else i = 0;
 
-  for(;i < size; ++i) {
+  while(i < size) {
     b->d[ i ] = slot_ref(x, i);
     
     if(!thaw_term_recursive(&(b->d[ i ]))) {
       b->d[ i ] = ZERO;
       return 0;
     }
+
+    ++i;
   }
 
   *xp = (X)b;
@@ -1188,8 +1192,10 @@ static void delete_term(X x)
 
   if(is_specialblock(x)) i = 1;
 
-  for(;i < size; ++i)
+  while(i < size) {
     delete_term(slot_ref(x, i));
+    ++i;
+  }
 
   free(x);
 }
