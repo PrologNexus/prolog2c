@@ -1536,9 +1536,9 @@ static void collect_garbage(CHOICE_POINT *C)
   DB_ITEM *item = deleted_db_items; 
 
   while(item != NULL) {
-    if(item->refcount == 0) {
-      DB_ITEM *next = item->next_deleted;
+    DB_ITEM *next = item->next_deleted;
 
+    if(item->refcount == 0) {
       if(previtem) 
 	previtem->next_deleted = next;
       else
@@ -1546,9 +1546,10 @@ static void collect_garbage(CHOICE_POINT *C)
 
       db_erase_item(item);
       ++deleted;
-      item = next;
     }
     else previtem = item;
+
+    item = next;
   }
 
   if(deleted > 0)
