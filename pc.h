@@ -30,13 +30,14 @@
 #include <sys/types.h>
 
 
-/// limits
+/// limits - all sizes are in bytes
 
 #ifndef HEAP_SIZE
 # define HEAP_SIZE  100000000
 #endif
 
 #ifndef HEAP_RESERVE
+// percentage
 # define HEAP_RESERVE 20
 #endif
 
@@ -53,7 +54,7 @@
 #endif
 
 #ifndef ARGUMENT_STACK_SIZE
-# define ARGUMENT_STACK_SIZE 100000
+# define ARGUMENT_STACK_SIZE 1000000
 #endif
 
 #ifndef IFTHEN_STACK_SIZE
@@ -64,6 +65,8 @@
 # define SYMBOL_TABLE_SIZE 3001
 #endif
 
+
+// these sizes are given in elements
 #define DEREF_STACK_SIZE  100
 #define MAXIMAL_NUMBER_OF_ARGUMENTS 100
 #define DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT 10
@@ -2634,9 +2637,9 @@ static X string_to_list(CHAR *str, int len)
     goto lbl; }
 
 #define CHECK_LIMIT				\
-  if(alloc_top > fromspace_limit) {		\
-    collect_garbage(C0);				\
-  }
+  { if(alloc_top > fromspace_limit)			\
+      collect_garbage(C0);				\
+    ASSERT((char *)arg_top < (char *)argument_stack + ARGUMENT_STACK_SIZE, "argument-stack overflow"); } 
 
 #define ENVIRONMENT(len)  { E = env_top; env_top += (len); }
 
