@@ -103,21 +103,12 @@ write_out(Term, _, _, Ci, alpha) :-
 	!,
 	maybe_space(Ci, alpha),
 	write_variable(Term).
-/*
-  write_out('$VAR'(N), Style, _, Ci, Co) :- !,
-	write_VAR(N, Style, Ci, Co).
-*/
 write_out(N, _, _, Ci, alpha) :-
-	integer(N),
+	number(N),
 	(   N < 0, maybe_space(Ci, other)
 	;   maybe_space(Ci, alpha)
 	),  !,
 	display(N).
-/*
-write_out(Term, print, _, Ci, alpha) :-
-	portray(Term),
-	!.
-*/
 write_out(Atom, Style, Prio, _, punct) :-
 	atom(Atom),
 	current_op(P, _, Atom),
