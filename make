@@ -43,7 +43,19 @@
 (define (pc1)
   (pc1.c)
   (make (("pc1" ("pc1.c" "pc.h")
-	  (run (gcc -std=gnu99 -I. -g pc1.c -lm -lrt -o pc1 -DTRACE))))))
+	  (run (gcc -std=gnu99 -I. -g pc1.c -lm -lrt -o pc1 -DTRACE -DCHOICE_POINT_STACK_SIZE=10000000))))))
+
+(define (pc2.c)
+  (pc1)
+  (make/proc (list (list "pc2.c" source-files
+			 (lambda ()
+			   (run (./pc1 pc.pl -o pc2.c)))))
+	     "pc2.c"))
+
+(define (pc2)
+  (pc2.c)
+  (make (("pc2" ("pc2.c" "pc.h")
+	  (run (gcc -std=gnu99 -I. -g pc2.c -lm -lrt -o pc2 -DTRACE -DCHOICE_POINT_STACK_SIZE=10000000))))))
 
 (define (tags)
   (run (etags -l prolog *.pl)))
