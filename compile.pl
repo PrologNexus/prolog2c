@@ -357,6 +357,7 @@ type_predicate(float).
 type_predicate(var).
 type_predicate(nonvar).
 type_predicate(stream).
+type_predicate(dbreference).
 
 compile_order_predicate('@<', X, Y) :- emit(term_less(X, Y)).
 compile_order_predicate('@>', X, Y) :- emit(term_less(Y, X)).
