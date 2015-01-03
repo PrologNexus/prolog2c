@@ -3086,8 +3086,8 @@ PRIMITIVE(functor, X term, X name, X arity)
       check_type_SYMBOL(name);
       x = STRUCTURE(name, n);
     
-      for(int i = 0; i < n; ++i) 
-	SLOT_SET(x, i + 1, make_var());
+      for(int i = 1; i <= n; ++i) 
+	SLOT_SET(x, i, make_var());
     }
 
     return unify(term, x);
