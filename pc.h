@@ -2895,6 +2895,10 @@ PRIMITIVE(open_stream, X name, X input, X result)
   int len;
   CHAR *str = to_string(name, &len);
   FILE *fp = fopen(str, input == ZERO ? "wb" : "rb");
+
+  if(fp == NULL) 
+    CRASH("can not open file - %s", strerror(errno));
+
   X port = PORT(fp, input, ONE, ZERO);
   return unify(port, result);
 }
