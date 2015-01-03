@@ -9,6 +9,6 @@ command_line_arguments(ARGS) :-
 
 stream(X) :- blob(X, stream).
 
-dbreference(X) :- fail.		% sufficient here
+dbreference(_) :- fail.		% sufficient here
 
 enable_trace(_).
