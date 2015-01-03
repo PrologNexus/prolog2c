@@ -4,6 +4,7 @@ main :-
 	assertz(hello(X)),
 	assertz(hello(1)),
 	asserta(hello(no, ok), REF),
+	clause(H, B, REF), H == hello(no, ok), B == true,
 	retract(hello(X)), display(X), nl,
 	show(foo),
 	nl, show(hello(_)),

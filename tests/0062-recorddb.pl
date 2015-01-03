@@ -9,6 +9,7 @@ main :-
 test :-
 	recorda(foo, 123, X),
 	S = abc,
+	recorded(foo, N, X), N == 123,
 	recordz(foo, S),
 	recorded(foo, 123),
 	erase(X),

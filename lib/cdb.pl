@@ -61,6 +61,10 @@ abolish(NAME, DB) :-
 clause(HEAD, BODY) :- clause(HEAD, BODY, _).
 
 clause(HEAD, BODY, REF) :-
+	nonvar(REF),
+	!,
+	'$clause_match'(REF, (HEAD :- BODY), REF).
+clause(HEAD, BODY, REF) :-
 	get_global(clause_db, DB),
 	'$clause_db_key'(HEAD, KEY),
 	foreign_call(db_find(DB, KEY, REF1)),

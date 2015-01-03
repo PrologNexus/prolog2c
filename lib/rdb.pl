@@ -17,6 +17,10 @@ recordz(KEY, TERM, REF) :- '$record'(KEY, TERM, REF, 1).
 
 recorded(KEY, TERM) :- recorded(KEY, TERM, _).
 recorded(KEY, TERM, REF) :-
+	nonvar(REF),
+	!,
+	'$record_db_match'(REF, TERM, REF).
+recorded(KEY, TERM, REF) :-
 	get_global(record_db, DB),
 	'$record_db_key'(KEY, KEY2),
 	foreign_call(db_find(DB, KEY2, REF1)),
