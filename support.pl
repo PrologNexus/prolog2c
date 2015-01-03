@@ -1,7 +1,7 @@
 %%% misc support library
 
 
-gen(T) :- write(T).
+gen(T) :- display(T).
 gen(T1, T2) :- gen(T1), gen(T2).
 gen(T1, T2, T3) :- gen(T1, T2), gen(T3).
 gen(T1, T2, T3, T4) :- gen(T1, T2, T3), gen(T4).
@@ -9,7 +9,7 @@ gen(T1, T2, T3, T4, T5) :- gen(T1, T2, T3, T4), gen(T5).
 
 error(MSG) :-
 	tell(user),
-	write('ERROR: '),
+	display('ERROR: '),
 	forall(member(X, MSG), write(X)), nl,
 	halt(1).
 
