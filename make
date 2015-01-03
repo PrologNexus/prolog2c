@@ -31,6 +31,13 @@
     "main.pl"
     "pc.pl"))
 
+(define pc-compile-options
+  '("-DTRACE"
+    "-DCHOICE_POINT_STACK_SIZE=10000000"
+    "-DENVIRONMENT_STACK_SIZE=10000000"
+    "-DTRAIL_STACK_SIZE=10000000"
+    "-DARGUMENT_STACK_SIZE=10000000"))
+
 
 (define (all) (pc1))
 
@@ -43,7 +50,7 @@
 (define (pc1)
   (pc1.c)
   (make (("pc1" ("pc1.c" "pc.h")
-	  (run (gcc -std=gnu99 -I. -g pc1.c -lm -lrt -o pc1 -DTRACE -DCHOICE_POINT_STACK_SIZE=10000000))))))
+	  (run (gcc -std=gnu99 -I. -g pc1.c -lm -o pc1 ,@pc-compile-options))))))
 
 (define (pc2.c)
   (pc1)
@@ -55,10 +62,12 @@
 (define (pc2)
   (pc2.c)
   (make (("pc2" ("pc2.c" "pc.h")
-	  (run (gcc -std=gnu99 -I. -g pc2.c -lm -lrt -o pc2 -DTRACE -DCHOICE_POINT_STACK_SIZE=10000000))))))
+	  (run (gcc -std=gnu99 -I. -g pc2.c -lm -o pc2 ,@pc-compile-options))))))
 
 (define (tags)
   (run (etags -l prolog *.pl)))
+
+(define check-pc "./pc")
 
 (define (check)
   (let ((tests (string-split (capture (ls tests/*.pl)) "\n"))
@@ -66,13 +75,17 @@
 	(not-ok 0))
     (for-each
      (lambda (fname)
-       (if (zero? (run* (./check ,fname)))
+       (if (zero? (run* (,(string-append "CHECK_PC=" check-pc) ./check ,fname)))
 	   (inc! ok)
 	   (inc! not-ok)))
      tests)
     (print "\n----------------------------------------------------------------------------------------")
     (print ok " tests successful, " not-ok " tests failed.")
     (exit not-ok)))
+
+(define (check-pc1)
+  (fluid-let ((check-pc "./pc1"))
+    (check)))
 
 
 ;;
