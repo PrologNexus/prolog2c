@@ -2591,6 +2591,7 @@ static X string_to_list(CHAR *str, int len)
 
 #define CURRENT_NAME
 #define CURRENT_ARITY
+#define CURRENT_ENVIRONMENT_SIZE
 
 #define ENTER								\
   { CHECK_LIMIT;							\
@@ -2700,7 +2701,12 @@ static X string_to_list(CHAR *str, int len)
 #define ENVIRONMENT(len)  { E = env_top; env_top += (len); }
 
 #define SET_REDO(lbl)   C0->P = (lbl)
-#define CUT             { C = C0 + 1; arg_top = C0->arg_top - CURRENT_ARITY; SET_REDO(NULL); }
+
+#define CUT								\
+  { C = C0 + 1;								\
+    arg_top = C0->arg_top - CURRENT_ARITY;				\
+    env_top = E + CURRENT_ENVIRONMENT_SIZE;				\
+    SET_REDO(NULL); }
 
 
 /// Boilerplate code

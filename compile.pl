@@ -28,7 +28,7 @@ compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, S1, S2) :-
 	compile_redo(LAST, L),
 	index_variables([HEAD, BODY], VARS),
 	length(VARS, N),
-	(N > 0 -> emit(environment(N)); true),
+	emit(environment(N)),
 	compile_head(HEAD, BOUND, S1, S),
 	compile_body(BODY, nondet, BOUND, S, S2).
 % fact

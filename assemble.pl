@@ -50,7 +50,9 @@ assemble(enter(NAME, ARITY), S, S) :-
 	gen('#undef CURRENT_NAME\n#undef CURRENT_ARITY\n#define CURRENT_NAME "'),
 	gen(NAME, '"\n#define CURRENT_ARITY ', ARITY, '\nENTER;\n').
 
-assemble(environment(SIZE), S, S) :- gen('ENVIRONMENT(', SIZE, ');\n').
+assemble(environment(SIZE), S, S) :-
+	gen('#undef CURRENT_ENVIRONMENT_SIZE\n#define CURRENT_ENVIRONMENT_SIZE ', SIZE, '\n'),
+	(SIZE =:= 0; gen('ENVIRONMENT(', SIZE, ');\n')).
 assemble(determinate_exit, S, S) :- gen('DETERMINATE_EXIT;\n').
 assemble(exit, S, S) :-	gen('EXIT;\n').
 assemble(redo, S, S) :- gen('REDO;\n').
