@@ -71,7 +71,7 @@
 #define MAXIMAL_NUMBER_OF_ARGUMENTS 100
 #define DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT 10
 #define TRACE_DEBUG_WRITE_LIMIT 5
-#define FREEZE_TERM_VAR_TABLE_SIZE 1000
+#define INITIAL_FREEZE_TERM_VAR_TABLE_SIZE 1000
 #define CIRCULAR_TERM_TABLE_SIZE 1000
 #define MAX_GLOBAL_VARIABLES 256
 #define STRING_BUFFER_SIZE   1024
@@ -308,7 +308,8 @@ static char **global_argv;
 static int global_argc;
 static void **ifthen_stack, **ifthen_top;
 static WORD clock_ticks = 0;
-static X freeze_term_var_table[ FREEZE_TERM_VAR_TABLE_SIZE * 2 ];
+static X *freeze_term_var_table;
+static int freeze_term_var_table_size;
 static int freeze_term_var_counter;
 static int global_variable_counter = 0;
 static X circular_term_table[ CIRCULAR_TERM_TABLE_SIZE * 2 ];
@@ -900,6 +901,19 @@ static X find_frozen_variable(X var)
 }
 
 
+static void ensure_freeze_term_var_table_size(WORD index)
+{
+  if(index + 2 >= freeze_term_var_table_size) {
+    WORD newsize = index + index / 4;
+    freeze_term_var_table = (X *)realloc(freeze_term_var_table, newsize * sizeof(X));
+    ASSERT(freeze_term_var_table, "out of memory - can not reallocate freeze-term variable table");
+    memset(freeze_term_var_table + freeze_term_var_table_size, 0,
+	   (newsize - freeze_term_var_table_size) * sizeof(X));
+    freeze_term_var_table_size = newsize;
+  }
+}
+
+
 // deref recursively, needed for global variables (or the assigned value may not survive backtracking)
 static X deref_recursive(X val, int limit, int *failed)
 {
@@ -914,10 +928,10 @@ static X deref_recursive(X val, int limit, int *failed)
       X x = find_frozen_variable(val);
 
       if(x == NULL) {
-	ASSERT(freeze_term_var_counter < FREEZE_TERM_VAR_TABLE_SIZE, "can not copy term - too many variables");
+	ensure_freeze_term_var_table_size(freeze_term_var_counter);
 	freeze_term_var_table[ freeze_term_var_counter++ ] = val;
 
-	if(alloc_top + 5 > fromspace_limit) {
+	if(alloc_top + 4 > fromspace_limit) {
 	  *failed = 1;
 	  return val;
 	}
@@ -976,7 +990,7 @@ static X deref_all(X val, int limit, int *failed)
   freeze_term_var_counter = 0;
   circular_term_counter = 0;
   X y = deref_recursive(val, limit, failed);
-  memset(freeze_term_var_table, 0, freeze_term_var_counter * 2 * sizeof(X));
+  memset(freeze_term_var_table, 0, freeze_term_var_counter * sizeof(X));
   memset(circular_term_table, 0, circular_term_counter * sizeof(X));
   return y;
 }
@@ -995,7 +1009,7 @@ static X freeze_term_recursive(X x)
     X y = find_frozen_variable(x);
 
     if(y == NULL) {
-      ASSERT(freeze_term_var_counter < FREEZE_TERM_VAR_TABLE_SIZE, "can not freeze term - too many variables");
+      ensure_freeze_term_var_table_size(freeze_term_var_counter);
       freeze_term_var_table[ freeze_term_var_counter++ ] = x;
       BLOCK *newvar = (BLOCK *)malloc(sizeof(WORD) * 4);
       ASSERT(newvar, "out of memory - can mot freeze term");
@@ -1059,7 +1073,7 @@ static X freeze_term(X x)
   circular_term_counter = 0;
   freeze_term_var_counter = 0;
   X y = freeze_term_recursive(x);
-  memset(freeze_term_var_table, 0, freeze_term_var_counter * 2 * sizeof(X));
+  memset(freeze_term_var_table, 0, freeze_term_var_counter * sizeof(X));
   memset(circular_term_table, 0, circular_term_counter * sizeof(X));
   return y;
 }
@@ -1076,16 +1090,17 @@ static int thaw_term_recursive(X *xp)
 
   if(is_VAR(x)) {
     WORD index = fixnum_to_word(slot_ref(x, 1));
+    ensure_freeze_term_var_table_size(index * 2);
 
-    if(freeze_term_var_table[ index ] != NULL) {
-      *xp = freeze_term_var_table[ index ];
+    if(freeze_term_var_table[ index * 2 ] != NULL) {
+      *xp = freeze_term_var_table[ index * 2 ];
       return 1;
     }
 
     if(alloc_top + objsize(x) + 1 > fromspace_limit) return 0;
 
     *xp = make_var();
-    freeze_term_var_table[ index ] = *xp;
+    freeze_term_var_table[ index * 2 ] = *xp;
     return 1;
   }
 
@@ -1693,10 +1708,12 @@ static void initialize(int argc, char *argv[])
   ifthen_top = ifthen_stack;
   env_top = environment_stack;
   arg_top = argument_stack;
-  memset(freeze_term_var_table, 0, FREEZE_TERM_VAR_TABLE_SIZE * 2 * sizeof(X));
   memset(circular_term_table, 0, CIRCULAR_TERM_TABLE_SIZE * 2 * sizeof(X));
   string_buffer = malloc(string_buffer_length = STRING_BUFFER_SIZE);
   ASSERT(argument_stack, "out of memory - can not allocate string buffer");
+  freeze_term_var_table_size = INITIAL_FREEZE_TERM_VAR_TABLE_SIZE * 2;
+  freeze_term_var_table = (X *)malloc(freeze_term_var_table_size * sizeof(X));
+  ASSERT(freeze_term_var_table, "out of memory - can not allocate freeze-term variable table");
 
   for(int i = 0; i < SYMBOL_TABLE_SIZE; ++i)
     symbol_table[ i ] = END_OF_LIST_VAL;
