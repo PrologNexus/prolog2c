@@ -20,6 +20,8 @@
 (define status-check zero?)
 (define message "terminated with non-zero exit status")
 
+(define pc (or (get-environment-variable "CHECK_PC") "./pc"))
+
 (define expfile
   (or (file-exists? (replace-suffix "expected" file))
       (cond ((file-exists? (replace-suffix "expected-fail" file)) =>
@@ -34,7 +36,7 @@
 	       fn))
 	    (else #f))))
 
-(run (./pc ,file -o ,cfile))
+(run (,pc ,file -o ,cfile))
 (run (gcc -std=gnu99 -save-temps=obj -I. -g ,cfile -o ,xfile -lm))
 
 (define status (run* (./timeout -t ,timeout ,(string-append "./" xfile) > ,outfile)))
