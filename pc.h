@@ -246,7 +246,7 @@ typedef struct DB_ITEM
 #define STRING_TYPE  0x27
 #define STRUCTURE_TYPE  8
 #define PAIR_TYPE  9
-#define DBREFERENCE_TYPE 0x2a
+#define DBREFERENCE_TYPE 0x4a
 
 #define TYPE_TO_TAG(t)  ((WORD)(t) << TYPE_SHIFT)
 #define TAG_TO_TYPE(t)  ((WORD)(t) >> TYPE_SHIFT)
@@ -1378,7 +1378,7 @@ static void mark(X *addr)
     *(tospace_top++) = ALIGNMENT_HOLE_MARKER;
 #endif
 
-  if(t == DBREFERENCE_TYPE && slot_ref(*addr, 1) != NULL) {
+  if(t == DBREFERENCE_TYPE && slot_ref(*addr, 1) == ONE) {
     // increase refcount if DB-reference, to detect unreferenced ones that can be completely deleted
     DB_ITEM *item = (DB_ITEM *)slot_ref(*addr, 0);
     ++item->refcount;
@@ -2822,7 +2822,7 @@ PRIMITIVE(db_create, X name, X size, X result)
   // this is a fake db-reference, not usable for lookup
   ALLOCATE_BLOCK(BLOCK *dbr, DBREFERENCE_TYPE, 2);
   dbr->d[ 0 ] = (X)db;
-  dbr->d[ 1 ] = (X)NULL;	/* marks dbref as ptr to db (not item) */
+  dbr->d[ 1 ] = ZERO;	/* marks dbref as ptr to db (not item) */
   return unify(result, (X)dbr);
 }
 
@@ -2837,7 +2837,7 @@ PRIMITIVE(db_find, X dbr, X key, X ref)
   if(item) {
     ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 2);
     b->d[ 0 ] = (X)item;
-    b->d[ 1 ] = (X)1;
+    b->d[ 1 ] = ONE;
     return unify(ref, (X)b);
   }
 
@@ -2854,7 +2854,7 @@ PRIMITIVE(db_next, X ref, X result)
   if(item != NULL) {
     ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 2);
     b->d[ 0 ] = (X)item;
-    b->d[ 1 ] = (X)1;
+    b->d[ 1 ] = ONE;
     return unify(result, (X)b);
   }
 
@@ -2897,7 +2897,7 @@ PRIMITIVE(db_record, X dbr, X atend, X key, X val, X result)
   DB_ITEM *item = db_insert_item(db, (CHAR *)objdata(str), string_length(str), val, atend != ZERO);
   ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 2);
   b->d[ 0 ] = (X)item;
-  b->d[ 1 ] = (X)1;
+  b->d[ 1 ] = ONE;
   return unify(result, (X)b);
 }
 
