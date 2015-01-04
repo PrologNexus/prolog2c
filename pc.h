@@ -1331,20 +1331,28 @@ static void db_erase_item(DB_ITEM *item)
   DB_BUCKET *bucket = item->bucket;
   delete_term(item->val);
 
-  // erase bucket, if this is the last item in it
-  if(bucket->firstitem == item && bucket->lastitem == item) {
-    if(bucket->previous) bucket->previous->next = bucket->next;
+  if(bucket->firstitem == item) {
+    // erase bucket, if this is the last item in it
+    if(bucket->lastitem == item) {
+      if(bucket->previous) bucket->previous->next = bucket->next;
     
-    if(bucket->next) bucket->next->previous = bucket->previous;
+      if(bucket->next) bucket->next->previous = bucket->previous;
 
-    bucket->db->table[ bucket->index ] = NULL;
-    bucket->previous = bucket->next = NULL;
-    free(bucket->key);
-    free(bucket);
+      bucket->db->table[ bucket->index ] = NULL;
+      bucket->previous = bucket->next = NULL;
+      free(bucket->key);
+      free(bucket);
+    }
+    else {
+      // first item in bucket
+      if(item->next) item->next->previous = NULL; 
+
+      bucket->firstitem = item->next;
+    }
   }
   else {
     // otherwise remove from item-chain
-    if(item->previous) item->previous->next = item->next;
+    item->previous->next = item->next;
   
     if(item->next) item->next->previous = item->previous;
   }
