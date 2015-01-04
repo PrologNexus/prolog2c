@@ -1524,10 +1524,10 @@ static void collect_garbage(CHOICE_POINT *C)
   DRIBBLE("finished (" WORD_OUTPUT_FORMAT " bytes in use, T: " WORD_OUTPUT_FORMAT
 	  ", C: " WORD_OUTPUT_FORMAT ", A: " WORD_OUTPUT_FORMAT ", E: " WORD_OUTPUT_FORMAT ")]\n",
 	  ((WORD)((char *)tospace_top - (char *)fromspace)),
-	  (WORD)(trail_top - trail_stack),
-	  (WORD)(C - choice_point_stack),
-	  (WORD)(arg_top - argument_stack),
-	  (WORD)(env_top - environment_stack));
+	  (WORD)trail_top - (WORD)trail_stack,
+	  (WORD)C - (WORD)choice_point_stack,
+	  (WORD)arg_top - (WORD)argument_stack,
+	  (WORD)env_top - (WORD)environment_stack);
   ++gc_count;
   
   if(alloc_top >= fromspace_limit) 
