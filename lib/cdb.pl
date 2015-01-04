@@ -7,17 +7,19 @@
 
 asserta(TERM) :- asserta(TERM, _).
 asserta(TERM, REF) :-
+	!,
 	'$clause_check_term'(TERM, HEAD, BODY),
 	'$assert'(HEAD, BODY, 0, REF).
 assertz(TERM) :- assertz(TERM, _).
 assertz(TERM, REF) :-
+	!,
 	'$clause_check_term'(TERM, HEAD, BODY),
 	'$assert'(HEAD, BODY, 1, REF).
 
 '$assert'(HEAD, BODY, ATEND, REF) :-
-	!,
 	get_global(clause_db, DB),
 	'$clause_db_key'(HEAD, KEY),
+	!,
 	foreign_call(db_record(DB, ATEND, KEY, (HEAD :- BODY), REF)).
 
 '$clause_check_term'((HEAD :- BODY), HEAD, BODY) :- !.
