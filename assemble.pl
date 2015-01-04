@@ -108,13 +108,13 @@ assemble(call(NAME, RLIST, LABEL), S, S) :-
 	gen('CALL(', MNAME, '$', ARITY, ',&&'),
 	gen(LABEL, ');}\n', LABEL, ':{\n').
 
-assemble(determinate_call(NAME, RLIST), S, S) :-
+assemble(tail_call(NAME, RLIST), S, S) :-
 	length(RLIST, ARITY),
 	gen('POP_ARGUMENTS;\n'),
 	(ARITY > 0 -> gen('A=arg_top;\n'); true),
 	assemble_arguments(RLIST, 0),
 	mangle_name(NAME, MNAME),
-	gen('DETERMINATE_CALL(', MNAME, '$', ARITY, ');\n').
+	gen('TAIL_CALL(', MNAME, '$', ARITY, ');\n').
 
 assemble(foreign_call(NAME, 0), S, S) :- gen('if(!', NAME, '(C0)) FAIL;\n').
 assemble(foreign_call(NAME, RLIST), S, S) :-

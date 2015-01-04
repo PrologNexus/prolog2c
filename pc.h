@@ -1921,13 +1921,13 @@ static void trace_write(char *title, char *name, int arity, X *A, CHOICE_POINT *
 # define TRACE_REDO(name, arity)   { if(debugging) trace_write("REDO", name, arity, C0->A, C); }
 # define TRACE_EXIT(name, arity)   { if(debugging) trace_write("EXIT", name, arity, C0->A, C); }
 # define TRACE_FAIL(name, arity)   { if(debugging && C0->P == NULL) trace_write("FAIL", name, arity, C0->A, C); }
-# define TRACE_DETERMINATE_CALL(name, arity)  { if(debugging) trace_write("TAIL", name, arity, C0->A, C); }
+# define TRACE_TAIL_CALL(name, arity)  { if(debugging) trace_write("TAIL", name, arity, C0->A, C); }
 #else
 # define TRACE_ENTER(name, arity)
 # define TRACE_REDO(name, arity)
 # define TRACE_EXIT(name, arity)
 # define TRACE_FAIL(name, arity)
-# define TRACE_DETERMINATE_CALL(name, arity)
+# define TRACE_TAIL_CALL(name, arity)
 #endif
 
 
@@ -2690,8 +2690,8 @@ static X string_to_list(CHAR *str, int len)
 
 #define POP_ARGUMENTS   arg_top = C0->arg_top - CURRENT_ARITY
 
-#define DETERMINATE_CALL(lbl)				 \
-  { TRACE_DETERMINATE_CALL(CURRENT_NAME, CURRENT_ARITY); \
+#define TAIL_CALL(lbl)				 \
+  { TRACE_TAIL_CALL(CURRENT_NAME, CURRENT_ARITY); \
     R = C0->R;						 \
     E = C0->E;						 \
     env_top = C0->env_top;				 \

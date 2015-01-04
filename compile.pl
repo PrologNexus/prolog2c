@@ -333,7 +333,7 @@ compile_body_expression(TERM, _, _, _, _, _, _, _) :-
 
 compile_ordinary_call(NAME, TAIL, DLIST, D1, nondet, S1, S2) :- %XXX later analyze for being deterministic
 	 gen_label(L, S1, S2),
-	 (TAIL/D1 = tail/det -> emit(determinate_call(NAME, DLIST)); emit(call(NAME, DLIST, L))
+	 (TAIL/D1 = tail/det -> emit(tail_call(NAME, DLIST)); emit(call(NAME, DLIST, L))
 	 ).
 
 compile_type_predicate(NAME, [VAL]) :-
