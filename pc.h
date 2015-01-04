@@ -1885,8 +1885,8 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
 
 static void write_hook(X x)
 {
-  basic_write_term(stdout, 1, TRACE_DEBUG_WRITE_LIMIT, 1, deref(x));
-  putchar('\n');
+  basic_write_term(stderr, 1, TRACE_DEBUG_WRITE_LIMIT, 1, deref(x));
+  fputc('\n', stderr);
 }
 
 
