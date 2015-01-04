@@ -88,6 +88,12 @@
 #define WORD_OUTPUT_FORMAT   "%" WORD_OUTPUT_FORMAT_LENGTH "d"
 #define FLOAT_OUTPUT_FORMAT  "%.15g"
 
+#ifdef UNSAFE
+# ifdef TRACE
+#  undef TRACE
+# endif
+#endif
+
 
 /// types
 
