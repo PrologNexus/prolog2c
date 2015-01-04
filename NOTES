@@ -11,8 +11,12 @@ NOTES											              -*- Org -*-
    - file:da.pl
    - provide predicate "is_deterministic(EXPR)"
    - add declarations for all library predicates, where appropriate.
-** Clause indexing
+** TODO Clause indexing
 *** This could even be extended to invoke particular entry-points depending on call-arguments
+*** Dispatch on type, fixnum-list or atom-list
+    - until no clauses are left or first clause that has a variable as first arg.
+    - make sure fixnum-checks take place first.
+    - no remaining match can set redo to NULL and fail.
 ** Arithmetic
    - deref all vars just once at start.
    - track types, use unboxed math.
@@ -26,21 +30,27 @@ NOTES											              -*- Org -*-
      db_find/db_next (provided, we implement matching in pc.h)
 ** Deterministic goal in condition of if-then-else can drop some of the CP dance
    - same for '\\+'/2
-   - fail could actually just perform a jump.
+   - fail could actually just perform a jump, perhaps redefine FAIL
+     temporarily (or use intermediate macro).
 ** Analyze program before compiling to pseudo-instructions
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
+* Think about implementing an interpreter
+  - needs fast clause-indexing for dispatching on primitives and
+    arithmetic operations.
 * TODO Find proper name
 * TODO Move repo to bitbucket
 * Benchmark results
 ** Self-compile, 5 times, average of medium 3 runtimes
-   - <2015-01-04 Sun>: 2.38s
+   - SWI prolog: 1.30s
+   - <2015-01-04 Sun>: 1.79s (unoptimized: 2.38s)
 * Things to test
 ** TODO Test on Mac, Windows and R/Pi
 ** TODO Test in 32-bit mode
 ** TODO test retract-loop
    - file:tests/0069-cdb.pl
 * Missing features
+** Add content of PC_INCLUDE_PATH to include-path
 ** Library/Runtime
 *** Make it possible to embed compiled code
     - "suspend(IN, OUT)" saves state and suspends execution.
@@ -62,9 +72,6 @@ NOTES											              -*- Org -*-
   - maybe file:queens.pl
   - SWI, GNU-Prolog, BinProlog
 * Issues
-** TODO Memory consumption is too high
-   - self-compile with pc1 needs loads of memory
-   - parameters: "pc1 pc.pl -o pc2.c -:h500M -:C100M -:E100M -:A100M"
 ** Compiler
 *** TODO Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
