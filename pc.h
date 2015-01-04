@@ -2704,7 +2704,7 @@ static X string_to_list(CHAR *str, int len)
 
 #define CUT								\
   { C = C0 + 1;								\
-    arg_top = C0->arg_top - CURRENT_ARITY;				\
+    arg_top = C0->arg_top;						\
     env_top = E + CURRENT_ENVIRONMENT_SIZE;				\
     SET_REDO(NULL); }
 
