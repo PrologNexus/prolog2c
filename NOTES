@@ -4,10 +4,13 @@ NOTES											              -*- Org -*-
 * Optimization opportunities
 ** Anonymous variables could get special handling when in argument position
    - unification is a noop, unless nested in another term.
-** Implement memberchk/2 as primitive
+** TODO Implement memberchk/2 as primitive
 ** Mode-declarations
-** Determinacy declarations
+** TODO Determinacy declarations
    - i.e. ":- determinate(PI)."
+   - file:da.pl
+   - provide predicate "is_deterministic(EXPR)"
+   - add declarations for all library predicates, where appropriate.
 ** Clause indexing
 *** This could even be extended to invoke particular entry-points depending on call-arguments
 ** Arithmetic
@@ -15,25 +18,24 @@ NOTES											              -*- Org -*-
    - track types, use unboxed math.
 ** With some sort of type/groundness analysis many primitives can be rewritten to simpler forms
    - functor, arg, name, '=..', etc.
-** Last clause of predicate with a single call can be treated as determinate (and enable TCO)
-   - if we know about determinacy of library predicates, this could be
-     generalized to multiple calls.
-** Deterministic goal in condition of if-then-else can drop CP dance
+** Matching term in db could be done in C
+*** Unify inside db_find/db_next (properly undwinding trail on failure)
+    - handling heap-full case on thawing still makes this ugly.
+** TODO current_op/3 needs fast path when operator name is known
+   - could use single-bucket db, with unififcation inside
+     db_find/db_next (provided, we implement matching in pc.h)
+** Deterministic goal in condition of if-then-else can drop some of the CP dance
    - same for '\\+'/2
+   - fail could actually just perform a jump.
+** Analyze program before compiling to pseudo-instructions
+   - perform determinacy-analysis for all code.
+   - in other words: actually take advantage of having a static whole-program compiler.
 * Things to test
-** TODO Test self-sef-compile
-** TODO Test UNSAFE mode
-** TODO some non-trivial test for DCG rules
-   - file:re.pl
-** TODO Test on Mac, Windows (32 bit) and R/Pi
+** TODO Test on Mac, Windows and R/Pi
+** TODO Test in 32-bit mode
 ** TODO test retract-loop
    - file:tests/0069-cdb.pl
 * Missing features
-** Compiler
-*** TODO Replace use of atomic_list_concat/2 with hand-written, simpler operations
-*** Allow selective tracing
-    - declaration "trace(PI)", where PI may be atom, NAME/ARITY, or
-      list of those.
 ** Library/Runtime
 *** Make it possible to embed compiled code
     - "suspend(IN, OUT)" saves state and suspends execution.
@@ -55,25 +57,30 @@ NOTES											              -*- Org -*-
   - maybe file:queens.pl
   - SWI, GNU-Prolog, BinProlog
 * Issues
+** TODO Memory consumption is too high
+   - self-compile with pc1 needs loads of memory
+   - parameters: "pc1 pc.pl -o pc2.c -:h500M -:C100M -:E100M -:A100M"
 ** Compiler
 *** TODO Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
 *** TODO check fixnum range when emitting literals 
 ** Runtime
-*** TODO Reconsider data area default sizes
-*** TODO env_top is only reduced by failing
-    - CUT could set env_top to E + <current envsize>
 *** TODO trail-GC
     - and adjust CP-stack entries accordingly.
     - tricky.
 *** TODO Is cycle-checking in =deref= really necessary?
-*** TODO db_find: handle case where a ref is given
-    - unify key/term directly.
+*** TODO Primitives
+    sleep, getpid
 ** Libraries
 *** TODO May a PI (predicate-indicator) be an atom, refering to all available arities?
     - would need to be added to abolish/1.
 *** TODO op/3 should throw ISO-compliant exceptions
 * List of builtin and library predicates
+** TODO Use "descriptors" for arguments in this list
+   - "+" :: must be instantiated
+   - "-" :: must be unbound
+   - "?" :: must be partially instantiated
+   - "@" :: argument is not instantiated (e.g. for type tests)
   | Name                         | Type | Library   | Notes                                                                |
   |------------------------------+------+-----------+----------------------------------------------------------------------|
   | X, Y                         | S    |           |                                                                      |
@@ -115,6 +122,7 @@ NOTES											              -*- Org -*-
   | current_input(S)             | M    |           |                                                                      |
   | current_output(S)            | M    |           |                                                                      |
   | current_op(P, A, N)          | A    | op.pl     |                                                                      |
+  | dbreference(X)               | M    |           |                                                                      |
   | display(X)                   | M    |           |                                                                      |
   | enable_trace(F)              | M    |           |                                                                      |
   | erase(REF)                   | M    |           |                                                                      |
