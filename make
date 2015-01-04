@@ -2,7 +2,7 @@
 ;;;; makefile for pc -*- Scheme -*-
 
 
-(require 'sh 'make 'match)
+(require 'sh 'make 'match 'list-of 'sort)
 (run-verbose #t)
 
 
@@ -84,6 +84,14 @@
   (pc2.c)
   (or (zero? (run* (cmp pc1.c pc2.c)))
       #f))
+
+(define (bench)
+  (define (runonce)
+    ;;XXX try to get rid of these settings
+    (run (/usr/bin/time -f %U -o /tmp/pc1time ./pc1 pc.pl -o /dev/null -:h500M -:C100M -:E100M -:A100M >/dev/null))
+    (with-input-from-file "/tmp/pc1time" read))
+  (pc1)
+  (print (/ (apply + (butlast (cdr (sort (list-of (runonce) (i range 0 5)) <)))) 3)))
 
 
 ;;
