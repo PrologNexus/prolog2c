@@ -124,7 +124,7 @@ write_out(Atom, Style, _, Ci, Co) :-
 	!,
 	write_atom(Atom, Style, Ci, Co).
 write_out(X, _, _, _, alpha) :-
-	(stream(X); dbreference(X)),
+	(stream(X); db_reference(X)),
 	!,
 	display(X).
 write_out(Term, display, _, Ci, punct) :- !,
