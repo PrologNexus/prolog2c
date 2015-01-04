@@ -405,6 +405,7 @@ arithmetic_operation(sign, 1).
 arithmetic_operation(sin, 1).
 arithmetic_operation(sqrt, 1).
 arithmetic_operation(truncate, 1).
+arithmetic_operation(random, 1).
 
 arithmetic_operation('+', 2, add).
 arithmetic_operation('/\\', 2, bitwise_and).

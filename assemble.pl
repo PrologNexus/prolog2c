@@ -153,6 +153,7 @@ assemble(sin(R1, R2), S, S) :- gen('X ', R2, '=num_sin(', R1, ');\n').
 assemble(sqrt(R1, R2), S, S) :- gen('X ', R2, '=num_sqrt(', R1, ');\n').
 assemble(truncate(R1, R2), S, S) :- gen('X ', R2, '=num_truncate(', R1, ');\n').
 assemble(negate(R1, R2), S, S) :- gen('X ', R2, '=num_negate(', R1, ');\n').
+assemble(random(R1, R2), S, S) :- gen('X ', R2, '=num_random(', R1, ');\n').
 
 assemble(integer(R), S, S) :- gen('if(!is_FIXNUM(deref(', R, '))) FAIL;\n').
 assemble(number(R), S, S) :- gen('if(!is_number(deref(', R, '))) FAIL;\n').

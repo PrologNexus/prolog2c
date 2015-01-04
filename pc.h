@@ -2323,6 +2323,12 @@ static inline X num_not(X x)
 }
 
 
+static inline X num_random(X x)
+{
+  return word_to_fixnum(rand() % fixnum_to_word(check_fixnum(deref(x))));
+}
+
+
 /// Term comparison
 
 static int is_recursively_identical(X x, X y)
@@ -3133,6 +3139,16 @@ PRIMITIVE(enable_trace, X flag)
 {
   check_fixnum(flag);
   debugging = fixnum_to_word(flag);
+  return 1;
+}
+
+PRIMITIVE(get_process_id, X pid) { return unify(pid, word_to_fixnum(getpid())); }
+PRIMITIVE(sleep_for_seconds, X secs) { check_fixnum(secs); sleep(fixnum_to_word(secs)); return 1; }
+
+PRIMITIVE(set_random_seed, X seed) 
+{
+  check_fixnum(seed);
+  srand(fixnum_to_word(seed));
   return 1;
 }
 

@@ -27,6 +27,9 @@ macro(current_input(S), foreign_call(current_input_stream(S))).
 macro(current_output(S), foreign_call(current_output_stream(S))).
 macro(read(T), read1(T)).
 macro(enable_trace(F), foreign_call(enable_trace(F))).
+macro(getpid(PID), foreign_call(get_process_id(PID))).
+macro(sleep(SECS), foreign_call(sleep_for_seconds(SECS))).
+macro(set_random_seed(SEED), foreign_call(set_random_seed(SEED))).
 
 
 % nothing matches - tryi auto-include and finally, fail
