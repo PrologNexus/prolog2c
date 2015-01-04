@@ -44,6 +44,7 @@ NOTES											              -*- Org -*-
 ** Self-compile, 5 times, average of medium 3 runtimes
    - SWI prolog: 1.30s
    - <2015-01-04 Sun>: 1.79s (unoptimized: 2.38s)
+   - <2015-01-05 Mon>: 1.71s (smaller data area sizes)
 * Things to test
 ** TODO Test on Mac, Windows and R/Pi
 ** TODO Test in 32-bit mode
