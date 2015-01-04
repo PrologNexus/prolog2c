@@ -2,7 +2,7 @@ NOTES											              -*- Org -*-
 
 
 * Optimization opportunities
-** Anonymous variables could get special handling when in argument position
+** Singleton variables could get special handling when in argument position
    - unification is a noop, unless nested in another term.
 ** TODO Implement memberchk/2 as primitive
 ** Mode-declarations
@@ -30,6 +30,11 @@ NOTES											              -*- Org -*-
 ** Analyze program before compiling to pseudo-instructions
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
+* TODO Find proper name
+* TODO Move repo to bitbucket
+* Benchmark results
+** Self-compile, 5 times, average of medium 3 runtimes
+   - <2015-01-04 Sun>: 2.38s
 * Things to test
 ** TODO Test on Mac, Windows and R/Pi
 ** TODO Test in 32-bit mode
@@ -69,8 +74,6 @@ NOTES											              -*- Org -*-
     - and adjust CP-stack entries accordingly.
     - tricky.
 *** TODO Is cycle-checking in =deref= really necessary?
-*** TODO Primitives
-    sleep, getpid
 ** Libraries
 *** TODO May a PI (predicate-indicator) be an atom, refering to all available arities?
     - would need to be added to abolish/1.
@@ -122,7 +125,7 @@ NOTES											              -*- Org -*-
   | current_input(S)             | M    |           |                                                                      |
   | current_output(S)            | M    |           |                                                                      |
   | current_op(P, A, N)          | A    | op.pl     |                                                                      |
-  | dbreference(X)               | M    |           |                                                                      |
+  | db_reference(X)              | M    |           |                                                                      |
   | display(X)                   | M    |           |                                                                      |
   | enable_trace(F)              | M    |           |                                                                      |
   | erase(REF)                   | M    |           |                                                                      |
@@ -137,6 +140,7 @@ NOTES											              -*- Org -*-
   | get0(C)                      | M    |           | -1 on EOF                                                            |
   | get_global(ATOM, X)          | S    |           |                                                                      |
   | getenv(NAME, VALUE)          | M    |           | fails if variable doesn't exist                                      |
+  | getpid(PID)                  | M    |           |                                                                      |
   | halt                         | M    |           | exits with code 0                                                    |
   | halt(CODE)                   | M    |           |                                                                      |
   | integer(X)                   | P    |           |                                                                      |
@@ -184,6 +188,7 @@ NOTES											              -*- Org -*-
   | shell(COMMAND)               | A    | misc.pl   | expects exit-status 0                                                |
   | shell(COMMAND, STATUS)       | M    |           |                                                                      |
   | skip(C)                      | A    | io.pl     |                                                                      |
+  | sleep(SECS)                  | M    |           |                                                                      |
   | sort(S, R)                   | A    | sorts.pl  |                                                                      |
   | stream(X)                    | P    |           |                                                                      |
   | subtract(X, Y, Z)            | A    | sets.pl   |                                                                      |
@@ -224,6 +229,7 @@ NOTES											              -*- Org -*-
   | float_integer_part(X)    |
   | floor(X)                 |
   | log(X)                   |
+  | random(X)
   | round(X)                 |
   | sign(X)                  |
   | sin(X)                   |
