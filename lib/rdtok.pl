@@ -197,8 +197,8 @@ read_string(Chars, Quote, NextCh) :-
 
 
 read_string(-1, _N, Quote, -1) :-
-	write('! end of file in '), put(Quote),
-	write(token), put(Quote), nl,
+	display('! end of file in '), put(Quote),
+	display(token), put(Quote), nl,
 	!, fail.
 read_string(Quote, Chars, Quote, NextCh) :- !,
 	get0(Ch),				% closing or doubled quote
@@ -240,7 +240,7 @@ read_solidus(Ch, Dict, [atom(A)|Tokens]) :-
 	read_tokens(NextCh, Dict, Tokens).
 
 read_solidus(-1, -1) :- !,
-	write('! end of file in /* ... */ comment'), nl.
+	display('! end of file in /* ... */ comment'), nl.
 read_solidus(42, LastCh) :-
 	get0(NextCh),
 	NextCh =\= 47, !,	%  might be ^Z or * though
@@ -296,7 +296,7 @@ read_symbol(LastCh, [], LastCh).
 %	    ordinary symbol and we call read_symbol to process it.
 
 read_fullstop(-1, _X, _Y) :- !,
-	write('! end of file just after full stop'), nl,
+	display('! end of file just after full stop'), nl,
 	fail.
 read_fullstop(Ch, _N, []) :-
 	Ch =< 32, !.		% END OF CLAUSE
