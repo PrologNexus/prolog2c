@@ -1277,6 +1277,7 @@ static DB_ITEM *db_insert_item(DB *db, char *key, int keylen, X val, int atend)
   bucket->keylen = keylen;
   bucket->firstitem = item;
   item->next = NULL;
+  item->previous = NULL;
   item->bucket = bucket;
   bucket->lastitem = item;
   bucket->previous = NULL;
