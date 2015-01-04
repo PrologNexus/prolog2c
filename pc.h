@@ -1729,9 +1729,14 @@ static void initialize(int argc, char *argv[])
 }
 
 
-static void terminate(int code)
+static void terminate(CHOICE_POINT *C, int code)
 {
-  DRIBBLE("[terminating]\n");
+  DRIBBLE("[terminating - T: " WORD_OUTPUT_FORMAT ", C: " WORD_OUTPUT_FORMAT
+	  ", A: " WORD_OUTPUT_FORMAT ", E: " WORD_OUTPUT_FORMAT "]\n",
+	  (WORD)trail_top - (WORD)trail_stack,
+	  (WORD)C - (WORD)choice_point_stack,
+	  (WORD)arg_top - (WORD)argument_stack,
+	  (WORD)env_top - (WORD)environment_stack);
   exit(code);
 }
 
@@ -2740,8 +2745,8 @@ static X string_to_list(CHAR *str, int len)
   C++;							\
   goto INIT_GOAL;					\
 fail: INVOKE_CHOICE_POINT;				\
-fail_exit: fprintf(stderr, "no.\n"); terminate(1);	\
-success_exit: terminate(0);
+fail_exit: fprintf(stderr, "no.\n"); terminate(C, 1);	\
+success_exit: terminate(C, 0);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2791,7 +2796,7 @@ static int gc(CHOICE_POINT *C0) { alloc_top = fromspace_limit + 1; return 1; }
 PRIMITIVE(halt, X code) 
 { 
   check_fixnum(code);
-  terminate(fixnum_to_word(code));
+  terminate(C0, fixnum_to_word(code));
   return 1;			/* never executed */
 }
 
