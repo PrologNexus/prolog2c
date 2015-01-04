@@ -1316,7 +1316,7 @@ static void db_mark_item_as_erased(DB_ITEM *item)
 static void db_mark_bucket_as_erased(DB_ITEM *item)
 {
   DB_BUCKET *bucket = item->bucket;
-  item = bucket->firstitem;
+  item = bucket->firstitem;	/* any item will do */
 
   // mark all items as erased
   while(item != NULL) {
