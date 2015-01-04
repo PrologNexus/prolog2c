@@ -30,7 +30,7 @@ compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, S1, S2) :-
 	length(VARS, N),
 	emit(environment(N)),
 	compile_head(HEAD, BOUND, S1, S),
-	compile_body(BODY, nondet, BOUND, S, S2).
+	compile_body(BODY, LAST, BOUND, S, S2).
 % fact
 compile_clause(HEAD, NA, I, M, S1, S2) :-
 	compile_clause((HEAD :- true), NA, I, M, S1, S2).
@@ -118,7 +118,8 @@ compile_term_arguments([X|MORE], DL1, DL2, B1, B2, S1, S2) :-
 			 
 %% compile body
 
-compile_body(BODY, DET, BOUND, S1, S2) :-
+compile_body(BODY, LAST, BOUND, S1, S2) :-
+	(LAST == last -> DET = det; DET = nondet),
 	compile_body_expression(BODY, tail, DET, DET2, BOUND, _, S1, S2),
 	(DET2 = det -> emit(determinate_exit); emit(exit)).
 
@@ -141,14 +142,14 @@ compile_body_expression((X -> Y; Z), TAIL, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
 	emit(save_choice_points, push_choice_point(L1)),
-	compile_body_expression(X, nontail, D1, D3, B1, B3, S4, S5),
+	compile_body_expression(X, nontail, D1, _, B1, B3, S4, S5),
 	emit(restore_choice_points),
 	collect_indexed_variables(Y, BY1), subtract(BY1, B3, BY),
 	collect_indexed_variables(Z, BZ1), subtract(BZ1, B3, BZ),
-	compile_body_expression(Y, TAIL, D3, D4, B3, B4, S5, S6),
+	compile_body_expression(Y, TAIL, D1, D4, B3, B4, S5, S6),
 	make_unbound_vars(BY, BZ, S6, S7),
 	emit(jump(L2), label(L1), restore_choice_points),
-	compile_body_expression(Z, TAIL, D3, D5, B3, B5, S7, S8),
+	compile_body_expression(Z, TAIL, D1, D5, B3, B5, S7, S8),
 	make_unbound_vars(BZ, BY, S8, S2),
 	emit(label(L2)),
 	union(B4, B5, B2),
@@ -188,15 +189,15 @@ compile_body_expression(repeat, _, D, D, B, B, S1, S2) :-
 	emit(adjust_choice_point(L), label(L)).
 	
 % not
-compile_body_expression(\+X, _, D1, D2, B1, B2, S1, S2) :-
+compile_body_expression(\+X, _, D, D, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	emit(save_choice_points, push_choice_point(L1)),
-	compile_body_expression(X, nontail, D1, D2, B1, B2, S3, S2),
+	compile_body_expression(X, nontail, D, _, B1, B2, S3, S2),
 	emit(restore_choice_points, fail, label(L1), restore_choice_points).
 
 % findall
-compile_body_expression(findall(T, G, L), TAIL, D1, D2, B1, B2, S1, S2) :-
-	compile_body_expression(findall_start, nontail, nondet, _, B1, _, S1, S4),
+compile_body_expression(findall(T, G, L), TAIL, D, D, B1, B2, S1, S2) :-
+	compile_body_expression(findall_start, nontail, D, _, B1, _, S1, S4),
 	gensym('$findall_', P, S4, S5),
 	collect_indexed_variables(G/T, GVARS),
 	findall(I/_, member(I, GVARS), VLIST),
@@ -207,11 +208,11 @@ compile_body_expression(findall(T, G, L), TAIL, D1, D2, B1, B2, S1, S2) :-
 	HEAD =.. [P|VARGS],
 	add_boilerplate(P, (HEAD :- G2, findall_push(T2), fail)),
 	HEAD2 =.. [P|IARGS],
-	compile_body_expression(\+HEAD2, nontail, D1, D3, B1, B3, S5, S6),
-	compile_body_expression(findall_collect(L), TAIL, D3, D2, B3, B2, S6, S2).
+	compile_body_expression(\+HEAD2, nontail, D, _, B1, B3, S5, S6),
+	compile_body_expression(findall_collect(L), TAIL, D, _, B3, B2, S6, S2).
 
 % forall
-compile_body_expression(forall(G, A), TAIL, D1, D2, B1, B2, S1, S2) :-
+compile_body_expression(forall(G, A), TAIL, D, D, B1, B2, S1, S2) :-
 	gensym('$forall_', P, S1, S3),
 	collect_indexed_variables(G/A, GVARS),
 	findall(I/_, member(I, GVARS), VLIST),
@@ -222,7 +223,7 @@ compile_body_expression(forall(G, A), TAIL, D1, D2, B1, B2, S1, S2) :-
 	HEAD =.. [P|VARGS],
 	add_boilerplate(P, (HEAD :- G2, \+(A2), !, fail)),
 	HEAD2 =.. [P|IARGS],
-	compile_body_expression(\+HEAD2, TAIL, D1, D2, B1, B2, S3, S2).
+	compile_body_expression(\+HEAD2, TAIL, D, _, B1, B2, S3, S2).
 
 % if-then
 compile_body_expression((X -> Y), TAIL, D1, D2, B1, B2, S1, S2) :-
@@ -298,7 +299,6 @@ compile_body_expression(X >= Y, _, D, D, B, B, S1, S2) :-
 compile_body_expression(X =< Y, _, D, D, B, B, S1, S2) :-
 	compile_arithmetic_test(X, Y, B, numerically_less_or_equal, S1, S2).
 			
-
 % foreign call
 compile_body_expression(foreign_call(CALL), _, D, D, B1, B2, S1, S2) :-
 	CALL =.. [NAME|ARGS],
@@ -316,18 +316,13 @@ compile_body_expression(set_global(NAME, VALUE), _, D, D, B1, B2, S1, S2) :-
 	compile_term_for_unification(VALUE, T1, B1, B2, S3, S2),
 	emit(global_set(NAME, T1)).
 
-% type-predicates
-
 % ordinary predicate call
-compile_body_expression(X, TAIL, D1, D2, B1, B2, S1, S2) :-
-	is_indexed_variable(X, _),
-	compile_body_expression(call(X), TAIL, D1, D2, B1, B2, S1, S2).
-compile_body_expression(TERM, TAIL, D, D, B1, B2, S1, S2) :-
+compile_body_expression(TERM, TAIL, D1, D2, B1, B2, S1, S2) :-
 	TERM =.. [NAME|ARGS],
 	compile_term_arguments(ARGS, [], DLIST, B1, B2, S1, S),
-	(compile_type_predicate(NAME, DLIST), S2 = S
-	; DLIST = [X, Y], compile_order_predicate(NAME, X, Y), S2 = S
-	; compile_ordinary_call(NAME, TAIL, DLIST, D, S, S2)
+	(compile_type_predicate(NAME, DLIST), S2 = S, D2 = D1
+	; DLIST = [X, Y], compile_order_predicate(NAME, X, Y), S2 = S, D2 = D1
+	; compile_ordinary_call(NAME, TAIL, DLIST, D1, D2, S, S2)
 	).
 
 compile_body_expression(TERM, _, _, _, _, _, _, _) :-
@@ -336,10 +331,9 @@ compile_body_expression(TERM, _, _, _, _, _, _, _) :-
 
 %% compile calls (ordinary or type-/order-predicate)
 
-compile_ordinary_call(NAME, TAIL, DLIST, D, S1, S2) :-
+compile_ordinary_call(NAME, TAIL, DLIST, D1, nondet, S1, S2) :- %XXX later analyze for being deterministic
 	 gen_label(L, S1, S2),
-	 (TAIL/D = tail/det -> emit(determinate_call(NAME, DLIST))
-	 ; emit(call(NAME, DLIST, L))
+	 (TAIL/D1 = tail/det -> emit(determinate_call(NAME, DLIST)); emit(call(NAME, DLIST, L))
 	 ).
 
 compile_type_predicate(NAME, [VAL]) :-
