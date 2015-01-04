@@ -33,7 +33,9 @@
 
 (define pc-compile-options
   '("-DTRACE"
-    "-DTRAIL_STACK_SIZE=10000000"))
+    "-DTRAIL_STACK_SIZE=10000000"
+    "-DCHOICE_POINT_STACK_SIZE=100000000"
+    "-DHEAP_SIZE=250000000"))
 
 
 (define (all) (pc1))
@@ -49,12 +51,16 @@
   (make (("pc1" ("pc1.c" "pc.h")
 	  (run (gcc -std=gnu99 -I. -g pc1.c -lm -o pc1 ,@pc-compile-options))))))
 
+(define (pc1o)
+  (pc1.c)
+  (make (("pc1o" ("pc1.c" "pc.h")
+	  (run (gcc -std=gnu99 -I. -O3 -fomit-frame-pointer -fno-strict-aliasing -fwrapv 
+		    pc1.c -lm -o pc1o -DUNSAFE ,@pc-compile-options))))))
+
 (define (pc2.c)
   (pc1)
   (make/proc (list (list "pc2.c" source-files
-			 (lambda ()
-			   ;;XXX try to get rid of these settings
-			   (run (./pc1 pc.pl -o pc2.c -:h500M -:C100M -:E100M -:A100M)))))
+			 (lambda () (run (./pc1 pc.pl -o pc2.c)))))
 	     "pc2.c"))
 
 (define (tags)
@@ -87,10 +93,9 @@
 
 (define (bench)
   (define (runonce)
-    ;;XXX try to get rid of these settings
-    (run (/usr/bin/time -f %U -o /tmp/pc1time ./pc1 pc.pl -o /dev/null -:h500M -:C100M -:E100M -:A100M >/dev/null))
+    (run (/usr/bin/time -f %U -o /tmp/pc1time ./pc1o pc.pl -o /dev/null >/dev/null))
     (with-input-from-file "/tmp/pc1time" read))
-  (pc1)
+  (pc1o)
   (print (/ (apply + (butlast (cdr (sort (list-of (runonce) (i range 0 5)) <)))) 3)))
 
 
