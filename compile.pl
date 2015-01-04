@@ -37,7 +37,7 @@ compile_clause(HEAD, NA, I, M, S1, S2) :-
 
 show_compiled_clause(CLAUSE) :-
 	recorded(show_compiled_clauses, yes),
-	write('% '), writeq(CLAUSE), nl.
+	display('% '), writeq(CLAUSE), nl.
 show_compiled_clause(_).
 
 
