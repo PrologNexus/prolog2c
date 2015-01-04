@@ -1187,6 +1187,7 @@ static void delete_term(X x)
 
   if(is_VAR(x)) {
     WORD index = fixnum_to_word(slot_ref(x, 1));
+    ensure_freeze_term_var_table_size(index);
 
     if(freeze_term_var_table[ index ] != NULL) 
       return;			/*  already deleted */
