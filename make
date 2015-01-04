@@ -53,13 +53,9 @@
   (pc1)
   (make/proc (list (list "pc2.c" source-files
 			 (lambda ()
-			   (run (./pc1 pc.pl -o pc2.c)))))
+			   ;;XXX try to get rid of these settings
+			   (run (./pc1 pc.pl -o pc2.c -:h500M -:C100M -:E100M -:A100M)))))
 	     "pc2.c"))
-
-(define (pc2)
-  (pc2.c)
-  (make (("pc2" ("pc2.c" "pc.h")
-	  (run (gcc -std=gnu99 -I. -g pc2.c -lm -o pc2 ,@pc-compile-options))))))
 
 (define (tags)
   (run (etags -l prolog *.pl)))
@@ -83,6 +79,11 @@
 (define (check-pc1)
   (fluid-let ((check-pc "./pc1"))
     (check)))
+
+(define (check-self-compile)
+  (pc2.c)
+  (or (zero? (run* (cmp pc1.c pc2.c)))
+      #f))
 
 
 ;;
