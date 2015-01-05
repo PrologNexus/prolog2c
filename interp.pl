@@ -126,13 +126,23 @@ tr_body(Goal, Body, Depth, AfterCut, HadCut) :-
 
 system(true).
 system(fail).
+system(TERM) :-
+	functor(TERM, NAME, ARITY),
+	system_predicate(NAME, ARITY).
+
+system_predicate(display, 1).
 
 call(true) :- !.
 call(fail) :- !, fail.
+call(TERM) :-
+	functor(TERM, NAME, ARITY),
+	call_primitive(NAME, ARITY, TERM).
 call(X) :- throw(error('can not call', X)).
 
+call_primitive(display, 1, TERM) :- !, arg(1, TERM, X), display(X).
+
 main :-
-	assertz((p :- q, !, x)),
+	assertz((p :- q, !, display(one), x)),
 	assertz(p),
 	assertz(q),
 	assertz((x :- fail)),

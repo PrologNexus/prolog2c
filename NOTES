@@ -74,6 +74,9 @@ NOTES											              -*- Org -*-
   - SWI, GNU-Prolog, BinProlog
 * Issues
 ** Compiler
+*** TODO Somehow disable TRACE in auto-included code
+    - library code just produces too much output.
+    - perhaps handle this via a directive.
 *** TODO Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
 *** TODO check fixnum range when emitting literals 
