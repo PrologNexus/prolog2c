@@ -2685,8 +2685,10 @@ static X string_to_list(CHAR *str, int len)
     arg_top = C0->arg_top;			\
     goto *(C0->P); }
 
-#define POP_CHOICE_POINT        C0 = C0->C0
-
+#define POP_CHOICE_POINT  \
+  { E = C0->E;		  \
+    C0 = C0->C0; }
+  
 #define EXIT				     \
   { TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY); \
     R = C0->R;				     \
