@@ -142,6 +142,7 @@ show_intermediate_code.
 %% add clauses for boilerplate code and (pre-)initialization goals
 
 process_boilerplate_code(STATE) :-
+	emit(trace_off),
 	findall(B, (recorded(boilerplate, B, REF), erase(REF)), BOILERPLATE),
 	BOILERPLATE \= [],
 	process_input(BOILERPLATE, [], _, STATE).

@@ -174,7 +174,10 @@ assemble(global_ref(NAME, R), S, S) :-
 	gen('X ', R, '=GLOBAL_REF(', MNAME, ');\n').
 assemble(global_set(NAME, R), S, S) :-
 	mangle_name(NAME, MNAME),
-	gen('GLOBAL_SET(', MNAME, ',', R, ');\n').	
+	gen('GLOBAL_SET(', MNAME, ',', R, ');\n').
+
+assemble(trace_off, S, S) :-
+	gen('#define debugging 0\n').
 
 assemble(OP, _, _) :-
 	error(['invalid pseudo instruction: ', OP]).
