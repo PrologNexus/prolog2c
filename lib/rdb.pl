@@ -2,7 +2,7 @@
 
 
 :- global_variable(record_db).
-:- pre_initialization((foreign_call(db_create(record_db, 3001, DB)), set_global(record_db, DB))).
+:- pre_initialization((foreign_call(db_create(record_db, 3001, DB)), global_set(record_db, DB))).
 
 
 recorda(KEY, TERM) :- recorda(KEY, TERM, _).
@@ -11,7 +11,7 @@ recordz(KEY, TERM) :- recordz(KEY, TERM, _).
 recordz(KEY, TERM, REF) :- '$record'(KEY, TERM, REF, 1).
 
 '$record'(KEY, TERM, REF, ATEND) :-
-	get_global(record_db, DB),
+	global_ref(record_db, DB),
 	'$record_db_key'(KEY, KEY2),
 	foreign_call(db_record(DB, ATEND, KEY2, TERM, REF)).
 
@@ -21,7 +21,7 @@ recorded(KEY, TERM, REF) :-
 	!,
 	'$record_db_match'(REF, TERM, REF).
 recorded(KEY, TERM, REF) :-
-	get_global(record_db, DB),
+	global_ref(record_db, DB),
 	'$record_db_key'(KEY, KEY2),
 	foreign_call(db_find(DB, KEY2, REF1)),
 	!,

@@ -2,7 +2,7 @@
 
 
 :- global_variable(clause_db).
-:- pre_initialization((foreign_call(db_create(clause_db, 3001, DB)), set_global(clause_db, DB))).
+:- pre_initialization((foreign_call(db_create(clause_db, 3001, DB)), global_set(clause_db, DB))).
 
 
 asserta(TERM) :- asserta(TERM, _).
@@ -17,7 +17,7 @@ assertz(TERM, REF) :-
 	'$assert'(HEAD, BODY, 1, REF).
 
 '$assert'(HEAD, BODY, ATEND, REF) :-
-	get_global(clause_db, DB),
+	global_ref(clause_db, DB),
 	'$clause_db_key'(HEAD, KEY),
 	!,
 	foreign_call(db_record(DB, ATEND, KEY, (HEAD :- BODY), REF)).
@@ -27,7 +27,7 @@ assertz(TERM, REF) :-
 
 retract(TERM) :-
 	!,
-	get_global(clause_db, DB),
+	global_ref(clause_db, DB),
 	'$clause_check_term'(TERM, HEAD, BODY),
 	'$clause_db_key'(HEAD, KEY),
 	foreign_call(db_find(DB, KEY, REF1)),
@@ -42,7 +42,7 @@ retract(TERM) :-
 	'$retract_match'(REF2, TERM, REF).
 
 abolish(PI) :-
-	get_global(clause_db, DB),
+	global_ref(clause_db, DB),
 	abolish(PI, DB).
 
 abolish([], DB) :- !.
@@ -67,7 +67,7 @@ clause(HEAD, BODY, REF) :-
 	!,
 	'$clause_match'(REF, (HEAD :- BODY), REF).
 clause(HEAD, BODY, REF) :-
-	get_global(clause_db, DB),
+	global_ref(clause_db, DB),
 	'$clause_db_key'(HEAD, KEY),
 	foreign_call(db_find(DB, KEY, REF1)),
 	!,

@@ -8,8 +8,8 @@ control_structure(\+X).
 control_structure(findall(-X, Y, -Z)).
 control_structure(forall(X, Y)).
 control_structure(foreign_call(X)).
-control_structure(get_global(+X, -Y)).
-control_structure(set_global(+X, -Y)).
+control_structure(global_ref(+X, -Y)).
+control_structure(global_set(+X, +Y)).
 
 evaluating_predicate(#X < #Y).
 evaluating_predicate(#X > #Y).

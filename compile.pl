@@ -306,12 +306,12 @@ compile_body_expression(foreign_call(CALL), _, D, D, B1, B2, S1, S2) :-
 	emit(foreign_call(NAME, DLIST)).
 
 % global variable access
-compile_body_expression(get_global(NAME, RESULT), _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(global_ref(NAME, RESULT), _, D, D, B1, B2, S1, S2) :-
 	gensym('T', T1, S1, S3),
 	gensym('T', T2, S3, S4),
 	compile_term_for_unification(RESULT, T2, B1, B2, S4, S2),
 	emit(global_ref(NAME, T1), unify(T1, T2)).
-compile_body_expression(set_global(NAME, VALUE), _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(global_set(NAME, VALUE), _, D, D, B1, B2, S1, S2) :-
 	gensym('T', T1, S1, S3),
 	compile_term_for_unification(VALUE, T1, B1, B2, S3, S2),
 	emit(global_set(NAME, T1)).

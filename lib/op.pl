@@ -2,7 +2,7 @@
 
 
 :- global_variable(operator_table).
-:- pre_initialization(set_global(operator_table, [op(700,xfx,'@=<'),
+:- pre_initialization(global_set(operator_table, [op(700,xfx,'@=<'),
 						  op(1100,xfy,';'),
 						  op(700,xfx,'@<'),
 						  op(1000,xfy,','),
@@ -45,7 +45,7 @@
 						  op(400,yfx,'\\\\')])).
 
 current_op(P, A, N) :-
-	get_global(operator_table, OT),
+	global_ref(operator_table, OT),
 	member(op(P, A, N), OT).
 
 op(P, A, []) :- !.
@@ -59,8 +59,8 @@ op(P, A, N) :-
 	'$op'(P, A, N).
 
 '$op'(P, A, N) :-
-	get_global(operator_table, OT),
+	global_ref(operator_table, OT),
 	(select(op(_, _, N), OT, OT2); OT2 = OT),
 	!,
 	copy_term(op(P, A, N), X),
-	set_global(operator_table, [X|OT2]).
+	global_set(operator_table, [X|OT2]).
