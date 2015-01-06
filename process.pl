@@ -117,6 +117,9 @@ process_directive(global_variable(NAME), S, S) :-
 	mangle_name(NAME, MNAME),
 	recordz(global_variables, MNAME).
 
+process_directive(trace_libraries, S, S) :-
+	recordz(trace_libraries, yes).
+
 process_directive(op(P, A, N), S, S) :- op(P, A, N).
 
 process_directive(DECL, STATE, STATE) :-
@@ -142,7 +145,7 @@ show_intermediate_code.
 %% add clauses for boilerplate code and (pre-)initialization goals
 
 process_boilerplate_code(STATE) :-
-	emit(trace_off),
+	(recorded(trace_libraries, _); emit(trace_off)),
 	findall(B, (recorded(boilerplate, B, REF), erase(REF)), BOILERPLATE),
 	BOILERPLATE \= [],
 	process_input(BOILERPLATE, [], _, STATE).
