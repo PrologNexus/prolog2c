@@ -38,7 +38,9 @@
     "-DHEAP_SIZE=250000000"))
 
 
-(define (all) (pc1))
+(define (all) 
+  (pc1)
+  (pi))
 
 (define (pc1.c)
   (make/proc (list (list "pc1.c" source-files
@@ -91,6 +93,10 @@
   (or (zero? (run* (cmp pc1.c pc2.c)))
       #f))
 
+(define (system-predicates)
+  (make (("system_predicate.pl" ("generate-system-predicates.pl" "system-predicates")
+	  (run (./pc-autocompile generate-system-predicates.pl <system-predicates))))))
+
 (define (make-program src . exe)
   (let ((exe (optional exe (strip-suffix src)))
 	(c (replace-suffix "c" src)))
@@ -100,11 +106,6 @@
 		     (list c (list src)
 			   (lambda ()
 			     (run (./pc ,src -o ,c))))))))
-
-(define (system-predicates)
-  (make-program "generate-system-predicates.pl")
-  (make (("system_predicate.pl" ("generate-system-predicates" "system-predicates")
-	  (run (./generate-system-predicates <system-predicates))))))
 
 (define (pi)
   (system-predicates)
@@ -116,6 +117,9 @@
     (with-input-from-file "/tmp/pc1time" read))
   (pc1o)
   (print (/ (apply + (butlast (cdr (sort (list-of (runonce) (i range 0 5)) <)))) 3)))
+
+(define (clean)
+  (run (rm -f system_predicate.pl call_primitive.pl pi pc1 pc1o)))
 
 
 ;;
