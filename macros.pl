@@ -25,6 +25,7 @@ macro(functor(T, N, A), foreign_call(functor(T, N, A))).
 macro(arg(I, T, X), foreign_call(term_arg(I, T, X))).
 macro(current_input(S), foreign_call(current_input_stream(S))).
 macro(current_output(S), foreign_call(current_output_stream(S))).
+macro(current_error_output(S), foreign_call(current_error_stream(S))).
 macro(read(T), read1(T)).
 macro(enable_trace(F), foreign_call(enable_trace(F))).
 macro(getpid(PID), foreign_call(get_process_id(PID))).
