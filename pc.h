@@ -3178,6 +3178,7 @@ PRIMITIVE(set_random_seed, X seed)
   return 1;
 }
 
+static int flush_output(CHOICE_POINT *C0) { fflush(port_file(standard_output_port)); return 1; }
 
 #endif
 #endif

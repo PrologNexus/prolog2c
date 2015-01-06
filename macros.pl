@@ -31,6 +31,7 @@ macro(enable_trace(F), foreign_call(enable_trace(F))).
 macro(getpid(PID), foreign_call(get_process_id(PID))).
 macro(sleep(SECS), foreign_call(sleep_for_seconds(SECS))).
 macro(set_random_seed(SEED), foreign_call(set_random_seed(SEED))).
+macro(flush, foreign_call(flush_output)).
 
 
 % nothing matches - tryi auto-include and finally, fail
