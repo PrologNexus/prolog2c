@@ -16,7 +16,7 @@ shift
 cachedir="$PC_AUTOCOMPILE_CACHE"
 
 if test -z "$cachedir"; then
-    cachedir=~/.pc-autocompile-cache
+    cachedir=~/.autocompile-cache
 fi
 
 if test \! -d "$cachedir"; then
