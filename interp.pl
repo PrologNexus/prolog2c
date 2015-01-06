@@ -11,6 +11,9 @@
     implementing disjunction so that it works.
 */
 
+:- global_variable(trace_depth).
+
+
 do_goal(Goal) :-
 	system(Goal),		% <--- check for a built in predicate
 	!,
@@ -70,6 +73,7 @@ tr_goal(Goal, Depth) :-
 tr_call(Goal, Depth) :-
 	system(Goal),
 	!,
+	global_set(trace_depth, Depth),
 	call(Goal).
 tr_call(Goal, Depth) :-
 	clause(Goal, Body),
@@ -119,13 +123,20 @@ tr_body(Goal, Body, Depth, AfterCut, HadCut) :-
 
 %%
 
+execute(GOAL) :-
+	global_ref(trace_depth, N),
+	integer(N),
+	!,
+	tr_body(GOAL, N).
+execute(GOAL) :- do_body(GOAL).
+
 system(TERM) :-
 	functor(TERM, NAME, ARITY),
 	system_predicate(NAME, ARITY).
 
 :- include(system_predicate).
 
-system_predicate(call, 1, TERM) :- !, arg(1, TERM, X), call(X).
+system_predicate(call, 1, TERM) :- !, arg(1, TERM, X), execute(X).
 
 call(TERM) :-
 	!,
@@ -134,20 +145,18 @@ call(TERM) :-
 
 :- include(call_primitive).
 
-/*
-main :-
-	assertz((p :- q, !, display(one), x)),
-	assertz(p),
-	assertz(q),
-	assertz((x :- fail)),
-	display('---\n'),
-	show,
-	trace(p).
 
-show :-
-	clause(p, X), writeq(X), nl, fail.
-show.
-*/
+%%
 
 main :-
-	do_body((member(X, [1,2,3]), display(X), nl, fail)).
+	global_set(trace_depth, none),
+	repl.
+
+repl :-
+	display('?- '), flush,
+	read(TERM), 
+	(TERM == end_of_file, halt
+	; execute(TERM), nl, repl).
+repl :-
+	display('\nno.\n'),
+	repl.
