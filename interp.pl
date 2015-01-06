@@ -24,7 +24,6 @@ do_goal(Goal) :-
 	;   HadCut = no
 	).
 
-
 do_body(Body) :-
 	do_body(Body, AfterCut, HadCut),
 	(   HadCut = yes,
@@ -32,7 +31,6 @@ do_body(Body) :-
 		do_body(AfterCut)
 	;   HadCut = no
 	).
-
 
 do_body((!,AfterCut), AfterCut, yes) :- !.
 do_body((Goal,Body), AfterCut, HadCut) :- !,
@@ -47,10 +45,8 @@ do_body(Goal, true, no) :-
 	do_goal(Goal).
 
 
-
 trace(Goal) :-
 	tr_goal(Goal, 0).
-
 
 tr_goal(call(Goal), Depth) :- !,
 	nonvar(Goal),
@@ -121,26 +117,22 @@ tr_body(Goal, Body, Depth, AfterCut, HadCut) :-
 	tr_body(Body, Depth, AfterCut, HadCut).
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
 
-
-system(true).
-system(fail).
 system(TERM) :-
 	functor(TERM, NAME, ARITY),
 	system_predicate(NAME, ARITY).
 
-system_predicate(display, 1).
+:- include(system_predicate).
 
-call(true) :- !.
-call(fail) :- !, fail.
 call(TERM) :-
+	!,
 	functor(TERM, NAME, ARITY),
 	call_primitive(NAME, ARITY, TERM).
-call(X) :- throw(error('can not call', X)).
 
-call_primitive(display, 1, TERM) :- !, arg(1, TERM, X), display(X).
+:- include(call_primitive).
 
+/*
 main :-
 	assertz((p :- q, !, display(one), x)),
 	assertz(p),
@@ -153,3 +145,7 @@ main :-
 show :-
 	clause(p, X), writeq(X), nl, fail.
 show.
+*/
+
+main :-
+	do_body((member(X, [1,2,3]), display(X), nl, fail)).
