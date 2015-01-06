@@ -2,8 +2,7 @@
 
 
 main :-
-	op(200, fy, '#'),
-	op(200, fy, '?'),
+	op(200, fy, ['#', '?']),
 	tell('system_predicate.pl'),
 	telling(SP),
 	tell('call_primitive.pl'),
