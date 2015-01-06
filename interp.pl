@@ -136,7 +136,9 @@ system(TERM) :-
 
 :- include(system_predicate).
 
-system_predicate(call, 1, TERM) :- !, arg(1, TERM, X), execute(X).
+system_predicate(trace, 0).
+system_predicate(call, 1).
+system_predicate(consult, 1).
 
 call(TERM) :-
 	!,
@@ -144,6 +146,50 @@ call(TERM) :-
 	call_primitive(NAME, ARITY, TERM).
 
 :- include(call_primitive).
+
+call_primitive(call, 1, TERM) :- !, arg(1, TERM, X), execute(X).
+call_primitive(trace, 0, TERM) :-
+	!,
+	global_ref(trace_depth, D),
+	(integer(D) -> global_set(trace_depth, none)
+	; global_set(trace_depth, 0)).
+call_primitive(consult, 1, TERM) :-
+	!,
+	arg(1, TERM, X), consult(X).
+
+
+%%
+
+consult(FILE) :-
+	seeing(OLD),
+	see(FILE),
+	consult_terms(0),
+	seen,
+	see(OLD).
+
+consult_terms(PNA) :-
+	read(TERM),
+	TERM \== end_of_file,
+	insert_term(PNA, TERM, CNA),
+	consult_terms(CNA).
+consult_terms(_).
+
+insert_term(PNA, (HEAD :- BODY), N/A) :-
+        functor(HEAD, N, A),
+	!,
+	add_clause(PNA, N, A, HEAD, BODY).
+insert_term(PNA, FACT, N/A) :-
+        functor(FACT, N, A),
+	!,
+	add_clause(PNA, N, A, FACT, true).
+
+add_clause(N/A, N, A, HEAD, BODY) :-
+	(atom(HEAD); compound(HEAD)
+	-> assertz((HEAD :- BODY))
+	; throw(error('invalid clause head', HEAD)). 
+add_clause(PN/PA, N, A, HEAD, BODY) :-
+	abolish(N/A),
+	add_clause(PN/PA, PN, PA, HEAD, BODY).
 
 
 %%
@@ -156,7 +202,7 @@ repl :-
 	display('?- '), flush,
 	read(TERM), 
 	(TERM == end_of_file, halt
-	; execute(TERM), nl, repl).
+	; execute(TERM), display('\nyes.\n'), repl).
 repl :-
 	display('\nno.\n'),
 	repl.
