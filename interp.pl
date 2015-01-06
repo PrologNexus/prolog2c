@@ -125,6 +125,8 @@ system(TERM) :-
 
 :- include(system_predicate).
 
+system_predicate(call, 1, TERM) :- !, arg(1, TERM, X), call(X).
+
 call(TERM) :-
 	!,
 	functor(TERM, NAME, ARITY),
