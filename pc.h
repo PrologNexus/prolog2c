@@ -2944,11 +2944,12 @@ PRIMITIVE(peek_byte, X c)
   return unify(word_to_fixnum(g), c);
 }
 
-PRIMITIVE(open_stream, X name, X input, X result)
+PRIMITIVE(open_stream, X name, X input, X mode, X result)
 {
   int len;
   CHAR *str = to_string(name, &len);
-  FILE *fp = fopen(str, input == ZERO ? "wb" : "rb");
+  CHAR *m = to_string(mode, &len);
+  FILE *fp = fopen(str, m);
 
   if(fp == NULL) 
     CRASH("can not open file - %s", strerror(errno));

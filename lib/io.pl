@@ -8,7 +8,7 @@ see(S) :-
 	!,
 	foreign_call(set_current_input_stream(S)).	
 see(NAME) :-
-	foreign_call(open_stream(NAME, 1, S)),
+	foreign_call(open_stream(NAME, 1, 'rb', S)),
 	foreign_call(set_current_input_stream(S)).
 
 seeing(S) :- foreign_call(current_input_stream(S)).
@@ -25,7 +25,7 @@ tell(S) :-
 	!,
 	foreign_call(set_current_output_stream(S)).
 tell(NAME) :-
-	foreign_call(open_stream(NAME, 0, S)),
+	foreign_call(open_stream(NAME, 0, 'wb', S)),
 	foreign_call(set_current_output_stream(S)).
 
 telling(S) :- foreign_call(current_output_stream(S)).
@@ -34,6 +34,10 @@ told :-
 	foreign_call(current_output_stream(S)),
 	foreign_call(close_stream(S)),
 	foreign_call(set_current_output_stream(0)).
+
+append(NAME) :-
+	foreign_call(open_stream(NAME, 0, 'ab', S)),
+	foreign_call(set_current_output_stream(S)).
 
 tab(N) :- N > 0, !, put(32), N2 is N - 1, tab(N2).
 tab(_).
