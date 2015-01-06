@@ -91,6 +91,15 @@
   (or (zero? (run* (cmp pc1.c pc2.c)))
       #f))
 
+(define (system-predicates)
+  (make (("generate-system-predicates.c" ("generate-system-predicates.pl")
+	  (run (./pc generate-system-predicates.pl)))
+	 ("generate-system-predicates" ("generate-system-predicates.c")
+	  (run (gcc -std=gnu99 -I. -g -DTRACE generate-system-predicates.c -lm -o generate-system-predicates)))
+	 ("system_predicate.pl" ("generate-system-predicates" "system-predicates")
+	  (run (./generate-system-predicates <system-predicates))))
+    "system_predicate.pl"))
+
 (define (bench)
   (define (runonce)
     (run (/usr/bin/time -f %U -o /tmp/pc1time ./pc1o pc.pl -o /dev/null >/dev/null))
