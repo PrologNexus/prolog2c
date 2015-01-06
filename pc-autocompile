@@ -1,0 +1,40 @@
+#!/bin/sh
+### autocompile-script for pc
+#
+# usage: pc-autocompile [-h] FILENAME ARGUMENT ...
+
+set -e
+
+case "$1" in
+    -h|-help|--help)
+	echo "usage: pc-autocompile [-h] FILENAME ARGUMENT ..."
+	exit;;
+esac
+
+filename=$1
+shift
+cachedir="$PC_AUTOCOMPILE_CACHE"
+
+if test -z "$cachedir"; then
+    cachedir=~/.pc-autocompile-cache
+fi
+
+if test \! -d "$cachedir"; then
+    mkdir "$cachedir"
+fi
+
+hash=`md5sum "$filename" | sed -e 's/^\([a-f0-9]\+\).*$/\1/'`
+
+if test -z "$hash"; then
+    echo "invalid filename: $filename" >2
+    exit 1
+fi
+
+if test -x "${cachedir}/${hash}"; then
+    exec "${cachedir}/${hash}" "$@"
+fi
+
+filename2=`basename "$filename"`
+pc "$filename" -o "/tmp/${filename2}.c"
+gcc -std=gnu99 -O3 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -I. "/tmp/${filename2}.c" -o "${cachedir}/${hash}" -lm
+exec "${cachedir}/${hash}" "$@"
