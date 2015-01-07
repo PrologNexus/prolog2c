@@ -35,6 +35,6 @@ if test -x "${cachedir}/${hash}"; then
 fi
 
 filename2=`basename "$filename"`
-pc "$filename" -o "/tmp/${filename2}.c"
-gcc -std=gnu99 -O3 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -I. "/tmp/${filename2}.c" -o "${cachedir}/${hash}" -lm
+pc -q "$filename" -o "/tmp/${filename2}.c"
+gcc -std=gnu99 -O2 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -I. "/tmp/${filename2}.c" -o "${cachedir}/${hash}" -lm
 exec "${cachedir}/${hash}" "$@"
