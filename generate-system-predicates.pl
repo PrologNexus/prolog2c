@@ -19,7 +19,7 @@ run(SP, CP) :-
 	TERM == end_of_file.
 
 gen_sys_pred(DEF, SP) :-
-	(DEF = system_predicate(PRED, _); DEF = system_predicate(PRED)),
+	system_predicate_head(DEF, PRED),
 	!,
 	functor(PRED, NAME, ARITY),
 	tell(SP),
@@ -27,7 +27,7 @@ gen_sys_pred(DEF, SP) :-
 gen_sys_pred(_, _).
 
 gen_call_prim(DEF, CP) :-
-	(DEF = system_predicate(PRED, _); DEF = system_predicate(PRED)),
+	system_predicate_head(DEF, PRED),
 	!,
 	functor(PRED, NAME, ARITY),
 	build_lists(1, ARITY, TERM, ARGS, CALLARGS),
@@ -41,3 +41,8 @@ build_lists(I, N, _, true, []) :- I > N, !.
 build_lists(I, N, T, (arg(I, T, X), VARS), [X|ARGS]) :-
 	I2 is I + 1,
 	build_lists(I2, N, T, VARS, ARGS).
+
+system_predicate_head(system_predicate(PRED), PRED).
+system_predicate_head(system_predicate(PRED, _), PRED).
+system_predicate_head(system_predicate(PRED, _, _), PRED).
+
