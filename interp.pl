@@ -139,6 +139,8 @@ system(TERM) :-
 system_predicate(trace, 0).
 system_predicate(call, 1).
 system_predicate(consult, 1).
+system_predicate(forall, 2).
+system_predicate(findall, 3).
 
 call(TERM) :-
 	!,
@@ -156,6 +158,14 @@ call_primitive(trace, 0, TERM) :-
 call_primitive(consult, 1, TERM) :-
 	!,
 	arg(1, TERM, X), consult(X).
+call_primitive(forall, 2, TERM) :-
+	!,
+	arg(1, TERM, G), arg(2, TERM, A),
+	forall(execute(G), execute(A)).
+call_primitive(findall, 3, TERM) :-
+	!,
+	arg(1, TERM, T), arg(2, TERM, G), arg(3, TERM, R),
+	findall(T, execute(G), R).
 
 
 %%
