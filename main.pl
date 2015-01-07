@@ -6,6 +6,8 @@
 %   -h  -help  --help       show short usage description
 %   -i                      show intermediate code instead of generating C
 %   -o FILENAME             override output file name (default: <SOURCE_FILE>.c)
+%   -I FILENAME             add FILENAME to include-path
+%   -q                      disable any output
 %
 % Setting the environment variable PC_PRELUDE_FILE=<FILENAME> is
 % equivalent to -L <FILENAME>.
@@ -34,6 +36,9 @@ parse_arguments(['-i'|MORE]) :-
 	parse_arguments(MORE).
 parse_arguments(['-v'|MORE]) :-
 	recorda(show_compiled_clauses, yes),
+	parse_arguments(MORE).
+parse_arguments(['-q'|MORE]) :-
+	recorda(silent, yes),
 	parse_arguments(MORE).
 parse_arguments(['-I', DIR|MORE]) :-
 	recorded(include_path, OLD, REF),
