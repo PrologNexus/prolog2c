@@ -1789,10 +1789,13 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
       int q = 0;
 
       if(quote) {
-	for(int i = 0; i < len; ++i) {
-	  if((i == 0 && !islower(name[ i ])) || (name[ i ] != '_' && !isalpha(name[ i ]) && !isdigit(name[ i ]))) {
-	    q = 1;
-	    break;
+	if(len == 0 || !islower(name[ 0 ])) q = 1;
+	else {
+	  for(int i = 0; i < len; ++i) {
+	    if(name[ i ] != '_' && !isalpha(name[ i ]) && !isdigit(name[ i ])) {
+	      q = 1;
+	      break;
+	    }
 	  }
 	}
       }
@@ -1807,6 +1810,8 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
 	  case '\n': fputs("\\n", fp); break;
 	  case '\r': fputs("\\r", fp); break;
 	  case '\t': fputs("\\t", fp); break;
+	  case '\'': fputs("\\'", fp); break;
+	  case '\\': fputs("\\\\", fp); break;
 	  default:
 	    if(c < 32 || c > 127) 
 	      fprintf(fp, "\\x%02x", c);
