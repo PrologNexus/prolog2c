@@ -173,7 +173,7 @@ call_primitive(findall, 3, TERM) :-
 consult(FILE) :-
 	seeing(OLD),
 	see(FILE),
-	consult_terms(0),
+	consult_terms(0/0),
 	seen,
 	see(OLD).
 
@@ -194,13 +194,13 @@ insert_term(PNA, FACT, N/A) :-
 	add_clause(PNA, N, A, FACT, true).
 
 add_clause(N/A, N, A, HEAD, BODY) :-
-	(atom(HEAD); compound(HEAD)
+	(atom(HEAD); compound(HEAD))
 	-> assertz((HEAD :- BODY))
 	; throw(error('invalid clause head', HEAD)). 
 add_clause(PN/PA, N, A, HEAD, BODY) :-
-	abolish(N/A),
+	(abolish(N/A); true),
 	add_clause(PN/PA, PN, PA, HEAD, BODY).
-
+	   
 
 %%
 
