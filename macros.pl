@@ -27,6 +27,7 @@ macro(current_input(S), foreign_call(current_input_stream(S))).
 macro(current_output(S), foreign_call(current_output_stream(S))).
 macro(current_error_output(S), foreign_call(current_error_stream(S))).
 macro(read(T), read1(T)).
+macro(read(T, V), read1(T, V)).
 macro(enable_trace(F), foreign_call(enable_trace(F))).
 macro(getpid(PID), foreign_call(get_process_id(PID))).
 macro(sleep(SECS), foreign_call(sleep_for_seconds(SECS))).
