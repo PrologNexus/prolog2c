@@ -110,7 +110,7 @@ process_directive(include(FNAME), STATE1, STATE2) :-
 	seeing(CURRENT), 
 	open_file_stack(CURRENT, STATE1, STATE2),
 	locate_file(FNAME, REALNAME),
-	display('% including '), display(REALNAME), nl,
+	(recorded(silent, _); display('% including '), display(REALNAME), nl),
 	see(REALNAME).
 
 process_directive(global_variable(NAME), S, S) :-
