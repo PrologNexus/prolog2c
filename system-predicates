@@ -5,8 +5,8 @@ control_structure((X; Y)).
 control_structure((X -> Y)).
 control_structure(!).
 control_structure(\+X).
-control_structure(findall(-X, Y, -Z)).
-control_structure(forall(X, Y)).
+control_structure(findall(-X, Y, -Z), 'Y must be a callable term, uses library "findall.pl"').
+control_structure(forall(X, Y), 'X and Y must be callable terms').
 control_structure(foreign_call(X)).
 control_structure(global_ref(+X, -Y)).
 control_structure(global_set(+X, +Y)).
@@ -40,7 +40,7 @@ system_predicate(atom_codes(?X, ?Y)).
 system_predicate(atomic(+X)).
 system_predicate(clause(+X, ?Y)).
 system_predicate(clause(+X, ?Y, -Z)).
-system_predicate(command_line_arguments(-X)).
+system_predicate(command_line_arguments(-X), _, 'Filters out runtime-options ("-:..."), does not include program name').
 system_predicate(compound(+X)).
 system_predicate(current_input(-X)).
 system_predicate(current_output(-X)).
@@ -49,22 +49,22 @@ system_predicate(db_reference(?X)).
 system_predicate(display(?X)).
 system_predicate(enable_trace(+X)).
 system_predicate(erase(+X)).
-system_predicate(exists_file(+X)).
+system_predicate(exists_file(+X), _, 'fails if nonexistent or not a regular file').
 system_predicate(fail).
 system_predicate(float(+X)).
 system_predicate(functor(?X, ?Y, ?Z)).
-system_predicate(garbage_collect).
-system_predicate(getenv(+X, -Y)).
+system_predicate(garbage_collect, _, 'GC is triggered on next entry to predicate').
+system_predicate(getenv(+X, -Y), _, 'fails if variable does not exist').
 system_predicate(getpid(-X)).
-system_predicate(halt).
+system_predicate(halt, _, 'exits with code 0').
 system_predicate(halt(+X)).
 system_predicate(integer(+X)).
 system_predicate(nl).
 system_predicate(nonvar(+X)).
 system_predicate(number(+X)).
-system_predicate(number_codes(?X, ?Y)).
-system_predicate(peek(+X)).
-system_predicate(put(+X)).
+system_predicate(number_codes(?X, ?Y), _, 'uses strtol(3)/strtod(3), so allows leading space').
+system_predicate(peek(+X), _, '-1 on EOF').
+system_predicate(put(+X), _, 'X may be fixnum or symbol').
 system_predicate(repeat).
 system_predicate(sleep(+X)).
 system_predicate(stream(+X)).
@@ -96,8 +96,8 @@ system_predicate(ord_subset(+X, +Y), 'ordset.pl').
 system_predicate(ord_subtract(+X, +Y, -Z), 'ordset.pl').
 system_predicate(ord_symdiff(+X, +Y, -Z), 'ordset.pl').
 system_predicate(ord_union(+X, +Y, -Z), 'ordset.pl').
-system_predicate(read(-X), 'read.pl').
-system_predicate(read(-X, -Y), 'read.pl').
+system_predicate(read(-X), 'read.pl', 'expands into read1/1, which is auto-included').
+system_predicate(read(-X, -Y), 'read.pl', 'Y is unified with list of ATOM=VAR terms').
 system_predicate(read_tokens(-X, -Y), 'rdtok.pl').
 system_predicate(recorda(+X, -Y), 'rdb.pl').
 system_predicate(recorda(+X, -Y, -Z), 'rdb.pl').
@@ -107,23 +107,23 @@ system_predicate(recordz(+X, -Y), 'rdb.pl').
 system_predicate(recordz(+X, -Y, -Z), 'rdb.pl').
 system_predicate(retract(+X), 'cdb.pl').
 system_predicate(reverse(?X, ?Y), 'lists.pl').
-system_predicate(see(+X), 'io.pl').
+system_predicate(see(+X), 'io.pl', 'may also pass stream (or "user")').
 system_predicate(seeing(-X), 'io.pl').
-system_predicate(seen, 'io.pl').
+system_predicate(seen, 'io.pl', 'does nothing if stdin').
 system_predicate(select(?X, ?Y, ?Z), 'sets.pl').
-system_predicate(shell(+X), 'misc.pl').
+system_predicate(shell(+X), 'misc.pl', 'expects exit-status 0').
 system_predicate(shell(+X, -Y), 'misc.pl').
 system_predicate(skip(+X), 'io.pl').
 system_predicate(sort(+X, -Y), 'sorts.pl').
 system_predicate(subtract(+X, +Y, -Z), 'sets.pl').
 system_predicate(tab(+X), 'io.pl').
-system_predicate(tell(+X), 'io.pl').
+system_predicate(tell(+X), 'io.pl', 'may also pass stream (or "user")').
 system_predicate(telling(-X), 'io.pl').
-system_predicate(throw(+X), 'misc.pl').
-system_predicate(told, 'io.pl').
+system_predicate(throw(+X), 'misc.pl', 'uncatchable, just to signal error').
+system_predicate(told, 'io.pl', 'does nothing if stdout or stderr').
 system_predicate(abolish(+PI), 'cdb.pl').
 system_predicate(append(?X, ?Y, ?Z), 'lists.pl').
 system_predicate(union(+X, +Y, -Z), 'sets.pl').
-system_predicate(?X =.. ?Y, 'misc.pl').
+system_predicate(?X =.. ?Y, 'misc.pl', '"univ"').
 system_predicate(write(+X), 'write.pl').
 system_predicate(writeq(+X), 'write.pl').
