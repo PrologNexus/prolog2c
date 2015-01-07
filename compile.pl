@@ -214,6 +214,7 @@ compile_body_expression(findall(T, G, L), TAIL, D, D, B1, B2, S1, S2) :-
 % forall
 compile_body_expression(forall(G, A), TAIL, D, D, B1, B2, S1, S2) :-
 	gensym('$forall_', P, S1, S3),
+	gensym('$forall_', P2, S3, S4),
 	collect_indexed_variables(G/A, GVARS),
 	findall(I/_, member(I, GVARS), VLIST),
 	map_indexed_variables_to_real_variables(G, VLIST, G2),
@@ -222,8 +223,9 @@ compile_body_expression(forall(G, A), TAIL, D, D, B1, B2, S1, S2) :-
 	find_unbound_variables(VLIST, VARGS),
 	HEAD =.. [P|VARGS],
 	add_boilerplate(P, (HEAD :- G2, \+(A2), !, fail)),
+	add_boilerplate(P2, HEAD),
 	HEAD2 =.. [P|IARGS],
-	compile_body_expression(\+HEAD2, TAIL, D, _, B1, B2, S3, S2).
+	compile_body_expression(HEAD2, TAIL, D, _, B1, B2, S4, S2).
 
 % if-then
 compile_body_expression((X -> Y), TAIL, D1, D2, B1, B2, S1, S2) :-
