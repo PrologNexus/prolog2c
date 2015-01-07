@@ -52,6 +52,7 @@ system_predicate(erase(+X)).
 system_predicate(exists_file(+X)).
 system_predicate(fail).
 system_predicate(float(+X)).
+system_predicate(functor(?X, ?Y, ?Z)).
 system_predicate(garbage_collect).
 system_predicate(getenv(+X, -Y)).
 system_predicate(getpid(-X)).
@@ -96,6 +97,7 @@ system_predicate(ord_subtract(+X, +Y, -Z), 'ordset.pl').
 system_predicate(ord_symdiff(+X, +Y, -Z), 'ordset.pl').
 system_predicate(ord_union(+X, +Y, -Z), 'ordset.pl').
 system_predicate(read(-X), 'read.pl').
+system_predicate(read(-X, -Y), 'read.pl').
 system_predicate(read_tokens(-X, -Y), 'rdtok.pl').
 system_predicate(recorda(+X, -Y), 'rdb.pl').
 system_predicate(recorda(+X, -Y, -Z), 'rdb.pl').
