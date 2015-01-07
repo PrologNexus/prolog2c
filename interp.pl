@@ -206,6 +206,8 @@ add_clause(PN/PA, N, A, HEAD, BODY) :-
 
 main :-
 	global_set(trace_depth, none),
+	command_line_arguments(ARGS),
+	parse_arguments(ARGS),
 	repl.
 
 repl :-
@@ -216,3 +218,19 @@ repl :-
 repl :-
 	display('\nno.\n'),
 	repl.
+
+parse_arguments([]).
+parse_arguments(['-h'|_]) :-
+	usage(0).
+parse_arguments(['-t'|MORE]) :-
+	global_set(trace_depth, 0),
+	parse_arguments(MORE).
+parse_arguments([FILENAME|_]) :-
+	name(FILENAME, [45|_]), usage(1).
+parse_arguments([FILENAME|MORE]) :-
+	consult(FILENAME),
+	parse_arguments(MORE).
+
+usage(CODE) :-
+	display('usage: pi [-h] [-t] FILENAME ...\n'),
+	halt(CODE).
