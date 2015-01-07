@@ -85,8 +85,10 @@ clause(HEAD, BODY, REF) :-
 	functor(HEAD, NAME, ARITY),
 	'$clause_db_key'(NAME, ARITY, KEY).
 	
-'$clause_db_key'(NAME, 0, NAME).
+'$clause_db_key'(NAME, 0, NAME) :-
+        atom(NAME).
 '$clause_db_key'(NAME, ARITY, K2) :-
+	atom(NAME), integer(ARITY),
 	atom_codes(NAME, SNAME),
 	number_codes(ARITY, SARITY),
 	append(SNAME, [47|SARITY], SK),
