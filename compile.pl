@@ -227,6 +227,22 @@ compile_body_expression(forall(G, A), TAIL, D, D, B1, B2, S1, S2) :-
 	HEAD2 =.. [P|IARGS],
 	compile_body_expression(HEAD2, TAIL, D, _, B1, B2, S4, S2).
 
+% catch
+compile_body_expression(catch(G, B, R), TAIL, D1, D2, B1, B2, S1, S2) :-
+	gen_label(L1, S1, S3),
+	gen_label(L2, S3, S4),
+	gen_label(L3, S4, S5),
+	emit(save_choice_points, push_choice_point(L1), push_catcher(L2)),
+	compile_body_expression(G, nontail, D1, _, B1, B3, S4, S5),
+	emit(restore_choice_points, pop_catcher, jump(L3)), % G succeeds, no throw
+	gensym('T', T, S6, S7),
+	emit(label(L2)),  % throw occurred
+	compile_term_for_unification(X, T, B3, B4, S7, S8),
+	emit(unify_throw(T), restore_choice_points), % ball unifies
+	compile_body_expression(R, TAIL, D1, D2, B4, B2, S8, S1), % recovery goal
+	emit(label(L1), pop_catcher, restore_choice_points, fail),	  % G failed
+	emit(label(L3)).
+
 % if-then
 compile_body_expression((X -> Y), TAIL, D1, D2, B1, B2, S1, S2) :-
 	compile_body_expression((X -> Y; fail), TAIL, D1, D2, B1, B2, S1, S2).
