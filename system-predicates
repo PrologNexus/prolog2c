@@ -10,6 +10,7 @@ control_structure(forall(X, Y), 'X and Y must be callable terms').
 control_structure(foreign_call(X)).
 control_structure(global_ref(+X, -Y)).
 control_structure(global_set(+X, +Y)).
+control_structure(catch(+X, ?Y, +Z)).
 
 evaluating_predicate(#X < #Y).
 evaluating_predicate(#X > #Y).
