@@ -837,7 +837,7 @@ static inline void push_trail(CHOICE_POINT *C0, X var)
 }
 
 
-#define deref(x)   ({ X _x = (x); is_FIXNUM(_x) ? _x : deref1(_x); })
+#define deref(x)   ({ X _x = (x); is_FIXNUM(_x) || !is_VAR(_x) ? _x : deref1(_x); })
 
 static X deref1(X val)
 {
