@@ -141,6 +141,7 @@ system_predicate(call, 1).
 system_predicate(consult, 1).
 system_predicate(forall, 2).
 system_predicate(findall, 3).
+system_predicate(catch, 3).
 
 call(TERM) :-
 	!,
@@ -166,6 +167,10 @@ call_primitive(findall, 3, TERM) :-
 	!,
 	arg(1, TERM, T), arg(2, TERM, G), arg(3, TERM, R),
 	findall(T, execute(G), R).
+call_primitive(catch, 3, TERM) :-
+	!,
+	arg(1, TERM, G), arg(2, TERM, B), arg(3, TERM, R),
+	catch(execute(G), B, execute(R)).
 
 
 %%
@@ -214,10 +219,20 @@ repl :-
 	display('?- '), flush,
 	read(TERM), 
 	(TERM == end_of_file, halt
-	; execute(TERM), display('\nyes.\n'), repl).
+	; catch(run_goal(TERM), EXN, report_exception(EXN))),
+	!,			% force tailcall
+	repl.
 repl :-
 	display('\nno.\n'),
 	repl.
+
+run_goal(G) :-
+	execute(G),
+	display('\nyes.\n').
+
+report_exception(EXN) :-
+	display('\nUncaught exception:\n'),
+	writeq(EXN), nl.
 
 parse_arguments([]).
 parse_arguments(['-h'|_]) :-
