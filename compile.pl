@@ -232,9 +232,12 @@ compile_body_expression(catch(G, B, R), TAIL, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
 	collect_indexed_variables(B, BB1), subtract(BB1, B1, BB),
+	%% create unbound vars in B, as they will otherwise be uninitialized
+	%% if no throw occurred
 	make_unbound_vars([], BB, S4, S5),
 	emit(push_catcher(L1)),
-	compile_body_expression(G, nontail, D1, _, BB1, B3, S5, S6),
+	union(BB, B1, BB2),
+	compile_body_expression(G, nontail, D1, _, BB2, B3, S5, S6),
 	emit(pop_catcher, jump(L2)), % G succeeds, no throw
 	gensym('T', T, S6, S7),
 	emit(label(L1)),  % throw occurred
