@@ -231,20 +231,17 @@ compile_body_expression(forall(G, A), TAIL, D, D, B1, B2, S1, S2) :-
 compile_body_expression(catch(G, B, R), TAIL, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
-	gen_label(L3, S4, S5),
 	collect_indexed_variables(B, BB1), subtract(BB1, B1, BB),
-	make_unbound_vars([], BB, S5, S6),
-	emit(save_choice_points, push_choice_point(L1), push_catcher(L2)),
-	compile_body_expression(G, nontail, D1, _, BB1, B3, S6, S7),
-	emit(restore_choice_points, pop_catcher, jump(L3)), % G succeeds, no throw
-	gensym('T', T, S7, S8),
-	emit(label(L2)),  % throw occurred
-	compile_term_for_unification(B, T, B3, B4, S8, S9),
-	emit(unify_throw(T), restore_choice_points), % ball unifies
-	compile_body_expression(R, TAIL, D1, D2, B4, B2, S9, S2), % recovery goal
-	emit(jump(L3)),
-	emit(label(L1), pop_catcher, restore_choice_points, fail),	  % G failed
-	emit(label(L3)).
+	make_unbound_vars([], BB, S4, S5),
+	emit(push_catcher(L1)),
+	compile_body_expression(G, nontail, D1, _, BB1, B3, S5, S6),
+	emit(pop_catcher, jump(L2)), % G succeeds, no throw
+	gensym('T', T, S6, S7),
+	emit(label(L1)),  % throw occurred
+	compile_term_for_unification(B, T, B3, B4, S7, S8),
+	emit(unify_throw(T)), % ball unifies
+	compile_body_expression(R, TAIL, D1, D2, B4, B2, S8, S2), % recovery goal
+	emit(label(L2)).
 
 % if-then
 compile_body_expression((X -> Y), TAIL, D1, D2, B1, B2, S1, S2) :-

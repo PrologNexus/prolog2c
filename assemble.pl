@@ -78,7 +78,7 @@ assemble(make_variable(R), S, S) :- gen('X ', R, '=make_var();\n').
 assemble(literal(N, R, _), S, S) :- gen('X ', R, '=literal_', N, ';\n').
 assemble(push_catcher(L), S, S) :- gen('PUSH_CATCHER(&&', L, ');\n').
 assemble(pop_catcher, S, S) :- gen('POP_CATCHER;\n').
-assemble(unify_throw(R), S, S) :- gen('if(!unify(A[0],', R, ')) RETHROW;\n').
+assemble(unify_throw(R), S, S) :- gen('if(!unify(catch_top->ball,', R, ')) RETHROW;\n').
 
 assemble(make_term(RLIST, R), S, S) :-
 	length(RLIST, N),
