@@ -162,6 +162,7 @@ typedef struct CHOICE_POINT {
   X *T, *R, *E, *A, *env_top, *arg_top;
   struct CHOICE_POINT *C0;
   void *P;
+  struct CATCHER *catch_top;
   WORD timestamp;
 } CHOICE_POINT;
 
@@ -202,6 +203,7 @@ typedef struct DB_ITEM
 typedef struct CATCHER
 {
   CHOICE_POINT *C0;
+  X ball;
   X *E, *T, *env_top, *arg_top;
   void *P;
   void **ifthen_top;
@@ -742,7 +744,7 @@ static void throw_exception(X ball)
 
   --catch_top;
   arg_top = catch_top->arg_top;
-  *arg_top = ball;
+  catch_top->ball = ball;
   longjmp(exception_handler, 1);
 }
 
@@ -2684,6 +2686,7 @@ static X string_to_list(CHAR *str, int len)
     C->timestamp = clock_ticks++;				\
     C->arg_top = arg_top;					\
     C->env_top = env_top;					\
+    C->catch_top = catch_top;					\
     C->C0 = C0;							\
     C->P = lbl;							\
     C0 = C++;							\
@@ -2697,6 +2700,7 @@ static X string_to_list(CHAR *str, int len)
     C->timestamp = clock_ticks++;					\
     C->arg_top = arg_top;						\
     C->env_top = env_top;						\
+    C->catch_top = catch_top;						\
     C->C0 = C0;								\
     C->P = lbl;								\
     ++C;								\
@@ -2734,6 +2738,7 @@ static X string_to_list(CHAR *str, int len)
     unwind_trail(C0->T);			\
     A = C0->A;					\
     arg_top = C0->arg_top;			\
+    catch_top = C0->catch_top;			\
     goto *(C0->P); }
 
 #define POP_CHOICE_POINT  \
@@ -2797,14 +2802,15 @@ static X string_to_list(CHAR *str, int len)
     catch_top->ifthen_top = ifthen_top;		\
     catch_top->env_top = env_top;		\
     catch_top->arg_top = arg_top;		\
-    catch_top->P = (lbl);			\
+    catch_top->P = lbl;				\
+    catch_top->ball = ZERO;			\
     ++catch_top; }
 
 #define POP_CATCHER  \
   { ASSERT(catch_top > catch_stack, "catch-stack underflow"); \
     --catch_top; }
 
-#define RETHROW       throw_exception(A[0])
+#define RETHROW       throw_exception(catch_top->ball)
 
 
 /// Boilerplate code
