@@ -28,6 +28,7 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <setjmp.h>
 
 
 /// limits - all sizes are in bytes
@@ -203,6 +204,7 @@ typedef struct CATCHER
   CHOICE_POINT *C0;
   X *E, *T, *env_top, *arg_top;
   void *P;
+  void **ifthen_top;
 } CATCHER;
 
 
@@ -294,7 +296,7 @@ typedef struct CATCHER
 
 #ifdef COMPILED_PROLOG_PROGRAM
 static BLOCK END_OF_LIST_VAL_BLOCK = { END_OF_LIST_TAG, {0}};
-static X dot_atom;
+static X dot_atom, system_error_atom;
 
 static PORT_BLOCK default_input_port = { PORT_TAG|4, NULL, ONE, ONE, ZERO };
 static PORT_BLOCK default_output_port = { PORT_TAG|4, NULL, ZERO, ONE, ZERO };
@@ -334,8 +336,8 @@ static DB_ITEM *deleted_db_items = NULL;
 static int debugging = 0;
 static WORD environment_stack_size, argument_stack_size, choice_point_stack_size, trail_stack_size, ifthen_stack_size;
 static jmp_buf exception_handler;
-static CATCHER catcher_stack[ CATCHER_STACK_SIZE ];
-static CATCHER *catch_top = catcher_stack;
+static CATCHER catch_stack[ CATCHER_STACK_SIZE ];
+static CATCHER *catch_top = catch_stack;
 
 
 // externally visible (the only one that is)
@@ -353,7 +355,7 @@ static CHAR *type_names[] = {
 /// debugging and termination
 
 #define OUTPUT(...)  { fflush(stdout); fprintf(stderr, __VA_ARGS__); } 
-#define CRASH(...)   { fflush(stdout); fprintf(stderr, "\n" __VA_ARGS__); fputc('\n', stderr); crash_hook(); exit(1); }
+#define CRASH(...)   { fflush(stdout); fprintf(stderr, "\n" __VA_ARGS__); fputc('\n', stderr); crash_hook(); exit(EXIT_FAILURE); }
 
 #ifdef UNSAFE
 # define NDEBUG
@@ -521,6 +523,85 @@ static inline X copy_string(X src, WORD srcp, X dest, WORD destp, WORD len)
 }
 
 
+/// allocators
+
+#define ALLOCATE_BLOCK(dest, type, size)				\
+  dest = (void *)alloc_top;						\
+  ((BLOCK *)alloc_top)->h = ((WORD)(type) << TYPE_SHIFT) | (size);		\
+  alloc_top += (size) + 1
+
+#define ALLOCATE_BYTEBLOCK(dest, type, size)				\
+  dest = (void *)alloc_top;							\
+  ((BLOCK *)alloc_top)->h = ((WORD)(type) << TYPE_SHIFT) | (size);		\
+  alloc_top = (X)ALIGN((WORD)alloc_top + (size) + sizeof(WORD))
+
+#define FLONUM(m)  ({ FPALIGN; ALLOCATE_BYTEBLOCK(FLONUM_BLOCK *p_, FLONUM_TYPE, sizeof(FLOAT)); p_->n = (m); (X)p_; })
+#define PAIR(x, y) ({ ALLOCATE_BLOCK(BLOCK *p_, PAIR_TYPE, 2); p_->d[ 0 ] = (x); p_->d[ 1 ] = (y); (X)p_; })
+
+#define PORT(f, i, o, d) \
+  ({ ALLOCATE_BLOCK(PORT_BLOCK *p_, PORT_TYPE, 4); \
+     p_->fp = (f); \
+     p_->dir = (i); \
+     p_->open = (o); \
+     p_->data = (d); \
+     (X)p_; })
+
+#define STRING(len)  \
+  ({ WORD len2_ = (len);							\
+    ALLOCATE_BYTEBLOCK(BLOCK *p_, STRING_TYPE, len2_ + 1);	\
+    ((CHAR *)(p_->d))[ len2_ ] = '\0';					\
+    (X)p_; })
+  
+#define CSTRING(str) \
+  ({ char *str_ = str; \
+    WORD len3_ = strlen(str);						\
+    X s_ = (X)STRING(len3_);						\
+    memcpy(objdata(s_), str_, len3_);					\
+    s_; })
+  
+#define SYMBOL(name, next, prev)					\
+  ({ ALLOCATE_BLOCK(BLOCK *p_, SYMBOL_TYPE, 3);			\
+    SLOT_INIT((X)p_, 0, (name));					\
+    SLOT_INIT((X)p_, 1, (next));					\
+    SLOT_INIT((X)p_, 2, (prev));					\
+    (X)p_; })
+
+// does not initialize args
+#define STRUCTURE(functor, arity)				\
+  ({ ALLOCATE_BLOCK(BLOCK *s_, STRUCTURE_TYPE, (arity) + 1);	\
+  SLOT_INIT((X)s_, 0, (functor));				\
+  (X)s_; })
+
+
+/// Variable dereferencing
+
+#define deref(x)   ({ X _x = (x); is_FIXNUM(_x) || !is_VAR(_x) ? _x : deref1(_x); })
+
+static X deref1(X val)
+{
+  static X stack[ DEREF_STACK_SIZE ];
+  X *sp = stack;
+
+  for(;;) {
+    if(is_FIXNUM(val) || !is_VAR(val))
+      return val;
+
+    for(X *p = sp - 1; p >= stack; --p) {
+      if(*p == val) 
+	return val;
+    }
+
+    *(sp++) = val;
+    val = slot_ref(val, 0);
+
+#ifndef UNSAFE
+    if(sp >= stack + DEREF_STACK_SIZE)
+      CRASH("deref-stack overflow");
+#endif
+  }
+}
+
+
 /// basic I/O 
 
 
@@ -651,10 +732,10 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
 
 static void throw_exception(X ball)
 {
-  if(catch_top == catcher_stack) {
+  if(catch_top == catch_stack) {
     fflush(stdout);
     fputs("\nUnhandled exception:\n", stderr);
-    basic_term_write(stderr, 1, 10, 1);
+    basic_write_term(stderr, 1, 10, 1, ball);
     crash_hook();
     exit(EXIT_FAILURE);
   }
@@ -663,6 +744,15 @@ static void throw_exception(X ball)
   arg_top = catch_top->arg_top;
   *arg_top = ball;
   longjmp(exception_handler, 1);
+}
+
+
+static void system_error(char *msg)
+{
+  X str = CSTRING(msg);
+  X exn = STRUCTURE(system_error_atom, 1);
+  SLOT_INIT(exn, 1, str);
+  throw_exception(exn);
 }
 
 
@@ -857,56 +947,6 @@ static inline X check_output_port(X x)
 }
 
 
-/// allocators
-
-#define ALLOCATE_BLOCK(dest, type, size)				\
-  dest = (void *)alloc_top;						\
-  ((BLOCK *)alloc_top)->h = ((WORD)(type) << TYPE_SHIFT) | (size);		\
-  alloc_top += (size) + 1
-
-#define ALLOCATE_BYTEBLOCK(dest, type, size)				\
-  dest = (void *)alloc_top;							\
-  ((BLOCK *)alloc_top)->h = ((WORD)(type) << TYPE_SHIFT) | (size);		\
-  alloc_top = (X)ALIGN((WORD)alloc_top + (size) + sizeof(WORD))
-
-#define FLONUM(m)  ({ FPALIGN; ALLOCATE_BYTEBLOCK(FLONUM_BLOCK *p_, FLONUM_TYPE, sizeof(FLOAT)); p_->n = (m); (X)p_; })
-#define PAIR(x, y) ({ ALLOCATE_BLOCK(BLOCK *p_, PAIR_TYPE, 2); p_->d[ 0 ] = (x); p_->d[ 1 ] = (y); (X)p_; })
-
-#define PORT(f, i, o, d) \
-  ({ ALLOCATE_BLOCK(PORT_BLOCK *p_, PORT_TYPE, 4); \
-     p_->fp = (f); \
-     p_->dir = (i); \
-     p_->open = (o); \
-     p_->data = (d); \
-     (X)p_; })
-
-#define STRING(len)  \
-  ({ WORD len2_ = (len);							\
-    ALLOCATE_BYTEBLOCK(BLOCK *p_, STRING_TYPE, len2_ + 1);	\
-    ((CHAR *)(p_->d))[ len2_ ] = '\0';					\
-    (X)p_; })
-  
-#define CSTRING(str) \
-  ({ char *str_ = str; \
-    WORD len3_ = strlen(str);						\
-    X s_ = (X)STRING(len3_);						\
-    memcpy(objdata(s_), str_, len3_);					\
-    s_; })
-  
-#define SYMBOL(name, next, prev)					\
-  ({ ALLOCATE_BLOCK(BLOCK *p_, SYMBOL_TYPE, 3);			\
-    SLOT_INIT((X)p_, 0, (name));					\
-    SLOT_INIT((X)p_, 1, (next));					\
-    SLOT_INIT((X)p_, 2, (prev));					\
-    (X)p_; })
-
-// does not initialize args
-#define STRUCTURE(functor, arity)				\
-  ({ ALLOCATE_BLOCK(BLOCK *s_, STRUCTURE_TYPE, (arity) + 1);	\
-  SLOT_INIT((X)s_, 0, (functor));				\
-  (X)s_; })
-
-
 /// symbol-table management
 
 static WORD hash_name(CHAR *name, int len)
@@ -962,6 +1002,7 @@ static void intern_static_symbols(X sym1)
   }
 
   dot_atom = intern(CSTRING("."));
+  system_error_atom = intern(CSTRING("system_error"));
 }
 
 
@@ -995,37 +1036,10 @@ static inline void push_trail(CHOICE_POINT *C0, X var)
   if(fixnum_to_word(slot_ref(var, 2)) < C0->timestamp) {
 #ifndef UNSAFE
     if(trail_top >= trail_stack + trail_stack_size)
-      CRASH("trail-stack overflow.");
+      CRASH("trail-stack overflow");
 #endif
 
     *(trail_top++) = var;
-  }
-}
-
-
-#define deref(x)   ({ X _x = (x); is_FIXNUM(_x) || !is_VAR(_x) ? _x : deref1(_x); })
-
-static X deref1(X val)
-{
-  static X stack[ DEREF_STACK_SIZE ];
-  X *sp = stack;
-
-  for(;;) {
-    if(is_FIXNUM(val) || !is_VAR(val))
-      return val;
-
-    for(X *p = sp - 1; p >= stack; --p) {
-      if(*p == val) 
-	return val;
-    }
-
-    *(sp++) = val;
-    val = slot_ref(val, 0);
-
-#ifndef UNSAFE
-    if(sp >= stack + DEREF_STACK_SIZE)
-      CRASH("deref-stack overflow");
-#endif
   }
 }
 
@@ -1600,6 +1614,7 @@ static void collect_garbage(CHOICE_POINT *C)
 
   // mark special symbols
   mark1(&dot_atom);
+  mark1(&system_error_atom);
 
   //XXX preliminary - later don't mark and remove unforwarded items
   //    (adjusting trail-pointers in CP-stack accordingly)
@@ -2778,13 +2793,17 @@ static X string_to_list(CHAR *str, int len)
 #define PUSH_CATCHER(lbl)			\
   { catch_top->C0 = C0;				\
     catch_top->E = E;				\
-    catch_top->T = T;				\
+    catch_top->T = trail_top;			\
+    catch_top->ifthen_top = ifthen_top;		\
     catch_top->env_top = env_top;		\
     catch_top->arg_top = arg_top;		\
     catch_top->P = (lbl);			\
     ++catch_top; }
 
-#define POP_CATCHER   --catch_top
+#define POP_CATCHER  \
+  { ASSERT(catch_top > catch_stack, "catch-stack underflow"); \
+    --catch_top; }
+
 #define RETHROW       throw_exception(A[0])
 
 
@@ -2811,12 +2830,15 @@ static X string_to_list(CHAR *str, int len)
     C = C0 + 1;						\
     A = arg_top = catch_top->arg_top;			\
     env_top = catch_top->env_top;			\
+    ifthen_top = catch_top->ifthen_top;			\
     E = catch_top->E;					\
     goto *(catch_top->P); }				\
   goto INIT_GOAL;					\
 fail: INVOKE_CHOICE_POINT;				\
-fail_exit: fprintf(stderr, "no.\n"); terminate(C, 1);	\
-success_exit: terminate(C, 0);
+fail_exit: fprintf(stderr, "no.\n"); terminate(C, EXIT_FAILURE);	\
+success_exit:								\
+ ASSERT(ifthen_stack == ifthen_top, "unbalanced if-then stack");	\
+ terminate(C, EXIT_SUCCESS);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3235,6 +3257,9 @@ PRIMITIVE(set_random_seed, X seed)
 }
 
 static int flush_output(CHOICE_POINT *C0) { fflush(port_file(standard_output_port)); return 1; }
+
+PRIMITIVE(do_throw, X ball) { throw_exception(ball); return 0; }
+
 
 #endif
 #endif
