@@ -67,14 +67,15 @@
 
 
 // these sizes are given in elements
-#define DEREF_STACK_SIZE  100
+#define DEREF_STACK_SIZE 100
 #define MAXIMAL_NUMBER_OF_ARGUMENTS 100
 #define DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT 10
 #define TRACE_DEBUG_WRITE_LIMIT 5
 #define INITIAL_FREEZE_TERM_VAR_TABLE_SIZE 1000
 #define CIRCULAR_TERM_TABLE_SIZE 1000
 #define MAX_GLOBAL_VARIABLES 256
-#define STRING_BUFFER_SIZE   1024
+#define STRING_BUFFER_SIZE 1024
+#define CATCHER_STACK_SIZE 1024
 
 
 /// miscellanous
@@ -196,6 +197,13 @@ typedef struct DB_ITEM
   struct DB_ITEM *previous, *next;
   struct DB_ITEM *next_deleted;
 } DB_ITEM;
+
+typedef struct CATCHER
+{
+  CHOICE_POINT *C0;
+  X *E, *T, *env_top, *arg_top;
+  void *P;
+} CATCHER;
 
 
 /// tags and type-codes
@@ -325,6 +333,10 @@ static int string_buffer_length;
 static DB_ITEM *deleted_db_items = NULL;
 static int debugging = 0;
 static WORD environment_stack_size, argument_stack_size, choice_point_stack_size, trail_stack_size, ifthen_stack_size;
+static jmp_buf exception_handler;
+static CATCHER catcher_stack[ CATCHER_STACK_SIZE ];
+static CATCHER *catch_top = catcher_stack;
+
 
 // externally visible (the only one that is)
 X global_variables[ MAX_GLOBAL_VARIABLES ];
@@ -2744,6 +2756,18 @@ static X string_to_list(CHAR *str, int len)
     env_top = E + CURRENT_ENVIRONMENT_SIZE;				\
     SET_REDO(NULL); }
 
+#define PUSH_CATCHER(lbl)			\
+  { catch_top->C0 = C0;				\
+    catch_top->E = E;				\
+    catch_top->T = T;				\
+    catch_top->env_top = env_top;		\
+    catch_top->arg_top = arg_top;		\
+    catch_top->P = (lbl);			\
+    ++catch_top; }
+
+#define POP_CATCHER   --catch_top
+#define RETHROW       throw_exception(A[0])
+
 
 /// Boilerplate code
 
@@ -2762,6 +2786,14 @@ static X string_to_list(CHAR *str, int len)
   C->C0 = NULL;						\
   C->P = &&fail_exit;					\
   C++;							\
+  if(setjmp(exception_handler)) {			\
+    unwind_trail(catch_top->T);				\
+    C0 = catch_top->C0;					\
+    C = C0 + 1;						\
+    A = arg_top = catch_top->arg_top;			\
+    env_top = catch_top->env_top;			\
+    E = catch_top->E;					\
+    goto *(catch_top->P); }				\
   goto INIT_GOAL;					\
 fail: INVOKE_CHOICE_POINT;				\
 fail_exit: fprintf(stderr, "no.\n"); terminate(C, 1);	\
