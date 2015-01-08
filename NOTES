@@ -5,18 +5,29 @@ NOTES											              -*- Org -*-
 ** Singleton variables could get special handling when in argument position
    - unification is a noop, unless nested in another term.
 ** TODO Implement memberchk/2 as primitive
+** writeq/1 could use foreign_call(basic_writeq(X)) for atoms
+   - but the name needs to be classified anyway, because of the possibly
+     required space in front of it.
 ** Mode-declarations
+   - can probably be used in many ways, but needs more thought.
 ** TODO Determinacy declarations
    - i.e. ":- determinate(PI)."
    - file:da.pl
    - provide predicate "is_deterministic(EXPR)"
    - add declarations for all library predicates, where appropriate.
+   - use determinism-information to find more tailcall-opportunities.
+     - propagate mode, depending on called predicate, see:
+       compile_ordinary_call in file:compile.pl
 ** TODO Clause indexing
 *** This could even be extended to invoke particular entry-points depending on call-arguments
 *** Dispatch on type, fixnum-list or atom-list
     - until no clauses are left or first clause that has a variable as first arg.
     - make sure fixnum-checks take place first.
     - no remaining match can set redo to NULL and fail.
+*** Dispatch on atom- or fixnum list via hashing
+    - add slot containing hash-code to symbol (created during interning)
+    - generate table only for first predicate in list, redo in any of
+      the clauses can jump back to dispatch for this block.
 ** Arithmetic
    - deref all vars just once at start.
    - track types, use unboxed math.
@@ -27,7 +38,7 @@ NOTES											              -*- Org -*-
     - handling heap-full case on thawing still makes this ugly.
 ** TODO current_op/3 needs fast path when operator name is known
    - could use single-bucket db, with unififcation inside
-     db_find/db_next (provided, we implement matching in pc.h)
+     db_find/db_next (provided, we implement matching in file:pc.h)
 ** Deterministic goal in condition of if-then-else can drop some of the CP dance
    - same for '\\+'/2
    - fail could actually just perform a jump, perhaps redefine FAIL
@@ -35,9 +46,6 @@ NOTES											              -*- Org -*-
 ** Analyze program before compiling to pseudo-instructions
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
-* Think about implementing an interpreter
-  - needs fast clause-indexing for dispatching on primitives and
-    arithmetic operations.
 * TODO Find proper name
 * TODO Move repo to bitbucket
 * Benchmark results
@@ -45,32 +53,32 @@ NOTES											              -*- Org -*-
    - SWI prolog: 1.30s
    - <2015-01-04 Sun>: 1.79s (unoptimized: 2.38s)
    - <2015-01-05 Mon>: 1.71s (smaller data area sizes)
+   - <2015-01-08 Thu>: 1.81s (not sure, probably more work in compiler)
 * Things to test
 ** TODO Test on Mac, Windows and R/Pi
 ** TODO Test in 32-bit mode
 ** TODO test retract-loop
    - file:tests/0069-cdb.pl
 * Missing features
-** Add content of PC_INCLUDE_PATH to include-path
+** TODO Add content of PC_INCLUDE_PATH to include-path
+** TODO Extend numerical operators
+   - constants "pi", perhaps "e"
+   - "max", "min", "asin", "acos"
 ** Library/Runtime
-*** Make it possible to embed compiled code
+*** TODO Make it possible to embed compiled code
     - "suspend(IN, OUT)" saves state and suspends execution.
     - define alternative entry-point via macro and return procedure
       ptr to invoke prolog (similar to BONES).
     - also allow access to global_variables, and (prefixed) access
       function.
-*** Runtime-information about defined clauses
-    - as minimum: mapping of name/arity -> entry-point.
-    - for complete support of clause/2 we would actually need the full
-      source.
-    - at least compiler could offer "call_predicate".
 * Diagnostics
 ** Detect singleton variables
 ** Detect redefinitions of primitives
 ** Detect undefined predicate calls
+** Report unused predicates
 ** Detect non-contiguous predicates
-* TODO Once we have a suitable test, compare performance with other implementations
-  - maybe file:queens.pl
+* Once we have a suitable test, compare performance with other implementations
+  - maybe file:tests/0060-crypta.pl
   - SWI, GNU-Prolog, BinProlog
 * Issues
 ** Compiler
@@ -80,142 +88,32 @@ NOTES											              -*- Org -*-
 *** TODO Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
 *** TODO check fixnum range when emitting literals 
+*** TODO show include-messages only in some sort of "verbose" mode
+    - gets in the way with pc-autocompile and is not too interesting
+      (still, it should be visible)
+    - possibly add "-q" option.
 ** Runtime
 *** TODO trail-GC
     - and adjust CP-stack entries accordingly.
     - tricky.
 *** TODO Is cycle-checking in =deref= really necessary?
 ** Libraries
+*** TODO reader-errors should go to stderr
 *** TODO May a PI (predicate-indicator) be an atom, refering to all available arities?
     - would need to be added to abolish/1.
 *** TODO op/3 should throw ISO-compliant exceptions
-* List of builtin and library predicates
-** TODO Use "descriptors" for arguments in this list
-   - "+" :: must be instantiated
-   - "-" :: must be unbound
-   - "?" :: must be partially instantiated
-   - "@" :: argument is not instantiated (e.g. for type tests)
-  | Name                         | Type | Library   | Notes                                                                |
-  |------------------------------+------+-----------+----------------------------------------------------------------------|
-  | X, Y                         | S    |           |                                                                      |
-  | X; Y                         | S    |           |                                                                      |
-  | X = Y                        | S    |           |                                                                      |
-  | X -> Y                       | S    |           |                                                                      |
-  | X -> Y; Z                    | S    |           |                                                                      |
-  | '!'                          | S    |           |                                                                      |
-  | \+ X                         | S    |           |                                                                      |
-  | X \= Y                       | S    |           |                                                                      |
-  | X == Y                       | S    |           |                                                                      |
-  | X \== Y                      | S    |           |                                                                      |
-  | EXP1 < EXP1                  | S    |           |                                                                      |
-  | EXP1 > EXP2                  | S    |           |                                                                      |
-  | EXP1 =< EXP2                 | S    |           |                                                                      |
-  | EXP1 >= EXP2                 | S    |           |                                                                      |
-  | EXP1 =:= EXP2                | S    |           |                                                                      |
-  | EXP1 =\= EXP2                | S    |           |                                                                      |
-  | X @< Y                       | S    |           |                                                                      |
-  | X @> Y                       | S    |           |                                                                      |
-  | X @=< Y                      | S    |           |                                                                      |
-  | X @>= Y                      | S    |           |                                                                      |
-  | abolish(PI)                  | A    | cdb.pl    |                                                                      |
-  | append(L1, L2, L3)           | A    | lists.pl  |                                                                      |
-  | arg(INDEX, TERM, X)          | M    |           |                                                                      |
-  | asserta(CLAUSE)              | A    | cdb.pl    |                                                                      |
-  | asserta(CLAUSE, REF)         | A    | cdb.pl    |                                                                      |
-  | assertz(CLAUSE)              | A    | cdb.pl    |                                                                      |
-  | assertz(CLAUSE, REF)         | A    | cdb.pl    |                                                                      |
-  | atom(X)                      | P    |           |                                                                      |
-  | atom_codes(ATOM, LIST)       | M    |           |                                                                      |
-  | atomic(X)                    | P    |           |                                                                      |
-  | clause(HEAD, BODY)           | A    | cdb.pl    |                                                                      |
-  | clause(HEAD, BODY, REF)      | A    | cdb.pl    |                                                                      |
-  | command_line_arguments(LIST) | M    |           | Filters out runtime-options ("-:..."), does not include program name |
-  | compare(REL, X, Y)           | A    | misc.pl   |                                                                      |
-  | compound(X)                  | P    |           |                                                                      |
-  | copy_term(X, Y)              | A    | misc.pl   |                                                                      |
-  | current_input(S)             | M    |           |                                                                      |
-  | current_output(S)            | M    |           |                                                                      |
-  | current_op(P, A, N)          | A    | op.pl     |                                                                      |
-  | db_reference(X)              | M    |           |                                                                      |
-  | display(X)                   | M    |           |                                                                      |
-  | enable_trace(F)              | M    |           |                                                                      |
-  | erase(REF)                   | M    |           |                                                                      |
-  | exists_file(NAME)            | M    |           | fails if nonexistent or not a regular file                           |
-  | fail                         | S    |           |                                                                      |
-  | findall(T, G, L)             | S    |           | G must be a callable term, uses library "findall.pl"                 |
-  | float(X)                     | P    |           |                                                                      |
-  | forall(G, A)                 | S    |           |                                                                      |
-  | foreign_call(TERM)           | S    |           |                                                                      |
-  | garbage_collect              | M    |           | GC is triggered on next allocation                                   |
-  | get(C)                       | A    | io.pl     | -1 on EOF                                                            |
-  | get0(C)                      | M    |           | -1 on EOF                                                            |
-  | get_global(ATOM, X)          | S    |           |                                                                      |
-  | getenv(NAME, VALUE)          | M    |           | fails if variable doesn't exist                                      |
-  | getpid(PID)                  | M    |           |                                                                      |
-  | halt                         | M    |           | exits with code 0                                                    |
-  | halt(CODE)                   | M    |           |                                                                      |
-  | integer(X)                   | P    |           |                                                                      |
-  | intersection(X, Y, Z)        | A    | sets.pl   |                                                                      |
-  | X is EXP                     | S    |           |                                                                      |
-  | keysort(S, R)                | A    | sorts.pl  |                                                                      |
-  | length(LIST, NUM)            | A    | lists.pl  |                                                                      |
-  | list_to_ord_set(L, S)        | A    | ordset.pl |                                                                      |
-  | member(X, LST)               | A    | lists.pl  |                                                                      |
-  | memberchk(X, LST)            | A    | lists.pl  |                                                                      |
-  | merge(S1, S2, R)             | A    | sorts.pl  |                                                                      |
-  | name(X, LST)                 | A    | misc.pl   |                                                                      |
-  | nl                           | M    |           |                                                                      |
-  | nonvar(X)                    | P    |           |                                                                      |
-  | number(X)                    | P    |           |                                                                      |
-  | number_codes(NUM, LIST)      | M    |           | uses strtol(3)/strtod(3), so allows leading space                    |
-  | op(P, A, N)                  | A    | op.pl     |                                                                      |
-  | ord_disjoint(S1, S2)         | A    | ordset.pl |                                                                      |
-  | ord_insert(S1, ELT, S2)      | A    | ordset.pl |                                                                      |
-  | ord_intersect(S1, S2)        | A    | ordset.pl |                                                                      |
-  | ord_intersect(S1, S2, IS)    | A    | ordset.pl |                                                                      |
-  | ord_seteq(S1, S2)            | A    | ordset.pl |                                                                      |
-  | ord_subset(S1, S2)           | A    | ordset.pl |                                                                      |
-  | ord_subtract(S1, S2, DS)     | A    | ordset.pl |                                                                      |
-  | ord_symdiff(S1, S2, DS)      | A    | ordset.pl |                                                                      |
-  | ord_union(S1, S2)            | A    | ordset.pl |                                                                      |
-  | peek(BYTE)                   | M    |           | -1 on EOF                                                            |
-  | put(CHAR)                    | M    |           | CHAR may be fixnum or symbol                                         |
-  | read(TERM)                   | M/A  | read.pl   | expands into read1/1, which is auto-included                         |
-  | read_tokens(TOKENS, VARS)    | A    | rdtok.pl  |                                                                      |
-  | recorda(KEY, VAL)            | A    | rdb.pl    |                                                                      |
-  | recorda(KEY, VAL, REF)       | A    | rdb.pl    |                                                                      |
-  | recorded(KEY, VAL)           | A    | rdb.pl    |                                                                      |
-  | recorded(KEY, VAL, REF)      | A    | rdb.pl    |                                                                      |
-  | recordz(KEY, VAL)            | A    | rdb.pl    |                                                                      |
-  | recordz(KEY, VAL, REF)       | A    | rdb.pl    |                                                                      |
-  | repeat                       | S    |           |                                                                      |
-  | retract(CLAUSE)              | A    | cdb.pl    |                                                                      |
-  | reverse(LST1, LST2)          | A    | lists.pl  |                                                                      |
-  | see(FILE)                    | A    | io.pl     | may also pass stream                                                 |
-  | seeing(FILE)                 | A    | io.pl     |                                                                      |
-  | seen                         | A    | io.pl     | does nothing if stdin                                                |
-  | select(ELEM, LIST1, LIST2)   | A    | sets.pl   |                                                                      |
-  | set_global(ATOM, X)          | S    |           |                                                                      |
-  | shell(COMMAND)               | A    | misc.pl   | expects exit-status 0                                                |
-  | shell(COMMAND, STATUS)       | M    |           |                                                                      |
-  | skip(C)                      | A    | io.pl     |                                                                      |
-  | sleep(SECS)                  | M    |           |                                                                      |
-  | sort(S, R)                   | A    | sorts.pl  |                                                                      |
-  | stream(X)                    | P    |           |                                                                      |
-  | subtract(X, Y, Z)            | A    | sets.pl   |                                                                      |
-  | tab(C)                       | A    | io.pl     |                                                                      |
-  | tell(FILE)                   | A    | io.pl     | may also pass stream                                                 |
-  | telling(STREAM)              | A    | io.pl     |                                                                      |
-  | throw(X)                     | A    | misc.pl   | uncatchable, just to signal error                                    |
-  | told                         | A    | io.pl     | does nothing if stdout or stderr                                     |
-  | true                         | S    |           |                                                                      |
-  | union(X, Y, Z)               | A    | sets.pl   |                                                                      |
-  | X =.. Y                      | A    | misc.pl   | "univ"                                                               |
-  | var(X)                       | P    |           |                                                                      |
-  | write(X)                     | A    | write.pl  |                                                                      |
-  | writeq(X)                    | A    | write.pl  |                                                                      |
-  #+TBLFM: $1=
-  - "M" = macro, "A" = autoload, "P" = primitive (in compiler), "S" = special form / builtin
+* Interpreter
+** TODO Needs implementation of catch/3
+** TODO Additional predicates
+   - listing
+     - needs some way to enumerate all clauses (clause/2 needs
+       sufficiently instantiated head).
+** TODO Arithmetic evaluation
+   - add system predicates that invoke evaluator.
+** TODO Handle directives
+   - including latent expressions.
+** TODO Print variables after query
+   - needs access to their original names.
 * List of arithmetic operators
   | - X                      |
   | \ X                      |
@@ -252,8 +150,78 @@ NOTES											              -*- Org -*-
   | initialization GOAL      |
   | op(P, A, N)              |
   | pre_initialization(GOAL) |
+  | trace_libraries          |
+* list of predefined operators
+  | Name             | Associativity | Precedence |
+  |------------------+---------------+------------|
+  | @=<              | xfx           |        700 |
+  | ;                | xfy           |       1100 |
+  | @<               | xfx           |        700 |
+  | ,                | xfy           |       1000 |
+  | is               | xfx           |        700 |
+  | **               | xfx           |        200 |
+  | @>               | xfx           |        700 |
+  | <<               | yfx           |        400 |
+  | @>=              | xfx           |        700 |
+  | \==              | xfx           |        700 |
+  | '^'              | xfy           |        200 |
+  | +                | fy            |        200 |
+  | +                | yfx           |        500 |
+  | >>               | yfx           |        400 |
+  | '=='             | xfx           |        700 |
+  | -                | fy            |        200 |
+  | -                | yfx           |        500 |
+  | initialization   | fx            |       1150 |
+  | \+               | fy            |        900 |
+  | '=:='            | xfx           |        700 |
+  | '=\='            | xfx           |        700 |
+  | \/               | yfx           |        500 |
+  | :-               | fx            |       1200 |
+  | :-               | xfx           |       1200 |
+  | \=               | xfx           |        700 |
+  | \                | fy            |        200 |
+  | /\               | yfx           |        500 |
+  | xor              | yfx           |        400 |
+  | '=<'             | xfx           |        700 |
+  | <                | xfx           |        700 |
+  | '=..'            | xfx           |        700 |
+  | '='              | xfx           |        700 |
+  | //               | yfx           |        400 |
+  | '/'              | yfx           |        400 |
+  | ->               | xfy           |       1050 |
+  | >                | xfx           |        700 |
+  | '*'              | yfx           |        400 |
+  | >=               | xfx           |        700 |
+  | -->              | xfx           |       1200 |
+  | '                | xfy           |       1105 |
+  | \\               | xfy           |        400 |
 * Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
 * Benchmark suites
 ** http://www.cs.cmu.edu/afs/cs/project/ai-repository/ai/lang/prolog/code/bench/
+* between/3
+  - from: http://www.cs.otago.ac.nz/staffpriv/ok/pllib.htm
+  #+BEGIN_SRC prolog
+%  Sample implementation.
+
+between(L, U, X) :-
+    (   integer(L), integer(U) ->
+        (   integer(X) ->
+            L =< X, X =< U
+        ;   var(X) ->
+            L =< U,
+            $between(L, U, X)
+        ;   $error
+        )
+    ;   integer(L), integer(X), L > X -> fail
+    ;   integer(U), integer(X), X > U -> fail
+    ;   $error
+    ).
+
+$between(L, L, L) :- !.
+$between(L, _, L).
+$between(L, U, X) :-
+    M is L + 1,
+    $between(M, U, X).
+  #+END_SRC
