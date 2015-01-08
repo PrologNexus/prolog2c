@@ -53,7 +53,7 @@ NOTES											              -*- Org -*-
    - SWI prolog: 1.30s
    - <2015-01-04 Sun>: 1.79s (unoptimized: 2.38s)
    - <2015-01-05 Mon>: 1.71s (smaller data area sizes)
-   - <2015-01-08 Thu>: 1.81s (not sure, probably more work in compiler)
+   - <2015-01-08 Thu>: 1.81s (not sure, probably more work done in compiler)
 * Things to test
 ** TODO Test on Mac, Windows and R/Pi
 ** TODO Test in 32-bit mode
@@ -64,15 +64,39 @@ NOTES											              -*- Org -*-
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
-** Library/Runtime
-*** TODO Allow iterating over all items in a DB
-    - needed for listing/0 in pi.
-*** TODO Make it possible to embed compiled code
+** TODO Allow iterating over all items in a DB
+   - needed for listing/0 in pi.
+** TODO Make it possible to embed compiled code
     - "suspend(IN, OUT)" saves state and suspends execution.
     - define alternative entry-point via macro and return procedure
       ptr to invoke prolog (similar to BONES).
     - also allow access to global_variables, and (prefixed) access
       function.
+** TODO add between/3
+  - from: http://www.cs.otago.ac.nz/staffpriv/ok/pllib.htm
+  #+BEGIN_SRC prolog
+%  Sample implementation.
+
+between(L, U, X) :-
+    (   integer(L), integer(U) ->
+        (   integer(X) ->
+            L =< X, X =< U
+        ;   var(X) ->
+            L =< U,
+            $between(L, U, X)
+        ;   $error
+        )
+    ;   integer(L), integer(X), L > X -> fail
+    ;   integer(U), integer(X), X > U -> fail
+    ;   $error
+    ).
+
+$between(L, L, L) :- !.
+$between(L, _, L).
+$between(L, U, X) :-
+    M is L + 1,
+    $between(M, U, X).
+  #+END_SRC
 * Diagnostics
 ** Detect singleton variables
 ** Detect redefinitions of primitives
@@ -105,7 +129,6 @@ NOTES											              -*- Org -*-
     - would need to be added to abolish/1.
 *** TODO op/3 should throw ISO-compliant exceptions
 * Interpreter
-** TODO Needs implementation of catch/3
 ** TODO Additional predicates
    - listing
      - needs some way to enumerate all clauses (clause/2 needs
@@ -113,6 +136,7 @@ NOTES											              -*- Org -*-
 ** TODO Arithmetic evaluation
    - add system predicates that invoke evaluator, generate code for
      dispatching on and evaluating math-ops.
+** TODO catch exceptions in repl
 ** TODO Handle directives
    - including latent expressions.
 ** TODO Print variables after query
@@ -177,28 +201,3 @@ NOTES											              -*- Org -*-
 ** file:ecrc.tgz
 * Benchmark suites
 ** http://www.cs.cmu.edu/afs/cs/project/ai-repository/ai/lang/prolog/code/bench/
-* between/3
-  - from: http://www.cs.otago.ac.nz/staffpriv/ok/pllib.htm
-  #+BEGIN_SRC prolog
-%  Sample implementation.
-
-between(L, U, X) :-
-    (   integer(L), integer(U) ->
-        (   integer(X) ->
-            L =< X, X =< U
-        ;   var(X) ->
-            L =< U,
-            $between(L, U, X)
-        ;   $error
-        )
-    ;   integer(L), integer(X), L > X -> fail
-    ;   integer(U), integer(X), X > U -> fail
-    ;   $error
-    ).
-
-$between(L, L, L) :- !.
-$between(L, _, L).
-$between(L, U, X) :-
-    M is L + 1,
-    $between(M, U, X).
-  #+END_SRC
