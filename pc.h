@@ -2844,6 +2844,7 @@ fail: INVOKE_CHOICE_POINT;				\
 fail_exit: fprintf(stderr, "no.\n"); terminate(C, EXIT_FAILURE);	\
 success_exit:								\
  ASSERT(ifthen_stack == ifthen_top, "unbalanced if-then stack");	\
+ ASSERT(catch_stack == catch_top, "unbalanced catcher stack");	\
  terminate(C, EXIT_SUCCESS);
 
 
