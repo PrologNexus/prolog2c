@@ -65,6 +65,8 @@ NOTES											              -*- Org -*-
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
 ** Library/Runtime
+*** TODO Allow iterating over all items in a DB
+    - needed for listing/0 in pi.
 *** TODO Make it possible to embed compiled code
     - "suspend(IN, OUT)" saves state and suspends execution.
     - define alternative entry-point via macro and return procedure
@@ -109,41 +111,12 @@ NOTES											              -*- Org -*-
      - needs some way to enumerate all clauses (clause/2 needs
        sufficiently instantiated head).
 ** TODO Arithmetic evaluation
-   - add system predicates that invoke evaluator.
+   - add system predicates that invoke evaluator, generate code for
+     dispatching on and evaluating math-ops.
 ** TODO Handle directives
    - including latent expressions.
 ** TODO Print variables after query
    - needs access to their original names.
-* List of arithmetic operators
-  | - X                      |
-  | \ X                      |
-  | X + Y                    |
-  | X - Y                    |
-  | X * Y                    |
-  | X / Y                    |
-  | X // Y                   |
-  | X \\ Y                   |
-  | X /\ Y                   |
-  | X \/ Y                   |
-  | X >> Y                   |
-  | X << Y                   |
-  | X ** Y                   |
-  | abs(X)                   |
-  | atan(X)                  |
-  | ceiling(X)               |
-  | cos(X)                   |
-  | exp(X)                   |
-  | float(X)                 |
-  | float_fractional_part(X) |
-  | float_integer_part(X)    |
-  | floor(X)                 |
-  | log(X)                   |
-  | random(X)
-  | round(X)                 |
-  | sign(X)                  |
-  | sin(X)                   |
-  | sqrt(X)                  |
-  | truncate(X)              |
 * List of directives
   | global_variable(NAME)    |
   | include(FILENAME)        |
@@ -198,6 +171,10 @@ NOTES											              -*- Org -*-
 * Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
+* Usable for tests and/or benchmarks
+** file:dobry.txt
+** file:holmer.tgz
+** file:ecrc.tgz
 * Benchmark suites
 ** http://www.cs.cmu.edu/afs/cs/project/ai-repository/ai/lang/prolog/code/bench/
 * between/3
