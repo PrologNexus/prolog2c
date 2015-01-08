@@ -458,6 +458,16 @@ static inline int is_in_fixnum_range(WORD n) {
 
 #ifdef COMPILED_PROLOG_PROGRAM
 
+
+static char *port_name(X x)
+{
+  PORT_BLOCK *p = (PORT_BLOCK *)x;
+  static CHAR buffer[ 256 ];
+  sprintf(buffer, "<%s-stream>(%p)", p->dir != ZERO ? "input" : "output", (void *)p->fp);
+  return buffer;
+}
+
+
 static void crash_hook()
 {
   return;
@@ -511,8 +521,152 @@ static inline X copy_string(X src, WORD srcp, X dest, WORD destp, WORD len)
 }
 
 
-/// type checking
+/// basic I/O 
 
+
+// doesn't respect operators - expect's deref'd datum
+static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) { 
+  if(limit == 0) fputs("...", fp);
+  else if(is_FIXNUM(x)) 
+    fprintf(fp, WORD_OUTPUT_FORMAT, fixnum_to_word(x));
+  else {
+    switch(objtype(x)) {
+    case FLONUM_TYPE:
+      fprintf(fp, FLOAT_OUTPUT_FORMAT, flonum_to_float(x));
+      break;
+
+    case END_OF_LIST_TYPE:
+      fputs("[]", fp);
+      break;
+
+    case VAR_TYPE:
+      fprintf(fp, "_" WORD_OUTPUT_FORMAT, fixnum_to_word(slot_ref(x, 1)));
+      break;
+
+    case SYMBOL_TYPE: {
+      X str = slot_ref(x, 0);
+      char *name = (char *)objdata(str);
+      WORD len = string_length(str);
+      int q = 0;
+
+      if(quote) {
+	if(len == 0 || !islower(name[ 0 ])) q = 1;
+	else {
+	  for(int i = 0; i < len; ++i) {
+	    if(name[ i ] != '_' && !isalpha(name[ i ]) && !isdigit(name[ i ])) {
+	      q = 1;
+	      break;
+	    }
+	  }
+	}
+      }
+      
+      if(q) { 
+	fputc('\'', fp);
+
+	while(len--) {
+	  int c = *(name++);
+	  
+	  switch(c) {
+	  case '\n': fputs("\\n", fp); break;
+	  case '\r': fputs("\\r", fp); break;
+	  case '\t': fputs("\\t", fp); break;
+	  case '\'': fputs("\\'", fp); break;
+	  case '\\': fputs("\\\\", fp); break;
+	  default:
+	    if(c < 32 || c > 127) 
+	      fprintf(fp, "\\x%02x", c);
+	    else 
+	      fputc(c, fp);
+	  }
+	}
+
+	fputc('\'', fp);
+      }
+      else 
+	fprintf(fp, "%s", name);
+
+      break;
+    }
+
+    case PORT_TYPE:
+      fputs(port_name(x), fp);
+      break;
+
+    case PAIR_TYPE: { 
+      fputc('[', fp);
+      --limit;
+      basic_write_term(fp, debug, limit, quote, deref(slot_ref(x, 0)));
+      int len = debug ? DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT : 999999;
+
+      for(x = deref(slot_ref(x, 1)); 
+	  --len > 0 && !is_FIXNUM(x) && objtype(x) == PAIR_TYPE; 
+	  x = deref(slot_ref(x, 1))) {
+	fputs(", ", fp); 
+	basic_write_term(fp, debug, limit, quote, deref(slot_ref(x, 0)));
+      }
+
+      if(x == END_OF_LIST_VAL)
+	fputc(']', fp);
+      else if(len == 0)
+	fputs("|...]", fp);
+      else {
+	fputc('|', fp);
+	basic_write_term(fp, debug, limit, quote, deref(x));
+	fputc(']', fp);
+      }
+
+      break;
+    }
+
+    case STRUCTURE_TYPE: {
+      --limit;
+      basic_write_term(fp, debug, limit, quote, slot_ref(x, 0));
+      fputc('(', fp);
+      WORD len = objsize(x);
+      
+      for(int i = 1; i < len; ++i) {
+	if(i > 1) 
+	  fputs(", ", fp);
+
+	basic_write_term(fp, debug, limit, quote, deref(slot_ref(x, i)));
+      }
+
+      fputc(')', fp);
+      break;
+    }
+
+    case DBREFERENCE_TYPE:
+      fprintf(fp, "<dbreference>(%p)", (void *)slot_ref(x, 0));
+      break;
+
+    default:
+      fprintf(fp, "<object of unknown type %p:" WORD_OUTPUT_FORMAT ">", (void *)x, objtype(x));
+    }
+  }
+}
+
+
+/// Exception handling
+
+static void throw_exception(X ball)
+{
+  if(catch_top == catcher_stack) {
+    fflush(stdout);
+    fputs("\nUnhandled exception:\n", stderr);
+    basic_term_write(stderr, 1, 10, 1);
+    crash_hook();
+    exit(EXIT_FAILURE);
+  }
+
+  --catch_top;
+  arg_top = catch_top->arg_top;
+  *arg_top = ball;
+  longjmp(exception_handler, 1);
+}
+
+
+/// type checking
 
 static void check_type_failed(WORD t, X x)
 {
@@ -1760,141 +1914,6 @@ static void terminate(CHOICE_POINT *C, int code)
 	  (WORD)arg_top - (WORD)argument_stack,
 	  (WORD)env_top - (WORD)environment_stack);
   exit(code);
-}
-
-
-/// basic I/O 
-
-// stream-name
-static char *port_name(X x)
-{
-  PORT_BLOCK *p = (PORT_BLOCK *)x;
-  static CHAR buffer[ 256 ];
-  sprintf(buffer, "<%s-stream>(%p)", p->dir != ZERO ? "input" : "output", (void *)p->fp);
-  return buffer;
-}
-
-
-// doesn't quote atoms or respects operators - expect's deref'd datum
-static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) { 
-  if(limit == 0) fputs("...", fp);
-  else if(is_FIXNUM(x)) 
-    fprintf(fp, WORD_OUTPUT_FORMAT, fixnum_to_word(x));
-  else {
-    switch(objtype(x)) {
-    case FLONUM_TYPE:
-      fprintf(fp, FLOAT_OUTPUT_FORMAT, flonum_to_float(x));
-      break;
-
-    case END_OF_LIST_TYPE:
-      fputs("[]", fp);
-      break;
-
-    case VAR_TYPE:
-      fprintf(fp, "_" WORD_OUTPUT_FORMAT, fixnum_to_word(slot_ref(x, 1)));
-      break;
-
-    case SYMBOL_TYPE: {
-      X str = slot_ref(x, 0);
-      char *name = (char *)objdata(str);
-      WORD len = string_length(str);
-      int q = 0;
-
-      if(quote) {
-	if(len == 0 || !islower(name[ 0 ])) q = 1;
-	else {
-	  for(int i = 0; i < len; ++i) {
-	    if(name[ i ] != '_' && !isalpha(name[ i ]) && !isdigit(name[ i ])) {
-	      q = 1;
-	      break;
-	    }
-	  }
-	}
-      }
-      
-      if(q) { 
-	fputc('\'', fp);
-
-	while(len--) {
-	  int c = *(name++);
-	  
-	  switch(c) {
-	  case '\n': fputs("\\n", fp); break;
-	  case '\r': fputs("\\r", fp); break;
-	  case '\t': fputs("\\t", fp); break;
-	  case '\'': fputs("\\'", fp); break;
-	  case '\\': fputs("\\\\", fp); break;
-	  default:
-	    if(c < 32 || c > 127) 
-	      fprintf(fp, "\\x%02x", c);
-	    else 
-	      fputc(c, fp);
-	  }
-	}
-
-	fputc('\'', fp);
-      }
-      else 
-	fprintf(fp, "%s", name);
-
-      break;
-    }
-
-    case PORT_TYPE:
-      fputs(port_name(x), fp);
-      break;
-
-    case PAIR_TYPE: { 
-      fputc('[', fp);
-      --limit;
-      basic_write_term(fp, debug, limit, quote, deref(slot_ref(x, 0)));
-      int len = debug ? DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT : 999999;
-
-      for(x = deref(slot_ref(x, 1)); 
-	  --len > 0 && !is_FIXNUM(x) && objtype(x) == PAIR_TYPE; 
-	  x = deref(slot_ref(x, 1))) {
-	fputs(", ", fp); 
-	basic_write_term(fp, debug, limit, quote, deref(slot_ref(x, 0)));
-      }
-
-      if(x == END_OF_LIST_VAL)
-	fputc(']', fp);
-      else if(len == 0)
-	fputs("|...]", fp);
-      else {
-	fputc('|', fp);
-	basic_write_term(fp, debug, limit, quote, deref(x));
-	fputc(']', fp);
-      }
-
-      break;
-    }
-
-    case STRUCTURE_TYPE: {
-      --limit;
-      basic_write_term(fp, debug, limit, quote, slot_ref(x, 0));
-      fputc('(', fp);
-      WORD len = objsize(x);
-      
-      for(int i = 1; i < len; ++i) {
-	if(i > 1) 
-	  fputs(", ", fp);
-
-	basic_write_term(fp, debug, limit, quote, deref(slot_ref(x, i)));
-      }
-
-      fputc(')', fp);
-      break;
-    }
-
-    case DBREFERENCE_TYPE:
-      fprintf(fp, "<dbreference>(%p)", (void *)slot_ref(x, 0));
-      break;
-
-    default:
-      fprintf(fp, "<object of unknown type %p:" WORD_OUTPUT_FORMAT ">", (void *)x, objtype(x));
-    }
-  }
 }
 
 
