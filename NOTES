@@ -128,7 +128,8 @@ $between(L, U, X) :-
 *** TODO reader-errors should go to stderr
 *** TODO May a PI (predicate-indicator) be an atom, refering to all available arities?
     - would need to be added to abolish/1.
-*** TODO op/3 should throw ISO-compliant exceptions
+*** TODO Throw ISO-compliant exceptions everywhere
+    - at least as much as possible and sensible.
 * Interpreter
 ** TODO Additional predicates
    - listing
@@ -137,11 +138,11 @@ $between(L, U, X) :-
 ** TODO Arithmetic evaluation
    - add system predicates that invoke evaluator, generate code for
      dispatching on and evaluating math-ops.
-** TODO catch exceptions in repl
 ** TODO Handle directives
    - including latent expressions.
 ** TODO Print variables after query
    - needs access to their original names.
+     - should be easy with read/2.
 * List of directives
   | global_variable(NAME)    |
   | include(FILENAME)        |
@@ -197,7 +198,10 @@ $between(L, U, X) :-
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
 * Usable for tests and/or benchmarks
-** file:dobry.txt
+** TODO Add files from dobry.txt as tests
+   - file:boyer.pl, file:chat_parser.pl, file:query.pl,
+     file:simple_analyzer.pl, file:unify.pl, file:reducer.pl,
+     file:diff.pl
 ** file:holmer.tgz
 ** file:ecrc.tgz
 * Benchmark suites
