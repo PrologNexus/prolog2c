@@ -2630,7 +2630,10 @@ static CHAR *to_string(X x, int *size)
       return string_buffer; }
 
   default:
-    type_error("atom_or_string", x);
+    if(is_VAR(x))
+      throw_exception(instantiation_error_atom);
+    else type_error("atom_or_string", x);
+
     return NULL;
   }
 }
