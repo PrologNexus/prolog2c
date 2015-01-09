@@ -68,7 +68,7 @@
 
 
 // these sizes are given in elements
-#define DEREF_STACK_SIZE 100
+#define DEREF_STACK_SIZE 1000
 #define MAXIMAL_NUMBER_OF_ARGUMENTS 100
 #define DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT 10
 #define TRACE_DEBUG_WRITE_LIMIT 5
