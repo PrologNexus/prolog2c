@@ -54,6 +54,7 @@ NOTES											              -*- Org -*-
    - <2015-01-04 Sun>: 1.79s (unoptimized: 2.38s)
    - <2015-01-05 Mon>: 1.71s (smaller data area sizes)
    - <2015-01-08 Thu>: 1.81s (not sure, probably more work done in compiler)
+   - <2015-01-08 Thu>: 1.83s (additional catcher-slot in CP)
 * Things to test
 ** TODO Test on Mac, Windows and R/Pi
 ** TODO Test in 32-bit mode
