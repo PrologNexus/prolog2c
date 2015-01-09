@@ -730,6 +730,68 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
 }
 
 
+/// symbol-table management
+
+static WORD hash_name(CHAR *name, int len)
+{
+  unsigned long key = 0;
+
+  while(len--)
+    key ^= (key << 6) + (key >> 2) + *(name++);
+
+  return (WORD)(key & 0x7fffffffUL);
+}
+
+
+static X intern(X name)
+{
+  WORD len = string_length(name);
+  WORD key = hash_name((CHAR *)objdata(name), len) % SYMBOL_TABLE_SIZE;
+
+  for(X sym = symbol_table[ key ]; sym != END_OF_LIST_VAL; sym = slot_ref(sym, 1)) {
+    X name2 = slot_ref(sym, 0);
+
+    if(string_length(name2) == len &&
+       !strncmp((CHAR *)objdata(name), (CHAR *)objdata(name2), len)) //UUU
+      return sym;
+  }
+
+  X oldsym = symbol_table[ key ];
+  X sym = SYMBOL(name, oldsym, END_OF_LIST_VAL);
+
+  if(oldsym != END_OF_LIST_VAL)
+    SLOT_SET(oldsym, 2, sym);
+
+  symbol_table[ key ] = sym;
+  return sym;
+}
+
+
+static void intern_static_symbols(X sym1)
+{
+  while(sym1 != END_OF_LIST_VAL) {
+    X name = slot_ref(sym1, 0);
+    WORD len = string_length(name);
+    WORD key = hash_name((CHAR *)objdata(name), len) % SYMBOL_TABLE_SIZE;
+    X sym = symbol_table[ key ];
+    X nextsym = slot_ref(sym1, 1);
+    SLOT_SET(sym1, 1, sym);
+
+    if(sym != END_OF_LIST_VAL) 
+      SLOT_SET(sym, 2, sym1);
+
+    symbol_table[ key ] = sym1;
+    sym1 = nextsym;
+  }
+
+  dot_atom = intern(CSTRING("."));
+  system_error_atom = intern(CSTRING("system_error"));
+  type_error_atom = intern(CSTRING("type_error"));
+  evaluation_error_atom = intern(CSTRING("evaluation_error"));
+  instantiation_error_atom = intern(CSTRING("instantiation_error"));
+}
+
+
 /// Exception handling
 
 static void throw_exception(X ball)
@@ -946,65 +1008,6 @@ static inline X check_output_port(X x)
 #endif
 
   return x;
-}
-
-
-/// symbol-table management
-
-static WORD hash_name(CHAR *name, int len)
-{
-  unsigned long key = 0;
-
-  while(len--)
-    key ^= (key << 6) + (key >> 2) + *(name++);
-
-  return (WORD)(key & 0x7fffffffUL);
-}
-
-
-static X intern(X name)
-{
-  WORD len = string_length(name);
-  WORD key = hash_name((CHAR *)objdata(name), len) % SYMBOL_TABLE_SIZE;
-
-  for(X sym = symbol_table[ key ]; sym != END_OF_LIST_VAL; sym = slot_ref(sym, 1)) {
-    X name2 = slot_ref(sym, 0);
-
-    if(string_length(name2) == len &&
-       !strncmp((CHAR *)objdata(name), (CHAR *)objdata(name2), len)) //UUU
-      return sym;
-  }
-
-  X oldsym = symbol_table[ key ];
-  X sym = SYMBOL(name, oldsym, END_OF_LIST_VAL);
-
-  if(oldsym != END_OF_LIST_VAL)
-    SLOT_SET(oldsym, 2, sym);
-
-  symbol_table[ key ] = sym;
-  return sym;
-}
-
-
-static void intern_static_symbols(X sym1)
-{
-  while(sym1 != END_OF_LIST_VAL) {
-    X name = slot_ref(sym1, 0);
-    WORD len = string_length(name);
-    WORD key = hash_name((CHAR *)objdata(name), len) % SYMBOL_TABLE_SIZE;
-    X sym = symbol_table[ key ];
-    X nextsym = slot_ref(sym1, 1);
-    SLOT_SET(sym1, 1, sym);
-
-    if(sym != END_OF_LIST_VAL) 
-      SLOT_SET(sym, 2, sym1);
-
-    symbol_table[ key ] = sym1;
-    sym1 = nextsym;
-  }
-
-  dot_atom = intern(CSTRING("."));
-  system_error_atom = intern(CSTRING("system_error"));
 }
 
 
