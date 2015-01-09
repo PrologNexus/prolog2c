@@ -814,7 +814,7 @@ static void throw_exception(X ball)
 
 static void system_error(char *msg)
 {
-  X str = CSTRING(msg);
+  X str = intern(CSTRING(msg));
   X exn = STRUCTURE(system_error_atom, 1);
   SLOT_INIT(exn, 1, str);
   throw_exception(exn);
