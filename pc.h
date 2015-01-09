@@ -298,7 +298,8 @@ typedef struct CATCHER
 
 #ifdef COMPILED_PROLOG_PROGRAM
 static BLOCK END_OF_LIST_VAL_BLOCK = { END_OF_LIST_TAG, {0}};
-static X dot_atom, system_error_atom;
+static X dot_atom, system_error_atom, type_error_atom, evaluation_error_atom;
+static X instantiation_error_atom;
 
 static PORT_BLOCK default_input_port = { PORT_TAG|4, NULL, ONE, ONE, ZERO };
 static PORT_BLOCK default_output_port = { PORT_TAG|4, NULL, ZERO, ONE, ZERO };
@@ -821,15 +822,33 @@ static void system_error(char *msg)
 }
 
 
+static void type_error(char *msg, X culprit)
+{
+  X str = intern(CSTRING(msg));
+  X exn = STRUCTURE(type_error_atom, 2);
+  SLOT_INIT(exn, 1, str);
+  SLOT_INIT(exn, 2, culprit);
+  throw_exception(exn);
+}
+
+
+static void evaluation_error(char *msg)
+{
+  X str = intern(CSTRING(msg));
+  X exn = STRUCTURE(type_error_atom, 1);
+  SLOT_INIT(exn, 1, str);
+  throw_exception(exn);
+}
+
+
 /// type checking
 
 static void check_type_failed(WORD t, X x)
 {
-  if(is_FIXNUM(x))
-    CRASH("type check failed - expected type %s but got fixnum", type_name(t));
+  if(is_FIXNUM(x) || !is_VAR(x))
+    type_error(type_name(t), x);
   
-  if(objtype(x) != t)
-    CRASH("type check failed - expected type %s but got type %s", type_name(t), type_name(objtype(x)));
+  throw_exception(instantiation_error_atom);
 }
 
 
@@ -857,7 +876,10 @@ static inline X check_fixnum(X x)
 
 static void check_number_failed(X x)
 {
-  CRASH("type check failed - expected number, but got %s", type_name(objtype(x)));
+  if(is_FIXNUM(x) || !is_VAR(x)) 
+    type_error("number", x);
+
+  throw_exception(instantiation_error_atom);
 }
 
 
@@ -874,8 +896,10 @@ static inline X check_number(X x)
 
 static void check_integer_failed(X x)
 {
-  // x is not a fixnum, so using objtype is safe
-  CRASH("type check failed - expected integer, but got %s", type_name(objtype(x)));
+  if(is_FIXNUM(x) || !is_VAR(x))
+    type_error("integer", x);
+
+  throw_exception(instantiation_error_atom);
 }
 
 
@@ -903,7 +927,10 @@ static inline X check_integer(X x)
 
 static void check_atomic_failed(X x)
 {
-  CRASH("type check failed - expected atomic, but got %s", type_name(objtype(x)));
+  if(is_FIXNUM(x) || is_VAR(x))
+    type_error("atomic", x);
+
+  throw_exception(instantiation_error_atom);
 }
 
 
@@ -914,58 +941,6 @@ static inline X check_atomic(X x)
     check_atomic_failed(x);
 #endif
   
-  return x;
-}
-
-
-static inline WORD check_index(X x, WORD i)
-{
-#ifndef UNSAFE
-  if(i < 0 || i >= objsize(x))
-    CRASH("index out of range - index is " WORD_OUTPUT_FORMAT ", size is " WORD_OUTPUT_FORMAT, i, objsize(x)); 
-#endif
-
-  return i;
-}
-
-
-static inline WORD check_index_STRING(X x, WORD i)
-{
-#ifndef UNSAFE
-  WORD len = string_length(x);
-
-  if(i < 0 || i >= len)
-    CRASH("string index out of range - index is " WORD_OUTPUT_FORMAT ", size is " WORD_OUTPUT_FORMAT, i, len); 
-#endif
-
-  return i;
-}
-
-  
-static inline X check_range(X x, WORD i, WORD j)
-{
-#ifndef UNSAFE
-  WORD s = objsize(x);
-
-  if(i < 0 || i > s || j < 0 || j > s)	      
-    CRASH("index out of range - range is " WORD_OUTPUT_FORMAT "..." WORD_OUTPUT_FORMAT ", size is " 
-	  WORD_OUTPUT_FORMAT, i, j, s); 
-#endif
-
-  return x;
-}
-
-
-static inline X check_range_STRING(X x, WORD i, WORD j)				
-{
-#ifndef UNSAFE
-  WORD s = string_length(x);
-
-  if(i < 0 || i > s || j < 0 || j > s) 
-    CRASH("string index out of range - range is " WORD_OUTPUT_FORMAT "..." WORD_OUTPUT_FORMAT ", size is " 
-	  WORD_OUTPUT_FORMAT, i, j, s); 
-#endif
-
   return x;
 }
 
@@ -992,7 +967,7 @@ static inline X check_input_port(X x)
   check_type_PORT(x);
   
   if(slot_ref(x, 1) == ZERO)
-    CRASH("not an input-port");
+    type_error("input-port", x);
 #endif
 
   return x;
@@ -1005,7 +980,7 @@ static inline X check_output_port(X x)
   check_type_PORT(x);
 
   if(slot_ref(x, 1) != ZERO)
-    CRASH("not an output-port");
+    type_error("output-port", x);
 #endif
 
   return x;
@@ -1621,6 +1596,9 @@ static void collect_garbage(CHOICE_POINT *C)
   // mark special symbols
   mark1(&dot_atom);
   mark1(&system_error_atom);
+  mark1(&type_error_atom);
+  mark1(&evaluation_error_atom);
+  mark1(&instantiation_error_atom);
 
   //XXX preliminary - later don't mark and remove unforwarded items
   //    (adjusting trail-pointers in CP-stack accordingly)
@@ -2181,7 +2159,7 @@ static inline X num_div(X x, X y)
     if(is_FIXNUM(y)) {
 #ifndef UNSAFE
       if(y == word_to_fixnum(0))
-	CRASH("division by zero");
+	evaluation_error("zero_divisor");
 #endif
 
       return FLONUM(fixnum_to_float(x) / fixnum_to_float(y));	
@@ -2197,7 +2175,7 @@ static inline X num_div(X x, X y)
     if(is_FIXNUM(y)) {
 #ifndef UNSAFE
       if(y == word_to_fixnum(0))
-	CRASH("division by zero");
+	evaluation_error("zero_divisor");
 #endif
 
       return FLONUM(flonum_to_float(x) / fixnum_to_float(y));  
@@ -2223,7 +2201,7 @@ static inline X num_quo(X x, X y)
 
 #ifndef UNSAFE
   if(y == word_to_fixnum(0))
-    CRASH("division by zero");
+    evaluation_error("zero_divisor");
 #endif
 
   return word_to_fixnum(fixnum_to_word(x) / fixnum_to_word(y));
@@ -2239,7 +2217,7 @@ static inline X num_rem(X x, X y)
 
 #ifndef UNSAFE
   if(y == word_to_fixnum(0))
-    CRASH("division by zero");
+    evaluation_error("zero_divisor");
 #endif
 
   return word_to_fixnum(fixnum_to_word(x) % fixnum_to_word(y));
@@ -2253,7 +2231,7 @@ static inline X num_mod(X x, X y)
 
 #ifndef UNSAFE
   if(y2 == 0)
-    CRASH("division by zero");
+    evaluation_error("zero_divisor");
 #endif
 
   WORD z = x2 % y2;
@@ -2617,7 +2595,7 @@ static int compare_terms(X x, X y)
 static CHAR *to_string(X x, int *size)
 {
   if(is_FIXNUM(x))
-    CRASH("bad argument type - can not convert to string");
+    type_error("atom_or_string", x);
 
   switch(objtype(x)) {
   case SYMBOL_TYPE:
@@ -2645,14 +2623,14 @@ static CHAR *to_string(X x, int *size)
       }
 
       if(x != END_OF_LIST_VAL)
-	CRASH("bad argument type - not a proper list");
+	type_error("proper_list", x);
 
       *ptr = '\0';
       *size = len;
       return string_buffer; }
 
   default:
-    CRASH("bad argument type - can not convert to string");
+    type_error("atom_or_string", x);
     return NULL;
   }
 }
@@ -2868,7 +2846,8 @@ PRIMITIVE(put_byte, X c)
 
   if(is_FIXNUM(c)) code = fixnum_to_word(c);
   else if(is_SYMBOL(c)) code = *((char *)objdata(slot_ref(c, 0)));
-  else CRASH("bad argument type - not a valid character");
+  else if(is_VAR(c)) throw_exception(instantiation_error_atom);
+  else type_error("integer", c);
   
   fputc(code, port_file(standard_output_port)); 
   return 1;
@@ -3040,8 +3019,22 @@ PRIMITIVE(open_stream, X name, X input, X mode, X result)
   CHAR *m = to_string(mode, &len);
   FILE *fp = fopen(str, m);
 
-  if(fp == NULL) 
-    CRASH("can not open file - %s", strerror(errno));
+  if(fp == NULL) {
+    if(errno == ENOENT) {
+      X str = intern(CSTRING("existence_error"));
+      X exn = STRUCTURE(str, 2);
+      SLOT_INIT(exn, 1, intern(CSTRING("open")));
+      SLOT_INIT(exn, 2, name);
+      throw_exception(exn);
+    }
+    else {
+      X str = intern(CSTRING("permission_error"));
+      X exn = STRUCTURE(str, 2);
+      SLOT_INIT(exn, 1, intern(CSTRING("open")));
+      SLOT_INIT(exn, 2, name);
+      throw_exception(exn);
+    }
+  }
 
   X port = PORT(fp, input, ONE, ZERO);
   return unify(port, result);
