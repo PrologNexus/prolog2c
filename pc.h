@@ -800,6 +800,7 @@ static void throw_exception(X ball)
     fflush(stdout);
     fputs("\nUnhandled exception:\n", stderr);
     basic_write_term(stderr, 1, 10, 1, ball);
+    fputc('\n', stderr);
     crash_hook();
     exit(EXIT_FAILURE);
   }
