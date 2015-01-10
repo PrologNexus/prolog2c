@@ -1016,7 +1016,7 @@ static inline void push_trail(CHOICE_POINT *C0, X var)
   // trail-check
   if(fixnum_to_word(slot_ref(var, 2)) < C0->timestamp) {
 #ifndef UNSAFE
-    if(trail_top >= trail_stack + trail_stack_size)
+    if((WORD)trail_top >= (WORD)trail_stack + trail_stack_size)
       CRASH("trail-stack overflow");
 #endif
 
