@@ -5,19 +5,24 @@
 
 compile_clauses(NAME/ARITY, CLAUSES, S1, S2) :-
 	emit(enter(NAME, ARITY)),
-	compile_clause_list(CLAUSES, NAME/ARITY, 1, S1, S2).
+	initial_clause_indexing_state(IXSTATE1),
+	build_index_to_type_map(CLAUSES, 1, MAP, IXSTATE1, IXSTATE),
+	compile_clause_list(CLAUSES, NAME/ARITY, MAP, IXSTATE, S1, S2).
 
-compile_clause_list([CLAUSE], NAME/ARITY, I, S1, S2) :-
-	clause_label(NAME, ARITY, I, L),
-	emit(label(L)),
-	(I > 1 -> emit(redo); true),
+compile_clause_list([CLAUSE], NAME/ARITY, [I/_], _, S1, S2) :-
+	clause_label(NAME, ARITY, I, L1),
+	secondary_clause_label(NAME, ARITY, I, L2),
+	emit(label(L1), label(L2)),
+	(I =:= 0; emit(redo)),
 	compile_clause(CLAUSE, NAME/ARITY, I, last, S1, S2).	
-compile_clause_list([CLAUSE|MORE], NAME/ARITY, I, S1, S2) :-
-	clause_label(NAME, ARITY, I, L),
-	emit(label(L)),
-	compile_clause(CLAUSE, NAME/ARITY, I, notlast, S1, S),
-	I2 is I + 1,
-	compile_clause_list(MORE, NAME/ARITY, I2, S, S2).
+compile_clause_list([CLAUSE|MORE], NAME/ARITY, [I/T|MAP], IXSTATE, S1, S2) :-
+	clause_label(NAME, ARITY, I, L1),
+	emit(label(L1)),
+	compile_clause_indexing(NAME, ARITY, [I/T|MAP], IXSTATE, IXSTATE2, S1, S3),
+	secondary_clause_label(NAME, ARITY, I, L2),
+	emit(label(L2)),
+	compile_clause(CLAUSE, NAME/ARITY, I, notlast, S3, S4),
+	compile_clause_list(MORE, NAME/ARITY, MAP, IXSTATE2, S4, S2).
 
 % rule
 compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, S1, S2) :-
@@ -45,10 +50,16 @@ show_compiled_clause(_).
 compile_redo(notlast, L) :- emit(set_redo(L)).
 compile_redo(last, _) :- emit(no_redo).
 
-%% generate clause label from name/arity + index
+
+%% generate clause labels from name/arity + index, and 2nd label for dispatch-target
+
 clause_label(N, A, I, L) :-
 	mangle_name(N, MN),
 	atomic_list_concat([MN, '$', A, '_', I], L).
+
+secondary_clause_label(N, A, I, L) :-
+	mangle_name(N, MN),
+	atomic_list_concat([MN, '$', '$', A, '_', I], L).
 
 
 %% compile head-unification

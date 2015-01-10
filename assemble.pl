@@ -48,7 +48,8 @@ assemble(enter(NAME, ARITY), S, S) :-
 	mangle_name(NAME, MNAME),
 	gen('}', MNAME, '$', ARITY, ':{\n'),
 	gen('#undef CURRENT_NAME\n#undef CURRENT_ARITY\n#define CURRENT_NAME "'),
-	gen(NAME, '"\n#define CURRENT_ARITY ', ARITY, '\nENTER;\n').
+	gen(NAME, '"\n#define CURRENT_ARITY ', ARITY, '\nENTER;\n'),
+	(ARITY =:= 0; gen('A[0]=deref(A[0]);\n')). % for indexing
 
 assemble(environment(SIZE), S, S) :-
 	gen('#undef CURRENT_ENVIRONMENT_SIZE\n#define CURRENT_ENVIRONMENT_SIZE ', SIZE, '\n'),
@@ -181,6 +182,15 @@ assemble(global_set(NAME, R), S, S) :-
 
 assemble(trace_off, S, S) :-
 	gen('#define debugging 0\n').
+
+assemble(switch_on_integer(L), S, S) :- gen('if(is_FIXNUM(A[0])) goto ', L, ';\n').
+assemble(switch_on_noninteger(L), S, S) :- gen('if(!is_FIXNUM(A[0])) goto ', L, ';\n').
+assemble(switch_on_var(L), S, S) :- gen('if(is_VAR(A[0])) goto ', L, ';\n').
+assemble(switch_on_null(L), S, S) :- gen('if(A[0]==END_OF_LIST_VAL) goto ', L, ';\n').
+assemble(switch_on_atom(L), S, S) :- gen('if(is_SYMBOL(A[0])) goto ', L, ';\n').
+assemble(switch_on_float(L), S, S) :- gen('if(is_FLONUM(A[0])) goto ', L, ';\n').
+assemble(switch_on_pair(L), S, S) :- gen('if(is_PAIR(A[0])) goto ', L, ';\n').
+assemble(switch_on_structure(L), S, S) :- gen('if(is_STRUCTURE(A[0])) goto ', L, ';\n').
 
 assemble(OP, _, _) :-
 	error(['invalid pseudo instruction: ', OP]).

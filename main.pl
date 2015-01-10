@@ -17,15 +17,15 @@
 
 main :-
 	command_line_arguments(ARGS),
-	compile(ARGS).
+	compile(ARGS),
+	halt.
 
 compile(ARGS) :-
 	parse_arguments(ARGS),
 	(recorded(source_file, FILE); default_setting(source_file, FILE)),
 	default_setting(include_path, PATH),
 	recorda(include_path, PATH),
-	compile_file(FILE),
-	halt.	
+	compile_file(FILE).
 
 parse_arguments([]).
 parse_arguments(['-o', OFILE|MORE]) :-
