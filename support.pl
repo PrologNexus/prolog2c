@@ -14,7 +14,7 @@ error(MSG) :-
 	halt(1).
 
 iota(N, L) :- iota(0, N, L).
-iota(N, N, []).
+iota(N, N, []) :- !.
 iota(N, M, [N|R]) :-
 	N2 is N + 1, iota(N2, M, R).
 
