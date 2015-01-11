@@ -3168,6 +3168,10 @@ PRIMITIVE(number_codes, X num, X lst)
   if(is_VAR(num)) {
     int len;
     CHAR *ptr = to_string(lst, &len);
+
+    // catch "nan" and "inf" (user at least should add "+"/"-")
+    if(isalpha(*ptr)) return 0;
+
     CHAR *endptr;
     WORD n = strtol(ptr, &endptr, 10);
 
