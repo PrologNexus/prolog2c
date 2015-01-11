@@ -3132,6 +3132,10 @@ PRIMITIVE(atom_codes, X atom, X lst)
   if(is_VAR(atom)) {
     int len;
     CHAR *ptr = to_string(lst, &len);
+
+    if(!strcmp(ptr, "[]")) 
+      return unify(atom, END_OF_LIST_VAL);
+
     X str = STRING(len);
     memcpy(objdata(str), ptr, len);
     return unify(atom, intern(str));
