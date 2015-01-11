@@ -5,24 +5,26 @@
 
 compile_clauses(NAME/ARITY, CLAUSES, S1, S2) :-
 	emit(enter(NAME, ARITY)),
-	initial_clause_indexing_state(IXSTATE1),
-	build_index_to_type_map(CLAUSES, 1, MAP, IXSTATE1, IXSTATE),
-	compile_clause_list(CLAUSES, NAME/ARITY, MAP, IXSTATE, S1, S2).
+	build_index_to_type_map(CLAUSES, 1, MAP),
+	compile_clause_list(CLAUSES, NAME/ARITY, MAP, S1, S2).
 
-compile_clause_list([CLAUSE], NAME/ARITY, [I/_], _, S1, S2) :-
+compile_clause_list([CLAUSE], NAME/ARITY, [I/_], S1, S2) :-
 	clause_label(NAME, ARITY, I, L1),
 	secondary_clause_label(NAME, ARITY, I, L2),
 	emit(label(L1), label(L2)),
-	(I =:= 0; emit(redo)),
+	(I =:= 1; emit(redo)),
 	compile_clause(CLAUSE, NAME/ARITY, I, last, S1, S2).	
-compile_clause_list([CLAUSE|MORE], NAME/ARITY, [I/T|MAP], IXSTATE, S1, S2) :-
+compile_clause_list([CLAUSE|MORE], NAME/ARITY, [I/T|MAP], S1, S2) :-
 	clause_label(NAME, ARITY, I, L1),
 	emit(label(L1)),
-	compile_clause_indexing(NAME, ARITY, [I/T|MAP], IXSTATE, IXSTATE2, S1, S3),
+	(I =:= 1
+	-> compile_clause_indexing(NAME, ARITY, [I/T|MAP], S1, S3)
+	; S3 = S1
+	),
 	secondary_clause_label(NAME, ARITY, I, L2),
 	emit(label(L2)),
 	compile_clause(CLAUSE, NAME/ARITY, I, notlast, S3, S4),
-	compile_clause_list(MORE, NAME/ARITY, MAP, IXSTATE2, S4, S2).
+	compile_clause_list(MORE, NAME/ARITY, MAP, S4, S2).
 
 % rule
 compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, S1, S2) :-
