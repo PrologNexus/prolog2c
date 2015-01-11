@@ -191,9 +191,12 @@ consult_terms(PNA) :-
 	read(TERM),
 	TERM \== end_of_file,
 	insert_term(PNA, TERM, CNA),
+	!,
 	consult_terms(CNA).
 consult_terms(_).
 
+insert_term(PNA, (:- BODY), PNA) :-
+        process_directive(BODY).
 insert_term(PNA, (HEAD :- BODY), N/A) :-
         functor(HEAD, N, A),
 	!,
@@ -202,6 +205,12 @@ insert_term(PNA, FACT, N/A) :-
         functor(FACT, N, A),
 	!,
 	add_clause(PNA, N, A, FACT, true).
+
+process_directive((X, Y)) :-
+	process_directive(X),
+	process_directive(Y).
+process_directive(X) :-
+	(execute(X); seen, throw(error('directive failed', X))).
 
 add_clause(N/A, N, A, HEAD, BODY) :-
 	(atom(HEAD); compound(HEAD))
