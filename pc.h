@@ -1686,9 +1686,12 @@ static void collect_garbage(CHOICE_POINT *C)
   tospace_end = tmp;	
   fromspace_limit = (X)((char *)fromspace_end - heap_reserve);	
   alloc_top = tospace_top;
-  DRIBBLE("finished (" WORD_OUTPUT_FORMAT " bytes in use, T: " WORD_OUTPUT_FORMAT
-	  ", C: " WORD_OUTPUT_FORMAT ", A: " WORD_OUTPUT_FORMAT ", E: " WORD_OUTPUT_FORMAT ")]\n",
-	  ((WORD)((char *)tospace_top - (char *)fromspace)),
+  WORD total = (WORD)fromspace_end - (WORD)fromspace;
+  WORD used = (WORD)alloc_top - (WORD)fromspace;
+  DRIBBLE("finished (" WORD_OUTPUT_FORMAT "%% in use, T: " WORD_OUTPUT_FORMAT
+	  ", C: " WORD_OUTPUT_FORMAT ", A: " WORD_OUTPUT_FORMAT ", E: " 
+	  WORD_OUTPUT_FORMAT ")]\n",
+	  (WORD)((double)used / total * 100),
 	  (WORD)trail_top - (WORD)trail_stack,
 	  (WORD)C - (WORD)choice_point_stack,
 	  (WORD)arg_top - (WORD)argument_stack,
