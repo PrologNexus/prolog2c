@@ -60,7 +60,7 @@ compile_dispatch(DMAP, N, A, S1, S2) :-
 	secondary_clause_label(N, A, I2, L2),
 	%% test for fixnum first, otherwise run first clause if arg is a var
 	emit(switch_on_integer(L1), switch_on_var(L2)),
-	compile_dispatch_sequence(DMAP2, N, A, s(0), S1, S2).
+	compile_dispatch_sequence(DMAP2, N, A, s(no), S1, S2).
 compile_dispatch(DMAP, N, A, S1, S2) :-
 	%% no integer or var case
 	gen_label(FL, S1, S3),
