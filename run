@@ -2,10 +2,18 @@
 ;;;; compile + run program -*- Scheme -*-
 
 
-(require 'sh)
+(require 'sh 'match)
 
 ;(run-verbose #t)
+(define opts '("-g" "-save-temps=obj" "-DTRACE"))
 (define args (command-line-arguments))
+
+(match args
+  (("-O" . _)
+   (pop! args)
+   (set! opts '("-O3" "-fomit-frame-pointer" "-fno-strict-aliasing" "-fwrapv")))
+  (_ #f))
+
 (define file (car args))
 (define bfile (basename file))
 (define xfile (strip-suffix bfile))
@@ -15,5 +23,5 @@
   (unless (string=? "c" s)
     (run (./pc ,file -o ,cfile))))
 
-(run (gcc -std=gnu99 -I. -save-temps=obj -g ,cfile -o ,xfile -lm -DTRACE))
+(run (gcc -std=gnu99 -I. ,cfile -o ,xfile -lm ,@opts))
 (exit (run* (,(string-append "./" xfile) ,@(cdr args))))
