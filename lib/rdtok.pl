@@ -116,7 +116,8 @@ read_tokens(34, Dict, [string(S)|Tokens]) :- !,	% "string"
 	read_tokens(NextCh, Dict, Tokens).
 read_tokens(39, Dict, [atom(A)|Tokens]) :- !,	% 'atom'
 	read_string(S, 39, NextCh),
-	atom_codes(A, S),		% BUG: '0' = 0 unlike Dec-10 Prolog (FLW: fixed by replacing "name" with "atom_codes")
+	%% BUG: '0' = 0 unlike Dec-10 Prolog (FLW: fixed by replacing "name" with "atom_codes")
+	atom_codes(A, S),
 	read_after_atom(NextCh, Dict, Tokens).
 read_tokens(Ch, Dict, [var(Var,Name)|Tokens]) :-
 	(  Ch = 95 ; Ch >= 65, Ch =< 90  ),	% _ or A..Z
