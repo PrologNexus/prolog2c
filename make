@@ -80,18 +80,40 @@
 	   (inc! ok)
 	   (inc! not-ok)))
      tests)
-    (print "\n----------------------------------------------------------------------------------------")
+    (print "\n----------------------------------------------------------------------")
     (print ok " tests successful, " not-ok " tests failed.")
-    (exit not-ok)))
+    (zero? not-ok)))
 
 (define (check-pc1)
+  (pc1)
   (fluid-let ((check-pc "./pc1"))
+    (check)))
+
+(define (check-optimized)
+  (fluid-let ((check-pc "./pc -O"))
+    (check)))
+
+(define (check-pc1-optimized)
+  (pc1)
+  (fluid-let ((check-pc "./pc1 -O"))
     (check)))
 
 (define (check-self-compile)
   (pc2.c)
   (or (zero? (run* (cmp pc1.c pc2.c)))
       #f))
+
+(define (full-check)
+  (let ((r (and (check)
+		(check-optimized)
+		(check-self-compile)
+		(check-pc1)
+		(check-pc1-optimmized))))
+    (print "\n----------------------------------------------------------------------")
+    (print (if r
+	       "ALL CHECKS SUCCEEDED."
+	       "SOME CHECS FAILED."))
+    (print)))
 
 (define (system-predicates)
   (make (("system_predicate.pl" ("generate-system-predicates.pl" "system-predicates")
