@@ -37,7 +37,7 @@ do_body(Body) :-
 
 do_body((!,AfterCut), AfterCut, yes) :- !.
 do_body((Goal,Body), AfterCut, HadCut) :- !,
-	do_goal(Goal),
+	do_body(Goal),
 	do_body(Body, AfterCut, HadCut).
 do_body(!, true, yes).
 do_body((Disj1;_), AfterCut, HadCut) :-
