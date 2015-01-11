@@ -142,6 +142,7 @@ system_predicate(consult, 1).
 system_predicate(forall, 2).
 system_predicate(findall, 3).
 system_predicate(catch, 3).
+system_predicate('->', 2).
 
 call(TERM) :-
 	!,
@@ -171,7 +172,11 @@ call_primitive(catch, 3, TERM) :-
 	!,
 	arg(1, TERM, G), arg(2, TERM, B), arg(3, TERM, R),
 	catch(execute(G), B, execute(R)).
-
+call_primitive('->', 2, TERM) :-
+	!,
+	arg(1, TERM, X), arg(2, TERM, Y),
+	execute(X) -> execute(Y).
+	       
 
 %%
 
