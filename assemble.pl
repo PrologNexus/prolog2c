@@ -184,7 +184,6 @@ assemble(trace_off, S, S) :-
 	gen('#define debugging 0\n').
 
 assemble(switch_on_integer(L), S, S) :- gen('if(is_FIXNUM(A[0])) goto ', L, ';\n').
-assemble(switch_on_noninteger(L), S, S) :- gen('if(!is_FIXNUM(A[0])) goto ', L, ';\n').
 assemble(switch_on_var(L), S, S) :- gen('if(is_VAR(A[0])) goto ', L, ';\n').
 assemble(switch_on_null(L), S, S) :- gen('if(A[0]==END_OF_LIST_VAL) goto ', L, ';\n').
 assemble(switch_on_atom(L), S, S) :- gen('if(is_SYMBOL(A[0])) goto ', L, ';\n').
