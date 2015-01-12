@@ -37,7 +37,7 @@ do_body(Body) :-
 
 do_body((!,AfterCut), AfterCut, yes) :- !.
 do_body((Goal,Body), AfterCut, HadCut) :- !,
-	do_body(Goal),
+	do_body(Goal),		%XXX this is probably wrong
 	do_body(Body, AfterCut, HadCut).
 do_body(!, true, yes).
 do_body((Disj1;_), AfterCut, HadCut) :-
@@ -236,7 +236,7 @@ add_clause(N/A, N, A, HEAD, BODY) :-
 add_clause(PN/PA, N, A, HEAD, BODY) :-
 	(abolish(N/A); true),
 	add_clause(PN/PA, PN, PA, HEAD, BODY).
-	   
+
 
 %%
 
