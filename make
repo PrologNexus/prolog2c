@@ -37,6 +37,16 @@
     "-DCHOICE_POINT_STACK_SIZE=100000000"
     "-DHEAP_SIZE=250000000"))
 
+(define gcc-compile-options
+  '("-std=gnu99" "-g" "-I." "-fno-strict-aliasing" "-fwrapv" "-DTRACE"))
+
+(define gcc-optimized-compile-options
+  '("-std=gnu99" "-I." "-fno-strict-aliasing" "-fwrapv" "-O2" "-fomit-frame-pointer"))
+
+(define gcc-reckless-compile-options
+  '("-std=gnu99" "-I." "-fno-strict-aliasing" "-fwrapv" "-O3" "-fomit-frame-pointer"
+    "-DUNSAFE"))
+
 
 (define (all) 
   (pc1)
@@ -51,13 +61,13 @@
 (define (pc1)
   (pc1.c)
   (make (("pc1" ("pc1.c" "pc.h")
-	  (run (gcc -std=gnu99 -I. -g pc1.c -lm -o pc1 ,@pc-compile-options))))))
+	  (run (gcc ,@gcc-compile-options pc1.c -lm -o pc1 ,@pc-compile-options))))))
 
 (define (pc1o)
   (pc1.c)
   (make (("pc1o" ("pc1.c" "pc.h")
-	  (run (gcc -std=gnu99 -I. -O3 -fomit-frame-pointer -fno-strict-aliasing -fwrapv 
-		    pc1.c -lm -o pc1o -DUNSAFE ,@pc-compile-options))))))
+	  (run (gcc gcc-optimized-compile-options pc1.c -lm -o pc1o
+		    ,@pc-compile-options))))))
 
 (define (pc2.c)
   (pc1)
@@ -69,6 +79,7 @@
   (run (etags -l prolog *.pl)))
 
 (define check-pc "./pc")
+(define check-options '())
 
 (define (check)
   (let ((tests (string-split (capture (ls tests/*.pl)) "\n"))
@@ -76,7 +87,8 @@
 	(not-ok 0))
     (for-each
      (lambda (fname)
-       (if (zero? (run* (,(string-append "CHECK_PC=" check-pc) ./check ,fname)))
+       (if (zero? (run* (,(string-append "CHECK_PC=" check-pc)
+			 ./check ,@check-options ,fname)))
 	   (inc! ok)
 	   (inc! not-ok)))
      tests)
@@ -90,12 +102,13 @@
     (check)))
 
 (define (check-optimized)
-  (fluid-let ((check-pc "./pc -O"))
+  (fluid-let ((check-options '("-O")))
     (check)))
 
 (define (check-pc1-optimized)
   (pc1)
-  (fluid-let ((check-pc "./pc1 -O"))
+  (fluid-let ((check-options '("-O"))
+	      (check-pc "./pc1"))
     (check)))
 
 (define (check-self-compile)
@@ -106,7 +119,7 @@
 (define (full-check)
   (let ((r (and (check-self-compile)
 		(check-pc1)
-		(check-pc1-optimmized))))
+		(check-pc1-optimized))))
     (print "\n----------------------------------------------------------------------")
     (print (if r
 	       "ALL CHECKS SUCCEEDED."
@@ -119,7 +132,7 @@
     (let ((c (replace-suffix "c" src)))
       (make/proc (list (list exe (list c)
 			     (lambda ()
-			       (run (gcc -std=gnu99 -I. -g -DTRACE ,c -lm -o ,exe))))
+			       (run (gcc ,@gcc-compile-options ,c -lm -o ,exe))))
 		       (list c (cons src deps)
 			     (lambda ()
 			       (run (./pc ,src -o ,c)))))))))
