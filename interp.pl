@@ -176,7 +176,24 @@ call_primitive('->', 2, TERM) :-
 	!,
 	arg(1, TERM, X), arg(2, TERM, Y),
 	execute(X) -> execute(Y).
-	       
+
+
+%%
+
+evaluate(X, Y) :-
+	compound(X),
+	!,
+	functor(X, NAME, ARITY),
+	evaluate_op(NAME, ARITY, X, Y).
+evaluate(X, X) :- number(X), !.
+evaluate(X, _) :- throw(type_error(number, X)).
+evaluate(X, _) :- throw(instantiation_error).
+
+:- include('evaluate_op.pl').
+
+evaluate_op(_, _, TERM, _) :-
+	throw(error('invalid arithmetic expression', TERM)).
+
 
 %%
 
