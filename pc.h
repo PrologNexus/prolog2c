@@ -2772,8 +2772,9 @@ static X string_to_list(CHAR *str, int len)
     ASSERT((char *)arg_top < (char *)argument_stack + argument_stack_size, "argument-stack overflow"); } 
 
 #define ENVIRONMENT(len)  \
-  { E = env_top;	  \
-    for(int _i = 0; _i < (len); ++_i) *(env_top++) = ZERO; }
+  { E = env_top;							\
+    for(int _i = 0; _i < (len); ++_i) *(env_top++) = ZERO;		\
+    ASSERT((WORD)env_top < (WORD)environment_stack + environment_stack_size, "environment-stack overflow"); } 
 
 #define SET_REDO(lbl)   C0->P = (lbl)
 
