@@ -19,3 +19,4 @@ z
 /system_predicate.pl
 /call_primitive.pl
 /pi
+/evaluate_op.pl
