@@ -1,21 +1,28 @@
 %%% generate include-files for interp.pl from list of system-predicates
 
 
+:- initialization main.
+
 main :-
 	op(200, fy, ['#', '?']),
 	tell('system_predicate.pl'),
 	telling(SP),
 	tell('call_primitive.pl'),
 	telling(CP),
-	run(SP, CP),
+	tell('evaluate_op.pl'),
+	telling(EO),
+	run(SP, CP, EO),
 	tell(SP), told,
-	tell(CP), told.
+	tell(CP), told,
+	tell(EO), told,
+	halt.
 
-run(SP, CP) :-
+run(SP, CP, EO) :-
 	repeat,
 	read(TERM),
 	gen_sys_pred(TERM, SP),
 	gen_call_prim(TERM, CP),
+	gen_eval_op(TERM, EO),
 	TERM == end_of_file.
 
 gen_sys_pred(DEF, SP) :-
@@ -30,17 +37,33 @@ gen_call_prim(DEF, CP) :-
 	system_predicate_head(DEF, PRED),
 	!,
 	functor(PRED, NAME, ARITY),
-	build_lists(1, ARITY, TERM, ARGS, CALLARGS),
+	PRED =.. [_|PARGS],
+	build_lists(1, PARGS, TERM, ARGS, CALLARGS),
 	CALL =.. [NAME|CALLARGS],
 	tell(CP),		    
 	write((call_primitive(NAME, ARITY, TERM) :- !, ARGS, CALL)),
 	display('.\n').	
 gen_call_prim(_, _).
 
-build_lists(I, N, _, true, []) :- I > N, !.
-build_lists(I, N, T, (arg(I, T, X), VARS), [X|ARGS]) :-
+gen_eval_op(arithmetic_operation(OP), EO) :-
+	!,
+	functor(OP, NAME, _),
+	OP =.. [_|PARGS],
+	build_lists(1, PARGS, TERM, ARGS, CALLARGS),
+	EXPR =.. [NAME|CALLARGS],
+	tell(EO),
+	write((evaluate_op(NAME, ARITY, TERM, R) :- !, ARGS, R is EXPR)),
+	display('.\n').
+gen_eval_op(_, _).
+
+build_lists(I, [], _, true, []).
+build_lists(I, ['#'(_)|R] , T, (arg(I, T, V), evaluate(V, X), VARS), [X|ARGS]) :-
+	!,
 	I2 is I + 1,
-	build_lists(I2, N, T, VARS, ARGS).
+	build_lists(I2, R, T, VARS, ARGS).
+build_lists(I, [_|R] , T, (arg(I, T, X), VARS), [X|ARGS]) :-
+	I2 is I + 1,
+	build_lists(I2, R, T, VARS, ARGS).
 
 system_predicate_head(system_predicate(PRED), PRED).
 system_predicate_head(system_predicate(PRED, _), PRED).
