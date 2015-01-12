@@ -104,9 +104,7 @@
       #f))
 
 (define (full-check)
-  (let ((r (and (check)
-		(check-optimized)
-		(check-self-compile)
+  (let ((r (and (check-self-compile)
 		(check-pc1)
 		(check-pc1-optimmized))))
     (print "\n----------------------------------------------------------------------")
