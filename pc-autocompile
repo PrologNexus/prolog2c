@@ -36,5 +36,5 @@ fi
 
 filename2=`basename "$filename"`
 pc -q "$filename" -o "/tmp/${filename2}.c"
-gcc -std=gnu99 -O2 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -I. "/tmp/${filename2}.c" -o "${cachedir}/${hash}" -lm
+gcc -std=gnu99 -O2 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -DTRACE -I. "/tmp/${filename2}.c" -o "${cachedir}/${hash}" -lm
 exec "${cachedir}/${hash}" "$@"
