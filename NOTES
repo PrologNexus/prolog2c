@@ -58,9 +58,14 @@ NOTES											              -*- Org -*-
 * Things to test
 ** TODO Test on Mac, Windows and R/Pi
 ** TODO Test in 32-bit mode
+** TODO Run tests with pc1 and pc1o
+** TODO Run tests in optimized mode
+** TODO extend "check" to accept -O option
+** TODO Run some aor all tests with pi
 ** TODO test retract-loop
    - file:tests/0069-cdb.pl
 * Missing features
+** TODO Extend "run" to accept -O option
 ** TODO Add content of PC_INCLUDE_PATH to include-path
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
@@ -135,9 +140,13 @@ $between(L, U, X) :-
 *** TODO Throw ISO-compliant exceptions everywhere
     - at least as much as possible and sensible.
 ** Tests
-*** TODO file:stuff/simple_analyzer.pl gives wrong output
-    - default trail stack is too small, increasing it gives segfault.
+*** TODO file:broken-tests/simple_analyzer.pl gives wrong output
+    - exhausts heap, regardless of size.
+    - probably too much trailing or missed tailcall-opportunities.
 * Interpreter
+** TODO call of do_body/1 in do_body for disjunction will drop cut-information
+** TODO Could add support for file:dcg.pl 
+   - term_expansion? goal_expansion?
 ** TODO Additional predicates
    - listing
      - needs some way to enumerate all clauses (clause/2 needs
