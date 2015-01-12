@@ -115,10 +115,6 @@
 	       "SOME CHECS FAILED."))
     (print)))
 
-(define (system-predicates)
-  (make (("system_predicate.pl" ("generate-system-predicates.pl" "system-predicates")
-	  (run (./pc-autocompile generate-system-predicates.pl <system-predicates))))))
-
 (define (make-program src . more)
   (let-optionals more ((exe (strip-suffix src))
 		       deps)
@@ -129,6 +125,14 @@
 		       (list c (cons src deps)
 			     (lambda ()
 			       (run (./pc ,src -o ,c)))))))))
+
+(define (system-predicates)
+  (make-program 
+   "generate-system-predicates.pl" 
+   "generate-system-predicates"
+   "pc.h")
+  (make (("system_predicate.pl" ("generate-system-predicates" "system-predicates")
+	  (run (./generate-system-predicates <system-predicates))))))
 
 (define (pi)
   (system-predicates)
