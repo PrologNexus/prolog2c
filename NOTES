@@ -18,12 +18,7 @@ NOTES											              -*- Org -*-
    - use determinism-information to find more tailcall-opportunities.
      - propagate mode, depending on called predicate, see:
        compile_ordinary_call in file:compile.pl
-** TODO Clause indexing
-*** This could even be extended to invoke particular entry-points depending on call-arguments
-*** Dispatch on type, fixnum-list or atom-list
-    - until no clauses are left or first clause that has a variable as first arg.
-    - make sure fixnum-checks take place first.
-    - no remaining match can set redo to NULL and fail.
+** TODO Extend clause indexing
 *** Dispatch on atom- or fixnum list via hashing
     - add slot containing hash-code to symbol (created during interning)
     - generate table only for first predicate in list, redo in any of
@@ -58,9 +53,6 @@ NOTES											              -*- Org -*-
 * Things to test
 ** TODO Test on Mac, Windows and R/Pi
 ** TODO Test in 32-bit mode
-** TODO Run tests with pc1 and pc1o
-** TODO Run tests in optimized mode
-** TODO extend "check" to accept -O option
 ** TODO Run some aor all tests with pi
 ** TODO test retract-loop
    - file:tests/0069-cdb.pl
