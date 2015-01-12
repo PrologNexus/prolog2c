@@ -32,9 +32,9 @@
     "pc.pl"))
 
 (define pc-compile-options
-  '("-DTRACE"
-    "-DTRAIL_STACK_SIZE=10000000"
+  '("-DTRAIL_STACK_SIZE=10000000"
     "-DCHOICE_POINT_STACK_SIZE=100000000"
+    "-DENVIRONMENT_STACK_SIZE=20000000"
     "-DHEAP_SIZE=250000000"))
 
 (define gcc-compile-options
@@ -113,17 +113,19 @@
 
 (define (check-self-compile)
   (pc2.c)
-  (or (zero? (run* (cmp pc1.c pc2.c)))
-      #f))
+  (zero? (run* (cmp pc1.c pc2.c))))
 
 (define (full-check)
-  (let ((r (and (check-self-compile)
-		(check-pc1)
-		(check-pc1-optimized))))
+  (let ((ok #t))
+    (cond ((check-self-compile)
+	   (set! ok #f)
+	   (unless (check-pc1) (set! ok #f))
+	   (unless (check-pc1-optimized) (set! ok #f)))
+	  (else (set! ok #f)))
     (print "\n----------------------------------------------------------------------")
-    (print (if r
+    (print (if ok
 	       "ALL CHECKS SUCCEEDED."
-	       "SOME CHECS FAILED."))
+	       "SOME CHECKS FAILED."))
     (print)))
 
 (define (make-program src . more)
