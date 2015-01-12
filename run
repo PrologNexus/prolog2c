@@ -11,7 +11,7 @@
 (match args
   (("-O" . _)
    (pop! args)
-   (set! opts '("-O3" "-fomit-frame-pointer" "-fno-strict-aliasing" "-fwrapv")))
+   (set! opts '("-O3" "-fomit-frame-pointer" "-fno-strict-aliasing" "-fwrapv" "-DUNSAFE")))
   (_ #f))
 
 (define file (car args))
