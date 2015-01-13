@@ -1191,7 +1191,7 @@ static X freeze_term_recursive(X x)
       return (X)newvar;
     }
 
-    x = y;
+    return y;
   }
 
   X *tp = lookup_circular_term(x);
