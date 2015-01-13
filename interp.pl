@@ -228,7 +228,7 @@ process_directive((X, Y)) :-
 	process_directive(X),
 	process_directive(Y).
 process_directive(X) :-
-	(execute(X); seen, throw(error('directive failed', X))).
+	(execute(X); seen, throw(error('latent goal failed', X))).
 
 add_clause(N/A, N, A, HEAD, BODY) :-
 	(atom(HEAD); compound(HEAD))
