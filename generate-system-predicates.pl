@@ -47,7 +47,7 @@ gen_call_prim(_, _).
 
 gen_eval_op(arithmetic_operation(OP), EO) :-
 	!,
-	functor(OP, NAME, _),
+	functor(OP, NAME, ARITY),
 	OP =.. [_|PARGS],
 	build_lists(1, PARGS, TERM, ARGS, CALLARGS),
 	EXPR =.. [NAME|CALLARGS],
