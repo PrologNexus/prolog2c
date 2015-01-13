@@ -1259,18 +1259,19 @@ static int thaw_term_recursive(X *xp)
   if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return 1;
 
   if(is_VAR(x)) {
-    WORD index = fixnum_to_word(slot_ref(x, 1));
-    ensure_freeze_term_var_table_size(index * 2);
+    X y = find_frozen_variable(x);
 
-    if(freeze_term_var_table[ index * 2 ] != NULL) {
-      *xp = freeze_term_var_table[ index * 2 ];
-      return 1;
+    if(y == NULL) {
+      ensure_freeze_term_var_table_size(freeze_term_var_counter);
+      freeze_term_var_table[ freeze_term_var_counter++ ] = x;
+
+      if(alloc_top + objsize(x) + 1 >= fromspace_limit) return 0;
+
+      *xp = make_var();
+      freeze_term_var_table[ freeze_term_var_counter++ ] = *xp;
     }
+    else *xp = y;
 
-    if(alloc_top + objsize(x) + 1 > fromspace_limit) return 0;
-
-    *xp = make_var();
-    freeze_term_var_table[ index * 2 ] = *xp;
     return 1;
   }
 
