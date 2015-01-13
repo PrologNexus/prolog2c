@@ -213,7 +213,8 @@ consult_terms(PNA) :-
 consult_terms(_).
 
 insert_term(PNA, (:- BODY), PNA) :-
-        process_directive(BODY).
+        !,
+	process_directive(BODY).
 insert_term(PNA, (HEAD :- BODY), N/A) :-
         functor(HEAD, N, A),
 	!,
