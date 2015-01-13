@@ -35,17 +35,30 @@ do_body(Body) :-
 	;   HadCut = no
 	).
 
-do_body((!,AfterCut), AfterCut, yes) :- !.
-do_body((Goal,Body), AfterCut, HadCut) :- !,
-	do_body(Goal),		%XXX this is probably wrong
-	do_body(Body, AfterCut, HadCut).
-do_body(!, true, yes).
+do_body((Conj1,Conj2), AfterCut, HadCut) :- !,
+	do_body(Conj1, Conj2, AfterCut, HadCut).
+do_body(!, true, yes) :- !.
 do_body((Disj1;_), AfterCut, HadCut) :-
 	do_body(Disj1, AfterCut, HadCut).
 do_body((_;Disj2), AfterCut, HadCut) :- !,
 	do_body(Disj2, AfterCut, HadCut).
+do_body(true, true, no) :- !.
 do_body(Goal, true, no) :-
 	do_goal(Goal).
+
+
+do_body(!, AfterCut, AfterCut, yes) :- !.
+do_body((A,B), Conj, AfterCut, HadCut) :- !,
+	do_body(A, (B,Conj), AfterCut, HadCut).
+do_body((Disj1;_), Conj, AfterCut, HadCut) :-
+	do_body(Disj1, Conj, AfterCut, HadCut).
+do_body((_;Disj2), Conj, AfterCut, HadCut) :- !,
+	do_body(Disj2, Conj, AfterCut, HadCut).
+do_body(doue, Body, AfterCut, HadCut) :- !,
+	do_body(Body, AfterCut, HadCut).
+do_body(Goal, Body, AfterCut, HadCut) :-
+	do_goal(Goal),
+	do_body(Body, AfterCut, HadCut).
 
 
 trace(Goal) :-
