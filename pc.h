@@ -77,6 +77,7 @@
 #define MAX_GLOBAL_VARIABLES 256
 #define STRING_BUFFER_SIZE 1024
 #define CATCHER_STACK_SIZE 1024
+#define HASH_LENGTH_CUTOFF 100
 
 
 /// miscellanous
@@ -736,6 +737,8 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
 static WORD hash_name(CHAR *name, int len)
 {
   unsigned long key = 0;
+  
+  if(len > HASH_LENGTH_CUTOFF) len = HASH_LENGTH_CUTOFF;
 
   while(len--)
     key ^= (key << 6) + (key >> 2) + *(name++);
