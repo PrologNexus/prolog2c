@@ -143,6 +143,7 @@ system_predicate(forall, 2).
 system_predicate(findall, 3).
 system_predicate(catch, 3).
 system_predicate('->', 2).
+system_predicate('\\+', 1).
 
 call(TERM) :-
 	!,
@@ -176,6 +177,10 @@ call_primitive('->', 2, TERM) :-
 	!,
 	arg(1, TERM, X), arg(2, TERM, Y),
 	execute(X) -> execute(Y).
+call_primitive('\\+', 1, TERM) :-
+	!,
+	arg(1, TERM, X),
+	\+execute(X).
 
 
 %%
