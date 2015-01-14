@@ -441,7 +441,7 @@ static inline int is_compound(X x)
 
 
 static inline int is_in_fixnum_range(WORD n) {
-  return (n & WORD_SIGN_BIT) == (((n) & WORD_TOP_BIT) << 1);
+  return (n & WORD_SIGN_BIT) == ((n & WORD_TOP_BIT) << 1);
 }
 
 
