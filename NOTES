@@ -50,15 +50,24 @@ NOTES											              -*- Org -*-
    - <2015-01-05 Mon>: 1.71s (smaller data area sizes)
    - <2015-01-08 Thu>: 1.81s (not sure, probably more work done in compiler)
    - <2015-01-08 Thu>: 1.83s (additional catcher-slot in CP)
+** TODO Find a better benchmark
+   - because extending the compiler with optimizations will
+     necessarily slow it down.
+   - run some non-trivial test in interpreter.
 * Things to test
+** TODO Test compile-times/memory-consumption with clang
+** TODO Test pi compiled with optimizations
+   - also check executable size.
 ** TODO Test on Mac, Windows and R/Pi
 ** TODO Test in 32-bit mode
-** TODO Run some aor all tests with pi
+** TODO Run some or all tests with pi
 ** TODO test retract-loop
    - file:tests/0069-cdb.pl
+** TODO Check these for suitable tests and/or benchmarks
+   - file:holmer.tgz
+   - file:ecrc.tgz
 * Missing features
-** TODO Extend "run" to accept -O option
-** TODO Add content of PC_INCLUDE_PATH to include-path
+** TODO Add content of $PC_INCLUDE_PATH to include-path
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
@@ -108,49 +117,35 @@ $between(L, U, X) :-
   - maybe file:tests/0060-crypta.pl
   - SWI, GNU-Prolog, BinProlog
 * Issues
-** Compiler
-*** TODO Somehow disable TRACE in auto-included code
-    - library code just produces too much output.
-    - perhaps handle this via a directive.
-*** TODO Unbound var in arithmetic expr doesn't show variable name
+** TODO Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
-*** TODO check fixnum range when emitting literals 
-*** TODO show include-messages only in some sort of "verbose" mode
-    - gets in the way with pc-autocompile and is not too interesting
-      (still, it should be visible)
-    - possibly add "-q" option.
-*** Use throw/1 for errors inside compiler?
-** Runtime
-*** TODO trail-GC
+** TODO Check fixnum range when emitting literals 
+** trail-GC
     - and adjust CP-stack entries accordingly.
     - tricky.
-*** TODO Is cycle-checking in =deref= really necessary?
-** Libraries
-*** TODO reader-errors should go to stderr
-*** TODO May a PI (predicate-indicator) be an atom, refering to all available arities?
+** Is cycle-checking in =deref= really necessary?
+** TODO reader-errors should go to stderr
+** TODO May a PI (predicate-indicator) be an atom, refering to all available arities?
     - would need to be added to abolish/1.
-*** TODO Throw ISO-compliant exceptions everywhere
+** TODO Throw ISO-compliant exceptions everywhere
     - at least as much as possible and sensible.
-** Tests
-*** TODO file:broken-tests/simple_analyzer.pl gives wrong output
+** TODO file:broken-tests/simple_analyzer.pl gives wrong output
     - exhausts heap, regardless of size.
     - probably too much trailing or missed tailcall-opportunities.
 * Interpreter
-** TODO call of do_body/1 in do_body for disjunction will drop cut-information
 ** TODO Could add support for file:dcg.pl 
    - term_expansion? goal_expansion?
 ** TODO Additional predicates
-   - listing
+   - listing/1
+   - listing/0
      - needs some way to enumerate all clauses (clause/2 needs
        sufficiently instantiated head).
-** TODO Arithmetic evaluation
-   - add system predicates that invoke evaluator, generate code for
-     dispatching on and evaluating math-ops.
 ** TODO Handle directives
    - including latent expressions.
 ** TODO Print variables after query
    - needs access to their original names.
      - should be easy with read/2.
+   - read input and backtrack, if ";" is entered.
 ** TODO Seperate raw interprter from toplevel/commandline-handling
    - files: interp.pl + pi.pl
 * List of directives
@@ -207,8 +202,3 @@ $between(L, U, X) :-
 * Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
-* Usable for tests and/or benchmarks
-** file:holmer.tgz
-** file:ecrc.tgz
-* Benchmark suites
-** http://www.cs.cmu.edu/afs/cs/project/ai-repository/ai/lang/prolog/code/bench/
