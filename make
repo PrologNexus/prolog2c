@@ -141,11 +141,11 @@
 
 (define (system-predicates)
   (make-program 
-   "generate-system-predicates.pl" 
-   "generate-system-predicates"
+   "g-s-p.pl" 
+   "g-s-p"
    "pc.h")
-  (make (("system_predicate.pl" ("generate-system-predicates" "system-predicates")
-	  (run (./generate-system-predicates <system-predicates))))))
+  (make (("system_predicate.pl" ("g-s-p" "system-predicates")
+	  (run (./g-s-p <system-predicates))))))
 
 (define (pi)
   (system-predicates)

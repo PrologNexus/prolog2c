@@ -1,7 +1,13 @@
+%%%% interpeter core
+
+%% based on:
+
 %   File   : INTERP
 %   Author : R.A.O'Keefe
 %   Updated: 2 March 84
 %   Purpose: Meta-circular interpreter for Prolog
+
+%% ... but heavily modified.
 
 /*  This is a genuinely meta-circular interpreter for a subset of Prolog
     containing cuts.  It relies on the fact that disjunction is transparent
