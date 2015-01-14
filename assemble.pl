@@ -11,7 +11,7 @@ assemble_file(FILE, STATE) :-
 	mangle_name(MAIN, MMAIN),
 	gen('#define INIT_GOAL ', MMAIN, '$0\n'),
 	assemble_global_variables(0, N),
-	gen('int main(int argc, char *argv[]) {\n'),
+	gen('ENTRY_POINT{\n'),
 	gen('global_variable_counter=', N, ';\n'),
 	gen('BOILERPLATE;{\n'),
 	assemble_instructions(S1),
@@ -191,6 +191,10 @@ assemble(switch_on_atom(L), S, S) :- gen('if(is_SYMBOL(A[0])) goto ', L, ';\n').
 assemble(switch_on_float(L), S, S) :- gen('if(is_FLONUM(A[0])) goto ', L, ';\n').
 assemble(switch_on_pair(L), S, S) :- gen('if(is_PAIR(A[0])) goto ', L, ';\n').
 assemble(switch_on_structure(L), S, S) :- gen('if(is_STRUCTURE(A[0])) goto ', L, ';\n').
+
+assemble(suspend(R1, L), S, S) :-
+	gen('saved_state->result=', R1, ';\nsaved_state->P=&&', L, ';\n'),
+	gen('goto suspend;\n', L, ':\n', R1, '=saved_state->result;\n');
 
 assemble(OP, _, _) :-
 	error(['invalid pseudo instruction: ', OP]).

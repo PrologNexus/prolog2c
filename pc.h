@@ -214,6 +214,14 @@ typedef struct CATCHER
   void **ifthen_top;
 } CATCHER;
 
+typedef struct SAVED_STATE
+{
+  X *A, *E;
+  void *R, *P;
+  CHOICE_POINT *C0, *C;
+  X result;
+} SAVED_STATE;
+
 
 /// tags and type-codes
 
@@ -346,6 +354,8 @@ static WORD environment_stack_size, argument_stack_size, choice_point_stack_size
 static jmp_buf exception_handler;
 static CATCHER catch_stack[ CATCHER_STACK_SIZE ];
 static CATCHER *catch_top = catch_stack;
+static int restart = 0;
+static SAVED_STATE saved_state;
 
 
 // externally visible (the only one that is)
@@ -2839,21 +2849,36 @@ static X string_to_list(CHAR *str, int len)
 
 /// Boilerplate code
 
+#ifdef EMBEDDED
+# define TERMINATE(cp, code)      *exit_code = code; return NULL;
+#else
+# define TERMINATE(cp, code)      terminate(cp, code)
+#endif
+
 #define BOILERPLATE					\
-  X *A = NULL;						\
+  X *A, *E;						\
   CHOICE_POINT *C, *C0;					\
-  void *R = &&success_exit;				\
-  void *R0;						\
-  initialize(argc, argv);				\
-  intern_static_symbols(PREVIOUS_SYMBOL);		\
-  X *E = env_top;					\
-  C0 = C = choice_point_stack;				\
-  C->T = trail_top;					\
-  C->timestamp = clock_ticks++;				\
-  C->R = NULL;						\
-  C->C0 = NULL;						\
-  C->P = &&fail_exit;					\
-  C++;							\
+  void *R, *R0;						\
+  if(restart) {						\
+    A = saved_state->A;					\
+    R = saved_state->R;					\
+    E = saved_state->E;					\
+    C0 = saved_state->C0;				\
+    C = saved_state->C;					\
+    saved_state->result = result;			\
+  } else {						\
+    initialize(argc, argv);				\
+    intern_static_symbols(PREVIOUS_SYMBOL);		\
+    A = NULL;						\
+    R = &&success_exit;					\
+    E = env_top;					\
+    C0 = C = choice_point_stack;			\
+    C->T = trail_top;					\
+    C->timestamp = clock_ticks++;			\
+    C->R = NULL;					\
+    C->C0 = NULL;					\
+    C->P = &&fail_exit;					\
+    C++; }						\
   if(setjmp(exception_handler)) {			\
     unwind_trail(catch_top->T);				\
     C0 = catch_top->C0;					\
@@ -2863,13 +2888,25 @@ static X string_to_list(CHAR *str, int len)
     ifthen_top = catch_top->ifthen_top;			\
     E = catch_top->E;					\
     goto *(catch_top->P); }				\
-  goto INIT_GOAL;					\
-fail: INVOKE_CHOICE_POINT;				\
-fail_exit: fprintf(stderr, "no.\n"); terminate(C, EXIT_FAILURE);	\
+  if(restart) goto saved_state->P;			\
+  else goto INIT_GOAL;					\
+fail: INVOKE_CHOICE_POINT;						\
+fail_exit:								\
+ fprintf(stderr, "no.\n");						\
+ TERMINATE(C, EXIT_FAILURE);						\
 success_exit:								\
  ASSERT(ifthen_stack == ifthen_top, "unbalanced if-then stack");	\
- ASSERT(catch_stack == catch_top, "unbalanced catcher stack");	\
- terminate(C, EXIT_SUCCESS);
+ ASSERT(catch_stack == catch_top, "unbalanced catcher stack");		\
+ TERMINATE(C, EXIT_SUCCESS);					       \
+suspend:							       \
+ saved_state->A = A;						       \
+ saved_state->E = E;						       \
+ saved_state->R = R;						       \
+ saved_state->C0 = C0;						       \
+ saved_state->C = C;						       \
+ saved_state->P = P;						       \
+ restart = 1;							       \
+ return saved_state->result;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3316,5 +3353,16 @@ static int flush_output(CHOICE_POINT *C0) { fflush(port_file(standard_output_por
 PRIMITIVE(do_throw, X ball) { throw_exception(ball); return 0; }
 
 
+#ifdef EMBEDDED
+# ifndef ENTRY_POINT_NAME
+#  define ENTRY_POINT_NAME   prolog
+# endif
+# define ENTRY_POINT   X ENTRY_POINT_NAME(int argc, char *argv[], X result, int *exit_code)
+#else
+# define ENTRY_POINT   int main(int argc, char *argv[])
 #endif
+
+#endif
+
+
 #endif

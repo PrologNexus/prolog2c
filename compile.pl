@@ -350,6 +350,17 @@ compile_body_expression(global_set(NAME, VALUE), _, D, D, B1, B2, S1, S2) :-
 	compile_term_for_unification(VALUE, T1, B1, B2, S3, S2),
 	emit(global_set(NAME, T1)).
 
+% suspend
+compile_body_expression(suspend(X, Y), _, D, D, B1, B2, S1, S2) :-
+	%%XXX allow multiple invocations?
+	gensym('T', T1, S1, S3),
+	gen_label(L, S3, S4),
+	compile_term_for_unification(X, T1, B1, B3, S4, S5),
+	emit(suspend(T1, L)),
+	gensym('T', T2, S5, S6),
+	compile_term_for_unification(Y, T2, B3, B2, S6, S2),
+	emit(unify(T1, T2)).
+
 % ordinary predicate call
 compile_body_expression(TERM, TAIL, D1, D2, B1, B2, S1, S2) :-
 	TERM =.. [NAME|ARGS],
