@@ -613,7 +613,7 @@ static X deref1(X val)
 /// basic I/O 
 
 
-// doesn't respect operators - expect's deref'd datum
+// doesn't respect operators - expects deref'd datum
 static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) { 
   if(limit == 0) fputs("...", fp);
   else if(is_FIXNUM(x)) 
@@ -1553,7 +1553,7 @@ static void mark(X *addr)
   WORD t = TAG_TO_TYPE(h);
 
 #ifndef SIXTYFOUR
-  if((t == FLONUM_TYPE || t == PACKEDFLOATVECTOR_TYPE) && !FPALIGNED(tospace_top))
+  if(t == FLONUM_TYPE && !FPALIGNED(tospace_top))
     *(tospace_top++) = ALIGNMENT_HOLE_MARKER;
 #endif
 
