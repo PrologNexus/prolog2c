@@ -2900,6 +2900,7 @@ PRIMITIVE(put_string, X str)
   int len;
   CHAR *ptr = to_string(str, &len);
   fputs(ptr, port_file(standard_output_port));
+  return 1;
 }
 
 PRIMITIVE(basic_write, X x) 
