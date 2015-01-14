@@ -298,7 +298,7 @@ typedef struct CATCHER
 /// predefined literals and global variables
 
 #ifdef COMPILED_PROLOG_PROGRAM
-static BLOCK END_OF_LIST_VAL_BLOCK = { END_OF_LIST_TAG, {0}};
+static BLOCK END_OF_LIST_VAL_BLOCK = { END_OF_LIST_TAG };
 static X dot_atom, system_error_atom, type_error_atom, evaluation_error_atom;
 static X instantiation_error_atom;
 
