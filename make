@@ -12,6 +12,7 @@
     "state.pl"
     "terms.pl"
     "dcg.pl"
+    "index.pl"
     "macros.pl"
     "process.pl"
     "compile.pl"
