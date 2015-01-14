@@ -22,7 +22,7 @@ main :-
 
 compile(ARGS) :-
 	parse_arguments(ARGS),
-	(recorded(source_file, FILE); default_setting(source_file, FILE)),
+	(recorded(source_file, FILE); usage(1)),
 	default_setting(include_path, PATH),
 	recorda(include_path, PATH),
 	compile_file(FILE).
