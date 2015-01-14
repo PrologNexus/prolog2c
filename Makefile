@@ -4,6 +4,8 @@
 CC = gcc
 CFLAGS = -std=gnu99 -I. -fno-strict-aliasing -fwrapv
 OPTFLAGS = -O2 -fomit-frame-pointer
+PCSETTINGS = -DTRAIL_STACK_SIZE=10000000 -DCHOICE_POINT_STACK_SIZE=100000000 \
+	-DENVIRONMENT_STACK_SIZE=20000000 -DHEAP_SIZE=250000000
 LIBS = -lm -lrt
 
 
@@ -14,7 +16,7 @@ all: pc
 
 
 pc: pc.c pc.h
-	$(CC) $(OPTFLAGS) $(CFLAGS) $< -o $@
+	$(CC) $(PCSETTINGS) $(OPTFLAGS) $(CFLAGS) $< -o $@
 
 
 clean:
