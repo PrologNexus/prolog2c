@@ -15,8 +15,8 @@ z
 /iotest
 /iotest2
 /pc1
-/generate-system-predicates
 /system_predicate.pl
 /call_primitive.pl
 /pi
 /evaluate_op.pl
+ecrc
