@@ -354,7 +354,6 @@ static WORD environment_stack_size, argument_stack_size, choice_point_stack_size
 static jmp_buf exception_handler;
 static CATCHER catch_stack[ CATCHER_STACK_SIZE ];
 static CATCHER *catch_top = catch_stack;
-static int restart = 0;
 static SAVED_STATE saved_state;
 
 
@@ -2851,21 +2850,26 @@ static X string_to_list(CHAR *str, int len)
 
 #ifdef EMBEDDED
 # define TERMINATE(cp, code)      *exit_code = code; return NULL;
+# define DECLARE_RESULT
+# define RETURN_RESULT            return saved_state.result
 #else
 # define TERMINATE(cp, code)      terminate(cp, code)
+# define DECLARE_RESULT           X result = ZERO
+# define RETURN_RESULT
 #endif
 
 #define BOILERPLATE					\
   X *A, *E;						\
   CHOICE_POINT *C, *C0;					\
   void *R, *R0;						\
-  if(restart) {						\
-    A = saved_state->A;					\
-    R = saved_state->R;					\
-    E = saved_state->E;					\
-    C0 = saved_state->C0;				\
-    C = saved_state->C;					\
-    saved_state->result = result;			\
+  DECLARE_RESULT;					\
+  if(argc == 0) {					\
+    A = saved_state.A;					\
+    R = saved_state.R;					\
+    E = saved_state.E;					\
+    C0 = saved_state.C0;				\
+    C = saved_state.C;					\
+    saved_state.result = result;			\
   } else {						\
     initialize(argc, argv);				\
     intern_static_symbols(PREVIOUS_SYMBOL);		\
@@ -2888,7 +2892,7 @@ static X string_to_list(CHAR *str, int len)
     ifthen_top = catch_top->ifthen_top;			\
     E = catch_top->E;					\
     goto *(catch_top->P); }				\
-  if(restart) goto saved_state->P;			\
+  if(argc == 0) goto *saved_state.P;			\
   else goto INIT_GOAL;					\
 fail: INVOKE_CHOICE_POINT;						\
 fail_exit:								\
@@ -2899,14 +2903,12 @@ success_exit:								\
  ASSERT(catch_stack == catch_top, "unbalanced catcher stack");		\
  TERMINATE(C, EXIT_SUCCESS);					       \
 suspend:							       \
- saved_state->A = A;						       \
- saved_state->E = E;						       \
- saved_state->R = R;						       \
- saved_state->C0 = C0;						       \
- saved_state->C = C;						       \
- saved_state->P = P;						       \
- restart = 1;							       \
- return saved_state->result;
+ saved_state.A = A;						       \
+ saved_state.E = E;						       \
+ saved_state.R = R;						       \
+ saved_state.C0 = C0;						       \
+ saved_state.C = C;						       \
+ RETURN_RESULT;
 
 
 ////////////////////////////////////////////////////////////////////////////////
