@@ -440,6 +440,8 @@ arithmetic_operation(sin, 1).
 arithmetic_operation(sqrt, 1).
 arithmetic_operation(truncate, 1).
 arithmetic_operation(random, 1).
+arithmetic_operation(clock, 0).
+arithmetic_operation(xor, 2).
 
 arithmetic_operation('+', 2, add).
 arithmetic_operation('/\\', 2, bitwise_and).
@@ -454,14 +456,13 @@ arithmetic_operation('-', 2, subtract).
 arithmetic_operation('//', 2, quotient).
 arithmetic_operation('*', 2, multiply).
 arithmetic_operation('\\\\', 2, rem).
-arithmetic_operation(xor, 2, xor).
 
 arithmetic_operation(NAME, ARITY, NAME) :- arithmetic_operation(NAME, ARITY).
 
+compile_arithmetic_operation_arguments([], [], _, S, S).
 compile_arithmetic_operation_arguments([ARG], [T], B, S1, S2) :-
 	gensym('T', T, S1, S),
 	compile_arithmetic_expression(ARG, T, B, S, S2).
-
 compile_arithmetic_operation_arguments([ARG1, ARG2], [T1, T2], B, S1, S2) :-
 	compile_arithmetic_operation_arguments([ARG1], [T1], B, S1, S),
 	compile_arithmetic_operation_arguments([ARG2], [T2], B, S, S2).

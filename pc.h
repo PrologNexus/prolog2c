@@ -30,6 +30,10 @@
 #include <sys/types.h>
 #include <setjmp.h>
 
+#ifdef __MACH__
+# include <mach/mach_time.h>
+#endif
+
 
 /// limits - all sizes are in bytes
 
@@ -2389,6 +2393,33 @@ static inline X num_not(X x)
 static inline X num_random(X x)
 {
   return word_to_fixnum(rand() % fixnum_to_word(check_fixnum(deref(x))));
+}
+
+
+static inline X num_clock()
+{
+#if defined(__linux__)
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return FLONUM((FLOAT)ts.tv_sec + (FLOAT)ts.tv_nsec / 1000000000.0);
+#elif defined(__OpenBSD__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
+  struct timespec ts;
+  clock_gettime(CLOCK_REALTIME, &ts);
+  return FLONUM((FLOAT)ts.tv_sec + (FLOAT)ts.tv_nsec / 1000000000.0);
+#elif defined(_WIN32)
+  WORD ts, tr;
+  QueryPerformanceCounter(&ts);
+  QueryPerformanceFrequency(&tr);
+  return FLONUM((FLOAT)ts / (FLOAT)tr);
+#elif defined(__APPLE__) && defined(__MACH__)
+  WORD tm = mach_absolute_time();
+  mach_timebase_info_data_t tr;
+  mach_timebase_info(&tr);
+  return FLONUM((FLOAT)tm * (FLOAT)tr.numer / (FLOAT)tr.denom / 1000000000.0);
+#else
+  system_error("clock not available for this platform");
+  return ZERO;
+#endif
 }
 
 

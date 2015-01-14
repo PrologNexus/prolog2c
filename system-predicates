@@ -158,3 +158,4 @@ arithmetic_operation(sign(X)).
 arithmetic_operation(sin(X)).
 arithmetic_operation(sqrt(X)).
 arithmetic_operation(truncate(X)).
+arithmetic_operation(clock).
