@@ -47,7 +47,7 @@
 	    (else #f))))
 
 (run (,pc -q ,file -o ,cfile))
-(run (gcc -std=gnu99 -I. ,cfile ,@opts -o ,xfile -lm))
+(run (gcc -std=gnu99 -I. ,cfile ,@opts -o ,xfile -lm -lrt))
 
 (define status
   (run* (./timeout -t ,timeout ,(string-append "./" xfile) > ,outfile)))

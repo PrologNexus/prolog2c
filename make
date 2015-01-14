@@ -61,12 +61,12 @@
 (define (pc1)
   (pc1.c)
   (make (("pc1" ("pc1.c" "pc.h")
-	  (run (gcc ,@gcc-compile-options pc1.c -lm -o pc1 ,@pc-compile-options))))))
+	  (run (gcc ,@gcc-compile-options pc1.c -lm -lrt -o pc1 ,@pc-compile-options))))))
 
 (define (pc1o)
   (pc1.c)
   (make (("pc1o" ("pc1.c" "pc.h")
-	  (run (gcc gcc-optimized-compile-options pc1.c -lm -o pc1o
+	  (run (gcc gcc-optimized-compile-options pc1.c -lm -lrt -o pc1o
 		    ,@pc-compile-options))))))
 
 (define (pc2.c)
@@ -134,7 +134,7 @@
     (let ((c (replace-suffix "c" src)))
       (make/proc (list (list exe (list c)
 			     (lambda ()
-			       (run (gcc ,@gcc-compile-options ,c -lm -o ,exe))))
+			       (run (gcc ,@gcc-compile-options ,c -lm -lrt -o ,exe))))
 		       (list c (cons src deps)
 			     (lambda ()
 			       (run (./pc ,src -o ,c)))))))))
