@@ -2,6 +2,10 @@ NOTES											              -*- Org -*-
 
 
 * Optimization opportunities
+** TODO Check: take advantage of timestamps when binding vars in unify() ?
+   - apparently the order in which variables are bound makes no difference
+     - not considering variable naming in test results.
+     - 0084 dies with trail-stack overflow.
 ** Singleton variables could get special handling when in argument position
    - unification is a noop, unless nested in another term.
 ** TODO Implement memberchk/2 as primitive
@@ -55,18 +59,14 @@ NOTES											              -*- Org -*-
      necessarily slow it down.
    - run some non-trivial test in interpreter.
 * Things to test
-** TODO Test compile-times/memory-consumption with clang
-** TODO Test pi compiled with optimizations
-   - also check executable size.
-** TODO Test on Mac, Windows and R/Pi
-** TODO Test in 32-bit mode
+** TODO Test on Mac, Windows
+   - Port to MSVC
 ** TODO Run some or all tests with pi
-** TODO test retract-loop
+** TODO Test retract-loop
    - file:tests/0069-cdb.pl
-** TODO Check these for suitable tests and/or benchmarks
-   - file:holmer.tgz
-   - file:ecrc.tgz
 * Missing features
+** TODO Allow use in multiple threads
+   - needs TLS-declared globals.
 ** TODO Add content of $PC_INCLUDE_PATH to include-path
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
@@ -124,6 +124,7 @@ $between(L, U, X) :-
     - and adjust CP-stack entries accordingly.
     - tricky.
 ** Is cycle-checking in =deref= really necessary?
+   - apparently it is (various tests loop if this is disabled)
 ** TODO reader-errors should go to stderr
 ** TODO May a PI (predicate-indicator) be an atom, refering to all available arities?
     - would need to be added to abolish/1.
@@ -132,6 +133,9 @@ $between(L, U, X) :-
 ** TODO file:broken-tests/simple_analyzer.pl gives wrong output
     - exhausts heap, regardless of size.
     - probably too much trailing or missed tailcall-opportunities.
+** TODO ecrc benchmarks in file:/broken-tests work, but need higher settings
+   - file:broken-tests/bench_1.3.pl needs -:C20M
+   - file:broken-tests/bench_1.5.pl needs -:T5M
 * Interpreter
 ** TODO Could add support for file:dcg.pl 
    - term_expansion? goal_expansion?
