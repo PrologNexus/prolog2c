@@ -47,6 +47,15 @@
   '("-std=gnu99" "-I." "-fno-strict-aliasing" "-fwrapv" "-O3" "-fomit-frame-pointer"
     "-DUNSAFE"))
 
+(define manifest
+  `("Makefile"
+    ;"README"
+    "lib/sorts.pl"
+    "lib/ordset.pl"
+    "pc.c"
+    "pc.h"
+    ,@source-files))
+
 
 (define (all) 
   (pc1)
@@ -160,6 +169,21 @@
 
 (define (clean)
   (run (rm -f system_predicate.pl call_primitive.pl pi pc1 pc1o)))
+
+(define (dist)
+  (pc2.c)
+  (let* ((date (capture (date +%Y-%m-%d)))
+	 (dname (string-append "pc-" date ".tar.gz"))
+	 (ddir (string-append "pc-" date)))
+    (run (cp pc2.c pc.c))
+    (run (rm -fr ,ddir))
+    (run (mkdir ,ddir))
+    (run (mkdir -p ,(string-append ddir "/lib")))
+    (for-each
+     (lambda (fn)
+       (run (cp ,fn ,(string-append ddir "/" fn))))
+     manifest)
+    (run (tar cfz ,dname ,ddir))))
 
 
 ;;
