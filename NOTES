@@ -67,6 +67,7 @@ NOTES											              -*- Org -*-
    - file:tests/0069-cdb.pl
 * Missing features
 ** TODO Add content of $PC_INCLUDE_PATH to include-path
+** TODO Having setof/bagof would be nice
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
@@ -80,6 +81,16 @@ NOTES											              -*- Org -*-
       function.
 ** TODO Distribution
    - README
+     - list of builtins.
+     - usage.
+     - limitations.
+     - embedding.
+     - supported language.
+     - rebuilding pc/pi.
+     - extending in C.
+     - adding auto-includes.
+   - generate table of builtin predicates from file:system-predicates
+     (in org-mode)
 ** TODO Add library predicates
 *** TODO between/3
   - from: http://www.cs.otago.ac.nz/staffpriv/ok/pllib.htm
@@ -117,6 +128,7 @@ $between(L, U, X) :-
 * Once we have a suitable test, compare performance with other implementations
   - SWI, GNU-Prolog, BinProlog
 * Issues
+** TODO Write trace-output in interp to stderr
 ** Using multiple threads are currently not possible
    - all static vars would have to be declared TLS, but these may not
      be statically initialized with non-constants, and this applies to
