@@ -222,8 +222,9 @@ evaluate_op(_, _, TERM, _) :-
 %%
 
 consult(FILE) :-
+	find_file(FILE, FILE2),
 	seeing(OLD),
-	see(FILE),
+	see(FILE2),
 	consult_terms(0/0),
 	seen,
 	see(OLD).
@@ -235,6 +236,14 @@ consult_terms(PNA) :-
 	!,
 	consult_terms(CNA).
 consult_terms(_).
+
+find_file(FILE, FILE) :-
+	exists_file(FILE), !.
+find_file(FILE, FILE2) :-
+	atom_codes(FILE, STR),
+	append(STR, ".pl", STR2),
+	atom_codes(FILE2, STR2),
+	exists_file(FILE2), !.
 
 insert_term(PNA, (:- BODY), PNA) :-
         !,
