@@ -11,6 +11,7 @@ control_structure(foreign_call(X)).
 control_structure(global_ref(+X, -Y)).
 control_structure(global_set(+X, +Y)).
 control_structure(catch(+X, ?Y, +Z)).
+control_structure(repeat).
 
 system_predicate(#X < #Y).
 system_predicate(#X > #Y).
@@ -22,7 +23,6 @@ system_predicate(-X is #Y).
 
 system_predicate(true).
 system_predicate(fail).
-system_predicate(repeat).
 system_predicate(?X = ?Y).
 system_predicate(?X \= ?Y).
 system_predicate(?X == ?Y).
@@ -66,7 +66,6 @@ system_predicate(number(+X)).
 system_predicate(number_codes(?X, ?Y), _, 'uses strtol(3)/strtod(3), so allows leading space').
 system_predicate(peek(+X), _, '-1 on EOF').
 system_predicate(put(+X), _, 'X may be fixnum or symbol').
-system_predicate(repeat).
 system_predicate(sleep(+X)).
 system_predicate(stream(+X)).
 system_predicate(true).

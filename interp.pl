@@ -161,6 +161,7 @@ system_predicate(consult, 1).
 system_predicate(forall, 2).
 system_predicate(findall, 3).
 system_predicate(catch, 3).
+system_predicate(repeat, 0).
 system_predicate('->', 2).
 system_predicate('\\+', 1).
 
@@ -200,6 +201,10 @@ call_primitive('\\+', 1, TERM) :-
 	!,
 	arg(1, TERM, X),
 	\+execute(X).
+call_primitive(repeat, 0, _) :- do_repeat.
+
+do_repeat.
+do_repeat :- do_repeat.
 
 
 %%
