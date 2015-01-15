@@ -815,12 +815,17 @@ static void intern_static_symbols(X sym1)
 static void throw_exception(X ball)
 {
   if(catch_top == catch_stack) {
+#ifdef EMBEDDED
+    saved_state.result = ball;
+    longjmp(exception_handler, 2);
+#else
     fflush(stdout);
     fputs("\nUnhandled exception:\n", stderr);
     basic_write_term(stderr, 1, 10, 1, ball);
     fputc('\n', stderr);
     crash_hook();
     exit(EXIT_FAILURE);
+#endif
   }
 
   --catch_top;
@@ -2887,13 +2892,25 @@ static X string_to_list(CHAR *str, int len)
 /// Boilerplate code
 
 #ifdef EMBEDDED
-# define TERMINATE(cp, code)      *exit_code = code; return NULL;
+
+# define TERMINATE(cp, code)   \
+  { if(exit_code) *exit_code = code;		\
+    cleanup();					\
+    return NULL; }
+
 # define DECLARE_RESULT
 # define RETURN_RESULT            return saved_state.result
+
+# define RETURN_EXCEPTION  \
+  { if(exit_code) *exit_code = EXIT_EXCEPTION;	\
+    cleanup();					\
+    return NULL; }
+
 #else
 # define TERMINATE(cp, code)      terminate(cp, code)
 # define DECLARE_RESULT           X result = ZERO
 # define RETURN_RESULT
+# define RETURN_EXCEPTION
 #endif
 
 #define BOILERPLATE					\
@@ -2921,7 +2938,8 @@ static X string_to_list(CHAR *str, int len)
     C->C0 = NULL;					\
     C->P = &&fail_exit;					\
     C++; }						\
-  if(setjmp(exception_handler)) {			\
+  int lj = setjmp(exception_handler);			\
+  if(lj == 1) {			\
     unwind_trail(catch_top->T);				\
     C0 = catch_top->C0;					\
     C = C0 + 1;						\
@@ -2930,6 +2948,7 @@ static X string_to_list(CHAR *str, int len)
     ifthen_top = catch_top->ifthen_top;			\
     E = catch_top->E;					\
     goto *(catch_top->P); }				\
+  else if(lj == 2) RETURN_EXCEPTION;			\
   if(argc == 0) goto *saved_state.P;			\
   else goto INIT_GOAL;					\
 fail: INVOKE_CHOICE_POINT;						\
