@@ -2,10 +2,10 @@ NOTES											              -*- Org -*-
 
 
 * Optimization opportunities
-** TODO Check: take advantage of timestamps when binding vars in unify() ?
-   - apparently the order in which variables are bound makes no difference
-     - not considering variable naming in test results.
-     - 0084 dies with trail-stack overflow.
+** DONE Check: take advantage of timestamps when binding vars in unify() ?
+   - try: when binding two unbound vars, bind the younger one.
+   - implemented in branch /bind-younger/ and seems to work, but trail
+     reduction is not much.
 ** Singleton variables could get special handling when in argument position
    - unification is a noop, unless nested in another term.
 ** TODO Implement memberchk/2 as primitive
