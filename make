@@ -55,6 +55,7 @@
     "pc.c"
     "pc.h"
     "pi.c"
+    "g-s-p.pl" "system-predicates"
     "pi.pl" "interp.pl" "call_primitive.pl" "evaluate_op.pl" "system_predicate.pl"
     ,@source-files))
 
