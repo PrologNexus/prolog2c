@@ -8,7 +8,7 @@ main :-
 	command_line_arguments(ARGS),
 	parse_arguments(ARGS),
 	!,
-	(recorded(initialization_goal, G) -> run_goal(G, []); repl).
+	(recorded(initialization_goal, G) -> execute(G); repl).
 
 repl :-
 	display('?- '), flush,
