@@ -1,5 +1,4 @@
 *.o
-*.c
 *~
 tmp
 *.i
@@ -20,3 +19,6 @@ z
 /pi
 /evaluate_op.pl
 /g-s-p
+/pi.c
+/pc1.c
+/pc2.c

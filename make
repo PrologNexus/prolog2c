@@ -127,12 +127,22 @@
   (pc2.c)
   (zero? (run* (cmp pc1.c pc2.c))))
 
+(define (check-embedded)
+  (make (("tmp/embed" ("embed.c" "embedded.o" "pc.h")
+	  (run (gcc ,@gcc-compile-options embed.c embedded.o -lm -lrt -o tmp/embed)))
+	 ("embedded.o" ("embedded.c" "pc.h")
+	  (run (gcc ,@gcc-compile-options -c embedded.c -o embedded.o -DEMBEDDED)))
+	 ("embedded.c" ("embedded.pl")
+	  (run (./pc embedded.pl -o embedded.c)))))
+  (run (tmp/embed)))
+
 (define (full-check)
   (let ((ok #t))
     (cond ((check-self-compile)
 	   (set! ok #f)
 	   (unless (check-pc1) (set! ok #f))
-	   (unless (check-pc1-optimized) (set! ok #f)))
+	   (unless (check-pc1-optimized) (set! ok #f))
+	   (unless (check-embedded) (set! ok #f)))
 	  (else (set! ok #f)))
     (print "\n----------------------------------------------------------------------")
     (print (if ok

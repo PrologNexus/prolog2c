@@ -304,14 +304,15 @@ typedef struct SAVED_STATE
 #define ZERO     word_to_fixnum(0)
 #define ONE      word_to_fixnum(1)
 
-#define END_OF_LIST_VAL  ((X)(&END_OF_LIST_VAL_BLOCK))
-
 #define PREVIOUS_SYMBOL  END_OF_LIST_VAL
 
 
 /// predefined literals and global variables
 
 #ifdef COMPILED_PROLOG_PROGRAM
+
+#define END_OF_LIST_VAL  ((X)(&END_OF_LIST_VAL_BLOCK))
+
 static BLOCK END_OF_LIST_VAL_BLOCK = { END_OF_LIST_TAG };
 static X dot_atom, system_error_atom, type_error_atom, evaluation_error_atom;
 static X instantiation_error_atom;
@@ -366,7 +367,9 @@ static X global_variables[ MAX_GLOBAL_VARIABLES ];
 static CHAR *type_names[] = { 
   "invalid", "fixnum", "null", "symbol", "flonum", "stream", "variable", "string", "structure", "pair", "dbreference"
 };
+
 #endif
+
 
 #define type_name(t)         (type_names[ (WORD)(t) & 0x1f ])
 #define tag_to_type_name(t)  type_name(objtype(t))
@@ -417,7 +420,14 @@ static CHAR *type_names[] = {
 #define is_specialblock(x)  ((objbits(x) & SPECIALBLOCK_MARK_BIT) != 0)
 
 #define is_FIXNUM(x)  (((WORD)(x) & FIXNUM_MARK_BIT) != 0)
-#define is_END_OF_LIST(x)  ((x) == END_OF_LIST_VAL)
+
+// END_OF_LIST_VAL is not available to external C code
+#ifdef COMPILED_PROLOG_PROGRAM
+# define is_END_OF_LIST(x)  ((x) == END_OF_LIST_VAL)
+#else
+# define is_END_OF_LIST(x)  is(END_OF_LIST_TYPE, (x))
+#endif
+
 #define is(t, x)   ({ X x_ = (x); !is_FIXNUM(x_) && objtype(x_) == (t); })
 #define is_PAIR(x)  is(PAIR_TYPE, (x))
 #define is_VAR(x)  is(VAR_TYPE, (x))
@@ -430,36 +440,6 @@ static CHAR *type_names[] = {
 
 #define GLOBAL_REF(index)  global_variables[ index ]
 #define GLOBAL_SET(index, x)  global_variables[ index ] = deref(x)
-
-
-static inline int is_number(X x)
-{
-  return is_FIXNUM(x) || is_FLONUM(x);
-}
-
-
-static inline int is_atom(X x)
-{
-  return x == END_OF_LIST_VAL || is_SYMBOL(x);
-}
-
-
-static inline int is_atomic(X x)
-{
-  return x == END_OF_LIST_VAL || is_FIXNUM(x) || is_FLONUM(x) || is_SYMBOL(x) || is_PORT(x);
-}
-
-
-static inline int is_compound(X x)
-{
-  return !is_FIXNUM(x) && (is_PAIR(x) || is_STRUCTURE(x));
-}
-
-
-static inline int is_in_fixnum_range(WORD n) {
-  return (n & WORD_SIGN_BIT) == ((n & WORD_TOP_BIT) << 1);
-}
-
 
 #define string_length(x)  ((objsize(x) / sizeof(CHAR)) - 1)
 
@@ -476,6 +456,35 @@ static inline int is_in_fixnum_range(WORD n) {
 #define SLOT_INIT(x, i, y)      atomic_slot_set(x, i, y)
 
 #define port_file(p)  (((PORT_BLOCK *)(p))->fp)
+
+
+static inline int is_number(X x)
+{
+  return is_FIXNUM(x) || is_FLONUM(x);
+}
+
+
+static inline int is_compound(X x)
+{
+  return !is_FIXNUM(x) && (is_PAIR(x) || is_STRUCTURE(x));
+}
+
+
+static inline int is_in_fixnum_range(WORD n) {
+  return (n & WORD_SIGN_BIT) == ((n & WORD_TOP_BIT) << 1);
+}
+
+
+static inline int is_atom(X x)
+{
+  return !is_FIXNUM(x) && is_END_OF_LIST(x) || is_SYMBOL(x);
+}
+
+
+static inline int is_atomic(X x)
+{
+  return is_END_OF_LIST(x) || is_FIXNUM(x) || is_FLONUM(x) || is_SYMBOL(x) || is_PORT(x);
+}
 
 
 #ifdef COMPILED_PROLOG_PROGRAM
