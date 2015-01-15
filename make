@@ -50,11 +50,12 @@
 
 (define manifest
   `("Makefile"
-    ;"README"
-    "lib/sorts.pl"
-    "lib/ordset.pl"
+    "README"
+    "lib/sorts.pl" "lib/ordset.pl"
     "pc.c"
     "pc.h"
+    "pi.c"
+    "pi.pl" "interp.pl" "call_primitive.pl" "evaluate_op.pl" "system_predicate.pl"
     ,@source-files))
 
 
@@ -159,7 +160,7 @@
 
 (define (pi)
   (system-predicates)
-  (make-program "interp.pl" "pi" "system_predicate.pl" "call_primitive.pl"))
+  (make-program "pi.pl" "pi" "interp.pl" "system_predicate.pl" "call_primitive.pl"))
 
 (define (bench)
   (define (runonce)
