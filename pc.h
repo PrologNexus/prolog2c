@@ -318,47 +318,48 @@ static PORT_BLOCK default_input_port = { PORT_TAG|4, NULL, ONE, ONE, ZERO };
 static PORT_BLOCK default_output_port = { PORT_TAG|4, NULL, ZERO, ONE, ZERO };
 static PORT_BLOCK default_error_port = { PORT_TAG|4, NULL, ZERO, ONE, ZERO };
 
-static X standard_input_port = (X)(&default_input_port);
-static X standard_output_port = (X)(&default_output_port);
-static X standard_error_port = (X)(&default_error_port);
+static X standard_input_port;
+static X standard_output_port;
+static X standard_error_port;
 
-static X *fromspace, *fromspace_end, *fromspace_limit, *tospace, *tospace_end, *tospace_top, *scan_ptr;
+static X *fromspace, *fromspace_end, *fromspace_limit, *tospace, *tospace_end;
+static X *tospace_top, *scan_ptr;
 static X *alloc_top;
 static X symbol_table[ SYMBOL_TABLE_SIZE ];
 static WORD heap_reserve;
-static int verbose = 0;
-static int variable_counter = 0;
+static int verbose;
+static int variable_counter;
 static X *environment_stack;
 static X *argument_stack;
 static X *trail_stack;
 static X *trail_top, *env_top, *arg_top;
 static CHOICE_POINT *choice_point_stack;
-static FINALIZER *active_finalizers = NULL, *free_finalizers = NULL;
-static WORD gc_count = 0;
+static FINALIZER *active_finalizers, *free_finalizers;
+static WORD gc_count;
 static char *mmapped_heap = NULL;
+static int mmapped_fd;
+static void *mmapped_buffer;
 static char **global_argv;
 static int global_argc;
 static void **ifthen_stack, **ifthen_top;
-static WORD clock_ticks = 0;
+static WORD clock_ticks;
 static X *freeze_term_var_table;
 static int freeze_term_var_table_size;
 static int freeze_term_var_counter;
-static int global_variable_counter = 0;
+static int global_variable_counter;
 static X circular_term_table[ CIRCULAR_TERM_TABLE_SIZE * 2 ];
-static int circular_term_counter = 0;
+static int circular_term_counter;
 static char *string_buffer;
 static int string_buffer_length;
-static DB_ITEM *deleted_db_items = NULL;
-static int debugging = 0;
-static WORD environment_stack_size, argument_stack_size, choice_point_stack_size, trail_stack_size, ifthen_stack_size;
+static DB_ITEM *deleted_db_items;
+static int debugging;
+static WORD environment_stack_size, argument_stack_size, choice_point_stack_size;
+static WORD trail_stack_size, ifthen_stack_size, heap_size;
 static jmp_buf exception_handler;
 static CATCHER catch_stack[ CATCHER_STACK_SIZE ];
-static CATCHER *catch_top = catch_stack;
+static CATCHER *catch_top;
 static SAVED_STATE saved_state;
-
-
-// externally visible (the only one that is)
-X global_variables[ MAX_GLOBAL_VARIABLES ];
+static X global_variables[ MAX_GLOBAL_VARIABLES ];
 
 static CHAR *type_names[] = { 
   "invalid", "fixnum", "null", "symbol", "flonum", "stream", "variable", "string", "structure", "pair", "dbreference"
@@ -1808,7 +1809,7 @@ static WORD numeric_arg(char *arg)
 
 static void initialize(int argc, char *argv[])
 {
-  WORD heapsize = HEAP_SIZE;
+  heap_size = HEAP_SIZE;
   environment_stack_size = ENVIRONMENT_STACK_SIZE;
   ifthen_stack_size = IFTHEN_STACK_SIZE;
   choice_point_stack_size = CHOICE_POINT_STACK_SIZE;
@@ -1816,6 +1817,8 @@ static void initialize(int argc, char *argv[])
   argument_stack_size = ARGUMENT_STACK_SIZE;
   global_argc = argc;
   global_argv = argv;
+  debugging = 0;
+  verbose = 0;
 
   // scan argv for runtime-parameters
   for(int i = argc - 1; i > 0; --i) {
@@ -1824,7 +1827,7 @@ static void initialize(int argc, char *argv[])
     if(arg[ 1 ] == ':') {
       switch(arg[ 2 ]) {
       case 'h':
-	heapsize = numeric_arg(arg + 3);
+	heap_size = numeric_arg(arg + 3);
 	break;
 
       case 'v':
@@ -1863,33 +1866,34 @@ static void initialize(int argc, char *argv[])
     }
   }
 
-  DRIBBLE("[allocating heap of size 2 x " WORD_OUTPUT_FORMAT "]\n", heapsize / 2);
-  heap_reserve = heapsize / HEAP_RESERVE;
+  DRIBBLE("[allocating heap of size 2 x " WORD_OUTPUT_FORMAT "]\n", heap_size / 2);
+  heap_reserve = heap_size / HEAP_RESERVE;
 
   if(mmapped_heap) {
-    int fd = open(mmapped_heap, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    mmapped_fd = open(mmapped_heap, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 
-    if(fd == -1) 
+    if(mmapped_fd == -1) 
       CRASH("unable to open heap file: %s", strerror(errno));
 
-    if(ftruncate(fd, heapsize) == -1)
+    if(ftruncate(mmapped_fd, heap_size) == -1)
       CRASH("unable to create heap file: %s", strerror(errno));
 
-    fromspace = mmap(NULL, heapsize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    mmapped_buffer = mmap(NULL, heap_size, PROT_READ | PROT_WRITE, MAP_SHARED, mmapped_fd, 0);
 
-    if(fromspace == MAP_FAILED) 
+    if(mmapped_buffer == MAP_FAILED) 
       CRASH("unable to map heap file into memory: %s", strerror(errno));
 
-    tospace = (X *)((WORD)fromspace + heapsize / 2);
+    fromspace = mmapped_buffer;
+    tospace = (X *)((WORD)fromspace + heap_size / 2);
   }
   else {
-    fromspace = malloc(heapsize / 2);
-    tospace = malloc(heapsize / 2);
+    fromspace = malloc(heap_size / 2);
+    tospace = malloc(heap_size / 2);
     ASSERT(fromspace && tospace, "can not allocate heap");
   }
 
-  fromspace_end = (X *)((WORD)fromspace + heapsize / 2);
-  tospace_end = (X *)((WORD)tospace + heapsize / 2);
+  fromspace_end = (X *)((WORD)fromspace + heap_size / 2);
+  tospace_end = (X *)((WORD)tospace + heap_size / 2);
   fromspace_limit = (X *)((WORD)fromspace_end - heap_reserve);
   alloc_top = fromspace;
   default_input_port.fp = stdin;
@@ -1921,6 +1925,39 @@ static void initialize(int argc, char *argv[])
 
   for(int i = 0; i < MAX_GLOBAL_VARIABLES; ++i)
     global_variables[ i ] = ZERO;
+
+  standard_input_port = (X)(&default_input_port);
+  standard_output_port = (X)(&default_output_port);
+  standard_error_port = (X)(&default_error_port);
+  catch_top = catch_stack;
+  deleted_db_items = NULL;
+  gc_count = 0;
+  active_finalizers = free_finalizers = NULL;
+  clock_ticks = 0;
+  global_variable_counter = 0;
+  circular_term_counter = 0;
+  variable_counter = 0;
+}
+
+
+static void cleanup()
+{
+  if(mmapped_heap) {
+    munmap(mmapped_buffer, heap_size);
+    close(mmapped_fd);
+  }
+  else {
+    free(fromspace);
+    free(tospace);
+  }
+
+  free(ifthen_stack);
+  free(choice_point_stack);
+  free(trail_stack);
+  free(argument_stack);
+  free(environment_stack);
+  free(string_buffer);
+  free(freeze_term_var_table);
 }
 
 
@@ -1932,6 +1969,7 @@ static void terminate(CHOICE_POINT *C, int code)
 	  (WORD)C - (WORD)choice_point_stack,
 	  (WORD)arg_top - (WORD)argument_stack,
 	  (WORD)env_top - (WORD)environment_stack);
+  cleanup();
   exit(code);
 }
 
