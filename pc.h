@@ -101,6 +101,8 @@
 # endif
 #endif
 
+#define EXIT_EXCEPTION   (-1)
+
 
 /// types
 
