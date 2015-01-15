@@ -185,7 +185,8 @@
      (lambda (fn)
        (run (cp ,fn ,(string-append ddir "/" fn))))
      manifest)
-    (run (tar cfz ,dname ,ddir))))
+    (run (tar cfz ,dname ,ddir))
+    (run (rm -fr ,ddir))))
 
 
 ;;
