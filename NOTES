@@ -6,6 +6,7 @@ NOTES											              -*- Org -*-
    - try: when binding two unbound vars, bind the younger one.
    - implemented in branch /bind-younger/ and seems to work, but trail
      reduction is not much.
+   - does this help with file:broken-tests/bench_1_5.pl ?
 ** Singleton variables could get special handling when in argument position
    - unification is a noop, unless nested in another term.
 ** TODO Implement memberchk/2 as primitive
@@ -65,8 +66,6 @@ NOTES											              -*- Org -*-
 ** TODO Test retract-loop
    - file:tests/0069-cdb.pl
 * Missing features
-** TODO Allow use in multiple threads
-   - needs TLS-declared globals.
 ** TODO Add content of $PC_INCLUDE_PATH to include-path
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
@@ -79,6 +78,8 @@ NOTES											              -*- Org -*-
       ptr to invoke prolog (similar to BONES).
     - also allow access to global_variables, and (prefixed) access
       function.
+** TODO Distribution
+   - README
 ** TODO Add library predicates
 *** TODO between/3
   - from: http://www.cs.otago.ac.nz/staffpriv/ok/pllib.htm
@@ -114,9 +115,12 @@ $between(L, U, X) :-
 ** Report unused predicates
 ** Detect non-contiguous predicates
 * Once we have a suitable test, compare performance with other implementations
-  - maybe file:tests/0060-crypta.pl
   - SWI, GNU-Prolog, BinProlog
 * Issues
+** Using multiple threads are currently not possible
+   - all static vars would have to be declared TLS, but these may not
+     be statically initialized with non-constants, and this applies to
+     many data objects for literals.
 ** TODO Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
 ** TODO Check fixnum range when emitting literals 
@@ -134,8 +138,8 @@ $between(L, U, X) :-
     - exhausts heap, regardless of size.
     - probably too much trailing or missed tailcall-opportunities.
 ** TODO ecrc benchmarks in file:/broken-tests work, but need higher settings
-   - file:broken-tests/bench_1.3.pl needs -:C20M
-   - file:broken-tests/bench_1.5.pl needs -:T5M
+   - file:broken-tests/bench_1_3.pl needs -:C20M
+   - file:broken-tests/bench_1_5.pl needs -:T5M
 * Interpreter
 ** TODO Could add support for file:dcg.pl 
    - term_expansion? goal_expansion?
@@ -145,13 +149,7 @@ $between(L, U, X) :-
      - needs some way to enumerate all clauses (clause/2 needs
        sufficiently instantiated head).
 ** TODO Handle directives
-   - including latent expressions.
-** TODO Print variables after query
-   - needs access to their original names.
-     - should be easy with read/2.
-   - read input and backtrack, if ";" is entered.
-** TODO Seperate raw interprter from toplevel/commandline-handling
-   - files: interp.pl + pi.pl
+   - initialization/1, include/1
 * List of directives
   | global_variable(NAME)    |
   | include(FILENAME)        |
