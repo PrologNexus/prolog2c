@@ -428,7 +428,7 @@ static CHAR *type_names[] = {
 # define is_END_OF_LIST(x)  is(END_OF_LIST_TYPE, (x))
 #endif
 
-#define is(t, x)   ({ X x_ = (x); !is_FIXNUM(x_) && objtype(x_) == (t); })
+#define is(t, x)    (objtype(x) == (t))
 #define is_PAIR(x)  is(PAIR_TYPE, (x))
 #define is_VAR(x)  is(VAR_TYPE, (x))
 #define is_STRING(x)  is(STRING_TYPE, (x))
@@ -483,7 +483,7 @@ static inline int is_atom(X x)
 
 static inline int is_atomic(X x)
 {
-  return is_END_OF_LIST(x) || is_FIXNUM(x) || is_FLONUM(x) || is_SYMBOL(x) || is_PORT(x);
+  return is_FIXNUM(x) || is_END_OF_LIST(x) || is_FLONUM(x) || is_SYMBOL(x) || is_PORT(x);
 }
 
 
