@@ -349,7 +349,7 @@ static WORD clock_ticks;
 static X *freeze_term_var_table;
 static int freeze_term_var_table_size;
 static int freeze_term_var_counter;
-static int global_variable_counter;
+static int global_variable_counter = 0;
 static X circular_term_table[ CIRCULAR_TERM_TABLE_SIZE * 2 ];
 static int circular_term_counter;
 static char *string_buffer;
@@ -1927,7 +1927,6 @@ static void initialize(int argc, char *argv[])
   gc_count = 0;
   active_finalizers = free_finalizers = NULL;
   clock_ticks = 0;
-  global_variable_counter = 0;
   circular_term_counter = 0;
   variable_counter = 0;
 }
