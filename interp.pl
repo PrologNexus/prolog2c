@@ -275,6 +275,8 @@ find_file(FILE, FILE2) :-
 	append(STR, ".pl", STR2),
 	atom_codes(FILE2, STR2),
 	exists_file(FILE2), !.
+find_file(FILE, _) :-
+	throw(existence_error(FILE)).
 
 insert_term(PNA, (:- BODY), PNA) :-
         !,
