@@ -53,8 +53,11 @@ NOTES											              -*- Org -*-
    - SWI prolog: 1.30s
    - <2015-01-04 Sun>: 1.79s (unoptimized: 2.38s)
    - <2015-01-05 Mon>: 1.71s (smaller data area sizes)
-   - <2015-01-08 Thu>: 1.81s (not sure, probably more work done in compiler)
+   - <2015-01-08 Thu>: 1.81s (not sure, probably more work done in
+     compiler)
    - <2015-01-08 Thu>: 1.83s (additional catcher-slot in CP)
+   - <2015-01-16 Fri>: 2.65s (no idea, probably compiler extensions,
+     e.g. clause indexing)
 ** TODO Find a better benchmark
    - because extending the compiler with optimizations will
      necessarily slow it down.
@@ -128,7 +131,6 @@ $between(L, U, X) :-
 * Once we have a suitable test, compare performance with other implementations
   - SWI, GNU-Prolog, BinProlog
 * Issues
-** TODO Write trace-output in interp to stderr
 ** Using multiple threads are currently not possible
    - all static vars would have to be declared TLS, but these may not
      be statically initialized with non-constants, and this applies to
@@ -160,8 +162,6 @@ $between(L, U, X) :-
    - listing/0
      - needs some way to enumerate all clauses (clause/2 needs
        sufficiently instantiated head).
-** TODO Handle directives
-   - initialization/1, include/1
 * List of directives
   | global_variable(NAME)    |
   | include(FILENAME)        |
