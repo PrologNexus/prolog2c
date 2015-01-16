@@ -71,7 +71,7 @@ system_predicate(stream(+X)).
 system_predicate(true).
 system_predicate(var(+X)).
 system_predicate(flush).
-system_predicate(suspend(?X, ?X)).
+system_predicate(suspend(?X, ?Y)).
 
 system_predicate(append(+X), 'io.pl').
 system_predicate(compare(-X, ?X, ?Y), 'misc.pl').
