@@ -477,13 +477,37 @@ static inline int is_in_fixnum_range(WORD n) {
 
 static inline int is_atom(X x)
 {
-  return !is_FIXNUM(x) && is_END_OF_LIST(x) || is_SYMBOL(x);
+  return !is_FIXNUM(x) && (is_END_OF_LIST(x) || is_SYMBOL(x));
 }
 
 
 static inline int is_atomic(X x)
 {
   return is_FIXNUM(x) || is_END_OF_LIST(x) || is_FLONUM(x) || is_SYMBOL(x) || is_PORT(x);
+}
+
+
+static inline int is_variable(X x)
+{
+  return !is_FIXNUM(x) && is_VAR(x);
+}
+
+
+static inline int is_stream(X x)
+{
+  return !is_FIXNUM(x) && is_PORT(x);
+}
+
+
+static inline int is_float(X x)
+{
+  return !is_FIXNUM(x) && is_FLONUM(x);
+}
+
+
+static inline int is_dbreference(X x)
+{
+  return !is_FIXNUM(x) && is_DBREFERENCE(x);
 }
 
 
@@ -502,53 +526,6 @@ static char *port_name(X x)
 static void crash_hook()
 {
   return;
-}
-
-
-static inline X fill_block(X x, X y, WORD from, WORD to) 
-{
-  if(from == to) return x;
-
-  for(X *p = objdata(x) + from; from < to; ++from)
-    ASSIGN(*(p++), y);
-
-  return x;
-}
-
-
-static inline X atomic_fill_block(X x, X y, WORD from, WORD to)
-{
-  if(from == to) return x;
-
-  for(X *p = objdata(x) + from; from < to; ++from)
-    *(p++) = y;
-
-  return x;
-}
-
-
-// takes char-code as argument
-static inline X fill_string(X x, WORD code, WORD from, WORD to)
-{
-  if(from == to) return x;
-
-  for(CHAR *p = (CHAR *)objdata(x) + from; from < to; ++from)
-    *(p++) = (CHAR)code;
-
-  return x;
-}
-
-
-static inline X copy_bytes(X src, WORD srcp, X dest, const WORD destp, WORD len) 
-{
-  memcpy((char *)objdata(dest) + destp, (char *)objdata(src) + srcp, len);
-  return dest;
-}
-
-
-static inline X copy_string(X src, WORD srcp, X dest, WORD destp, WORD len) 
-{
-  return copy_bytes(src, srcp * sizeof(CHAR), dest, destp * sizeof(CHAR), len * sizeof(CHAR));
 }
 
 
@@ -990,7 +967,7 @@ static inline X check_atomic(X x)
 
 static inline int is_port_and_direction(X x, X d)
 {
-  return is_PORT(x) && slot_ref(x, 1) == d;
+  return !is_FIXNUM(x) && is_PORT(x) && slot_ref(x, 1) == d;
 }
 
 
@@ -1124,7 +1101,7 @@ static X deref_recursive(X val, int limit, int *failed)
   if(is_VAR(val)) {
     val = deref1(val);
 
-    if(is_VAR(val)) {
+    if(is_variable(val)) {
       X x = find_frozen_variable(val);
 
       if(x == NULL) {
@@ -3273,7 +3250,7 @@ PRIMITIVE(set_current_error_stream, X stream)
 
 PRIMITIVE(atom_codes, X atom, X lst)
 {
-  if(is_VAR(atom)) {
+  if(is_variable(atom)) {
     int len;
     CHAR *ptr = to_string(lst, &len);
 
@@ -3309,7 +3286,7 @@ PRIMITIVE(atom_codes, X atom, X lst)
 
 PRIMITIVE(number_codes, X num, X lst)
 {
-  if(is_VAR(num)) {
+  if(is_variable(num)) {
     int len;
     CHAR *ptr = to_string(lst, &len);
 
@@ -3349,6 +3326,9 @@ PRIMITIVE(number_codes, X num, X lst)
 
 PRIMITIVE(functor, X term, X name, X arity)
 {
+  if(is_FIXNUM(term))
+    return unify(arity, word_to_fixnum(0)) && unify(term, name);
+
   if(is_VAR(term)) {
     check_fixnum(arity);
     int n = fixnum_to_word(arity);
