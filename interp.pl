@@ -258,6 +258,14 @@ consult_terms(PNA) :-
 	insert_term(PNA, TERM, CNA),
 	!,
 	consult_terms(CNA).
+consult_terms(PNA) :-
+	recorded(include_file_stack, [NEXT|MORE], REF),
+	erase(REF),
+	recordz(include_file_stack, MORE),
+	seen,
+	see(NEXT),
+	!,
+	consult_terms(PNA).
 consult_terms(_).
 
 find_file(FILE, FILE) :-
@@ -283,6 +291,18 @@ insert_term(PNA, FACT, N/A) :-
 process_directive((X, Y)) :-
 	process_directive(X),
 	process_directive(Y).
+process_directive(initialization(G)) :-
+	(recorded(initialization_goal, G1, REF)
+	-> erase(REF), recordz(initialization_goal, (G1, G))
+	; recordz(initialization_goal, G)
+	).
+process_directive(include(FILE)) :-
+	find_file(FILE, FILE2),
+	seeing(CURRENT),
+	(recorded(include_file_stack, OLD, REF)	-> erase(REF); OLD = []),
+	recordz(include_file_stack, [CURRENT|OLD]),
+	see(FILE2).
+	
 process_directive(X) :-
 	(execute(X); seen, throw(error('latent goal failed', X))).
 
