@@ -78,14 +78,14 @@ tr_goal(\+(Goal), Depth) :-
 	!, fail.
 tr_goal(\+(Goal), Depth) :- !.
 tr_goal(Goal, Depth) :-
-	(   tab(Depth), display('Call: '), writeq(Goal), nl, fail
+	(   trace_out(Depth, 'Call: ', Goal)
 	;   Depth1 is 1+Depth,
 	    tr_call(Goal, Depth1),
-	    (   tab(Depth), display('Exit: '), writeq(Goal), nl, fail
+	    (   trace_out(Depth, 'Exit: ', Goal)
 	    ;	true
-	    ;   tab(Depth), display('Redo: '), writeq(Goal), nl, fail
+	    ;   trace_out(Depth, 'Redo: ', Goal)
 	    )
-	;   tab(Depth), display('Fail: '), writeq(Goal), nl, fail
+	;   trace_out(Depth, 'Fail: ', Goal)
 	).
 
 
@@ -99,7 +99,7 @@ tr_call(Goal, Depth) :-
 	tr_body(Body, Depth, AfterCut, HadCut),
 	(   HadCut = yes,
 		!,
-		tab(Depth), display('CUT'), nl,
+		trace_out(Depth, 'CUT'),
 		tr_body(AfterCut, Depth)
 	;   HadCut = no
 	).
@@ -109,7 +109,7 @@ tr_body(Body, Depth) :-
 	tr_body(Body, Depth, AfterCut, HadCut),
 	(   HadCut = yes,
 		!,
-		tab(Depth), display('CUT'), nl,
+		trace_out(Depth, 'CUT'),
 		tr_body(AfterCut, Depth)
 	;   HadCut = no
 	).
@@ -138,6 +138,24 @@ tr_body(true, Body, Depth, AfterCut, HadCut) :- !,
 tr_body(Goal, Body, Depth, AfterCut, HadCut) :-
 	tr_goal(Goal, Depth),
 	tr_body(Body, Depth, AfterCut, HadCut).
+
+
+%%
+
+trace_out(T, M) :-
+	telling(OLD),
+	current_error_output(ERR),
+	tell(ERR),
+	tab(T), display(M), nl,
+	tell(OLD), !.
+
+trace_out(T, M, G) :-
+	telling(OLD),
+	current_error_output(ERR),
+	tell(ERR),
+	tab(T), display(M), writeq(G), nl,
+	tell(OLD),
+	!, fail.
 
 
 %%
