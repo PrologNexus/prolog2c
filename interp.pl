@@ -228,7 +228,7 @@ do_repeat :- do_repeat.
 %%
 
 evaluate(X, Y) :-
-	compound(X),
+	(atom(X); compound(X)),
 	!,
 	functor(X, NAME, ARITY),
 	evaluate_op(NAME, ARITY, X, Y).
