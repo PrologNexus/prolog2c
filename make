@@ -78,7 +78,7 @@
 (define (pc1o)
   (pc1.c)
   (make (("pc1o" ("pc1.c" "pc.h")
-	  (run (gcc gcc-optimized-compile-options pc1.c -lm -lrt -o pc1o
+	  (run (gcc ,@gcc-optimized-compile-options pc1.c -lm -lrt -o pc1o
 		    ,@pc-compile-options))))))
 
 (define (pc2.c)
