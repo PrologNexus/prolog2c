@@ -177,4 +177,14 @@ ord_union(>, Head1, Tail1, Head2, Tail2, [Head2|Union]) :-
 	ord_union([Head1|Tail1], Tail2, Union).
 
 
+% member-check for orderes sets
 
+ord_memberchk([], _) :- !, fail.
+ord_memberchk(X, [Y|R]) :-
+	compare(O, X, Y),
+	!,
+	ord_memberchk(O, X, Y, R).
+
+ord_memberchk(=, _, _, _) :- !.
+ord_memberchk(>, X, _, R) :- ord_memberchk(X, R).
+ord_memberchk(<, _, _, _) :- !, fail.

@@ -96,6 +96,7 @@ system_predicate(ord_subset(+X, +Y), 'ordset.pl').
 system_predicate(ord_subtract(+X, +Y, -Z), 'ordset.pl').
 system_predicate(ord_symdiff(+X, +Y, -Z), 'ordset.pl').
 system_predicate(ord_union(+X, +Y, -Z), 'ordset.pl').
+system_predicate(ord_memberchk(+X, +Y), 'ordset.pl').
 system_predicate(read(-X), 'read.pl', 'expands into read1/1, which is auto-included').
 system_predicate(read(-X, -Y), 'read.pl', 'Y is unified with list of ATOM=VAR terms').
 system_predicate(read_tokens(-X, -Y), 'rdtok.pl').

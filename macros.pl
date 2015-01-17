@@ -105,6 +105,7 @@ auto_include(ord_subset/2, 'lib/ordset.pl').
 auto_include(ord_symdiff/2, 'lib/ordset.pl').
 auto_include(ord_union/2, 'lib/ordset.pl').
 auto_include(ord_subtract/2, 'lib/ordset.pl').
+auto_include(ord_memberchk/2, 'lib/ordset.pl').
 
 auto_include(read_tokens/2, 'lib/rdtok.pl').
 auto_include(read1/1, 'lib/read.pl').
