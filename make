@@ -186,10 +186,10 @@
 (define (dist)
   (pc2.c)
   (let* ((date (capture (date +%Y-%m-%d)))
-	 (dname (string-append "pc-" date ".tar.gz"))
+	 (dname "pc.tar.gz")
 	 (ddir (string-append "pc-" date)))
     (run (cp pc2.c pc.c))
-    (run (rm -fr ,ddir))
+    (run (rm -fr ,ddir ,dname))
     (run (mkdir ,ddir))
     (run (mkdir -p ,(string-append ddir "/lib")))
     (for-each
