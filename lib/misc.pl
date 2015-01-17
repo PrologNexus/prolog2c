@@ -47,3 +47,24 @@ copy_term(X, Y) :-
 	var(X), !, deref_term(Y, 999999, X).
 copy_term(X, Y) :-
 	deref_term(X, 999999, Y).
+
+%% once again, from R. O'Keefe
+between(L, U, X) :-
+    (   integer(L), integer(U) ->
+        (   integer(X) ->
+            L =< X, X =< U
+        ;   var(X) ->
+            L =< U,
+            '$between'(L, U, X)
+        ;   throw(type_error(integer, X))
+        )
+    ;   integer(L), integer(X), L > X -> fail
+    ;   integer(U), integer(X), X > U -> fail
+    ;   throw(error('between/3: invalid arguments'))
+    ).
+
+'$between'(L, L, L) :- !.
+'$between'(L, _, L).
+'$between'(L, U, X) :-
+    M is L + 1,
+    '$between'(M, U, X).

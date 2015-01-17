@@ -53,6 +53,7 @@ auto_include(reverse/2, 'lib/lists.pl').
 
 auto_include(compare/3, 'lib/misc.pl').
 auto_include(shell/1, 'lib/misc.pl').
+auto_include(between/3, 'lib/misc.pl').
 
 auto_include(tab/1, 'lib/io.pl').
 auto_include(skip/1, 'lib/io.pl').
