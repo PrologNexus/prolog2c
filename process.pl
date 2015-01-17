@@ -120,6 +120,9 @@ process_directive(global_variable(NAME), S, S) :-
 process_directive(trace_libraries, S, S) :-
 	recordz(trace_libraries, yes).
 
+process_directive(verbatim(STR), S, S) :-
+	recordz(verbatim_code, STR).
+
 process_directive(op(P, A, N), S, S) :- op(P, A, N).
 
 process_directive(DECL, STATE, STATE) :-
