@@ -1,7 +1,7 @@
 %%%% interpreter toplevel
 
 
-:- include('interp.pl').
+:- include('lib/interp.pl').
 
 main :-
 	global_set(trace_depth, none),

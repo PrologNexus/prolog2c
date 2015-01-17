@@ -56,7 +56,7 @@
     "pc.h"
     "pi.c"
     "g-s-p.pl" "system-predicates"
-    "pi.pl" "interp.pl" "call_primitive.pl" "evaluate_op.pl" "system_predicate.pl"
+    "pi.pl" "lib/interp.pl" "call_primitive.pl" "evaluate_op.pl" "system_predicate.pl"
     ,@source-files))
 
 
@@ -171,7 +171,7 @@
 
 (define (pi)
   (system-predicates)
-  (make-program "pi.pl" "pi" "interp.pl" "system_predicate.pl" "call_primitive.pl"))
+  (make-program "pi.pl" "pi" "lib/interp.pl" "system_predicate.pl" "call_primitive.pl"))
 
 (define (bench)
   (define (runonce)
