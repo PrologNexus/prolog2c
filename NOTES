@@ -47,6 +47,8 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * TODO Find proper name
+  - Whopper
+  - ?-Prolog
 * TODO Move repo to bitbucket
 * Benchmark results
 ** Self-compile, 5 times, average of medium 3 runtimes
@@ -69,7 +71,6 @@ NOTES											              -*- Org -*-
 ** TODO Test retract-loop
    - file:tests/0069-cdb.pl
 * Missing features
-** TODO Add content of $PC_INCLUDE_PATH to include-path
 ** TODO Having setof/bagof would be nice
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
@@ -82,44 +83,8 @@ NOTES											              -*- Org -*-
       ptr to invoke prolog (similar to BONES).
     - also allow access to global_variables, and (prefixed) access
       function.
-** TODO Distribution
-   - README
-     - list of builtins.
-     - usage.
-     - limitations.
-     - embedding.
-     - supported language.
-     - rebuilding pc/pi.
-     - extending in C.
-     - adding auto-includes.
-   - generate table of builtin predicates from file:system-predicates
-     (in org-mode)
+** TODO Complete README
 ** TODO Add library predicates
-*** TODO between/3
-  - from: http://www.cs.otago.ac.nz/staffpriv/ok/pllib.htm
-  #+BEGIN_SRC prolog
-%  Sample implementation.
-
-between(L, U, X) :-
-    (   integer(L), integer(U) ->
-        (   integer(X) ->
-            L =< X, X =< U
-        ;   var(X) ->
-            L =< U,
-            $between(L, U, X)
-        ;   $error
-        )
-    ;   integer(L), integer(X), L > X -> fail
-    ;   integer(U), integer(X), X > U -> fail
-    ;   $error
-    ).
-
-$between(L, L, L) :- !.
-$between(L, _, L).
-$between(L, U, X) :-
-    M is L + 1,
-    $between(M, U, X).
-  #+END_SRC
 *** TODO ord_membercheck/2
     - possibly as primitive.
 * Diagnostics
@@ -162,57 +127,6 @@ $between(L, U, X) :-
    - listing/0
      - needs some way to enumerate all clauses (clause/2 needs
        sufficiently instantiated head).
-* List of directives
-  | global_variable(NAME)    |
-  | include(FILENAME)        |
-  | initialization GOAL      |
-  | op(P, A, N)              |
-  | pre_initialization(GOAL) |
-  | trace_libraries          |
-* list of predefined operators
-  | Name             | Associativity | Precedence |
-  |------------------+---------------+------------|
-  | @=<              | xfx           |        700 |
-  | ;                | xfy           |       1100 |
-  | @<               | xfx           |        700 |
-  | ,                | xfy           |       1000 |
-  | is               | xfx           |        700 |
-  | **               | xfx           |        200 |
-  | @>               | xfx           |        700 |
-  | <<               | yfx           |        400 |
-  | @>=              | xfx           |        700 |
-  | \==              | xfx           |        700 |
-  | '^'              | xfy           |        200 |
-  | +                | fy            |        200 |
-  | +                | yfx           |        500 |
-  | >>               | yfx           |        400 |
-  | '=='             | xfx           |        700 |
-  | -                | fy            |        200 |
-  | -                | yfx           |        500 |
-  | initialization   | fx            |       1150 |
-  | \+               | fy            |        900 |
-  | '=:='            | xfx           |        700 |
-  | '=\='            | xfx           |        700 |
-  | \/               | yfx           |        500 |
-  | :-               | fx            |       1200 |
-  | :-               | xfx           |       1200 |
-  | \=               | xfx           |        700 |
-  | \                | fy            |        200 |
-  | /\               | yfx           |        500 |
-  | xor              | yfx           |        400 |
-  | '=<'             | xfx           |        700 |
-  | <                | xfx           |        700 |
-  | '=..'            | xfx           |        700 |
-  | '='              | xfx           |        700 |
-  | //               | yfx           |        400 |
-  | '/'              | yfx           |        400 |
-  | ->               | xfy           |       1050 |
-  | >                | xfx           |        700 |
-  | '*'              | yfx           |        400 |
-  | >=               | xfx           |        700 |
-  | -->              | xfx           |       1200 |
-  | '                | xfy           |       1105 |
-  | \\               | xfy           |        400 |
 * Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
