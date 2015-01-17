@@ -51,7 +51,6 @@ system_predicate(display(?X)).
 system_predicate(enable_trace(+X)).
 system_predicate(erase(+X)).
 system_predicate(exists_file(+X), _, 'fails if nonexistent or not a regular file').
-system_predicate(fail).
 system_predicate(float(+X)).
 system_predicate(functor(?X, ?Y, ?Z)).
 system_predicate(garbage_collect, _, 'GC is triggered on next entry to predicate').
@@ -68,7 +67,6 @@ system_predicate(peek(+X), _, '-1 on EOF').
 system_predicate(put(+X), _, 'X may be fixnum or symbol').
 system_predicate(sleep(+X)).
 system_predicate(stream(+X)).
-system_predicate(true).
 system_predicate(var(+X)).
 system_predicate(flush).
 system_predicate(suspend(?X, ?Y)).
@@ -76,6 +74,7 @@ system_predicate(suspend(?X, ?Y)).
 system_predicate(append(+X), 'io.pl').
 system_predicate(compare(-X, ?X, ?Y), 'misc.pl').
 system_predicate(copy_term(?X, ?Y), 'misc.pl').
+system_predicate(between(+X, +Y, ?Z), 'misc.pl').
 system_predicate(current_op(?X, ?Y, ?Z), 'op.pl').
 system_predicate(get(-X), 'io.pl').
 system_predicate(get0(-X), 'io.pl').
@@ -120,7 +119,7 @@ system_predicate(subtract(+X, +Y, -Z), 'sets.pl').
 system_predicate(tab(+X), 'io.pl').
 system_predicate(tell(+X), 'io.pl', 'may also pass stream (or "user")').
 system_predicate(telling(-X), 'io.pl').
-system_predicate(throw(+X), 'misc.pl', 'uncatchable, just to signal error').
+system_predicate(throw(+X), 'misc.pl').
 system_predicate(told, 'io.pl', 'does nothing if stdout or stderr').
 system_predicate(abolish(+PI), 'cdb.pl').
 system_predicate(append(?X, ?Y, ?Z), 'lists.pl').
