@@ -9,9 +9,7 @@
 %   -I FILENAME             add FILENAME to include-path
 %   -q                      disable any output
 %
-% Setting the environment variable PC_PRELUDE_FILE=<FILENAME> is
-% equivalent to -L <FILENAME>.
-
+% - The contents of PC_INCLUDE_PATH are prepended to the default include-path.
 
 :- initialization(main).
 
@@ -24,7 +22,10 @@ compile(ARGS) :-
 	parse_arguments(ARGS),
 	(recorded(source_file, FILE); usage(1)),
 	default_setting(include_path, PATH),
-	recorda(include_path, PATH),
+	(getenv('PC_INCLUDE_PATH', IPATH); IPATH = []),
+	split_string(IPATH, 58, PATHS),
+	append(PATHS, PATH, PATHS2),
+	recorda(include_path, PATHS2),
 	compile_file(FILE).
 
 parse_arguments([]).

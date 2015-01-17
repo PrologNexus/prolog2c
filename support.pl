@@ -54,3 +54,9 @@ locate_file(NAME, [DIR|_], REALNAME) :-
 	exists_file(REALNAME), !.
 locate_file(NAME, [_|MORE], REALNAME) :-
 	locate_file(NAME, MORE, REALNAME).
+
+split_string(STR, SEP, [PART|P2]) :-
+	append(PART, [SEP|MORE], STR),
+	!,
+	split_string(MORE, SEP, P2).
+split_string(STR, _, [STR]).
