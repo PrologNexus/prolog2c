@@ -1,0 +1,500 @@
+
+
+	???
+
+
+
+* Introduction
+
+  This is ???, a compiler for the Prolog[1] programming language. ???
+  compiles a single source file into C, that can be subsequently
+  compiled with a C compiler to an executable. The generated code is
+  platform-independent and should be portable to a wide range of
+  machines and operating systems. No other dependencies exist, only a
+  C compiler is required. The generated executables are fairly small
+  and can be embedded in existing applications.
+
+  ??? has no support for dynamic predicates, or for calling
+  user-constructed goals - all code must be statically visible.  An
+  interactive interpreter is available and can be used as a library in
+  compiled Prolog code, but interpreted code will not be visible to
+  compiled code. Loading (consulting) code at runtime is not possible
+  and manipulating the clause-database with assert/retract will have
+  no effect on the running program.
+
+  Performance is reasonable, in microbencjhmarks roughly comparable to
+  systems like SWI-Prolog[2], but will not be able to compete with
+  such mature Prolog implementations for larger programs. Basic
+  clause-indexing on the type of the first argument of a predicates is
+  provided and tail-call optimization is performed in most cases.
+
+  The dialect of Prolog implemented should be sufficient for usual
+  Prolog programming. Basic ISO and Edinburgh system predicates and
+  control structures are available, but no support for constraint
+  programming or coroutining. 
+
+* Building and installation
+
+  The compiler itself is written in Prolog and must be pre-compiled to
+  C before it can be used. In the distribution archive that contains
+  the file your are currently reading, pre-compiled code for the
+  compiler and interpreter are included, so all that remains to be
+  done is to compile these using a C compiler:
+
+    gcc -std=gnu99 -I. pc.c -o pc -lm
+    gcc -std=gnu99 -I. pi.c -o pi -lm
+
+  A C compiler with support for C99, including some GNU extensions is
+  required, both gcc[4] and clang[5] have been successfully tested.
+
+  - Platform-specific issues
+
+    Linux:
+
+      On Linux the "librt" must be linked by adding "-lrt" to the
+      C compiler invocation given above.
+
+  It is advisable to add some optimization options to improve the
+  performance of the compiled executables, recommended are typically
+  
+    -O2 -fomit-frame-pointer -fno-strict-aliasing -fwrapv
+
+  The latter two will prevent the C compiler from taking advantage of
+  some unintuitive interpretations of the C language and should be
+  used when optimizations are enabled for code produced by the Prolog
+  compiler.
+
+  Several builtin predicates are actually implemented in Prolog and
+  reside in separate library files in the "lib" directory. You can
+  install the compiler and interpreter-binaries wherever you like, but
+  to find the libraries the compiler must be able to locate the
+  library directory. This can be done either by passing 
+
+    -I <library-directory>
+
+  as additional command-line options when compiling a source file or
+  by setting the environment variable "PC_INCLUDE_PATH" to a list of
+  directories to be searched, separated by ":".
+
+* Usage
+
+  Simply invoke the compiler with the source file to be compiled:
+
+    pc <FILENAME>
+
+  The compiler understands the following command-line options:
+
+    -h                      show some usage information.
+    -v                      show clauses as they are compiled.
+    -i                      show intermediate code produced instead 
+    			    of generating a C file.
+    -o FILENAME             specify output-file name (defaults to
+       			    the name of the source file, with the
+			    file-extension replaced by ".c")
+    -I DIRECTORY            add DIRECTORY to the current include-
+       			    path.
+    -q                      do not show any output while compiling.
+
+  The interpreter can be run interactively by simply starting it, or
+  can run and execute a Prolog source file, given on the command-line.
+  Giving the command-line option "-t", execution starts in "trace"
+  mode, which shows how predicates are called, exit, fail or
+  re-execute during backtracking. The interpreter has all
+  library-predicates included and does not need to have access to the
+  library directory.
+
+* Interpreter
+
+  ...
+
+* Debugging and error messages
+
+  ...
+
+* Builtin predicates
+
+  - Control structures
+
+    GOAL, GOAL                    Conjunction [ISO]
+    GOAL; GOAL                    Disjunction [ISO]
+    GOAL1 -> GOAL2	          "If-then" [ISO]
+    !	    		          "Cut" [ISO]
+    \+ GOAL	            	  "Not" [ISO]
+    repeat    			  Always succeeds [ISO]
+
+    findall(?T, +GOAL, -R)	  Unify R with the list of all T for goal GOAL 
+    		       		  [ISO]
+    forall(+GOAL1, +GOAL2)        True if GOAL2 unifies for all solutions of 
+    		   		  GOAL1.
+
+    catch(+GOAL1, ?BALL, +GOAL2)  Invoke GOAL1 and, if an exception occurs
+    		  	 	  during its execution that unifies with
+				  BALL, invokes GOAL2 and continues [ISO]
+    throw(BALL)			  Throws exception BALL [ISO]
+
+    The goals must be complete, callable terms, merely passing
+    variables containing callable terms is not sufficient.
+
+  - Equality and comparison predicates
+
+    X = Y			  Unifies X with Y [ISO]
+    X \= Y                        Succeeds if X does not unify with Y [ISO]
+    X == Y			  Succeeds if X is identical to Y [ISO]
+    X \== Y			  Succeeds if X is not identical to Y [ISO]
+
+    X @< Y			  X is ordered below Y [ISO]
+    X @> Y			  X is ordered above Y [ISO]
+    X @=< Y			  X is ordered below Y or is identical [ISO]
+    X @>= Y			  X is ordered above Y or is identical [ISO]
+
+  - Conversion- and term-deconstruction predicates
+
+    arg(+INDEX, +TERM, ?ARG) 	  ARG is the INDEXth argument of TERM [ISO]
+
+  - Type-testing predicates
+
+    ...
+
+  - Input/Output predicates
+  
+    ...
+
+  - Database access predicates
+
+    asserta(+CLAUSE)		  Asserts clause X into clause-database before
+    				  other matching clauses [ISO]
+    asserta(+CLAUSE, -REF)	  Asserts clause X and unifies REF with a 
+    		     		  DB-reference [ISO]
+    assertz(+CLAUSE)		  Asserts clause X into clause-database after
+    				  other matching clauses [ISO]
+    assertz(+CLAUSE, -REF)	  Assert clause X and unifies REF with DB-ref
+    		     		  [ISO]
+
+  - Arithmetic predicates
+
+    X < Y			  True if X is numerically less than Y [ISO]
+    X > Y			  True if X is numerically greater than Y [ISO]
+    X =< Y			  True if X is numerically less than or equal to
+      	 			  Y [ISO]
+    X >= Y			  True if X is numerically greater than or equal
+      	 			  to Y [ISO]
+    X =:= Y			  True if X is numerically equal to Y [ISO]
+    X =\= Y			  True if X is not numerically equal to Y [ISO]
+    -X is Y			  Unifies X with the result of evaluating 
+       	  			  expression Y [ISO]
+
+    Note that variables in expressions must contain numerical values.
+    Expressions in variables are not evaluated (as is normally
+    required by ISO Prolog).
+
+  - Arithmetic operators
+
+    - X				  Negation [ISO]
+    \ X				  Bitwise complement [ISO]
+    X + Y			  Addition [ISO]
+    X - Y			  Subtraction [ISO]
+    X * Y			  Multiplication [ISO]
+    X / Y			  Division (always returns float) [ISO]
+    X // Y			  Integer division [ISO]
+    X \\ Y			  Integer remainder
+    X /\ Y			  Bitwise and [ISO]
+    X \/ Y			  Bitwise or [ISO]
+    X >> Y			  Bit-shift right [ISO]
+    X << Y			  Bit-shift left [ISO]
+    X ** Y			  Exponentation [ISO]
+    abs(X)			  Absolute value [ISO]
+    atan(X)			  Arcustangens [ISO]
+    ceiling(X)			  Next larger integer [ISO]
+    clock			  Current time in seconds, starting from
+    				  some unspecified point in time.
+    cos(X)			  Cosine [ISO]
+    exp(X)			  Exponential function [ISO]
+    float(X)			  Convert to float [ISO]
+    float_fractional_part(X)	  Fractional component [ISO]
+    float_integer_part(X)	  Integer component [ISO]
+    floor(X)			  Next smaller integer [ISO] 
+    log(X)			  Natural logarithm [ISO]
+    random(X)			  Random integer between  0 and X (exclusive).
+    round(X)			  Round to nearest integer [ISO]
+    sign(X)			  Sign of value [ISO]
+    sin(X)			  Sine [ISO]	
+    sqrt(X)			  Square-root [ISO]
+    truncate(X)			  Truncate to integer [ISO]
+    X xor Y			  Bitwise xor
+
+  - Operating-system interaction
+
+    ...
+
+  - Set operations
+
+    ...
+
+  - Predicates on ordered sets
+
+    ord_disjoint(+SET1, +SET2)    True if X and Y have no common elements.
+    ord_insert(+SET1, +X, -SET2	  True if X inserted into SET1 gives SET2.
+    ord_intersect(+SET1, +SET2)   True if sets have some elements in common.
+    ord_intersect(+SET1, +SET2, -SET3) 
+    			 	  SET3 is the intersection of SET1 and SET2.
+    ord_seteq(+SET1, +SET2)	  True if sets are equal.
+    ord_subset(+SET1, +SET2)	  True if SET1 is a subset of SET2.
+    ord_subtract(+SET1, +SET2, -SET3)
+    			          Subtract SET2 from SET1, giving SET3.
+    ord_symdiff(+SET1, +SET2, -SET3)
+    		       	          SET3 is the symmetric difference of SET1
+				  and SET2 (i.e. it is the union without the
+				  intersection.)
+    ord_union(+SET1, +SET2, -SET3)
+    		     	          SET3 is the union of SET1 and SET2.
+
+  - List operations
+
+    ...
+
+  - Calling code written in other languages
+
+control_structure(foreign_call(X)).
+
+  - Other predicates
+
+    true			  Always succeeds [ISO]
+    fail			  Always fails [ISO]
+
+    garbage_collect		  Triggers a garbage collection on the next
+    				  predicate-invocation.
+
+    suspend(?X, ?Y)               Suspends execution in embedded code (see
+    				  below for more information about embedding).
+
+system_predicate(atom(+X)).
+system_predicate(atom_codes(?X, ?Y)).
+system_predicate(atomic(+X)).
+system_predicate(clause(+X, ?Y)).
+system_predicate(clause(+X, ?Y, -Z)).
+system_predicate(command_line_arguments(-X), _, 'Filters out runtime-options ("-:..."), does not include program name').
+system_predicate(compound(+X)).
+system_predicate(current_input(-X)).
+system_predicate(current_output(-X)).
+system_predicate(current_error_output(-X)).
+system_predicate(db_reference(?X)).
+system_predicate(display(?X)).
+system_predicate(enable_trace(+X)).
+system_predicate(erase(+X)).
+system_predicate(exists_file(+X), _, 'fails if nonexistent or not a regular file').
+system_predicate(float(+X)).
+system_predicate(functor(?X, ?Y, ?Z)).
+system_predicate(getenv(+X, -Y), _, 'fails if variable does not exist').
+system_predicate(getpid(-X)).
+system_predicate(halt, _, 'exits with code 0').
+system_predicate(halt(+X)).
+system_predicate(integer(+X)).
+system_predicate(nl).
+system_predicate(nonvar(+X)).
+system_predicate(number(+X)).
+system_predicate(number_codes(?X, ?Y), _, 'uses strtol(3)/strtod(3), so allows leading space').
+system_predicate(peek(+X), _, '-1 on EOF').
+system_predicate(put(+X), _, 'X may be fixnum or symbol').
+system_predicate(sleep(+X)).
+system_predicate(stream(+X)).
+system_predicate(true).
+system_predicate(var(+X)).
+system_predicate(flush).
+
+system_predicate(append(+X), 'io.pl').
+system_predicate(compare(-X, ?X, ?Y), 'misc.pl').
+system_predicate(copy_term(?X, ?Y), 'misc.pl').
+system_predicate(between(+X, +Y, ?Z), 'misc.pl').
+system_predicate(current_op(?X, ?Y, ?Z), 'op.pl').
+system_predicate(get(-X), 'io.pl').
+system_predicate(get0(-X), 'io.pl').
+system_predicate(intersection(+X, +Y, -Z), 'sets.pl').
+system_predicate(keysort(+X, -Y), 'sorts.pl').
+system_predicate(length(?X, ?Y), 'lists.pl').
+system_predicate(list_to_ord_set(+X, -Y), 'ordset.pl').
+system_predicate(member(?X, ?Y), 'lists.pl').
+system_predicate(memberchk(?X, +Y), 'lists.pl').
+system_predicate(merge(+X, +Y, -Z), 'sorts.pl').
+system_predicate(name(?X, ?Y), 'misc.pl').
+system_predicate(op(+X, +Y, -N), 'op.pl').
+system_predicate(read(-X), 'read.pl', 'expands into read1/1, which is auto-included').
+system_predicate(read(-X, -Y), 'read.pl', 'Y is unified with list of ATOM=VAR terms').
+system_predicate(read_tokens(-X, -Y), 'rdtok.pl').
+system_predicate(recorda(+X, -Y), 'rdb.pl').
+system_predicate(recorda(+X, -Y, -Z), 'rdb.pl').
+system_predicate(recorded(+X, -Y), 'rdb.pl').
+system_predicate(recorded(+X, -Y, -Z), 'rdb.pl').
+system_predicate(recordz(+X, -Y), 'rdb.pl').
+system_predicate(recordz(+X, -Y, -Z), 'rdb.pl').
+system_predicate(retract(+X), 'cdb.pl').
+system_predicate(reverse(?X, ?Y), 'lists.pl').
+system_predicate(see(+X), 'io.pl', 'may also pass stream (or "user")').
+system_predicate(seeing(-X), 'io.pl').
+system_predicate(seen, 'io.pl', 'does nothing if stdin').
+system_predicate(select(?X, ?Y, ?Z), 'sets.pl').
+system_predicate(shell(+X), 'misc.pl', 'expects exit-status 0').
+system_predicate(shell(+X, -Y), 'misc.pl').
+system_predicate(skip(+X), 'io.pl').
+system_predicate(sort(+X, -Y), 'sorts.pl').
+system_predicate(subtract(+X, +Y, -Z), 'sets.pl').
+system_predicate(tab(+X), 'io.pl').
+system_predicate(tell(+X), 'io.pl', 'may also pass stream (or "user")').
+system_predicate(telling(-X), 'io.pl').
+system_predicate(told, 'io.pl', 'does nothing if stdout or stderr').
+system_predicate(abolish(+PI), 'cdb.pl').
+system_predicate(append(?X, ?Y, ?Z), 'lists.pl').
+system_predicate(union(+X, +Y, -Z), 'sets.pl').
+system_predicate(?X =.. ?Y, 'misc.pl', '"univ"').
+system_predicate(write(+X), 'write.pl').
+system_predicate(writeq(+X), 'write.pl').
+
+* Precedence of builtin operators
+
+  | Name             | Associativity | Precedence |
+  |------------------+---------------+------------|
+  | *                | yfx           |        400 |
+  | **               | xfx           |        200 |
+  | +                | fy            |        200 |
+  | +                | yfx           |        500 |
+  | ,                | xfy           |       1000 |
+  | -                | fy            |        200 |
+  | -                | yfx           |        500 |
+  | -->              | xfx           |       1200 |
+  | ->               | xfy           |       1050 |
+  | /                | yfx           |        400 |
+  | //               | yfx           |        400 |
+  | /\               | yfx           |        500 |
+  | :-               | fx            |       1200 |
+  | :-               | xfx           |       1200 |
+  | ;                | xfy           |       1100 |
+  | <                | xfx           |        700 |
+  | <<               | yfx           |        400 |
+  | =                | xfx           |        700 |
+  | =..              | xfx           |        700 |
+  | =:=              | xfx           |        700 |
+  | =<               | xfx           |        700 |
+  | ==               | xfx           |        700 |
+  | =\=              | xfx           |        700 |
+  | >                | xfx           |        700 |
+  | >=               | xfx           |        700 |
+  | >>               | yfx           |        400 |
+  | @<               | xfx           |        700 |
+  | @=<              | xfx           |        700 |
+  | @>               | xfx           |        700 |
+  | @>=              | xfx           |        700 |
+  | \                | fy            |        200 |
+  | \+               | fy            |        900 |
+  | \/               | yfx           |        500 |
+  | \=               | xfx           |        700 |
+  | \==              | xfx           |        700 |
+  | \\               | xfy           |        400 |
+  | ^                | xfy           |        200 |
+  | initialization   | fx            |       1150 |
+  | is               | xfx           |        700 |
+  | xor              | yfx           |        400 |
+  | |                | xfy           |       1105 |
+
+* Directives
+
+  | global_variable(NAME)    |
+  | include(FILENAME)        |
+  | initialization GOAL      |
+  | op(P, A, N)              |
+  | pre_initialization(GOAL) |
+  | verbatim(S)          |
+  ... 
+
+* Embedding
+
+  ...
+
+* Extending the compiler and interpreter
+
+  ...
+
+* Limitations
+
+  The system is fairly minimal but robust enough to execute many
+  Prolog programs. The compiler does provide very few error
+  diagnostics, mainly to keep it simple and straightforward to extend.
+
+  The garbage collector used is a simple Cheney-style[5] copying
+  collector and all storage for data-structures constructed at
+  run-time is allocated in this GC'd heap. Execution will stop when GC
+  occurs - to keep this interruption short it is advisable to reduce
+  the amount of memory used.
+
+  Depending on the nature of the executing program,
+  memory-requirements may vary accordingly. Currently, the system is
+  not overly memory-efficient with respect to choice-points,
+  environments and the trail-stack. There is currently too much
+  trailing, and the trail does not undergo garbage collection (this
+  may be implemented at some stage).
+
+  The data-areas used at run-time are listed here, together with their
+  default sizes. You can override the settings by redefining a macro
+  when compiling generated C code or by passing the appropriate
+  run-time command-line option to the final compiled executable.
+
+  Meaning             Macro                     R/T option      Default
+  ----------------------------------------------------------------------
+  Heap size           HEAP_SIZE                 -:h<SIZE>    100,000,000
+  Heap reserve        HEAP_RESERVE                                    20
+  Trail stack         TRAIL_STACK_SIZE          -:T<SIZE>      1,000,000
+  Choice-point stack  CHOICE_POINT_STACK_SIZE   -:C<SIZE>     10,000,000
+  Environment-stack   ENVIRONMENT_STACK_SIZE    -:E<SIZE>     10,000,000
+  Argument-stack      ARGUMENT_STACK_SIZE       -:A<SIZE>     10,000,000
+
+  All sizes are in bytes, with the exception of "heap reserve", which
+  is a percentage of the total heap-size, which is kept free to
+  simplify heap-exhaustion checks: once the amount of storage
+  currently in used exceeds the heap-size minus this percentage, a
+  garbage collection is triggered.
+
+* License
+
+  Copyright (c) 2015, Felix L. Winkelmann
+  All rights reserved.
+  
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+  1. Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+  3. The name of the authors may not be used to endorse or promote products
+     derived from this software without specific prior written permission.
+  
+  THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS OR
+  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+  IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+  This code uses a certain amount of code from the freely available DEC10
+  Prolog library[3]:
+
+    These files are all in the "public domain" so you can use them
+    freely, copy them, incorporate them into programs of your own and
+    so forth without payment.  The work of producing them in the first
+    place and of organising them as detailed here has been funded over
+    the years at Edinburgh University mainly by the Science and
+    Engineering Research Council.  Their dissemination has been
+    encouraged by the Alvey Special Interest Group: Artificial
+    Intelligence.  We would appreciate it if you were to acknowledge
+    these bodies when you use or re-distribute any of these files.
+
+* References
+
+  [1] http://en.wikipedia.org/wiki/Prolog
+  [2] http://www.swi-prolog.org
+  [3] http://www.cs.cmu.edu/afs/cs/project/ai-repository/ai/lang/prolog/code/tools/edinbrgh/0.html
+  [4] http://gcc.gnu.org
+  [5] http://clang.llvm.org
