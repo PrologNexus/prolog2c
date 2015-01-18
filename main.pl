@@ -21,12 +21,18 @@ main :-
 compile(ARGS) :-
 	parse_arguments(ARGS),
 	(recorded(source_file, FILE); usage(1)),
-	default_setting(include_path, PATH),
-	(getenv('PC_INCLUDE_PATH', IPATH); IPATH = []),
-	split_string(IPATH, 58, PATHS),
-	append(PATHS, PATH, PATHS2),
-	recorda(include_path, PATHS2),
+	set_include_path,
 	compile_file(FILE).
+
+set_include_path :-
+	default_setting(include_path, PATH),
+	(getenv('PC_INCLUDE_PATH', IPATH) 
+	->
+	 split_string(IPATH, 58, PATHS),
+	 append(PATHS, PATH, PATHS2)
+	; PATHS2 = PATH
+	),
+	recorda(include_path, PATHS2).
 
 parse_arguments([]).
 parse_arguments(['-o', OFILE|MORE]) :-
