@@ -71,7 +71,8 @@ NOTES											              -*- Org -*-
 ** TODO Test retract-loop
    - file:tests/0069-cdb.pl
 * Missing features
-** TODO Having setof/bagof would be nice
+** TODO once/1
+** TODO setof/bagof
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
@@ -83,7 +84,6 @@ NOTES											              -*- Org -*-
       ptr to invoke prolog (similar to BONES).
     - also allow access to global_variables, and (prefixed) access
       function.
-** TODO Complete README
 ** TODO Add library predicates
 *** TODO ord_membercheck/2
     - possibly as primitive.
@@ -103,6 +103,7 @@ NOTES											              -*- Org -*-
 ** TODO Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
 ** TODO Check fixnum range when emitting literals 
+   - restrict to 32-bit to keep source-file portable.
 ** trail-GC
     - and adjust CP-stack entries accordingly.
     - tricky.
@@ -125,8 +126,7 @@ NOTES											              -*- Org -*-
 ** TODO Additional predicates
    - listing/1
    - listing/0
-     - needs some way to enumerate all clauses (clause/2 needs
-       sufficiently instantiated head).
+     - needs some way to enumerate all predicates (current_predicate/1).
 * Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
