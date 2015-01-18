@@ -451,25 +451,52 @@
 
   - Operating-system interaction
 
-system_predicate(command_line_arguments(-X), _, 'Filters out runtime-options ("-:..."), does not include program name').
-system_predicate(exists_file(+X), _, 'fails if nonexistent or not a regular file').
-system_predicate(getenv(+X, -Y), _, 'fails if variable does not exist').
-system_predicate(getpid(-X)).
-system_predicate(halt, _, 'exits with code 0').
-system_predicate(halt(+X)).
-system_predicate(sleep(+X)).
-system_predicate(shell(+X), 'misc.pl', 'expects exit-status 0').
-system_predicate(shell(+X, -Y), 'misc.pl').
+    command_line_arguments(-X)	  Unifies X with a list of the command-line
+    				  arguments passed to the currently running
+				  program. The list does not include the
+				  program name.
+
+    exists_file(+X)		  True, if the file with the name X (an atom
+    				  or string) exists.
+
+    getenv(+X, -Y)		  Unifies Y with the value of the environment
+    	       			  variable named by X, which may be an atom
+				  or a string.
+
+    getpid(-X)			  Unifies X with the process-id of the currently
+    				  running process.
+
+    halt			  
+    halt(+CODE)			  Terminates the currently running program
+    				  and returns to the operating system with exit
+				  code X (defaults to 0).
+
+    sleep(+X)			  Waits X seconds.
+
+    shell(+CMD)			  
+    shell(+CMD, -STATUS)	  Executes the shell-command CMD (which should
+    				  be an atom or a string) and unifies STATUS
+				  with the return status (exit code) of the
+				  shell after running the command. If STATUS
+				  is not given, shell/1 fails when the command
+				  returns with an exit-status that is not 0.
 
   - Set operations
 
-system_predicate(intersection(+X, +Y, -Z), 'sets.pl').
-system_predicate(member(?X, ?Y), 'lists.pl').
-system_predicate(memberchk(?X, +Y), 'lists.pl').
-system_predicate(subtract(+X, +Y, -Z), 'sets.pl').
-system_predicate(union(+X, +Y, -Z), 'sets.pl').
+    intersection(+SET1, +SET2, -SET3)
+    			          SET3 is the intersection of the sets SET1 and
+				  SET2.
+
+    select(?X, ?SET1, ?SET2)      SET2 is SET1 with element X removed.
+
+    subtract(+SET1, +SET2, -SET3)
+    		    	          SET3 is SET1 with the elements of SET2 removed.
+
+    union(+SET1, +SET2, -SET3)    SET3 is the union of the sets SET1 and SET2.
 
   - Predicates on ordered sets
+
+    list_to_ord_set(+LIST, -SET)  SET is LIST converted to an ordered set.
 
     ord_disjoint(+SET1, +SET2)    True if X and Y have no common elements.
 
@@ -498,21 +525,31 @@ system_predicate(union(+X, +Y, -Z), 'sets.pl').
     ord_union(+SET1, +SET2, -SET3)
     		     	          SET3 is the union of SET1 and SET2.
 
-system_predicate(list_to_ord_set(+X, -Y), 'ordset.pl').
-
   - List operations
 
-system_predicate(length(?X, ?Y), 'lists.pl').
-system_predicate(keysort(+X, -Y), 'sorts.pl').
-system_predicate(merge(+X, +Y, -Z), 'sorts.pl').
-system_predicate(reverse(?X, ?Y), 'lists.pl').
-system_predicate(select(?X, ?Y, ?Z), 'sets.pl').
-system_predicate(sort(+X, -Y), 'sorts.pl').
-system_predicate(append(?X, ?Y, ?Z), 'lists.pl').
+    length(?X, ?N)		  N is the length of list X.
+
+    keysort(+SET, -SORTED)	  SORTED is SET, ordered by the first argument
+    		  		  of each element (usually -/2).
+
+    merge(+SET1, +SET2, -SET3)    SET3 is the combination of the ordered sets SET1
+    		 		  and SET2.
+
+    reverse(?X, ?Y)		  Y is the list X in reverse order.
+
+    sort(+X, -Y)		  Y is the list X in sorted order.
+
+    append(?X, ?Y, ?Z)		  Z is the list Y appended to the list X.
+
+    member(?X, ?Y),		  Unifies X with the members of the list Y.
+
+    memberchk(?X, +Y)		  Like member/2, but produces only one solution.
+
 
   - Calling code written in other languages
 
-control_structure(foreign_call(X)).
+    foreign_call(CALL)	    	  Invokes a foreign procedure (see below for more
+    				  information.)
 
   - Other predicates
 
@@ -528,12 +565,35 @@ control_structure(foreign_call(X)).
     suspend(?X, ?Y)               Suspends execution in embedded code (see
     				  below for more information about embedding).
 
-system_predicate(enable_trace(+X)).
+    enable_trace(+X)		  Enables "trace" mode in compiled code, starting
+    				  at the next call, exit or fail. For this to
+				  be effective, the program must be compiled with
+				  the "-DTRACE" option.
 
-system_predicate(compare(-X, ?X, ?Y), 'misc.pl').
-system_predicate(between(+X, +Y, ?Z), 'misc.pl').
-system_predicate(current_op(?X, ?Y, ?Z), 'op.pl').
-system_predicate(op(+X, +Y, -N), 'op.pl').
+    compare(-X, ?X, ?Z)		  Compares X and Z and unifies X with one of the
+    		    		  atoms '=', '<' or '>', depending on whether
+				  Y is identical, ordered below or ordered above
+				  Z.
+
+    between(+LOW, +HIGH, ?X)      X is between LOW and HIGH, inclusive.
+
+    current_op(?P, ?A, ?N)        Unifies N with the name of any currently defined
+    		       		  operators with precedence P and associativity A.
+
+    op(+P, +A, +N)		  Defines a new operator with name N (an atom),
+    	       			  precedence P (an integer between 0 and 1200) and
+				  associativity A (one of the atoms 'fx', 'fy', 'xf',
+				  'yf', 'xfx', 'xfy' or 'yfx'). N may also be a
+				  list of atoms.
+
+    global_ref(NAME, -X)          Unifies X with the current value of the global
+    		     		  variable NAME, which must have been previously
+				  declared with the "global_variable" directive
+				  (see below.)
+
+    global_set(NAME, +X)          Sets the global variable with the name NAME to
+    		     		  X. Note that this does not take care of backtracking,
+				  use copy_term/2 to preserve X in that case.
 
   - Predicates that are only available in the interpreter
 
@@ -598,19 +658,47 @@ system_predicate(op(+X, +Y, -N), 'op.pl').
 
 * Directives
 
-  | global_variable(NAME)    |
-  | include(FILENAME)        |
-  | initialization GOAL      |
-  | op(P, A, N)              |
-  | pre_initialization(GOAL) |
-  | verbatim(S)          |
-  ... 
+  The following directives are available in compiled code and can be
+  declared using the usual ":- DIRECTIVE, ... ." syntax:
 
-* Embedding
+  global_variable(NAME)      Declares NAME as a global variable, accessible
+  			     with global_set/2 and global_ref/2.
+
+  verbatim(CODE)             Include CODE directly in the produced C file.
+  			     All code declared in "verbatim" directives
+			     will be concatenated and emitted at the start
+			     of the generated code, directly after the
+			     inclusion of "pc.h".
+
+  The following directives are available in the compiler and interpreter:
+
+  include(FILENAME)          Include the contents of FILENAME at the current
+  			     position in the source-code that contains this
+			     clause. If the file exists and has the extension
+			     ".pl", then the extension may be omitted in the
+			     directive.
+
+  initialization GOAL        Declares GOAL to be an initialization goal that
+  		 	     will be invoked when a compiled program is
+			     started or when a file given to the interpreter
+			     on the command-line has been consulted.
+			     Several initialization goals may be declared
+			     and are invoked in the order in which they appear
+			     in the source code.
+			     
+  op(P, A, N)                Declares an operator - identical to op/3,
+  	   		     but done before reading any further clauses.
+
+  pre_initialization(GOAL)   Declares GAOL to be a pre-initialization goal.
+  			     This is similar to the "initialization"
+			     directive, but pre-initialization goals are
+			     run before all normal initialization goals.
+
+* Extending the compiler and interpreter
 
   ...
 
-* Extending the compiler and interpreter
+* Embedding
 
   ...
 
