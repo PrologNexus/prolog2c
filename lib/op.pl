@@ -54,7 +54,7 @@ op(P, A, [N|R]) :-
 op(P, A, N) :-
 	(P \== ','; throw(error('operator \',\' may not be redefined'))),
 	(integer(P), P >= 0, P =< 1200; throw(error('bad operator precedence', P))),
-	(memberchk(A, [xf, yf, xfx, xyf, yfx, fx, fy]); throw(error('bad operator associativity', A))),
+	(memberchk(A, [xf, yf, xfx, xfy, yfx, fx, fy]); throw(error('bad operator associativity', A))),
 	!,
 	'$op'(P, A, N).
 
