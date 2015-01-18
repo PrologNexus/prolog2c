@@ -39,30 +39,14 @@
   C before it can be used. In the distribution archive that contains
   the file your are currently reading, pre-compiled code for the
   compiler and interpreter are included, so all that remains to be
-  done is to compile these using a C compiler:
+  done is to compile these using make(1):
 
-    gcc -std=gnu99 -I. pc.c -o pc -lm
-    gcc -std=gnu99 -I. pi.c -o pi -lm
+    make
 
   A C compiler with support for C99, including some GNU extensions is
   required, both gcc[4] and clang[5] have been successfully tested.
-
-  - Platform-specific issues
-
-    Linux:
-
-      On Linux the "librt" must be linked by adding "-lrt" to the
-      C compiler invocation given above.
-
-  It is advisable to add some optimization options to improve the
-  performance of the compiled executables, recommended are typically
-  
-    -O2 -fomit-frame-pointer -fno-strict-aliasing -fwrapv
-
-  The latter two will prevent the C compiler from taking advantage of
-  some unintuitive interpretations of the C language and should be
-  used when optimizations are enabled for code produced by the Prolog
-  compiler.
+  You can edit the variables at the top of the makefile to choose
+  a different compiler or different compilation options.
 
   Several builtin predicates are actually implemented in Prolog and
   reside in separate library files in the "lib" directory. You can
@@ -72,9 +56,11 @@
 
     -I <library-directory>
 
-  as additional command-line options when compiling a source file or
+  as additional command-line options when compiling a source file, or
   by setting the environment variable "PC_INCLUDE_PATH" to a list of
-  directories to be searched, separated by ":".
+  directories to be searched, separated by ":" (which should not
+  include the "lib/" part - i.e. the path(s) should point to the
+  location in which the "lib" directory resides.)
 
 * Usage
 
@@ -95,6 +81,29 @@
        			    path.
     -q                      do not show any output while compiling.
 
+  Code compiled with the compiler must be passed to a C compiler
+
+    gcc -std=gnu99 -I. <program>.c -o <program> -lm
+
+  - Platform-specific issues
+
+    Linux:
+
+      On Linux the "librt" must be linked by adding "-lrt" to the
+      C compiler invocation given above.
+
+  It is advisable to add some optimization options to improve the
+  performance of the compiled executables, recommended are typically
+  
+    -O2 -fomit-frame-pointer -fno-strict-aliasing -fwrapv
+
+  The latter two will prevent the C compiler from taking advantage of
+  some unintuitive interpretations of the C language and should be
+  used when optimizations are enabled for code produced by the Prolog
+  compiler.
+
+* Interpreter
+
   The interpreter can be run interactively by simply starting it, or
   can run and execute a Prolog source file, given on the command-line.
   Giving the command-line option "-t", execution starts in "trace"
@@ -103,9 +112,14 @@
   library-predicates included and does not need to have access to the
   library directory.
 
-* Interpreter
+  In contrast to the compiler, the clause-database represents the
+  program that is currently executing and manipulations of the database
+  will influence running code. The effect of asserting or retracting
+  clauses for predicates that currently execute is undefined.
 
-  ...
+  Note that the interpreter is a simple meta-circular evaluator and is
+  thus rather slow. DCG grammars are currently not supported in
+  interpreted code.
 
 * Debugging and error messages
 
@@ -113,23 +127,32 @@
 
 * Builtin predicates
 
+  DCG rules of the form "HEAD --> BODY" are supported.
+
   - Control structures
 
     GOAL, GOAL                    Conjunction [ISO]
+
     GOAL; GOAL                    Disjunction [ISO]
+
     GOAL1 -> GOAL2	          "If-then" [ISO]
+
     !	    		          "Cut" [ISO]
+
     \+ GOAL	            	  "Not" [ISO]
+
     repeat    			  Always succeeds [ISO]
 
     findall(?T, +GOAL, -R)	  Unify R with the list of all T for goal GOAL 
     		       		  [ISO]
+
     forall(+GOAL1, +GOAL2)        True if GOAL2 unifies for all solutions of 
     		   		  GOAL1.
 
     catch(+GOAL1, ?BALL, +GOAL2)  Invoke GOAL1 and, if an exception occurs
     		  	 	  during its execution that unifies with
 				  BALL, invokes GOAL2 and continues [ISO]
+
     throw(BALL)			  Throws exception BALL [ISO]
 
     The goals must be complete, callable terms, merely passing
@@ -138,48 +161,222 @@
   - Equality and comparison predicates
 
     X = Y			  Unifies X with Y [ISO]
+
     X \= Y                        Succeeds if X does not unify with Y [ISO]
+
     X == Y			  Succeeds if X is identical to Y [ISO]
+
     X \== Y			  Succeeds if X is not identical to Y [ISO]
 
     X @< Y			  X is ordered below Y [ISO]
+
     X @> Y			  X is ordered above Y [ISO]
+
     X @=< Y			  X is ordered below Y or is identical [ISO]
+
     X @>= Y			  X is ordered above Y or is identical [ISO]
 
-  - Conversion- and term-deconstruction predicates
+  - Conversion-predicates
+
+    atom_codes(?X, ?Y)		  Unifies X with the atom constructed from the
+    		   		  character-codes in the list Y or vice versa
+				  [ISO]
+
+    number_codes(?X, ?Y)	  Unifies X with the number constructed from the
+    		   		  character-codes in the list Y or vice versa
+				  [ISO]
+
+    name(?X, ?Y)		  Unifies X with the atom or number constructed
+    	     			  from the character codes in the list Y or 
+				  vice versa.
+
+  - Term-construction and deconstruction predicates
 
     arg(+INDEX, +TERM, ?ARG) 	  ARG is the INDEXth argument of TERM [ISO]
 
+    functor(?X, ?Y, ?Z)		  Unifies Y with the name and Z with the arity
+    		    		  of the term X. If X is a variable, constructs
+				  a term of arity Z with the name Y where the
+				  terms arguments are all fresh unbound variables
+				  [ISO]
+
+    copy_term(?X, ?Y)		  Unifies X with a copy of the term Y or vice
+    		  		  versa [ISO]
+
+    ?X =.. ?Y			  Deconstructs term X into a list of its name
+       	   			  and arguments, or constructs a term from
+				  a list ("univ") [ISO]
+
   - Type-testing predicates
 
-    ...
+    atom(+X)			  True if X is an atom [ISO]
+
+    atomic(+X)			  True if X is an atom or a number [ISO]
+
+    compound(+X)		  True if X is a non-atomic structure [ISO]
+
+    db_reference(+X)		  True if X is a database-reference
+
+    float(+X)			  True if X is a floating-point number [ISO]
+
+    integer(+X)			  True if X is an integral number [ISO]
+
+    nonvar(+X)			  True if X is not an unbound variable [ISO]
+
+    number(+X)			  True if X is an integer or floating-point 
+    				  number [ISO]
+
+    stream(+X)			  True if X is an input/output stream
+
+    var(+X)			  True if X is an unbound variable [ISO]
 
   - Input/Output predicates
   
-    ...
+    current_error_output(-X)	  Unifies X with the current error output
+    				  stream.
+
+    display(+X)			  Display X on the current output stream,
+    				  note that lists are printed in list-
+				  notation.
+
+    nl				  Writes the newline character on the current
+    				  output stream [ISO]
+
+    peek(+X)			  Reads the next character from the current
+    				  input-stream and unifies the character code
+				  with X (-1 if end of file is reached). The
+				  character is not removed from the input 
+				  stream.
+
+    put(+X)			  Writes the character with the code X to the
+    				  current output-stream. X may be an integer
+				  or an atom.
+
+    flush			  Flushes pending but unwritten output in the
+    				  current output-stream.
+
+    append(+FILE)		  Opens FILE in "append" mode and makes it 
+    				  the current output-stream. FILE may be an
+				  atom or a list of character codes (a string).
+
+    get(-X)			  Unifies X with the code of the next non-
+    				  whitespace character in the current input-
+				  stream.
+
+    get0(-X)			  Unifies X with the code of the next character
+    				  in the current input-stream.
+
+    read(-X)			  Reads the next term from the current input-
+    				  stream and unifies it with X [ISO]
+
+    read(-X, -Y)		  Similar to read/1, but unifies Y with a list
+    	     			  of "ATOM=VARIABLE" terms, with an element for
+				  each variable (different from "_") in the
+				  read term.
+
+    see(+X)			  Sets the current input-stream to X, which may
+    				  be a stream or a filename (an atom or a list
+				  of character codes.)
+
+    seeing(-X)			  Unifies X with the current input-stream.
+
+    seen			  Closes the current input-stream (if it is not
+    				  the default input-stream) and sets the current
+				  input-stream to the default one.
+
+    skip(+X)			  Reads characters from the current input-stream
+    				  until a character that unifies with X is read.
+
+    tab(+N)                       Writes N spaces to the current output stream.
+
+    tell(+X)			  Sets the current output-stream to X, which may
+    				  be a stream or a filename.
+
+    telling(-X)			  Unifies X with the current output-stream.
+
+    told			  Closes the current output-stream (if it is not
+    				  the default output-stream) and sets the current
+				  output-stream to the default one.
+
+    write(+X)			  Writes X to the current-output stream, using
+    				  operator notation, if possible.
+
+    writeq(+X)			  Writes X to the current-output stream, using
+    				  operator-notation, if possible and quotes
+				  atoms that would need to be quoted on reading.
+
+    Note that all streams opened via see/1 and tell/1 are opened in binary 
+    mode.
 
   - Database access predicates
 
-    asserta(+CLAUSE)		  Asserts clause X into clause-database before
-    				  other matching clauses [ISO]
-    asserta(+CLAUSE, -REF)	  Asserts clause X and unifies REF with a 
-    		     		  DB-reference [ISO]
-    assertz(+CLAUSE)		  Asserts clause X into clause-database after
-    				  other matching clauses [ISO]
-    assertz(+CLAUSE, -REF)	  Assert clause X and unifies REF with DB-ref
-    		     		  [ISO]
+    abolish(+PI)		  Removes all clauses in the clause-database
+    				  under the given predicate-indicator, which
+				  may be an atom, a term of the form NAME/ARITY
+				  or a list of predicate-indicators [ISO]
+
+    asserta(+CLAUSE)
+    asserta(+CLAUSE, -REF)	  Inserts clause X into the clause-database,
+    		     		  before any existing clauses with the same
+				  name and arity, optionally unifiying REF 
+				  with a DB-reference to the inserted clause 
+				  [ISO]
+
+    assertz(+CLAUSE)
+    assertz(+CLAUSE, -REF)	  Inserts clause X into the clause-database,
+    		     		  after existing clauses with the same name
+				  and arity, optionally unifiying REF with a 
+				  DB-reference to the inserted clause [ISO]
+
+    clause(+X, ?Y)		  
+    clause(+X, ?Y, -REF)	  Unifies X and Y with the head and body of
+    	       	   		  matching clauses in the clause-database, 
+				  optionally unifying REF with a database-
+				  reference to the matched clause [ISO].
+
+    erase(+X)			  Erases the entry with the database-reference
+    				  X in the clause- or record-database.
+
+    recorda(+X, -Y)
+    recorda(+X, -Y, -REF)	  Inserts term Y under key X in the record
+    		    		  database, before any existing terms for
+				  the same key, optionally unifying REF with
+				  a database-reference to the added term.
+
+    recordz(+X, -Y)
+    recordz(+X, -Y, -REF)	  Inserts term Y under key X in the record
+    		    		  database, after any existing terms for
+				  the same key, optionally unifying REF with
+				  a database-reference to the added term.
+
+    recorded(+X, -Y)
+    recorded(+X, -Y, -REF)	  Unifies Y with the terms found in the 
+    		     		  record-database under the key X, optionally
+				  unifying REF with a database-reference to
+				  the found term.
+
+    retract(+X)			  Removes matching clauses in the clause-database
+    				  and unifies X with the matgched clause [ISO]
+
+    Note that clauses in the clause-database have no effect on compiled 
+    programs.
 
   - Arithmetic predicates
 
     X < Y			  True if X is numerically less than Y [ISO]
+
     X > Y			  True if X is numerically greater than Y [ISO]
+
     X =< Y			  True if X is numerically less than or equal to
       	 			  Y [ISO]
+
     X >= Y			  True if X is numerically greater than or equal
       	 			  to Y [ISO]
+
     X =:= Y			  True if X is numerically equal to Y [ISO]
+
     X =\= Y			  True if X is not numerically equal to Y [ISO]
+
     -X is Y			  Unifies X with the result of evaluating 
        	  			  expression Y [ISO]
 
@@ -190,67 +387,128 @@
   - Arithmetic operators
 
     - X				  Negation [ISO]
+
     \ X				  Bitwise complement [ISO]
+
     X + Y			  Addition [ISO]
+
     X - Y			  Subtraction [ISO]
+
     X * Y			  Multiplication [ISO]
+
     X / Y			  Division (always returns float) [ISO]
+
     X // Y			  Integer division [ISO]
+
     X \\ Y			  Integer remainder
+
     X /\ Y			  Bitwise and [ISO]
+
     X \/ Y			  Bitwise or [ISO]
+
     X >> Y			  Bit-shift right [ISO]
+
     X << Y			  Bit-shift left [ISO]
+
     X ** Y			  Exponentation [ISO]
+
     abs(X)			  Absolute value [ISO]
+
     atan(X)			  Arcustangens [ISO]
+
     ceiling(X)			  Next larger integer [ISO]
+
     clock			  Current time in seconds, starting from
     				  some unspecified point in time.
+
     cos(X)			  Cosine [ISO]
+
     exp(X)			  Exponential function [ISO]
+
     float(X)			  Convert to float [ISO]
+
     float_fractional_part(X)	  Fractional component [ISO]
+
     float_integer_part(X)	  Integer component [ISO]
+
     floor(X)			  Next smaller integer [ISO] 
+
     log(X)			  Natural logarithm [ISO]
+
     random(X)			  Random integer between  0 and X (exclusive).
+
     round(X)			  Round to nearest integer [ISO]
+
     sign(X)			  Sign of value [ISO]
+
     sin(X)			  Sine [ISO]	
+
     sqrt(X)			  Square-root [ISO]
+
     truncate(X)			  Truncate to integer [ISO]
+
     X xor Y			  Bitwise xor
 
   - Operating-system interaction
 
-    ...
+system_predicate(command_line_arguments(-X), _, 'Filters out runtime-options ("-:..."), does not include program name').
+system_predicate(exists_file(+X), _, 'fails if nonexistent or not a regular file').
+system_predicate(getenv(+X, -Y), _, 'fails if variable does not exist').
+system_predicate(getpid(-X)).
+system_predicate(halt, _, 'exits with code 0').
+system_predicate(halt(+X)).
+system_predicate(sleep(+X)).
+system_predicate(shell(+X), 'misc.pl', 'expects exit-status 0').
+system_predicate(shell(+X, -Y), 'misc.pl').
 
   - Set operations
 
-    ...
+system_predicate(intersection(+X, +Y, -Z), 'sets.pl').
+system_predicate(member(?X, ?Y), 'lists.pl').
+system_predicate(memberchk(?X, +Y), 'lists.pl').
+system_predicate(subtract(+X, +Y, -Z), 'sets.pl').
+system_predicate(union(+X, +Y, -Z), 'sets.pl').
 
   - Predicates on ordered sets
 
     ord_disjoint(+SET1, +SET2)    True if X and Y have no common elements.
+
     ord_insert(+SET1, +X, -SET2	  True if X inserted into SET1 gives SET2.
+
     ord_intersect(+SET1, +SET2)   True if sets have some elements in common.
+
     ord_intersect(+SET1, +SET2, -SET3) 
     			 	  SET3 is the intersection of SET1 and SET2.
+
+    ord_memberchk(+X, +SET)	  Unifies X with the first element of SET -
+    		      		  this predicate only produces one solution.
+
     ord_seteq(+SET1, +SET2)	  True if sets are equal.
+
     ord_subset(+SET1, +SET2)	  True if SET1 is a subset of SET2.
+
     ord_subtract(+SET1, +SET2, -SET3)
     			          Subtract SET2 from SET1, giving SET3.
+
     ord_symdiff(+SET1, +SET2, -SET3)
     		       	          SET3 is the symmetric difference of SET1
 				  and SET2 (i.e. it is the union without the
 				  intersection.)
+
     ord_union(+SET1, +SET2, -SET3)
     		     	          SET3 is the union of SET1 and SET2.
 
+system_predicate(list_to_ord_set(+X, -Y), 'ordset.pl').
+
   - List operations
 
-    ...
+system_predicate(length(?X, ?Y), 'lists.pl').
+system_predicate(keysort(+X, -Y), 'sorts.pl').
+system_predicate(merge(+X, +Y, -Z), 'sorts.pl').
+system_predicate(reverse(?X, ?Y), 'lists.pl').
+system_predicate(select(?X, ?Y, ?Z), 'sets.pl').
+system_predicate(sort(+X, -Y), 'sorts.pl').
+system_predicate(append(?X, ?Y, ?Z), 'lists.pl').
 
   - Calling code written in other languages
 
@@ -259,94 +517,38 @@ control_structure(foreign_call(X)).
   - Other predicates
 
     true			  Always succeeds [ISO]
+
     fail			  Always fails [ISO]
+
 
     garbage_collect		  Triggers a garbage collection on the next
     				  predicate-invocation.
 
+
     suspend(?X, ?Y)               Suspends execution in embedded code (see
     				  below for more information about embedding).
 
-system_predicate(atom(+X)).
-system_predicate(atom_codes(?X, ?Y)).
-system_predicate(atomic(+X)).
-system_predicate(clause(+X, ?Y)).
-system_predicate(clause(+X, ?Y, -Z)).
-system_predicate(command_line_arguments(-X), _, 'Filters out runtime-options ("-:..."), does not include program name').
-system_predicate(compound(+X)).
-system_predicate(current_input(-X)).
-system_predicate(current_output(-X)).
-system_predicate(current_error_output(-X)).
-system_predicate(db_reference(?X)).
-system_predicate(display(?X)).
 system_predicate(enable_trace(+X)).
-system_predicate(erase(+X)).
-system_predicate(exists_file(+X), _, 'fails if nonexistent or not a regular file').
-system_predicate(float(+X)).
-system_predicate(functor(?X, ?Y, ?Z)).
-system_predicate(getenv(+X, -Y), _, 'fails if variable does not exist').
-system_predicate(getpid(-X)).
-system_predicate(halt, _, 'exits with code 0').
-system_predicate(halt(+X)).
-system_predicate(integer(+X)).
-system_predicate(nl).
-system_predicate(nonvar(+X)).
-system_predicate(number(+X)).
-system_predicate(number_codes(?X, ?Y), _, 'uses strtol(3)/strtod(3), so allows leading space').
-system_predicate(peek(+X), _, '-1 on EOF').
-system_predicate(put(+X), _, 'X may be fixnum or symbol').
-system_predicate(sleep(+X)).
-system_predicate(stream(+X)).
-system_predicate(true).
-system_predicate(var(+X)).
-system_predicate(flush).
 
-system_predicate(append(+X), 'io.pl').
 system_predicate(compare(-X, ?X, ?Y), 'misc.pl').
-system_predicate(copy_term(?X, ?Y), 'misc.pl').
 system_predicate(between(+X, +Y, ?Z), 'misc.pl').
 system_predicate(current_op(?X, ?Y, ?Z), 'op.pl').
-system_predicate(get(-X), 'io.pl').
-system_predicate(get0(-X), 'io.pl').
-system_predicate(intersection(+X, +Y, -Z), 'sets.pl').
-system_predicate(keysort(+X, -Y), 'sorts.pl').
-system_predicate(length(?X, ?Y), 'lists.pl').
-system_predicate(list_to_ord_set(+X, -Y), 'ordset.pl').
-system_predicate(member(?X, ?Y), 'lists.pl').
-system_predicate(memberchk(?X, +Y), 'lists.pl').
-system_predicate(merge(+X, +Y, -Z), 'sorts.pl').
-system_predicate(name(?X, ?Y), 'misc.pl').
 system_predicate(op(+X, +Y, -N), 'op.pl').
-system_predicate(read(-X), 'read.pl', 'expands into read1/1, which is auto-included').
-system_predicate(read(-X, -Y), 'read.pl', 'Y is unified with list of ATOM=VAR terms').
-system_predicate(read_tokens(-X, -Y), 'rdtok.pl').
-system_predicate(recorda(+X, -Y), 'rdb.pl').
-system_predicate(recorda(+X, -Y, -Z), 'rdb.pl').
-system_predicate(recorded(+X, -Y), 'rdb.pl').
-system_predicate(recorded(+X, -Y, -Z), 'rdb.pl').
-system_predicate(recordz(+X, -Y), 'rdb.pl').
-system_predicate(recordz(+X, -Y, -Z), 'rdb.pl').
-system_predicate(retract(+X), 'cdb.pl').
-system_predicate(reverse(?X, ?Y), 'lists.pl').
-system_predicate(see(+X), 'io.pl', 'may also pass stream (or "user")').
-system_predicate(seeing(-X), 'io.pl').
-system_predicate(seen, 'io.pl', 'does nothing if stdin').
-system_predicate(select(?X, ?Y, ?Z), 'sets.pl').
-system_predicate(shell(+X), 'misc.pl', 'expects exit-status 0').
-system_predicate(shell(+X, -Y), 'misc.pl').
-system_predicate(skip(+X), 'io.pl').
-system_predicate(sort(+X, -Y), 'sorts.pl').
-system_predicate(subtract(+X, +Y, -Z), 'sets.pl').
-system_predicate(tab(+X), 'io.pl').
-system_predicate(tell(+X), 'io.pl', 'may also pass stream (or "user")').
-system_predicate(telling(-X), 'io.pl').
-system_predicate(told, 'io.pl', 'does nothing if stdout or stderr').
-system_predicate(abolish(+PI), 'cdb.pl').
-system_predicate(append(?X, ?Y, ?Z), 'lists.pl').
-system_predicate(union(+X, +Y, -Z), 'sets.pl').
-system_predicate(?X =.. ?Y, 'misc.pl', '"univ"').
-system_predicate(write(+X), 'write.pl').
-system_predicate(writeq(+X), 'write.pl').
+
+  - Predicates that are only available in the interpreter
+
+    trace      	    	     	  Enables "trace" mode that displays goals as	
+    				  they are executed.
+
+    call(GOAL)			  Invokes GOAL, which may be directly callable
+    				  or a variable containing such a goal.
+
+    consult(FILE)		  Loads clauses in the given file into the
+    				  clause-database, erasing all previously
+				  stored clauses that have the same name and
+				  arity as clauses in the consulted file.
+				  If the file has the extension ".pl", then
+				  this extension may be omitted.
 
 * Precedence of builtin operators
 
@@ -413,6 +615,16 @@ system_predicate(writeq(+X), 'write.pl').
   ...
 
 * Limitations
+
+  call/1 and its variants are not available in the compiler, as are
+  setof/3 and bagof/3. Goals passed to catch/2, findall/3, forall/2
+  and '\+'/1 must be directly callable.
+
+  Integer numbers are limited to signed integers in a range of 31 bits
+  on 32-bit platforms and 63 bits on 64-bit platforms.
+
+  UNICODE is not supported, the system uses 256-bit character codes,
+  dependent on the default character set of the environment.
 
   The system is fairly minimal but robust enough to execute many
   Prolog programs. The compiler does provide very few error
