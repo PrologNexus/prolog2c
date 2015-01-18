@@ -182,7 +182,6 @@ ord_union(>, Head1, Tail1, Head2, Tail2, [Head2|Union]) :-
 ord_memberchk([], _) :- !, fail.
 ord_memberchk(X, [Y|R]) :-
 	compare(O, X, Y),
-	!,
 	ord_memberchk(O, X, Y, R).
 
 ord_memberchk(=, _, _, _) :- !.
