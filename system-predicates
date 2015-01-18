@@ -70,7 +70,7 @@ system_predicate(flush).
 system_predicate(suspend(?X, ?Y)).
 
 system_predicate(append(+X), 'io.pl').
-system_predicate(compare(-X, ?X, ?Y), 'misc.pl').
+system_predicate(compare(-X, ?X, ?Z), 'misc.pl').
 system_predicate(copy_term(?X, ?Y), 'misc.pl').
 system_predicate(between(+X, +Y, ?Z), 'misc.pl').
 system_predicate(current_op(?X, ?Y, ?Z), 'op.pl').
@@ -84,7 +84,7 @@ system_predicate(member(?X, ?Y), 'lists.pl').
 system_predicate(memberchk(?X, +Y), 'lists.pl').
 system_predicate(merge(+X, +Y, -Z), 'sorts.pl').
 system_predicate(name(?X, ?Y), 'misc.pl').
-system_predicate(op(+X, +Y, -N), 'op.pl').
+system_predicate(op(+X, +Y, +N), 'op.pl').
 system_predicate(ord_disjoint(+X, +Y), 'ordset.pl').
 system_predicate(ord_insert(+X, +Y, -Z), 'ordset.pl').
 system_predicate(ord_intersect(+X, +Y), 'ordset.pl').
