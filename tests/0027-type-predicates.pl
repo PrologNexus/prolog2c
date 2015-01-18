@@ -47,5 +47,5 @@ main :-
 	\+float(x(y)), display(\+float(x(y))), nl,
 	float(1.23), display(float(1.23)), nl,
 	\+float([]), display(\+float([])), nl,
-	current_input(S), stream(S), display(stream(s)), nl,
+	seeing(S), stream(S), display(stream(s)), nl,
 	\+stream(1), display(\+stream(1)), nl.

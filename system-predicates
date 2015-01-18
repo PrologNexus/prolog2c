@@ -43,11 +43,9 @@ system_predicate(clause(+X, ?Y)).
 system_predicate(clause(+X, ?Y, -Z)).
 system_predicate(command_line_arguments(-X), _, 'Filters out runtime-options ("-:..."), does not include program name').
 system_predicate(compound(+X)).
-system_predicate(current_input(-X)).
-system_predicate(current_output(-X)).
 system_predicate(current_error_output(-X)).
 system_predicate(db_reference(?X)).
-system_predicate(display(?X)).
+system_predicate(display(+X)).
 system_predicate(enable_trace(+X)).
 system_predicate(erase(+X)).
 system_predicate(exists_file(+X), _, 'fails if nonexistent or not a regular file').
