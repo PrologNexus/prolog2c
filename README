@@ -123,11 +123,36 @@
 
 * Debugging and error messages
 
-  ...
+  There are no debugging-facilities besides a "trace" mode, which
+  writes information about predicate-calls, -exits, -fails and redo's
+  during execution to stderr. You can enable this trace mode by
+  compiling the generated C code with the "-DTRACE" option given to
+  the C compiler. Once compiled in trace mode you can run the
+  executable with "-:d" to produce actual the execution-trace.
+
+  The compiler does very little error-reporting, mostly to simplify
+  the implementation. Syntactical errors will produce a parser error,
+  with some rough indication about the place where the problem
+  occurred. Runtime-errors will throw an exception, which can be
+  caught by user code using catch/3. 
+
+  Calls to undefined procedures will result in linker errors during
+  compilation to C, so e.g.
+
+    main :- foo.
+
+  when compiled to C and given to the C compiler will result in
+  something similar to
+
+    x.c: In function ‘main’:
+    x.c:20:1: error: label ‘___foo$0’ used but not defined
+
+  Here the name of the predicate ("foo") appears in "mangled" form,
+  that is, converted into a valid C identifier.
 
 * Builtin predicates
 
-  DCG rules of the form "HEAD --> BODY" are supported.
+  DCG rules of the form "HEAD --> BODY" are supported in compiled code.
 
   - Control structures
 
@@ -685,6 +710,9 @@
 			     Several initialization goals may be declared
 			     and are invoked in the order in which they appear
 			     in the source code.
+
+			     In compiler code, the default initialization goal
+			     is main/0.
 			     
   op(P, A, N)                Declares an operator - identical to op/3,
   	   		     but done before reading any further clauses.
@@ -694,13 +722,99 @@
 			     directive, but pre-initialization goals are
 			     run before all normal initialization goals.
 
+* Calling code written in other languages
+
+  To call foreign functions, a single form named "foreign_call" is
+  provided. foreign_call/1 takes a structure that names the function
+  to be called and holds the arguments to be passed. The function
+  should be externally visible, take as many arguments as the
+  structure and return an integer, indicating whether the foreign call
+  failed (0) or succeeded (1). The arguments are of type "X", a
+  generic union type which is either an immediate small integer
+  ("fixnum") or a pointer to a non-immediate data object. See "pc.h"
+  in the distributed source for more information about the internal
+  data layout.
+
+  C code can be embedded in the compiled program using the "verbatim"
+  directive. The text given will be emitted directly in the generated
+  code.
+
+  Values used from C will only be valid until a garbage collection is
+  triggered, which subsequently moves all live data. Therefor
+  references to Prolog data will become invalid, unless saved in the
+  "global" variables vector", a separate buffer that may be used to
+  keep "live" references to heap-allocated data. 
+  
+  Note that the garbage collector ignores data that is not located in
+  the garbage-collected heap, so you can create Prolog data structures
+  in native code and pass them to Prolog without problems. You can use
+  copy_term/2 to copy static data from native code into dynamically
+  allocated data located in the heap (but you must of course free the
+  old static data manually).
+
 * Extending the compiler and interpreter
 
-  ...
+  There are currently no special facilities for this - just add your
+  own definitions to "pc.h" when you want to add your own primitives,
+  and add a wrapper or reference to a library in "macros.pl". The
+  system is intended to be easy to hack and modify and you are
+  encouraged to study everything and change or extend things as you
+  like. Providing sophisticated foreign-function interfaces or
+  interfaces for user-extensions would only make the general
+  architecture more complex and error-prone, so it has been decided to
+  keep things simple, linear, reduce the number of source files and
+  avoid overly clever interfaces. Whether this was successfull, is
+  something for you to decide...
 
 * Embedding
 
-  ...
+  If you compile the C code with the "-DEMBEDDED" option, then the
+  program will not contain a "main()" function and can be called as a
+  library. The entry-point will have the following prototype:
+
+    extern X prolog(int argc, char *argv[], X arg, int *exit_code);
+
+  The first two arguments pass the command-line (even in embedded
+  mode), and should contain at least a single entry (what is normally
+  the program name.) You can pass command-line options, including
+  runtime options, here as usual. The compiled Prolog code will start
+  like any other non-embedded program, until suspend/2 is invoked,
+  which passes its first argument to the caller of the "prolog()"
+  function (the result). Any re-invocation of "prolog()" will continue
+  the execution of the Prolog code at the state where the previous
+  execution was suspended, passing on the "arg" value to be unified
+  with the second argument of suspend/2.
+
+  All invocations of "prolog()" after the first _must_ pass "0" and
+  "NULL" as values for "argc" and "argv".
+
+  Should the program terminate, "exit_code" will be set to the
+  exit status of the program, depending on how the program
+  terminated execution:
+
+    Reason					Exit code
+    -----------------------------------------------------------
+    halt/0					0
+    halt/1					<code>
+    Runtime-error / uncaught exception          EXIT_EXCEPTION
+    Normal termination	     			EXIT_SUCCESS
+    Initialization goal(s) failed		EXIT_FAILURE
+
+  A second entry-point called "prolog_variables" is also available
+  to allow access to entries in the "global variable vector" 
+  (mentioned above):
+
+    extern X *prolog_variables(int index);
+
+  This returns a pointer to a slot in the global variables vector,
+  which can be set and retrieved. Values in this vector undergo
+  garbage collection and change their address after every invocation
+  of the Prolog side, but will not be collected and retain their
+  identity.
+
+  The names of the "prolog()" and "prolog_variables()" entry-points
+  can be changed by redefining the ENTRY_POINT_NAME macro when
+  compiling the C code of an embedded program.
 
 * Limitations
 
