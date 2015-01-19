@@ -350,6 +350,7 @@ static X *freeze_term_var_table;
 static int freeze_term_var_table_size;
 static int freeze_term_var_counter;
 static int global_variable_counter = 0;
+static int initial_global_variable_count;
 static X circular_term_table[ CIRCULAR_TERM_TABLE_SIZE * 2 ];
 static int circular_term_counter;
 static char *string_buffer;
@@ -1919,6 +1920,7 @@ static void initialize(int argc, char *argv[])
   for(int i = 0; i < MAX_GLOBAL_VARIABLES; ++i)
     global_variables[ i ] = ZERO;
 
+  initial_global_variable_count = global_variable_counter;
   standard_input_port = (X)(&default_input_port);
   standard_output_port = (X)(&default_output_port);
   standard_error_port = (X)(&default_error_port);
@@ -3407,6 +3409,22 @@ PRIMITIVE(do_throw, X ball) { throw_exception(ball); return 0; }
 #  define ENTRY_POINT_NAME   prolog
 # endif
 # define ENTRY_POINT   X ENTRY_POINT_NAME(int argc, char *argv[], X result, int *exit_code)
+
+# ifndef VARIABLE_ACCESS_NAME
+#  define VARIABLE_ACCESS_NAME  prolog_variable
+# endif
+
+X VARIABLE_ACCESS_NAME(int index)
+{
+  int i = initial_global_variable_count + index;
+  ASSERT(i < MAX_GLOBAL_VARIABLES, "global-variable index out of range: %d", index);
+
+  if(i > global_variable_counter)
+    global_variable_counter = i + 1;
+
+  return &(global_variables[ i ]);
+}
+
 #else
 # define ENTRY_POINT   int main(int argc, char *argv[])
 #endif
