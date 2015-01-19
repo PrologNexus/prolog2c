@@ -400,11 +400,11 @@ static CHAR *type_names[] = {
 
 #ifdef SIXTYFOUR
 # define FPALIGNED(x)  (1)
-# define FPALIGN
+# define FPALIGN(alloc)
 # define ALIGN(n)  (((n) + 7) & ~7L)
 #else
 # define FPALIGNED(x)  (((WORD)objdata(x) & 0x7) == 0)
-# define FPALIGN  alloc_top = (X)((((WORD)alloc_top + 7) & ~7L) + 4)
+# define FPALIGN(alloc)  alloc = (X)((((WORD)alloc + 7) & ~7L) + 4)
 # define ALIGN(n)  (((n) + 3) & ~3L)
 #endif
 
@@ -512,8 +512,82 @@ static inline int is_dbreference(X x)
 }
 
 
+/// General allocators (externally visible9
+
+#define ALLOCATE_BLOCK1(alloc, dest, type, size)				\
+  dest = (void *)alloc;						\
+  ((BLOCK *)alloc)->h = ((WORD)(type) << TYPE_SHIFT) | (size);		\
+  alloc += (size) + 1
+
+#define ALLOCATE_BYTEBLOCK1(alloc, dest, type, size)			\
+  dest = (void *)alloc;							\
+  ((BLOCK *)alloc)->h = ((WORD)(type) << TYPE_SHIFT) | (size);		\
+  alloc = (X)ALIGN((WORD)alloc + (size) + sizeof(WORD))
+
+#define FLONUM1(alloc, m)  \
+  ({ FPALIGN(alloc);							\
+    ALLOCATE_BYTEBLOCK1(alloc, FLONUM_BLOCK *p_, FLONUM_TYPE, sizeof(FLOAT)); \
+    p_->n = (m); \
+    (X)p_; })
+
+#define PAIR1(alloc, x, y) \
+  ({ ALLOCATE_BLOCK1(alloc, BLOCK *p_, PAIR_TYPE, 2); \
+    p_->d[ 0 ] = (x); \
+    p_->d[ 1 ] = (y); \
+    (X)p_; })
+
+#define PORT1(alloc, f, i, o, d)			   \
+  ({ ALLOCATE_BLOCK1(alloc, PORT_BLOCK *p_, PORT_TYPE, 4);	\
+     p_->fp = (f); \
+     p_->dir = (i); \
+     p_->open = (o); \
+     p_->data = (d); \
+     (X)p_; })
+
+#define STRING1(alloc, len)						\
+  ({ WORD len2_ = (len);							\
+    ALLOCATE_BYTEBLOCK1(alloc, BLOCK *p_, STRING_TYPE, len2_ + 1);	\
+    ((CHAR *)(p_->d))[ len2_ ] = '\0';					\
+    (X)p_; })
+  
+#define CSTRING1(alloc, str)			\
+  ({ char *str_ = str; \
+    WORD len3_ = strlen(str);						\
+    X s_ = (X)STRING1(alloc, len3_);					\
+    memcpy(objdata(s_), str_, len3_);					\
+    s_; })
+  
+#define SYMBOL1(alloc, name, next, prev)				\
+  ({ ALLOCATE_BLOCK1(alloc, BLOCK *p_, SYMBOL_TYPE, 3);			\
+    SLOT_INIT((X)p_, 0, (name));					\
+    SLOT_INIT((X)p_, 1, (next));					\
+    SLOT_INIT((X)p_, 2, (prev));					\
+    (X)p_; })
+
+// does not initialize args
+#define STRUCTURE1(alloc, functor, arity)				\
+  ({ ALLOCATE_BLOCK1(alloc, BLOCK *s_, STRUCTURE_TYPE, (arity) + 1);	\
+  SLOT_INIT((X)s_, 0, (functor));				\
+  (X)s_; })
+
+
 #ifdef COMPILED_PROLOG_PROGRAM
 
+
+/// Internal allocators
+
+#define ALLOCATE_BLOCK(dest, type, size)  ALLOCATE_BLOCK1(alloc_top, dest, type, size)
+#define ALLOCATE_BYTEBLOCK(dest, type, size)  ALLOCATE_BYTEBLOCK1(alloc_top, dest, type, size)
+#define FLONUM(m)  FLONUM1(alloc_top, m)
+#define PAIR(x, y)  PAIR1(alloc_top, x, y)
+#define PORT(f, i, o, d)  PORT1(alloc_top, f, i, o, d)
+#define STRING(len)  STRING1(alloc_top, len)
+#define CSTRING(str)  CSTRING1(alloc_top, str)
+#define SYMBOL(name, next, prev)  SYMBOL1(alloc_top, name, next, prev)
+#define STRUCTURE(functor, arity)  STRUCTURE1(alloc_top, functor, arity)
+
+
+/// Converting port to string
 
 static char *port_name(X x)
 {
@@ -524,60 +598,12 @@ static char *port_name(X x)
 }
 
 
+/// Hook called when the system terminates
+
 static void crash_hook()
 {
   return;
 }
-
-
-/// allocators
-
-#define ALLOCATE_BLOCK(dest, type, size)				\
-  dest = (void *)alloc_top;						\
-  ((BLOCK *)alloc_top)->h = ((WORD)(type) << TYPE_SHIFT) | (size);		\
-  alloc_top += (size) + 1
-
-#define ALLOCATE_BYTEBLOCK(dest, type, size)				\
-  dest = (void *)alloc_top;							\
-  ((BLOCK *)alloc_top)->h = ((WORD)(type) << TYPE_SHIFT) | (size);		\
-  alloc_top = (X)ALIGN((WORD)alloc_top + (size) + sizeof(WORD))
-
-#define FLONUM(m)  ({ FPALIGN; ALLOCATE_BYTEBLOCK(FLONUM_BLOCK *p_, FLONUM_TYPE, sizeof(FLOAT)); p_->n = (m); (X)p_; })
-#define PAIR(x, y) ({ ALLOCATE_BLOCK(BLOCK *p_, PAIR_TYPE, 2); p_->d[ 0 ] = (x); p_->d[ 1 ] = (y); (X)p_; })
-
-#define PORT(f, i, o, d) \
-  ({ ALLOCATE_BLOCK(PORT_BLOCK *p_, PORT_TYPE, 4); \
-     p_->fp = (f); \
-     p_->dir = (i); \
-     p_->open = (o); \
-     p_->data = (d); \
-     (X)p_; })
-
-#define STRING(len)  \
-  ({ WORD len2_ = (len);							\
-    ALLOCATE_BYTEBLOCK(BLOCK *p_, STRING_TYPE, len2_ + 1);	\
-    ((CHAR *)(p_->d))[ len2_ ] = '\0';					\
-    (X)p_; })
-  
-#define CSTRING(str) \
-  ({ char *str_ = str; \
-    WORD len3_ = strlen(str);						\
-    X s_ = (X)STRING(len3_);						\
-    memcpy(objdata(s_), str_, len3_);					\
-    s_; })
-  
-#define SYMBOL(name, next, prev)					\
-  ({ ALLOCATE_BLOCK(BLOCK *p_, SYMBOL_TYPE, 3);			\
-    SLOT_INIT((X)p_, 0, (name));					\
-    SLOT_INIT((X)p_, 1, (next));					\
-    SLOT_INIT((X)p_, 2, (prev));					\
-    (X)p_; })
-
-// does not initialize args
-#define STRUCTURE(functor, arity)				\
-  ({ ALLOCATE_BLOCK(BLOCK *s_, STRUCTURE_TYPE, (arity) + 1);	\
-  SLOT_INIT((X)s_, 0, (functor));				\
-  (X)s_; })
 
 
 /// Variable dereferencing
