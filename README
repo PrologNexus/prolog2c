@@ -743,7 +743,8 @@
   triggered, which subsequently moves all live data. Therefor
   references to Prolog data will become invalid, unless saved in the
   "global" variables vector", a separate buffer that may be used to
-  keep "live" references to heap-allocated data. 
+  keep "live" references to heap-allocated data (only usable in code
+  compiled with "-DEMBEDDED", see below for more information.)
   
   Note that the garbage collector ignores data that is not located in
   the garbage-collected heap, so you can create Prolog data structures
