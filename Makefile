@@ -16,10 +16,10 @@ all: pc pi
 
 
 pc: pc.c pc.h
-	$(CC) $(SETTINGS) $(OPTFLAGS) $(CFLAGS) $< -o $@
+	$(CC) $(SETTINGS) $(OPTFLAGS) $(CFLAGS) $< -o $@ $(LIBS)
 
 pi: pi.c pc.h
-	$(CC) $(SETTINGS) $(OPTFLAGS) $(CFLAGS) $< -o $@
+	$(CC) $(SETTINGS) $(OPTFLAGS) $(CFLAGS) $< -o $@ $(LIBS)
 
 clean:
 	rm -f pc
