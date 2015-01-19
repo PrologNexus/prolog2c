@@ -812,9 +812,12 @@
   of the Prolog side, but will not be collected and retain their
   identity.
 
-  The names of the "prolog()" and "prolog_variables()" entry-points
-  can be changed by redefining the ENTRY_POINT_NAME macro when
-  compiling the C code of an embedded program.
+  The name of the "prolog()" entry-point can be changed by redefining
+  the ENTRY_POINT_NAME macro when compiling the C code of an embedded
+  program. The name of the "prolog_variable()" access function can be
+  changes by redefining VARIABLE_ACCESS_NAME.
+
+  The compiled Prolog code is not reentrant or thread-safe.
 
 * Limitations
 
