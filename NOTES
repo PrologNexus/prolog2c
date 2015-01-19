@@ -76,8 +76,6 @@ NOTES											              -*- Org -*-
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
-** TODO Allow iterating over all items in a DB
-   - needed for listing/0 in pi.
 ** TODO Make it possible to embed compiled code
     - "suspend(IN, OUT)" saves state and suspends execution.
     - define alternative entry-point via macro and return procedure
