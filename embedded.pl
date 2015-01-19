@@ -3,9 +3,10 @@
 
 main :-
 	write('one\n'),
-	suspend(1, X),
+	suspend(some("term"), X),
 	write(' -> '), write(X), nl, X =:= 123,
 	write('two\n'),
+	garbage_collect,
 	suspend(2, Y),
-	write(' -> '), write(Y), nl, Y =:= 456,
+	write(' -> '), write(Y), nl, Y == some("term"),
 	halt.
