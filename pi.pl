@@ -8,7 +8,9 @@ main :-
 	command_line_arguments(ARGS),
 	parse_arguments(ARGS),
 	!,
-	(recorded(initialization_goal, G) -> execute(G); repl).
+	((recorded(initialization_goal, G); recorded(default_initialization_goal, G))
+	 -> execute(G)
+	 ; repl).
 
 repl :-
 	display('?- '), flush,
@@ -49,7 +51,7 @@ parse_arguments(['-t'|MORE]) :-
 	global_set(trace_depth, 0),
 	parse_arguments(MORE).
 parse_arguments(['-i', G|MORE]) :-
-	recordz(initialization_goal, G),
+	recordz(default_initialization_goal, G),
 	parse_arguments(MORE).
 parse_arguments([FILENAME|_]) :-
 	name(FILENAME, [45|_]), usage(1).
