@@ -11,6 +11,9 @@
 (define bfile (basename file))
 (define xfile (strip-suffix bfile))
 (define cfile (replace-suffix "c" bfile))
+(define optfile (replace-suffix "opts" file))
+
+;(run-verbose #t)
 
 (define (bench)
   (with-temporary-files
@@ -22,7 +25,10 @@
 	 (run (/usr/bin/time -f %U -o ,tmp ,xtmp ,@(cdr args) >/dev/null))
 	 (with-input-from-file tmp read))
        (run (./pc ,file -o ,ctmp -q))
-       (run (gcc -std=gnu99 -I. ,ctmp -o ,xtmp -lm -lrt ,@opts))
+       (run (gcc -std=gnu99 -I. ,ctmp -o ,xtmp -lm -lrt ,@opts
+		 ,(if (file-exists? optfile)
+		      (read-all optfile)
+		      "")))
        (print (/ (apply + (butlast (cdr (sort (list-of (runonce) (i range 0 5)) <)))) 3))))))
 
 (bench)
