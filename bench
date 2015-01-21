@@ -1,0 +1,29 @@
+#!/bin/scheme /grass/19/boot
+;;;; run benchmark -*- Scheme -*-
+
+
+(require 'sh 'match 'sort 'list-of)
+
+
+(define args (command-line-arguments))
+(define opts '("-O3" "-DUNSAFE" "-fomit-frame-pointer" "-fno-strict-aliasing" "-fwrapv"))
+(define file (car args))
+(define bfile (basename file))
+(define xfile (strip-suffix bfile))
+(define cfile (replace-suffix "c" bfile))
+
+(define (bench)
+  (with-temporary-files
+   (lambda ()
+     (let ((tmp (temporary-file))
+	   (ctmp (temporary-file "tmp" "c"))
+	   (xtmp (temporary-file)))
+       (define (runonce)
+	 (run (/usr/bin/time -f %U -o ,tmp ,xtmp ,@(cdr args) >/dev/null))
+	 (with-input-from-file tmp read))
+       (run (./pc ,file -o ,ctmp -q))
+       (run (gcc -std=gnu99 -I. ,ctmp -o ,xtmp -lm -lrt ,@opts))
+       (print (/ (apply + (butlast (cdr (sort (list-of (runonce) (i range 0 5)) <)))) 3))))))
+
+(bench)
+

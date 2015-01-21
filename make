@@ -2,7 +2,7 @@
 ;;;; makefile for pc -*- Scheme -*-
 
 
-(require 'sh 'make 'match 'list-of 'sort)
+(require 'sh 'make 'match)
 (run-verbose #t)
 
 
@@ -174,11 +174,11 @@
   (make-program "pi.pl" "pi" "lib/interp.pl" "system_predicate.pl" "call_primitive.pl"))
 
 (define (bench)
-  (define (runonce)
-    (run (/usr/bin/time -f %U -o /tmp/pc1time ./pc1o pc.pl -o /dev/null >/dev/null))
-    (with-input-from-file "/tmp/pc1time" read))
-  (pc1o)
-  (print (/ (apply + (butlast (cdr (sort (list-of (runonce) (i range 0 5)) <)))) 3)))
+  (let ((tests (string-split (capture (ls benchmarks/*.pl)) "\n")))
+    (for-each
+     (lambda (fname)
+       (run (./bench ,fname)))
+     tests)))
 
 (define (clean)
   (run (rm -f system_predicate.pl call_primitive.pl pi pc1 pc1o)))
