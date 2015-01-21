@@ -113,6 +113,10 @@
   library-predicates included and does not need to have access to the
   library directory.
 
+  The option "-i <goal>" sets <goal> as the default initialization
+  goal to be executed, if no initialization-goal was declared in the
+  source file.
+
   In contrast to the compiler, the clause-database represents the
   program that is currently executing and manipulations of the database
   will influence running code. The effect of asserting or retracting
