@@ -140,6 +140,7 @@ arithmetic_operation(X \/ Y).
 arithmetic_operation(X >> Y).
 arithmetic_operation(X << Y).
 arithmetic_operation(X ** Y).
+arithmetic_operation(X xor Y).
 arithmetic_operation(abs(X)).
 arithmetic_operation(atan(X)).
 arithmetic_operation(ceiling(X)).
