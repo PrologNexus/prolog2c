@@ -5,6 +5,7 @@
 
 compile_clauses(NAME/ARITY, CLAUSES, S1, S2) :-
 	emit(enter(NAME, ARITY)),
+	register_defined_predicate(NAME/ARITY),
 	build_index_to_type_map(CLAUSES, 1, MAP),
 	compile_clause_list(CLAUSES, NAME/ARITY, MAP, S1, S2).
 
@@ -361,7 +362,7 @@ compile_body_expression(suspend(X, Y), _, D, D, B1, B2, S1, S2) :-
 	compile_term_for_unification(Y, T2, B3, B2, S6, S2),
 	emit(unify(T1, T2)).
 
-% ordinary predicate call
+% type-, order- or ordinary predicate call
 compile_body_expression(TERM, TAIL, D1, D2, B1, B2, S1, S2) :-
 	TERM =.. [NAME|ARGS],
 	compile_term_arguments(ARGS, [], DLIST, B1, B2, S1, S),
@@ -370,6 +371,7 @@ compile_body_expression(TERM, TAIL, D1, D2, B1, B2, S1, S2) :-
 	; compile_ordinary_call(NAME, TAIL, DLIST, D1, D2, S, S2)
 	).
 
+% otherwise: error
 compile_body_expression(TERM, _, _, _, _, _, _, _) :-
 	error(['can not compile: ', TERM]).
 
@@ -377,7 +379,9 @@ compile_body_expression(TERM, _, _, _, _, _, _, _) :-
 %% compile calls (ordinary or type-/order-predicate)
 
 compile_ordinary_call(NAME, TAIL, DLIST, D1, nondet, S1, S2) :- %XXX later analyze for being deterministic
-	 gen_label(L, S1, S2),
+	length(DLIST, ARITY),
+	register_unresolved_call(NAME/ARITY),
+	gen_label(L, S1, S2),
 	 (TAIL/D1 = tail/det -> emit(tail_call(NAME, DLIST)); emit(call(NAME, DLIST, L))
 	 ).
 
@@ -514,3 +518,19 @@ make_unbound_vars(VS, [X|Y], S1, S) :-
 	make_unbound_vars(VS, Y, S2, S).
 make_unbound_vars(VS, [_|Y], S1, S) :-
 	make_unbound_vars(VS, Y, S1, S).
+
+
+%% register defined or unresolved predicates
+
+register_unresolved_call(NA) :-
+	(recorded(defined, NA)
+	; recorded(unresolved, NA)
+	; recordz(unresolved, NA)).
+
+register_defined_predicate(NA) :-
+	(recorded(defined, NA)
+	-> N/A = NA, error(['Predicate redefinition: ', N, '/', A])
+	; recordz(defined, NA)
+	),
+	recorded(unresolved, NA, REF), erase(REF).
+register_defined_predicate(_).
