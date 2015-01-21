@@ -10,7 +10,7 @@ gen(T1, T2, T3, T4, T5) :- gen(T1, T2, T3, T4), gen(T5).
 error(MSG) :-
 	tell(user),
 	display('ERROR: '),
-	forall(member(X, MSG), write(X)), nl,
+	forall(member(X, MSG), write(X)), nl, nl,
 	halt(1).
 
 iota(N, L) :- iota(0, N, L).

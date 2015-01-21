@@ -172,5 +172,6 @@ report_unresolved_calls :-
 	tab(2), write(N/A), nl, fail.
 report_unresolved_calls :-
 	recorded(unresolved, _),
+	nl,
 	halt(1).
 report_unresolved_calls.

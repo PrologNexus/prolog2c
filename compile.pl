@@ -529,7 +529,7 @@ register_unresolved_call(NA) :-
 
 register_defined_predicate(NA) :-
 	(recorded(defined, NA)
-	-> N/A = NA, error(['Predicate redefinition: ', N, '/', A])
+	-> N/A = NA, error(['Non-contiguous predicate definition: ', N, '/', A])
 	; recordz(defined, NA)
 	),
 	recorded(unresolved, NA, REF), erase(REF).
