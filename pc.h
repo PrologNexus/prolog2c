@@ -1504,6 +1504,26 @@ static DB_ITEM *db_find_first_item(DB *db, char *key, int keylen)
 }
 
 
+static DB_BUCKET *db_enumerate_buckets(DB *db, DB_BUCKET *prev)
+{
+  int i;
+
+  if(prev != NULL) {
+    if(prev->next != NULL) return prev->next;
+
+    i = prev->index + 1;
+  }
+  else i = 0;
+  
+  while(i < db->tablesize) {
+    if(db->table[ i ] == NULL) ++i;
+    else return db->table[ i ];
+  }
+  
+  return NULL;
+}
+
+
 static void db_mark_item_as_erased(DB_ITEM *item)
 {
   item->erased = 1;
@@ -3097,6 +3117,31 @@ PRIMITIVE(db_next, X ref, X result)
     b->d[ 0 ] = (X)item;
     b->d[ 1 ] = ONE;
     return unify(result, (X)b);
+  }
+
+  return 0;
+}
+
+PRIMITIVE(db_find_bucket, X dbr, X prev, X key, X ref)
+{
+  check_type_DBREFERENCE(dbr);
+  DB *db = (DB *)slot_ref(dbr, 0);
+  DB_BUCKET *bucket = NULL;
+
+  if(is_DBREFERENCE(prev))
+    bucket = ((DB_ITEM *)slot_ref(prev, 0))->bucket;
+
+  bucket = db_enumerate_buckets(db, bucket);
+
+  if(bucket) {
+    X str = STRING(bucket->keylen + 1);
+    memcpy(objdata(str), bucket->key, bucket->keylen + 1);
+    X bkey = intern(str);
+    DB_ITEM *item = bucket->firstitem;
+    ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 2);
+    b->d[ 0 ] = (X)item;
+    b->d[ 1 ] = ONE;
+    return unify(key, bkey) && unify(ref, (X)b);
   }
 
   return 0;
