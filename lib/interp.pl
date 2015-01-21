@@ -7,8 +7,6 @@
 %   Updated: 2 March 84
 %   Purpose: Meta-circular interpreter for Prolog
 
-%% ... but heavily modified.
-
 /*  This is a genuinely meta-circular interpreter for a subset of Prolog
     containing cuts.  It relies on the fact that disjunction is transparent
     to cut just like conjunction.  If it doesn't work in your Prolog, and
@@ -16,6 +14,8 @@
     and insist that they fix it, there are at least four different ways of
     implementing disjunction so that it works.
 */
+
+%% ... but heavily modified.
 
 :- global_variable(trace_depth).
 
@@ -304,14 +304,21 @@ process_directive(include(FILE)) :-
 	(recorded(include_file_stack, OLD, REF)	-> erase(REF); OLD = []),
 	recordz(include_file_stack, [CURRENT|OLD]),
 	see(FILE2).
-	
 process_directive(X) :-
-	(execute(X); seen, throw(error('latent goal failed', X))).
+	(execute(X)
+	; seen, close_all_files, throw(error('latent goal failed', X))).
+
+close_all_files :-
+	recorded(include_file_stack, STACK, REF),
+	erase(REF),
+	member(FILE, STACK), see(FILE), seen, fail.
+close_all_files.
 
 add_clause(N/A, N, A, HEAD, BODY) :-
-	(atom(HEAD); compound(HEAD))
+	((atom(HEAD); compound(HEAD))
 	-> assertz((HEAD :- BODY))
-	; throw(error('invalid clause head', HEAD)). 
+	; throw(error('invalid clause head', HEAD))
+	). 
 add_clause(PN/PA, N, A, HEAD, BODY) :-
 	(abolish(N/A); true),
 	add_clause(PN/PA, PN, PA, HEAD, BODY).
