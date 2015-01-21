@@ -32,7 +32,7 @@
     "main.pl"
     "pc.pl"))
 
-(define pc-compile-options
+(define pc/pi-compile-options
   '("-DTRAIL_STACK_SIZE=10000000"
     "-DCHOICE_POINT_STACK_SIZE=100000000"
     "-DENVIRONMENT_STACK_SIZE=20000000"
@@ -73,13 +73,13 @@
 (define (pc1)
   (pc1.c)
   (make (("pc1" ("pc1.c" "pc.h")
-	  (run (gcc ,@gcc-compile-options pc1.c -lm -lrt -o pc1 ,@pc-compile-options))))))
+	  (run (gcc ,@gcc-compile-options pc1.c -lm -lrt -o pc1 ,@pc/pi-compile-options))))))
 
 (define (pc1o)
   (pc1.c)
   (make (("pc1o" ("pc1.c" "pc.h")
 	  (run (gcc ,@gcc-optimized-compile-options pc1.c -lm -lrt -o pc1o
-		    ,@pc-compile-options))))))
+		    ,@pc/pi-compile-options))))))
 
 (define (pc2.c)
   (pc1)
@@ -171,7 +171,8 @@
 
 (define (pi)
   (system-predicates)
-  (make-program "pi.pl" "pi" "lib/interp.pl" "system_predicate.pl" "call_primitive.pl"))
+  (fluid-let ((gcc-compile-options (append gcc-compile-options pc/pi-compile-options)))
+    (make-program "pi.pl" "pi" "lib/interp.pl" "system_predicate.pl" "call_primitive.pl")))
 
 (define (bench)
   (let ((tests (string-split (capture (ls benchmarks/*.pl)) "\n")))
