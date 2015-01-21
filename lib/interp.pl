@@ -214,7 +214,7 @@ call_primitive(catch, 3, TERM) :-
 call_primitive('->', 2, TERM) :-
 	!,
 	arg(1, TERM, X), arg(2, TERM, Y),
-	execute(X) -> execute(Y).
+	(execute(X) -> execute(Y)).
 call_primitive('\\+', 1, TERM) :-
 	!,
 	arg(1, TERM, X),
