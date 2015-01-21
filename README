@@ -39,7 +39,7 @@
   C before it can be used. In the distribution archive that contains
   the file your are currently reading, pre-compiled code for the
   compiler and interpreter are included, so all that remains to be
-  done is to compile these using make(1):
+  done is to compile these using GNU make(1):
 
     make
 
@@ -135,20 +135,6 @@
   with some rough indication about the place where the problem
   occurred. Runtime-errors will throw an exception, which can be
   caught by user code using catch/3. 
-
-  Calls to undefined procedures will result in linker errors during
-  compilation to C, so e.g.
-
-    main :- foo.
-
-  when compiled to C and given to the C compiler will result in
-  something similar to
-
-    x.c: In function ‘main’:
-    x.c:20:1: error: label ‘___foo$0’ used but not defined
-
-  Here the name of the predicate ("foo") appears in "mangled" form,
-  that is, converted into a valid C identifier.
 
 * Builtin predicates
 
@@ -836,7 +822,7 @@
   Prolog programs. The compiler does provide very few error
   diagnostics, mainly to keep it simple and straightforward to extend.
 
-  The garbage collector used is a simple Cheney-style[5] copying
+  The garbage collector used is a simple Cheney-style[6] copying
   collector and all storage for data-structures constructed at
   run-time is allocated in this GC'd heap. Execution will stop when GC
   occurs - to keep this interruption short it is advisable to reduce
@@ -916,3 +902,4 @@
   [3] http://www.cs.cmu.edu/afs/cs/project/ai-repository/ai/lang/prolog/code/tools/edinbrgh/0.html
   [4] http://gcc.gnu.org
   [5] http://clang.llvm.org
+  [6] http://en.wikipedia.org/wiki/Cheney%27s_algorithm
