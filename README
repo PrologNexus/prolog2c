@@ -22,11 +22,12 @@
   and manipulating the clause-database with assert/retract will have
   no effect on the running program.
 
-  Performance is reasonable, in microbencjhmarks roughly comparable to
-  systems like SWI-Prolog[2], but will not be able to compete with
-  such mature Prolog implementations for larger programs. Basic
-  clause-indexing on the type of the first argument of a predicates is
-  provided and tail-call optimization is performed in most cases.
+  Performance is reasonable, in micro-benchmarks it is roughly
+  comparable to systems like SWI-Prolog[2], but will not be able to
+  compete with such mature Prolog implementations for larger
+  programs. Basic clause-indexing on the type of the first argument of
+  a predicates is provided and tail-call optimization is performed in
+  most cases.
 
   The dialect of Prolog implemented should be sufficient for usual
   Prolog programming. Basic ISO and Edinburgh system predicates and
@@ -708,22 +709,28 @@
 			     directive, but pre-initialization goals are
 			     run before all normal initialization goals.
 
+* Performance tips
+
+  Compile the generated C code with "-DUNSAFE" to disable all safety
+  checks.
+
 * Calling code written in other languages
 
   To call foreign functions, a single form named "foreign_call" is
   provided. foreign_call/1 takes a structure that names the function
   to be called and holds the arguments to be passed. The function
-  should be externally visible, take as many arguments as the
-  structure and return an integer, indicating whether the foreign call
-  failed (0) or succeeded (1). The arguments are of type "X", a
-  generic union type which is either an immediate small integer
-  ("fixnum") or a pointer to a non-immediate data object. See "pc.h"
-  in the distributed source for more information about the internal
-  data layout.
+  should take as many arguments as the structure (plus 1) and return
+  an integer, indicating whether the foreign call failed (0) or
+  succeeded (1). The first argument is a "CHOICE_POINT *", a pointer
+  to current entry on the choice-point stack. Further arguments are of
+  type "X", a generic union type which is either an immediate small
+  integer ("fixnum") or a pointer to a non-immediate data object. See
+  "pc.h" in the distributed source for more information about the
+  internal data layout.
 
   C code can be embedded in the compiled program using the "verbatim"
   directive. The text given will be emitted directly in the generated
-  code.
+  code, after the inclusion of the "pc.h" header file.
 
   Values used from C will only be valid until a garbage collection is
   triggered, which subsequently moves all live data. Therefor
@@ -739,19 +746,72 @@
   allocated data located in the heap (but you must of course free the
   old static data manually).
 
-* Extending the compiler and interpreter
+  To get you started, here is a very simple example: let's add
+  an interface to the gethostname(2) UNIX API function.
 
-  There are currently no special facilities for this - just add your
-  own definitions to "pc.h" when you want to add your own primitives,
-  and add a wrapper or reference to a library in "macros.pl". The
-  system is intended to be easy to hack and modify and you are
-  encouraged to study everything and change or extend things as you
-  like. Providing sophisticated foreign-function interfaces or
-  interfaces for user-extensions would only make the general
-  architecture more complex and error-prone, so it has been decided to
-  keep things simple, linear, reduce the number of source files and
-  avoid overly clever interfaces. Whether this was successfull, is
-  something for you to decide...
+  ---
+
+  % gethostname.pl - implements Prolog-side 
+
+  :- verbatim('#include "mystuff.c").   % include header
+
+  gethostname(N) :- foreign_call(my_gethostname(N)).  % wrapper predicate
+
+  --- 
+
+  /* mystuff.c - implements C implementation*/
+
+  #include <unistd.h>
+  #include <errno.h>
+ 
+  PRIMITIVE(my_gethostname, X name) {
+    char buffer[ 257 ];
+    
+    if(gethostname(buffer, 256) < 0)
+      system_error(strerror(errno));  % throws exception
+
+    return unify(CSTRING(buffer), name);  % unifies value with output argument
+  }
+
+  ---
+
+  % test-hostname.pl
+
+  :- include('gethostname.pl').   % include interface
+
+  main :- gethostname(S), display(S), nl.  % and use it
+
+  ---
+
+  Notes:
+
+    - "PRIMITIVE()", "unify()", "CSTRING()" and "system_error()" are
+      only visible in compiled Prolog code. If you want to implement
+      the C part of your extension in a separate source-file, you can
+      include "pc.h", but will have to do without some of the macros
+      and functions provided in "pc.h" (look for definitions guarded
+      with "COMPILED_PROLOG_PROGRAM".)
+
+    - "PRIMITIVE()" is not strictly necessary. It only ensures the
+      result type is "int" and an implicit first argument of type
+      "CHOICE_POINT *" is passed. This argument _must_ be named "C0",
+      as "unify()" actually is a macro that uses it.
+
+    - "CSTRING()" allocates a Prolog atom, from a zero-terminated C
+      string, in the garbage collected heap.
+
+    - "system_error()" throws an exception of type system_error/1.
+      You can also use "throw_exception()" to trigger an arbitrary
+      exception object, or "type_error()" to trigger an exception of
+      type type_error/2.
+
+    - You can add your extensions permanently to the compiler by
+      adding a macro/2 clause in the file "macros.pl" of the compiler
+      sources and adding a clause for auto_include/2 (in the same
+      file), which ensures that a file is included automatically and
+      compiled with the original program. Finally copy your extension
+      file into the "lib" directory (wherever you chose to install
+      it.)
 
 * Embedding
 
@@ -787,11 +847,11 @@
     Normal termination	     			EXIT_SUCCESS
     Initialization goal(s) failed		EXIT_FAILURE
 
-  A second entry-point called "prolog_variables" is also available
+  A second entry-point called "prolog_variable" is also available
   to allow access to entries in the "global variable vector" 
   (mentioned above):
 
-    extern X *prolog_variables(int index);
+    extern X *prolog_variable(int index);
 
   This returns a pointer to a slot in the global variables vector,
   which can be set and retrieved. Values in this vector undergo
