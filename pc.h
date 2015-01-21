@@ -2963,7 +2963,7 @@ static X string_to_list(CHAR *str, int len)
     ifthen_top = catch_top->ifthen_top;			\
     E = catch_top->E;					\
     goto *(catch_top->P); }				\
-  else if(lj == 2) RETURN_EXCEPTION;			\
+  else if(lj == 2) { RETURN_EXCEPTION };		\
   if(argc == 0) goto *saved_state.P;			\
   else goto INIT_GOAL;					\
 fail: INVOKE_CHOICE_POINT;						\
