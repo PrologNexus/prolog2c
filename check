@@ -8,12 +8,15 @@
 
 (define args (command-line-arguments))
 (define opts '("-g" "-save-temps=obj" "-DTRACE"))
+(define pi #f)
 
 (match args
   (("-O" . _)
    (pop! args)
-   (set! opts
-     '("-O3" "-fomit-frame-pointer" "-fno-strict-aliasing" "-fwrapv" "-DUNSAFE")))
+   (set! opts '("-O3" "-fomit-frame-pointer" "-fno-strict-aliasing" "-fwrapv" "-DUNSAFE")))
+  (("-i" . _)
+   (pop! args)
+   (set! pi #t))
   (_ #f))
 
 (define file (car args))
@@ -46,11 +49,14 @@
 	       fn))
 	    (else #f))))
 
-(run (,pc -q ,file -o ,cfile))
-(run (gcc -std=gnu99 -I. ,cfile ,@opts -o ,xfile -lm -lrt))
+(unless pi
+  (run (,pc -q ,file -o ,cfile))
+  (run (gcc -std=gnu99 -I. ,cfile ,@opts -o ,xfile -lm -lrt)))
 
 (define status
-  (run* (./timeout -t ,timeout ,(string-append "./" xfile) > ,outfile)))
+  (if pi
+      (run* (./timeout -t ,timeout ./pi "-i" main ,file > ,outfile))
+      (run* (./timeout -t ,timeout ,(string-append "./" xfile) > ,outfile))))
 
 (cond ((not (status-check status))
        (run (cat ,outfile))
