@@ -113,6 +113,11 @@
   (fluid-let ((check-pc "./pc1"))
     (check)))
 
+(define (check-pi)
+  (pi)
+  (fluid-let ((check-options '("-i")))
+    (check)))
+
 (define (check-optimized)
   (fluid-let ((check-options '("-O")))
     (check)))
