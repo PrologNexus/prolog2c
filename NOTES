@@ -64,6 +64,7 @@ NOTES											              -*- Org -*-
    - because extending the compiler with optimizations will
      necessarily slow it down.
    - run some non-trivial test in interpreter.
+* TODO Find better benchmarks
 * Things to test
 ** TODO Test on Mac, Windows
    - Port to MSVC
@@ -88,9 +89,7 @@ NOTES											              -*- Org -*-
 * Diagnostics
 ** Detect singleton variables
 ** Detect redefinitions of primitives
-** Detect undefined predicate calls
 ** Report unused predicates
-** Detect non-contiguous predicates
 * Once we have a suitable test, compare performance with other implementations
   - SWI, GNU-Prolog, BinProlog
 * Issues
