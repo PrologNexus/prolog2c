@@ -4,12 +4,12 @@
 :- include('lib/interp.pl').
 
 main :-
-	global_set(trace_depth, none),
+	global_set(pi_trace_depth, none),
 	command_line_arguments(ARGS),
 	parse_arguments(ARGS),
 	!,
 	((recorded(initialization_goal, G); recorded(default_initialization_goal, G))
-	 -> execute(G)
+	 -> call(G)
 	 ; repl).
 
 repl :-
@@ -24,7 +24,7 @@ repl :-
 	repl.
 
 run_goal(G, VARS) :-
-	execute(G),
+	call(G),
 	show_variables(VARS),
 	display(' ? '), flush,
 	(get_response -> fail; display('\nyes.\n')).
@@ -48,7 +48,7 @@ parse_arguments([]).
 parse_arguments(['-h'|_]) :-
 	usage(0).
 parse_arguments(['-t'|MORE]) :-
-	global_set(trace_depth, 0),
+	global_set(pi_trace_depth, 0),
 	parse_arguments(MORE).
 parse_arguments(['-i', G|MORE]) :-
 	recordz(default_initialization_goal, G),

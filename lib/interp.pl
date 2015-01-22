@@ -17,139 +17,139 @@
 
 %% ... but heavily modified.
 
-:- global_variable(trace_depth).
+:- global_variable(pi_trace_depth).
 
 
-do_goal(Goal) :-
+pi_do_goal(Goal) :-
 	system(Goal),		% <--- check for a built in predicate
 	!,
-	call(Goal).
-do_goal(Goal) :-
+	call_system_predicate(Goal).
+pi_do_goal(Goal) :-
 	clause(Goal, Body),	% <--- assume anything else is interpreted
-	do_body(Body, AfterCut, HadCut),
+	pi_do_body(Body, AfterCut, HadCut),
 	(   HadCut = yes,
 		!,
-		do_body(AfterCut)
+		pi_do_body(AfterCut)
 	;   HadCut = no
 	).
 
-do_body(Body) :-
-	do_body(Body, AfterCut, HadCut),
+pi_do_body(Body) :-
+	pi_do_body(Body, AfterCut, HadCut),
 	(   HadCut = yes,
 		!,
-		do_body(AfterCut)
+		pi_do_body(AfterCut)
 	;   HadCut = no
 	).
 
-do_body((Conj1,Conj2), AfterCut, HadCut) :- !,
-	do_body(Conj1, Conj2, AfterCut, HadCut).
-do_body(!, true, yes) :- !.
-do_body((Disj1;_), AfterCut, HadCut) :-
-	do_body(Disj1, AfterCut, HadCut).
-do_body((_;Disj2), AfterCut, HadCut) :- !,
-	do_body(Disj2, AfterCut, HadCut).
-do_body(true, true, no) :- !.
-do_body(Goal, true, no) :-
-	do_goal(Goal).
+pi_do_body((Conj1,Conj2), AfterCut, HadCut) :- !,
+	pi_do_body(Conj1, Conj2, AfterCut, HadCut).
+pi_do_body(!, true, yes) :- !.
+pi_do_body((Disj1;_), AfterCut, HadCut) :-
+	pi_do_body(Disj1, AfterCut, HadCut).
+pi_do_body((_;Disj2), AfterCut, HadCut) :- !,
+	pi_do_body(Disj2, AfterCut, HadCut).
+pi_do_body(true, true, no) :- !.
+pi_do_body(Goal, true, no) :-
+	pi_do_goal(Goal).
 
 
-do_body(!, AfterCut, AfterCut, yes) :- !.
-do_body((A,B), Conj, AfterCut, HadCut) :- !,
-	do_body(A, (B,Conj), AfterCut, HadCut).
-do_body((Disj1;_), Conj, AfterCut, HadCut) :-
-	do_body(Disj1, Conj, AfterCut, HadCut).
-do_body((_;Disj2), Conj, AfterCut, HadCut) :- !,
-	do_body(Disj2, Conj, AfterCut, HadCut).
-do_body(doue, Body, AfterCut, HadCut) :- !,
-	do_body(Body, AfterCut, HadCut).
-do_body(Goal, Body, AfterCut, HadCut) :-
-	do_goal(Goal),
-	do_body(Body, AfterCut, HadCut).
+pi_do_body(!, AfterCut, AfterCut, yes) :- !.
+pi_do_body((A,B), Conj, AfterCut, HadCut) :- !,
+	pi_do_body(A, (B,Conj), AfterCut, HadCut).
+pi_do_body((Disj1;_), Conj, AfterCut, HadCut) :-
+	pi_do_body(Disj1, Conj, AfterCut, HadCut).
+pi_do_body((_;Disj2), Conj, AfterCut, HadCut) :- !,
+	pi_do_body(Disj2, Conj, AfterCut, HadCut).
+pi_do_body(doue, Body, AfterCut, HadCut) :- !,
+	pi_do_body(Body, AfterCut, HadCut).
+pi_do_body(Goal, Body, AfterCut, HadCut) :-
+	pi_do_goal(Goal),
+	pi_do_body(Body, AfterCut, HadCut).
 
 
 trace(Goal) :-
-	tr_goal(Goal, 0).
+	pi_tr_goal(Goal, 0).
 
-tr_goal(call(Goal), Depth) :- !,
+pi_tr_goal(call(Goal), Depth) :- !,
 	nonvar(Goal),
-	tr_body(Goal, Depth).
-tr_goal(\+(Goal), Depth) :-
-	tr_body(Goal, Depth),
+	pi_tr_body(Goal, Depth).
+pi_tr_goal(\+(Goal), Depth) :-
+	pi_tr_body(Goal, Depth),
 	!, fail.
-tr_goal(\+(Goal), Depth) :- !.
-tr_goal(Goal, Depth) :-
-	(   trace_out(Depth, 'Call: ', Goal)
+pi_tr_goal(\+(Goal), Depth) :- !.
+pi_tr_goal(Goal, Depth) :-
+	(   pi_trace_out(Depth, 'Call: ', Goal)
 	;   Depth1 is 1+Depth,
-	    tr_call(Goal, Depth1),
-	    (   trace_out(Depth, 'Exit: ', Goal)
+	    pi_tr_call(Goal, Depth1),
+	    (   pi_trace_out(Depth, 'Exit: ', Goal)
 	    ;	true
-	    ;   trace_out(Depth, 'Redo: ', Goal)
+	    ;   pi_trace_out(Depth, 'Redo: ', Goal)
 	    )
-	;   trace_out(Depth, 'Fail: ', Goal)
+	;   pi_trace_out(Depth, 'Fail: ', Goal)
 	).
 
 
-tr_call(Goal, Depth) :-
+pi_tr_call(Goal, Depth) :-
 	system(Goal),
 	!,
-	global_set(trace_depth, Depth),
-	call(Goal).
-tr_call(Goal, Depth) :-
+	global_set(pi_trace_depth, Depth),
+	call_system_predicate(Goal).
+pi_tr_call(Goal, Depth) :-
 	clause(Goal, Body),
-	tr_body(Body, Depth, AfterCut, HadCut),
+	pi_tr_body(Body, Depth, AfterCut, HadCut),
 	(   HadCut = yes,
 		!,
-		trace_out(Depth, 'CUT'),
-		tr_body(AfterCut, Depth)
+		pi_trace_out(Depth, 'CUT'),
+		pi_tr_body(AfterCut, Depth)
 	;   HadCut = no
 	).
 
 
-tr_body(Body, Depth) :-
-	tr_body(Body, Depth, AfterCut, HadCut),
+pi_tr_body(Body, Depth) :-
+	pi_tr_body(Body, Depth, AfterCut, HadCut),
 	(   HadCut = yes,
 		!,
-		trace_out(Depth, 'CUT'),
-		tr_body(AfterCut, Depth)
+		pi_trace_out(Depth, 'CUT'),
+		pi_tr_body(AfterCut, Depth)
 	;   HadCut = no
 	).
 
 
-tr_body((Conj1,Conj2), Depth, AfterCut, HadCut) :- !,
-	tr_body(Conj1, Conj2, Depth, AfterCut, HadCut).
-tr_body(!, _, true, yes) :- !.
-tr_body((Disj1;_), Depth, AfterCut, HadCut) :-
-	tr_body(Disj1, Depth, AfterCut, HadCut).
-tr_body((_;Disj2), Depth, AfterCut, HadCut) :- !,
-	tr_body(Disj2, Depth, AfterCut, HadCut).
-tr_body(true, _, true, no) :- !.
-tr_body(Goal, Depth, true, no) :-
-	tr_goal(Goal, Depth).
+pi_tr_body((Conj1,Conj2), Depth, AfterCut, HadCut) :- !,
+	pi_tr_body(Conj1, Conj2, Depth, AfterCut, HadCut).
+pi_tr_body(!, _, true, yes) :- !.
+pi_tr_body((Disj1;_), Depth, AfterCut, HadCut) :-
+	pi_tr_body(Disj1, Depth, AfterCut, HadCut).
+pi_tr_body((_;Disj2), Depth, AfterCut, HadCut) :- !,
+	pi_tr_body(Disj2, Depth, AfterCut, HadCut).
+pi_tr_body(true, _, true, no) :- !.
+pi_tr_body(Goal, Depth, true, no) :-
+	pi_tr_goal(Goal, Depth).
 
-tr_body(!, AfterCut, _, AfterCut, yes) :- !.
-tr_body((A,B), Conj, Depth, AfterCut, HadCut) :- !,
-	tr_body(A, (B,Conj), Depth, AfterCut, HadCut).
-tr_body((Disj1;_), Conj, Depth, AfterCut, HadCut) :-
-	tr_body(Disj1, Conj, Depth, AfterCut, HadCut).
-tr_body((_;Disj2), Conj, Depth, AfterCut, HadCut) :- !,
-	tr_body(Disj2, Conj, Depth, AfterCut, HadCut).
-tr_body(true, Body, Depth, AfterCut, HadCut) :- !,
-	tr_body(Body, Depth, AfterCut, HadCut).
-tr_body(Goal, Body, Depth, AfterCut, HadCut) :-
-	tr_goal(Goal, Depth),
-	tr_body(Body, Depth, AfterCut, HadCut).
+pi_tr_body(!, AfterCut, _, AfterCut, yes) :- !.
+pi_tr_body((A,B), Conj, Depth, AfterCut, HadCut) :- !,
+	pi_tr_body(A, (B,Conj), Depth, AfterCut, HadCut).
+pi_tr_body((Disj1;_), Conj, Depth, AfterCut, HadCut) :-
+	pi_tr_body(Disj1, Conj, Depth, AfterCut, HadCut).
+pi_tr_body((_;Disj2), Conj, Depth, AfterCut, HadCut) :- !,
+	pi_tr_body(Disj2, Conj, Depth, AfterCut, HadCut).
+pi_tr_body(true, Body, Depth, AfterCut, HadCut) :- !,
+	pi_tr_body(Body, Depth, AfterCut, HadCut).
+pi_tr_body(Goal, Body, Depth, AfterCut, HadCut) :-
+	pi_tr_goal(Goal, Depth),
+	pi_tr_body(Body, Depth, AfterCut, HadCut).
 
 
 %%
 
-trace_out(T, M) :-
+pi_trace_out(T, M) :-
 	telling(OLD),
 	current_error_output(ERR),
 	tell(ERR),
 	tab(T), display(M), nl,
 	tell(OLD), !.
 
-trace_out(T, M, G) :-
+pi_trace_out(T, M, G) :-
 	telling(OLD),
 	current_error_output(ERR),
 	tell(ERR),
@@ -160,165 +160,165 @@ trace_out(T, M, G) :-
 
 %%
 
-execute(GOAL) :-
-	global_ref(trace_depth, N),
+call(GOAL) :-
+	global_ref(pi_trace_depth, N),
 	integer(N),
 	!,
-	tr_body(GOAL, N).
-execute(GOAL) :- do_body(GOAL).
+	pi_tr_body(GOAL, N).
+call(GOAL) :- pi_do_body(GOAL).
 
 system(TERM) :-
 	functor(TERM, NAME, ARITY),
-	system_predicate(NAME, ARITY).
+	pi_system_predicate(NAME, ARITY).
 
-:- include(system_predicate).
+:- include('pi_system_predicate.pl').
 
-system_predicate(trace, 0).
-system_predicate(call, 1).
-system_predicate(consult, 1).
-system_predicate(forall, 2).
-system_predicate(findall, 3).
-system_predicate(catch, 3).
-system_predicate(repeat, 0).
-system_predicate('->', 2).
-system_predicate('\\+', 1).
+pi_system_predicate(trace, 0).
+pi_system_predicate(call, 1).
+pi_system_predicate(consult, 1).
+pi_system_predicate(forall, 2).
+pi_system_predicate(findall, 3).
+pi_system_predicate(catch, 3).
+pi_system_predicate(repeat, 0).
+pi_system_predicate('->', 2).
+pi_system_predicate('\\+', 1).
 
-call(TERM) :-
+call_system_predicate(TERM) :-
 	!,
 	functor(TERM, NAME, ARITY),
-	call_primitive(NAME, ARITY, TERM).
+	pi_call_primitive(NAME, ARITY, TERM).
 
-:- include(call_primitive).
+:- include('pi_call_primitive.pl').
 
-call_primitive(call, 1, TERM) :- !, arg(1, TERM, X), execute(X).
-call_primitive(trace, 0, TERM) :-
+pi_call_primitive(call, 1, TERM) :- !, arg(1, TERM, X), call(X).
+pi_call_primitive(trace, 0, TERM) :-
 	!,
-	global_ref(trace_depth, D),
-	(integer(D) -> global_set(trace_depth, none)
-	; global_set(trace_depth, 0)).
-call_primitive(consult, 1, TERM) :-
+	global_ref(pi_trace_depth, D),
+	(integer(D) -> global_set(pi_trace_depth, none)
+	; global_set(pi_trace_depth, 0)).
+pi_call_primitive(consult, 1, TERM) :-
 	!,
 	arg(1, TERM, X), consult(X).
-call_primitive(forall, 2, TERM) :-
+pi_call_primitive(forall, 2, TERM) :-
 	!,
 	arg(1, TERM, G), arg(2, TERM, A),
-	forall(execute(G), execute(A)).
-call_primitive(findall, 3, TERM) :-
+	forall(call(G), call(A)).
+pi_call_primitive(findall, 3, TERM) :-
 	!,
 	arg(1, TERM, T), arg(2, TERM, G), arg(3, TERM, R),
-	findall(T, execute(G), R).
-call_primitive(catch, 3, TERM) :-
+	findall(T, call(G), R).
+pi_call_primitive(catch, 3, TERM) :-
 	!,
 	arg(1, TERM, G), arg(2, TERM, B), arg(3, TERM, R),
-	catch(execute(G), B, execute(R)).
-call_primitive('->', 2, TERM) :-
+	catch(call(G), B, call(R)).
+pi_call_primitive('->', 2, TERM) :-
 	!,
 	arg(1, TERM, X), arg(2, TERM, Y),
-	(execute(X) -> execute(Y)).
-call_primitive('\\+', 1, TERM) :-
+	(call(X) -> call(Y)).
+pi_call_primitive('\\+', 1, TERM) :-
 	!,
 	arg(1, TERM, X),
-	\+execute(X).
-call_primitive(repeat, 0, _) :- do_repeat.
+	\+call(X).
+pi_call_primitive(repeat, 0, _) :- pi_do_repeat.
 
-do_repeat.
-do_repeat :- do_repeat.
+pi_do_repeat.
+pi_do_repeat :- pi_do_repeat.
 
 
 %%
 
-evaluate(X, Y) :-
+pi_evaluate(X, Y) :-
 	(atom(X); compound(X)),
 	!,
 	functor(X, NAME, ARITY),
-	evaluate_op(NAME, ARITY, X, Y).
-evaluate(X, X) :- number(X), !.
-evaluate(X, _) :- throw(type_error(number, X)).
-evaluate(X, _) :- throw(instantiation_error).
+	pi_evaluate_op(NAME, ARITY, X, Y).
+pi_evaluate(X, X) :- number(X), !.
+pi_evaluate(X, _) :- throw(type_error(number, X)).
+pi_evaluate(X, _) :- throw(instantiation_error).
 
-:- include('evaluate_op.pl').
+:- include('pi_evaluate_op.pl').
 
-evaluate_op(_, _, TERM, _) :-
+pi_evaluate_op(_, _, TERM, _) :-
 	throw(error('invalid arithmetic expression', TERM)).
 
 
 %%
 
 consult(FILE) :-
-	find_file(FILE, FILE2),
+	pi_find_file(FILE, FILE2),
 	seeing(OLD),
 	see(FILE2),
-	consult_terms(0/0),
+	pi_consult_terms(0/0),
 	seen,
 	see(OLD).
 
-consult_terms(PNA) :-
+pi_consult_terms(PNA) :-
 	read(TERM),
 	TERM \== end_of_file,
-	insert_term(PNA, TERM, CNA),
+	pi_insert_tem(PNA, TERM, CNA),
 	!,
-	consult_terms(CNA).
-consult_terms(PNA) :-
+	pi_consult_terms(CNA).
+pi_consult_terms(PNA) :-
 	recorded(include_file_stack, [NEXT|MORE], REF),
 	erase(REF),
 	recordz(include_file_stack, MORE),
 	seen,
 	see(NEXT),
 	!,
-	consult_terms(PNA).
-consult_terms(_).
+	pi_consult_terms(PNA).
+pi_consult_terms(_).
 
-find_file(FILE, FILE) :-
+pi_find_file(FILE, FILE) :-
 	exists_file(FILE), !.
-find_file(FILE, FILE2) :-
+pi_find_file(FILE, FILE2) :-
 	atom_codes(FILE, STR),
 	append(STR, ".pl", STR2),
 	atom_codes(FILE2, STR2),
 	exists_file(FILE2), !.
-find_file(FILE, _) :-
+pi_find_file(FILE, _) :-
 	throw(existence_error(FILE)).
 
-insert_term(PNA, (:- BODY), PNA) :-
+pi_insert_tem(PNA, (:- BODY), PNA) :-
         !,
-	process_directive(BODY).
-insert_term(PNA, (HEAD :- BODY), N/A) :-
+	pi_process_directive(BODY).
+pi_insert_tem(PNA, (HEAD :- BODY), N/A) :-
         functor(HEAD, N, A),
 	!,
-	add_clause(PNA, N, A, HEAD, BODY).
-insert_term(PNA, FACT, N/A) :-
+	pi_add_clause(PNA, N, A, HEAD, BODY).
+pi_insert_tem(PNA, FACT, N/A) :-
         functor(FACT, N, A),
 	!,
-	add_clause(PNA, N, A, FACT, true).
+	pi_add_clause(PNA, N, A, FACT, true).
 
-process_directive((X, Y)) :-
-	process_directive(X),
-	process_directive(Y).
-process_directive(initialization(G)) :-
+pi_process_directive((X, Y)) :-
+	pi_process_directive(X),
+	pi_process_directive(Y).
+pi_process_directive(initialization(G)) :-
 	(recorded(initialization_goal, G1, REF)
 	-> erase(REF), recordz(initialization_goal, (G1, G))
 	; recordz(initialization_goal, G)
 	).
-process_directive(include(FILE)) :-
-	find_file(FILE, FILE2),
+pi_process_directive(include(FILE)) :-
+	pi_find_file(FILE, FILE2),
 	seeing(CURRENT),
 	(recorded(include_file_stack, OLD, REF)	-> erase(REF); OLD = []),
 	recordz(include_file_stack, [CURRENT|OLD]),
 	see(FILE2).
-process_directive(X) :-
-	(execute(X)
-	; seen, close_all_files, throw(error('latent goal failed', X))).
+pi_process_directive(X) :-
+	(call(X)
+	; seen, pi_close_all_files, throw(error('latent goal failed', X))).
 
-close_all_files :-
+pi_close_all_files :-
 	recorded(include_file_stack, STACK, REF),
 	erase(REF),
 	member(FILE, STACK), see(FILE), seen, fail.
-close_all_files.
+pi_close_all_files.
 
-add_clause(N/A, N, A, HEAD, BODY) :-
+pi_add_clause(N/A, N, A, HEAD, BODY) :-
 	((atom(HEAD); compound(HEAD))
 	-> assertz((HEAD :- BODY))
 	; throw(error('invalid clause head', HEAD))
 	). 
-add_clause(PN/PA, N, A, HEAD, BODY) :-
+pi_add_clause(PN/PA, N, A, HEAD, BODY) :-
 	(abolish(N/A); true),
-	add_clause(PN/PA, PN, PA, HEAD, BODY).
+	pi_add_clause(PN/PA, PN, PA, HEAD, BODY).

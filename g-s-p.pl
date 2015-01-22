@@ -5,11 +5,11 @@
 
 main :-
 	op(200, fy, ['#', '?']),
-	tell('system_predicate.pl'),
+	tell('pi_system_predicate.pl'),
 	telling(SP),
-	tell('call_primitive.pl'),
+	tell('pi_call_primitive.pl'),
 	telling(CP),
-	tell('evaluate_op.pl'),
+	tell('pi_evaluate_op.pl'),
 	telling(EO),
 	run(SP, CP, EO),
 	tell(SP), told,
@@ -30,7 +30,7 @@ gen_sys_pred(DEF, SP) :-
 	!,
 	functor(PRED, NAME, ARITY),
 	tell(SP),
-	writeq(system_predicate(NAME, ARITY)), put(46), nl.
+	writeq(pi_system_predicate(NAME, ARITY)), put(46), nl.
 gen_sys_pred(_, _).
 
 gen_call_prim(DEF, CP) :-
@@ -41,7 +41,7 @@ gen_call_prim(DEF, CP) :-
 	build_lists(1, PARGS, TERM, ARGS, CALLARGS),
 	CALL =.. [NAME|CALLARGS],
 	tell(CP),		    
-	write((call_primitive(NAME, ARITY, TERM) :- !, ARGS, CALL)),
+	write((pi_call_primitive(NAME, ARITY, TERM) :- !, ARGS, CALL)),
 	display('.\n').	
 gen_call_prim(_, _).
 
@@ -52,12 +52,12 @@ gen_eval_op(arithmetic_operation(OP), EO) :-
 	build_lists(1, PARGS, TERM, ARGS, CALLARGS),
 	EXPR =.. [NAME|CALLARGS],
 	tell(EO),
-	write((evaluate_op(NAME, ARITY, TERM, R) :- !, ARGS, R is EXPR)),
+	write((pi_evaluate_op(NAME, ARITY, TERM, R) :- !, ARGS, R is EXPR)),
 	display('.\n').
 gen_eval_op(_, _).
 
 build_lists(I, [], _, true, []).
-build_lists(I, ['#'(_)|R] , T, (arg(I, T, V), evaluate(V, X), VARS), [X|ARGS]) :-
+build_lists(I, ['#'(_)|R] , T, (arg(I, T, V), pi_evaluate(V, X), VARS), [X|ARGS]) :-
 	!,
 	I2 is I + 1,
 	build_lists(I2, R, T, VARS, ARGS).

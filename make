@@ -55,8 +55,8 @@
     "pc.c"
     "pc.h"
     "pi.c"
-    "g-s-p.pl" "system-predicates"
-    "pi.pl" "lib/interp.pl" "call_primitive.pl" "evaluate_op.pl" "system_predicate.pl"
+    "g-s-p.pl" "pi_system-predicates"
+    "pi.pl" "lib/interp.pl" "pi_call_primitive.pl" "pi_evaluate_op.pl" "pi_system_predicate.pl"
     ,@source-files))
 
 
@@ -171,13 +171,14 @@
    "g-s-p.pl" 
    "g-s-p"
    "pc.h")
-  (make (("system_predicate.pl" ("g-s-p" "system-predicates")
+  (make (("pi_system_predicate.pl" ("g-s-p" "system-predicates")
 	  (run (./g-s-p <system-predicates))))))
 
 (define (pi)
   (system-predicates)
   (fluid-let ((gcc-compile-options (append gcc-compile-options pc/pi-compile-options)))
-    (make-program "pi.pl" "pi" "lib/interp.pl" "system_predicate.pl" "call_primitive.pl")))
+    (make-program "pi.pl" "pi" "lib/interp.pl" "pi_system_predicate.pl" "pi_call_primitive.pl" 
+		  "pi_evaluate_op.pl")))
 
 (define (bench)
   (let ((tests (string-split (capture (ls benchmarks/*.pl)) "\n")))
@@ -187,7 +188,7 @@
      tests)))
 
 (define (clean)
-  (run (rm -f system_predicate.pl call_primitive.pl pi pc1 pc1o)))
+  (run (rm -f pi_system_predicate.pl pi_call_primitive.pl pi_evaluate_op.pl pi pc1 pc1o)))
 
 (define (dist)
   (pc2.c)
