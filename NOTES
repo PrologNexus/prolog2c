@@ -46,9 +46,6 @@ NOTES											              -*- Org -*-
 ** Analyze program before compiling to pseudo-instructions
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
-* TODO Find proper name
-  - Whopper
-  - ?-Prolog
 * TODO Move repo to bitbucket
 * Benchmark results
 ** Self-compile, 5 times, average of medium 3 runtimes
@@ -66,7 +63,7 @@ NOTES											              -*- Org -*-
    - run some non-trivial test in interpreter.
 * TODO Find better benchmarks
 * Things to test
-** TODO Test on Mac, Windows
+** TODO Test on Windows
    - Port to MSVC
 ** TODO Run some or all tests with pi
 ** TODO Test retract-loop
@@ -93,14 +90,20 @@ NOTES											              -*- Org -*-
 * Once we have a suitable test, compare performance with other implementations
   - SWI, GNU-Prolog, BinProlog
 * Issues
+** TODO Implementation of if-then-else is broken
+   - if-then stack gets out of balance, found here:
+     call_primitive('->', 2, TERM) :-
+	!,
+	arg(1, TERM, X), arg(2, TERM, Y),
+	execute(X) -> execute(Y). % parsed as (!, ...) -> execute(Y)
+   - adding parens around last goal repaired the problem, but still
+     this shouldn't happen.
 ** Using multiple threads are currently not possible
    - all static vars would have to be declared TLS, but these may not
      be statically initialized with non-constants, and this applies to
      many data objects for literals.
 ** TODO Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
-** TODO Check fixnum range when emitting literals 
-   - restrict to 32-bit to keep source-file portable.
 ** trail-GC
     - and adjust CP-stack entries accordingly.
     - tricky.
@@ -111,19 +114,25 @@ NOTES											              -*- Org -*-
     - would need to be added to abolish/1.
 ** TODO Throw ISO-compliant exceptions everywhere
     - at least as much as possible and sensible.
-** TODO file:broken-tests/simple_analyzer.pl gives wrong output
+** TODO file:broken-tests/simple_analyzer.pl broken
     - exhausts heap, regardless of size.
     - probably too much trailing or missed tailcall-opportunities.
+** TODO file:tests/0085-boyer.pl exhausts heap when run under pi
+   - somehow memory leaks, this looks similar to the problem with
+     file:broken-tests/simple_analyzer.pl
 ** TODO ecrc benchmarks in file:/broken-tests work, but need higher settings
    - file:broken-tests/bench_1_3.pl needs -:C20M
    - file:broken-tests/bench_1_5.pl needs -:T5M
 * Interpreter
-** TODO Could add support for file:dcg.pl 
-   - term_expansion? goal_expansion?
+** TODO Add support for file:dcg.pl 
+   - term_expansion/2.
+   - but I need a way to hook into consult/1 from file:pi.pl, because
+     adding DCG-support to interp seems better.
 ** TODO Additional predicates
    - listing/1
    - listing/0
      - needs some way to enumerate all predicates (current_predicate/1).
+     - can use foreign_call(db_find_bucket(...))
 * Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
