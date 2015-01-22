@@ -1,26 +1,27 @@
 
 
-	???
+	?-Prolog - A small and simple Prolog system
+	===========================================
 
 
 
 * Introduction
 
-  This is ???, a compiler for the Prolog[1] programming language. ???
-  compiles a single source file into C, that can be subsequently
-  compiled with a C compiler to an executable. The generated code is
-  platform-independent and should be portable to a wide range of
-  machines and operating systems. No other dependencies exist, only a
-  C compiler is required. The generated executables are fairly small
-  and can be embedded in existing applications.
+  This is "?-Prolog", a compiler for the Prolog[1] programming
+  language. ?-Prolog compiles a single Prolog source file into C, that
+  can be subsequently compiled with a C compiler to an executable. The
+  generated code is platform-independent and should be portable to a
+  wide range of machines and operating systems. No other dependencies
+  exist, only a C compiler is required. The generated executables are
+  fairly small and can be embedded in existing applications.
 
-  ??? has no support for dynamic predicates, or for calling
-  user-constructed goals - all code must be statically visible.  An
-  interactive interpreter is available and can be used as a library in
-  compiled Prolog code, but interpreted code will not be visible to
-  compiled code. Loading (consulting) code at runtime is not possible
-  and manipulating the clause-database with assert/retract will have
-  no effect on the running program.
+  This Prolog implementation has no support for dynamic predicates, or
+  for calling user-constructed goals - all code must be statically
+  visible.  An interactive interpreter is available and can be used as
+  a library in compiled Prolog code, but interpreted code will not be
+  visible to compiled code. Loading (consulting) code at runtime is
+  not possible and manipulating the clause-database with
+  assert/retract will have no effect on the running program.
 
   Performance is reasonable, in micro-benchmarks it is roughly
   comparable to systems like SWI-Prolog[2], but will not be able to
@@ -32,9 +33,19 @@
   The dialect of Prolog implemented should be sufficient for usual
   Prolog programming. Basic ISO and Edinburgh system predicates and
   control structures are available, but no support for constraint
-  programming or coroutining. 
+  programming or coroutining. Neither does it offer modules, separate
+  compilation, dynamic loading of compiled code or the ability to mix
+  compiled and interpreted clauses. It has no sophisticated
+  foreign-function interface and doesn't support multithreading.  It's
+  just a simple Prolog compiler, and it's not a toy.
 
 * Building and installation
+
+  Assuming you obtained the sources from the distribution archive,
+  which can be found at [7], just unpack the tarball and follow the
+  instructions given below. There is also a source-code repository on
+  bitbucket[8], but this uses a custom build-environment and contains
+  mostly tests and supporting code.
 
   The compiler itself is written in Prolog and must be pre-compiled to
   C before it can be used. In the distribution archive that contains
@@ -967,3 +978,5 @@
   [4] http://gcc.gnu.org
   [5] http://clang.llvm.org
   [6] http://en.wikipedia.org/wiki/Cheney%27s_algorithm
+  [7] http://www.call-with-current-continuation.org/pc/
+  [8] http://bitbucket.org/bunny351/prolog/
