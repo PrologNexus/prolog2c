@@ -8,12 +8,13 @@
 * Introduction
 
   This is "?-Prolog", a compiler for the Prolog[1] programming
-  language. ?-Prolog compiles a single Prolog source file into C, that
-  can be subsequently compiled with a C compiler to an executable. The
-  generated code is platform-independent and should be portable to a
-  wide range of machines and operating systems. No other dependencies
-  exist, only a C compiler is required. The generated executables are
-  fairly small and can be embedded in existing applications.
+  language. ?-Prolog compiles a single Prolog source file into C,
+  which can be subsequently compiled with a C compiler to an
+  executable. The generated code is platform-independent and should be
+  portable to a wide range of machines and operating systems. No other
+  dependencies exist, only a C compiler is required. The generated
+  executables are fairly small and can be embedded in existing
+  applications.
 
   This Prolog implementation has no support for dynamic predicates, or
   for calling user-constructed goals - all code must be statically
@@ -34,10 +35,13 @@
   Prolog programming. Basic ISO and Edinburgh system predicates and
   control structures are available, but no support for constraint
   programming or coroutining. Neither does it offer modules, separate
-  compilation, dynamic loading of compiled code or the ability to mix
-  compiled and interpreted clauses. It has no sophisticated
-  foreign-function interface and doesn't support multithreading.  It's
-  just a simple Prolog compiler, and it's not a toy.
+  compilation, dynamic loading of compiled code, and it doesn't
+  support multithreading. It's just a basic, yet usable Prolog system,
+  something that isn't easy to find, nowadays.
+
+  The system is still under development and contain many known and
+  unknown bugs. If you experience problems or want to help, please
+  don't hesitate to contact me[9].
 
 * Building and installation
 
@@ -978,5 +982,6 @@
   [4] http://gcc.gnu.org
   [5] http://clang.llvm.org
   [6] http://en.wikipedia.org/wiki/Cheney%27s_algorithm
-  [7] http://www.call-with-current-continuation.org/pc/
+  [7] http://www.call-with-current-continuation.org/prolog/
   [8] http://bitbucket.org/bunny351/prolog/
+  [9] felix <at> call-with-current-continuation <dot> org
