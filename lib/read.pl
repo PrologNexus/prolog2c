@@ -327,11 +327,12 @@ exprtl(S, _, Term, _, Term, S).
 
 
 syntax_error(Message, List) :-
+	telling(OLD), current_error_output(ERR), tell(ERR),
 	nl, display('**'),
 	display_list(Message),
+	tell(OLD),
 	length(List, Length),
 	recorda(syntax_error, length(Length), _), !,
-%	abort,			% FLW
 	fail.
 
 display_list([Head|Tail]) :-
@@ -346,7 +347,9 @@ syntax_error(List) :-
 	erase(Ref),
 	length(List, Length),
 	BeforeError is Length-AfterError,
+	telling(OLD), current_error_output(ERR), tell(ERR),
 	display_list(List, BeforeError), !,
+	tell(OLD),
 	fail.
 
 display_list(X, 0) :-
