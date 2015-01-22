@@ -14,7 +14,7 @@ compile_file_finished(STATE) :-
 	process_initialization_goals(STATE).
 compile_file_finished(STATE) :-
 	seen,
-	report_unresolved_calls,
+	check_unresolved_calls,
 	recorded(output_file, OUTFILE),
 	(recorded(show_intermediate_code, yes) -> show_intermediate_code
 	; assemble_file(OUTFILE, STATE)
@@ -165,9 +165,15 @@ process_initialization_goals(STATE) :-
 
 %% list unresolved calls
 
-report_unresolved_calls :-
+check_unresolved_calls :-
 	recorded(unresolved, _),
+	telling(OLD), current_error_output(ERR), tell(ERR),
 	display('\nUnresolved predicate calls:\n\n'),
+	report_unresolved_calls,
+	tell(OLD).
+check_unresolved_calls.
+
+report_unresolved_calls :-
 	recorded(unresolved, N/A),
 	tab(2), write(N/A), nl, fail.
 report_unresolved_calls :-
