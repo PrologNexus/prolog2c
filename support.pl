@@ -8,7 +8,7 @@ gen(T1, T2, T3, T4) :- gen(T1, T2, T3), gen(T4).
 gen(T1, T2, T3, T4, T5) :- gen(T1, T2, T3, T4), gen(T5).
 
 error(MSG) :-
-	tell(user),
+	current_error_output(ERR), tell(ERR),
 	display('ERROR: '),
 	forall(member(X, MSG), write(X)), nl, nl,
 	halt(1).
