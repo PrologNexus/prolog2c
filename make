@@ -55,7 +55,7 @@
     "pc.c"
     "pc.h"
     "pi.c"
-    "g-s-p.pl" "pi_system-predicates"
+    "g-s-p.pl" "system-predicates"
     "pi.pl" "lib/interp.pl" "pi_call_primitive.pl" "pi_evaluate_op.pl" "pi_system_predicate.pl"
     ,@source-files))
 
@@ -188,7 +188,7 @@
      tests)))
 
 (define (clean)
-  (run (rm -f pi_system_predicate.pl pi_call_primitive.pl pi_evaluate_op.pl pi pc1 pc1o)))
+  (run (rm -f pi_system_predicate.pl pi_call_primitive.pl pi_evaluate_op.pl pi pc1 pc2.c pc1.c pc1o)))
 
 (define (dist)
   (pc2.c)
