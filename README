@@ -39,6 +39,9 @@
   support multithreading. It's just a basic, yet usable Prolog system,
   something that isn't easy to find, nowadays.
 
+  ?-Prolog has currently so far only been tested on Linux and Mac OS
+  X.
+
   The system is still under development and contain many known and
   unknown bugs. If you experience problems or want to help, please
   don't hesitate to contact me[9].
