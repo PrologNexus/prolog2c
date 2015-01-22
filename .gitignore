@@ -14,10 +14,7 @@ z
 /iotest
 /iotest2
 /pc1
-/system_predicate.pl
-/call_primitive.pl
 /pi
-/evaluate_op.pl
 /g-s-p
 /pi.c
 /pc1.c
@@ -25,3 +22,6 @@ z
 /g-s-p
 /g-s-p.c
 /embedded.c
+/pi_call_primitive.pl
+/pi_evaluate_op.pl
+/pi_system_predicate.pl
