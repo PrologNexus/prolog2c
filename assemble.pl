@@ -225,7 +225,9 @@ assemble_literals(S1, S2) :-
 assemble_literals(S, S).
 
 generate_static_literal(I, X, S, S) :-
-	integer(X), X >= -2147483648, X =< 2147483647,
+	integer(X),
+	default_setting(literal_fixnum_range, LOW - HIGH),
+	X >= LOW, X =< HIGH,
 	gen('#define literal_', I, ' word_to_fixnum(', X, ')\n').
 generate_static_literal(I, X, S, S) :-
 	number(X), !,
