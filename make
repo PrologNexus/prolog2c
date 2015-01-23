@@ -182,10 +182,17 @@
 
 (define (bench)
   (let ((tests (string-split (capture (ls benchmarks/*.pl)) "\n")))
-    (for-each
-     (lambda (fname)
-       (run (./bench ,fname)))
-     tests)))
+    (with-temporary-files
+     (lambda ()
+       (let ((out (temporary-file)))
+	 (for-each
+	  (lambda (fname)
+	    (run (./bench ,fname "2>&1" "|" tee ,out)))
+	  tests)
+	 (run (echo "----------------------------------------" >> benchmarks.txt))
+	 (run (date >> benchmarks.txt))
+	 (run (git rev-parse --short >> benchmarks.txt))
+	 (run (cat ,out >> benchmarks.txt)))))))
 
 (define (clean)
   (run (rm -f pi_system_predicate.pl pi_call_primitive.pl pi_evaluate_op.pl pi pc1 pc2.c pc1.c pc1o)))
