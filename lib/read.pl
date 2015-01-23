@@ -110,6 +110,10 @@ read(atom(-), [integer(Integer)|S1], Precedence, Answer, S) :-
 	Negative is -Integer, !,
 	exprtl0(S1, Negative, Precedence, Answer, S).
 
+read(atom(-), [number(Num)|S1], Precedence, Answer, S) :-
+	Negative is -Num, !,
+	exprtl0(S1, Negative, Precedence, Answer, S).
+
 read(atom(Functor), ['('|S1], Precedence, Answer, S) :- !,
 	read(S1, 999, Arg1, S2),
 	read_args(S2, RestArgs, S3),
