@@ -18,6 +18,7 @@
 %% ... but heavily modified.
 
 :- global_variable(pi_trace_depth).
+:- pre_initialization(global_set(pi_trace_depth, none)).
 
 
 pi_do_goal(Goal) :-
