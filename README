@@ -777,7 +777,8 @@
 
   :- verbatim('#include "mystuff.c").   % include header
 
-  gethostname(N) :- foreign_call(my_gethostname(N)).  % wrapper predicate
+  % wrapper predicate
+  gethostname(N) :- foreign_call(my_gethostname(N1)), copy_term(N1, N).
 
   --- 
 
