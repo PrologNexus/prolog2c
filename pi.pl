@@ -10,8 +10,11 @@ main :-
 	!,
 	((recorded(initialization_goal, G); recorded(default_initialization_goal, G))
 	 -> call(G)
-	 ; repl).
+	 ; banner, repl).
 
+banner :-
+	display('?-Prolog - (c)MMXV Felix L. Winkelmann'), nl.
+	
 repl :-
 	display('?- '), flush,
 	read(TERM, VARS), 
