@@ -34,10 +34,10 @@ compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, S1, S2) :-
 	I2 is I + 1,
 	clause_label(NAME, ARITY, I2, L),
 	compile_redo(LAST, L),
-	index_variables([HEAD, BODY], VARS),
+	index_variables([HEAD, BODY], VARS, NONSINGLETONS),
 	length(VARS, N),
 	emit(environment(N)),
-	compile_head(HEAD, BOUND, S1, S),
+	compile_head(HEAD, NONSINGLETONS, BOUND, S1, S),
 	compile_body(BODY, LAST, BOUND, S, S2).
 % fact
 compile_clause(HEAD, NA, I, M, S1, S2) :-
@@ -67,20 +67,23 @@ secondary_clause_label(N, A, I, L) :-
 
 %% compile head-unification
 
-compile_head(HEAD, BOUND, S1, S2) :-
+compile_head(HEAD, NS, BOUND, S1, S2) :-
 	HEAD =.. [_|ARGS],
-	compile_unification(ARGS, 0, [], BOUND, S1, S2).
+	compile_unification(ARGS, NS, 0, [], BOUND, S1, S2).
 
 %% compile unification of argument
-compile_unification([], _, BOUND, BOUND, S, S).
-compile_unification([ARG|MORE], INDEX, BOUND1, BOUND2, S1, S2) :-
-	compile_unification1(ARG, INDEX, BOUND1, BOUND, S1, S),
+compile_unification([], _, _, BOUND, BOUND, S, S).
+compile_unification([ARG|MORE], NS, INDEX, BOUND1, BOUND2, S1, S2) :-
+	compile_unification1(ARG, NS, INDEX, BOUND1, BOUND, S1, S),
 	INDEX2 is INDEX + 1,
-	compile_unification(MORE, INDEX2, BOUND, BOUND2, S, S2).
+	compile_unification(MORE, NS, INDEX2, BOUND, BOUND2, S, S2).
 
-%% distinguish cases: bound/unbound variable or term (either constant or containing variable)
-compile_unification1(X, INDEX, BOUND, BOUND2, S1, S2) :-
-	is_indexed_variable(X, N),
+%% distinguish cases: singleton or bound/unbound variable or term (either constant or containing variable)
+compile_unification1(X, NS, _, B, B, S, S) :-
+	indexed_variable(X, N),
+	\+memberchk(N, NS).	% singleton?
+compile_unification1(X, _, INDEX, BOUND, BOUND2, S1, S2) :-
+	indexed_variable(X, N),
 	gensym('T', T1, S1, S3),
 	(memberchk(N, BOUND) 	% already bound?
 	-> (gensym('T', T2, S3, S2),
@@ -89,7 +92,7 @@ compile_unification1(X, INDEX, BOUND, BOUND2, S1, S2) :-
 	; (S2 = S3,
 	   BOUND2 = [N|BOUND],
 	   emit(argument(INDEX, T1), assign(N, T1)))).
-compile_unification1(TERM, INDEX, BOUND1, BOUND2, S1, S2) :-
+compile_unification1(TERM, _, INDEX, BOUND1, BOUND2, S1, S2) :-
 	gensym('T', T1, S1, S3),
 	gensym('T', T2, S3, S4),
 	compile_term_for_unification(TERM, T1, BOUND1, BOUND2, S4, S2),
@@ -97,7 +100,7 @@ compile_unification1(TERM, INDEX, BOUND1, BOUND2, S1, S2) :-
 
 %% compile term, for unification, or for calls
 compile_term_for_unification(X, DEST, BOUND, BOUND2, S, S) :-
-	is_indexed_variable(X, N),
+	indexed_variable(X, N),
 	(member(N, BOUND)	% already bound?
 	-> (emit(local(N, DEST)),
 	    BOUND2 = BOUND)
@@ -212,7 +215,7 @@ compile_body_expression(findall(T, G, L), TAIL, D, D, B1, B2, S1, S2) :-
 	findall(I/_, member(I, GVARS), VLIST),
 	map_indexed_variables_to_real_variables(G, VLIST, G2),
 	map_indexed_variables_to_real_variables(T, VLIST, T2),
-	findall(V, (member(I/_, VLIST), make_indexed_variable(I, V)), IARGS),
+	findall(V, (member(I/_, VLIST), indexed_variable(V, I)), IARGS),
 	find_unbound_variables(VLIST, VARGS),
 	HEAD =.. [P|VARGS],
 	add_boilerplate(P, (HEAD :- G2, findall_push(T2), fail)),
@@ -228,7 +231,7 @@ compile_body_expression(forall(G, A), TAIL, D, D, B1, B2, S1, S2) :-
 	findall(I/_, member(I, GVARS), VLIST),
 	map_indexed_variables_to_real_variables(G, VLIST, G2),
 	map_indexed_variables_to_real_variables(A, VLIST, A2),
-	findall(V, (member(I/_, VLIST), make_indexed_variable(I, V)), IARGS),
+	findall(V, (member(I/_, VLIST), indexed_variable(V, I)), IARGS),
 	find_unbound_variables(VLIST, VARGS),
 	HEAD =.. [P|VARGS],
 	add_boilerplate(P, (HEAD :- G2, \+(A2), !, fail)),
@@ -261,17 +264,17 @@ compile_body_expression((X -> Y), TAIL, D1, D2, B1, B2, S1, S2) :-
 
 % inline-unification
 compile_body_expression(X = Y, _, D, D, B, B, S, S) :-
-	is_indexed_variable(X, N),
-	is_indexed_variable(Y, N).
+	indexed_variable(X, N),
+	indexed_variable(Y, N).
 compile_body_expression(X = Y, _, D, D, B1, B2, S1, S2) :-
-	is_indexed_variable(X, N),
-	\+member(N, B1), \+is_indexed_variable(Y, _),
+	indexed_variable(X, N),
+	\+member(N, B1), \+indexed_variable(Y, _),
 	gensym('T', T, S1, S),
 	compile_term_for_unification(Y, T, [N|B1], B2, S, S2),
 	emit(assign(N, T)).
 compile_body_expression(X = Y, _, D, D, B1, B2, S1, S2) :-
-	is_indexed_variable(Y, N),
-	\+member(N, B1), \+is_indexed_variable(X, _),
+	indexed_variable(Y, N),
+	\+member(N, B1), \+indexed_variable(X, _),
 	gensym('T', T, S1, S),
 	compile_term_for_unification(X, T, [N|B1], B2, S, S2),
 	emit(assign(N, T)).
@@ -304,7 +307,7 @@ compile_body_expression(X \== Y, _, D, D, B1, B2, S1, S2) :-
 
 % arithmetic
 compile_body_expression(X is EXP, _, D, D, B1, [N|B1], S1, S2) :-
-	is_indexed_variable(X, N),
+	indexed_variable(X, N),
 	\+member(N, B1),
 	gensym('T', T1, S1, S),
 	compile_arithmetic_expression(EXP, T1, B1, S, S2),
@@ -411,11 +414,11 @@ compile_arithmetic_test(X, Y, B, OP, S1, S2) :-
 	emit(TERM).
 
 compile_arithmetic_expression(X, DEST, B, S, S) :-
-	is_indexed_variable(X, N),
+	indexed_variable(X, N),
 	member(N, B),
 	emit(local(N, DEST)).
 compile_arithmetic_expression(X, _, _, _, _) :-
-	is_indexed_variable(X, N),
+	indexed_variable(X, N),
 	error(['unbound variable in arithmetic expression: ', N]). %XXX
 compile_arithmetic_expression(X, DEST, _, S1, S2) :-
 	number(X),
