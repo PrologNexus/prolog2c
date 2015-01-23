@@ -5,7 +5,7 @@
 (require 'sh 'match)
 
 ;(run-verbose #t)
-(define opts '("-g" "-save-temps=obj" "-DTRACE"))
+(define opts '("-g" "-save-temps=obj" "-DTRACE" "-DEBUG_GC"))
 (define args (command-line-arguments))
 
 (match args

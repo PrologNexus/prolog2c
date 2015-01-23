@@ -1811,6 +1811,11 @@ static void collect_garbage(CHOICE_POINT *C)
 
   if(deleted > 0)
     DRIBBLE("[%d db-items deleted]\n", deleted);
+
+#ifdef DEBUG_GC
+  memset(tospace, 0xfe, (WORD)tospace_end - (WORD)tospace);
+  memset(alloc_top, 0xba, (WORD)fromspace_end - (WORD)alloc_top);
+#endif
 }
 
 
@@ -1977,6 +1982,11 @@ static void initialize(int argc, char *argv[])
   clock_ticks = 0;
   circular_term_counter = 0;
   variable_counter = 0;
+
+#ifdef DEBUG_GC
+  memset(tospace, 0xfe, (WORD)tospace_end - (WORD)tospace);
+  memset(fromspace, 0xba, (WORD)fromspace_end - (WORD)fromspace);
+#endif
 }
 
 

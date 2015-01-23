@@ -39,10 +39,10 @@
     "-DHEAP_SIZE=250000000"))
 
 (define gcc-compile-options
-  '("-std=gnu99" "-g" "-I." "-fno-strict-aliasing" "-fwrapv" "-DTRACE"))
+  '("-std=gnu99" "-g" "-I." "-fno-strict-aliasing" "-fwrapv" "-DTRACE" "-DDEBUG_GC"))
 
 (define gcc-optimized-compile-options
-  '("-std=gnu99" "-I." "-fno-strict-aliasing" "-fwrapv" "-O2" "-fomit-frame-pointer"))
+  '("-std=gnu99" "-I." "-fno-strict-aliasing" "-fwrapv" "-O2" "-fomit-frame-pointer" "-DDEBUG_GC"))
 
 (define gcc-reckless-compile-options
   '("-std=gnu99" "-I." "-fno-strict-aliasing" "-fwrapv" "-O3" "-fomit-frame-pointer"
