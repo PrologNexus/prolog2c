@@ -256,6 +256,24 @@ typedef struct SAVED_STATE
 # define WORD_SIZE  4
 #endif
 
+#ifdef DEBUG_GC
+# ifdef SIXTYFOUR
+#  ifdef __LLP64__
+#   define TAINTED_PTR_A   0xbabababababababaLL
+#   define TAINTED_PTR_B   0xfefefefefefefefeLL
+#  else
+#   define TAINTED_PTR_A   0xbabababababababaL
+#   define TAINTED_PTR_B   0xfefefefefefefefeL
+#  endif
+# else
+#  define TAINTED_PTR_A   0xbabababaL
+#  define TAINTED_PTR_B   0xfefefefeL
+# endif
+# define IS_TAINTED_PTR(p)   ((p) == TAINTED_PTR_A || (p) == TAINTED_PTR_B)
+#else
+# define IS_TAINTED_PTR(p)   0
+#endif 
+
 #define GC_MARK_BIT ((WORD)0x80 << TYPE_SHIFT)
 #define BYTEBLOCK_MARK_BIT ((WORD)0x20 << TYPE_SHIFT)
 #define SPECIALBLOCK_MARK_BIT ((WORD)0x40 << TYPE_SHIFT)
@@ -1624,7 +1642,12 @@ static void mark(X *addr)
 
 static inline void mark1(X *addr)  
 { 
-  if(((WORD)(*addr) & FIXNUM_MARK_BIT) == 0 && IS_IN_HEAP(*addr))
+  WORD p = (WORD)(*addr);
+
+  if(IS_TAINTED_PTR(p))
+    CRASH("access of tainted pointer");
+  
+  if((p & FIXNUM_MARK_BIT) == 0 && IS_IN_HEAP(*addr))
     mark(addr); 
 }
 
@@ -1813,8 +1836,8 @@ static void collect_garbage(CHOICE_POINT *C)
     DRIBBLE("[%d db-items deleted]\n", deleted);
 
 #ifdef DEBUG_GC
-  memset(tospace, 0xfe, (WORD)tospace_end - (WORD)tospace);
-  memset(alloc_top, 0xba, (WORD)fromspace_end - (WORD)alloc_top);
+  memset(tospace, TAINTED_PTR_B & 0xff, (WORD)tospace_end - (WORD)tospace);
+  memset(alloc_top, TAINTED_PTR_A & 0xff, (WORD)fromspace_end - (WORD)alloc_top);
 #endif
 }
 
@@ -1984,8 +2007,8 @@ static void initialize(int argc, char *argv[])
   variable_counter = 0;
 
 #ifdef DEBUG_GC
-  memset(tospace, 0xfe, (WORD)tospace_end - (WORD)tospace);
-  memset(fromspace, 0xba, (WORD)fromspace_end - (WORD)fromspace);
+  memset(tospace, TAINTED_PTR_B & 0xff, (WORD)tospace_end - (WORD)tospace);
+  memset(fromspace, TAINTED_PTR_A & 0xff, (WORD)fromspace_end - (WORD)fromspace);
 #endif
 }
 
