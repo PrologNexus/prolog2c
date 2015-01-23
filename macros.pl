@@ -76,6 +76,7 @@ auto_include(union/3, 'lib/sets.pl').
 auto_include(intersection/3, 'lib/sets.pl').
 auto_include(subtract/3, 'lib/sets.pl').
 auto_include(select/3, 'lib/sets.pl').
+auto_include(symdiff/3, 'lib/sets.pl').
 
 auto_include(write/1, 'lib/write.pl').
 auto_include(writeq/1, 'lib/write.pl').

@@ -526,6 +526,10 @@
     subtract(+SET1, +SET2, -SET3)
     		    	          SET3 is SET1 with the elements of SET2 removed.
 
+    symdiff(+SET1, +SET2, -SET3)  SET3 is the the "symmetric difference" of SET1
+    		   	  	  and SET2 (i.e. it is the union without the
+				  intersection.) 
+
     union(+SET1, +SET2, -SET3)    SET3 is the union of the sets SET1 and SET2.
 
   - Predicates on ordered sets
@@ -553,8 +557,7 @@
 
     ord_symdiff(+SET1, +SET2, -SET3)
     		       	          SET3 is the symmetric difference of SET1
-				  and SET2 (i.e. it is the union without the
-				  intersection.)
+				  and SET2.
 
     ord_union(+SET1, +SET2, -SET3)
     		     	          SET3 is the union of SET1 and SET2.

@@ -16,3 +16,22 @@ subtract([A|B], C, [A|D]) :- subtract(B, C, D).
 select(X, [X|Tail], Tail).
 select(Elem, [Head|Tail], [Head|Rest]) :-
 	select(Elem, Tail, Rest).
+
+%   symdiff(+Set1, +Set2, ?Diff)
+%   is true when Diff is the symmetric difference of Set1 and Set2,
+%   that is, if each element of Union occurs in one of Set1 and Set2,
+%   but not both.  The construction method is such that the answer
+%   will contain no duplicates even if the Sets do.
+%
+% (this is by Byrd + O'Keefe, SETUTL.PL)
+
+symdiff(Set1, Set2, Diff) :-
+	symdiff(Set1, Set2, Diff, Mid),
+	symdiff(Set2, Set1, Mid, []).
+
+symdiff([Elem|Rest], Avoid, Diff, Tail) :-
+	memberchk(Elem, Avoid), !,
+	symdiff(Rest, Avoid, Diff, Tail).
+symdiff([Elem|Rest], Avoid, [Elem|Diff], Tail) :- !,
+	symdiff(Rest, [Elem|Avoid], Diff, Tail).
+symdiff([], _, Tail, Tail).
