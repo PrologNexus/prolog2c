@@ -366,7 +366,7 @@ static SAVED_STATE saved_state;
 static X global_variables[ MAX_GLOBAL_VARIABLES ];
 
 static CHAR *type_names[] = { 
-  "invalid", "fixnum", "null", "symbol", "flonum", "stream", "variable", "string", "structure", "pair", "dbreference"
+  "invalid", "integer", "null", "atom", "float", "stream", "variable", "string", "structure", "list", "dbreference"
 };
 
 #endif
