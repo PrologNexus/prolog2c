@@ -751,7 +751,9 @@
   type "X", a generic union type which is either an immediate small
   integer ("fixnum") or a pointer to a non-immediate data object. See
   "pc.h" in the distributed source for more information about the
-  internal data layout.
+  internal data layout. All arguments are dereferenced on entry (that
+  is, veriables are resolved as much as possible, but not in nested
+  data).
 
   C code can be embedded in the compiled program using the "verbatim"
   directive. The text given will be emitted directly in the generated
