@@ -8,7 +8,8 @@ index_variables(X, VARS, REFD) :-
 	index_variables(X, 0, _, VARS, REFD).
 index_variables(X, C1, C2, [X], []) :-
 	var(X), !, indexed_variable(X, C1), C2 is C1 + 1.
-index_variables('_var_'(N), C, C, [], [N]) :- !.
+index_variables(X, C, C, [], [N]) :-
+	indexed_variable(X, N), !.
 index_variables(X, C, C, [], []) :- atomic(X), !.
 index_variables([X|R], C1, C2, L, REFD) :-
 	index_variables(X, C1, Cx, L1, REFD1),
