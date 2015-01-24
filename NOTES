@@ -6,16 +6,8 @@ NOTES											              -*- Org -*-
    - try: when binding two unbound vars, bind the younger one.
    - implemented in branch /bind-younger/ and seems to work, but trail
      reduction is not much.
-   - does this help with file:broken-tests/bench_1_5.pl ?
-** DONE [#A] Singleton variables could get special handling when in argument position
-   - benchmark.
 ** DONE Implement memberchk/2 as primitive
-   - see stash.
-   - when not found, unify set with [ELT|_].
-   - add proper test, including partial list-case.
-   - document, update system-primitives.
    - needs benchmarking.
-** TODO Implement ord_memberchk/2 as primitive
 ** writeq/1 could use foreign_call(basic_writeq(X)) for atoms
    - but the name needs to be classified anyway, because of the possibly
      required space in front of it.
@@ -52,7 +44,6 @@ NOTES											              -*- Org -*-
 ** Analyze program before compiling to pseudo-instructions
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
-* TODO Move repo to bitbucket
 * Benchmark results
 ** Self-compile, 5 times, average of medium 3 runtimes
    - SWI prolog: 1.30s
@@ -93,6 +84,10 @@ NOTES											              -*- Org -*-
 * Once we have a suitable test, compare performance with other implementations
   - SWI, GNU-Prolog, BinProlog
 * Issues
+** TODO [#A] Somehow the system is instable
+   - compiling 0088-chat_parser.pl segfaulted once.
+   - pc1 produced some garbage output when compiling 0085-boyer.pl.
+   - seems very hard to reproduce.
 ** TODO Implementation of if-then-else is broken
    - if-then stack gets out of balance, found here:
      call_primitive('->', 2, TERM) :-
@@ -112,7 +107,6 @@ NOTES											              -*- Org -*-
     - tricky.
 ** Is cycle-checking in =deref= really necessary?
    - apparently it is (various tests loop if this is disabled)
-** TODO reader-errors should go to stderr
 ** TODO May a PI (predicate-indicator) be an atom, refering to all available arities?
     - would need to be added to abolish/1.
 ** TODO Throw ISO-compliant exceptions everywhere
