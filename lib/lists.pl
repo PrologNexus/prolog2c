@@ -1,10 +1,6 @@
 %%% list processing operations
 
 
-% should this be builtin?
-memberchk(X, [X|_]) :- !.
-memberchk(X, [_|R]) :- memberchk(X, R).
-
 member(X, [X|_]).
 member(X, [_|R]) :- member(X, R).
 

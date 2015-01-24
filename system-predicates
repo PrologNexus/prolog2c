@@ -68,6 +68,7 @@ system_predicate(stream(+X)).
 system_predicate(var(+X)).
 system_predicate(flush).
 system_predicate(suspend(?X, ?Y)).
+system_predicate(memberchk(?X, +Y)).
 
 system_predicate(append(+X), 'io.pl').
 system_predicate(compare(-X, ?X, ?Z), 'misc.pl').
@@ -81,7 +82,6 @@ system_predicate(keysort(+X, -Y), 'sorts.pl').
 system_predicate(length(?X, ?Y), 'lists.pl').
 system_predicate(list_to_ord_set(+X, -Y), 'ordset.pl').
 system_predicate(member(?X, ?Y), 'lists.pl').
-system_predicate(memberchk(?X, +Y), 'lists.pl').
 system_predicate(merge(+X, +Y, -Z), 'sorts.pl').
 system_predicate(name(?X, ?Y), 'misc.pl').
 system_predicate(op(+X, +Y, +N), 'op.pl').

@@ -3036,6 +3036,36 @@ suspend:							       \
  RETURN_RESULT;
 
 
+/// Entry-points for embedding
+
+#ifdef EMBEDDED
+# ifndef ENTRY_POINT_NAME
+#  define ENTRY_POINT_NAME   prolog
+# endif
+# define ENTRY_POINT   X ENTRY_POINT_NAME(int argc, char *argv[], X result, int *exit_code)
+
+# ifndef VARIABLE_ACCESS_NAME
+#  define VARIABLE_ACCESS_NAME  prolog_variable
+# endif
+
+X VARIABLE_ACCESS_NAME(int index)
+{
+  int i = initial_global_variable_count + index;
+  ASSERT(i < MAX_GLOBAL_VARIABLES, "global-variable index out of range: %d", index);
+
+  if(i > global_variable_counter)
+    global_variable_counter = i + 1;
+
+  return &(global_variables[ i ]);
+}
+
+#else
+# define ENTRY_POINT   int main(int argc, char *argv[])
+#endif
+
+#endif
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /// PRIMITIVES (all expect their arguments to be deref'd)
@@ -3507,33 +3537,24 @@ static int flush_output(CHOICE_POINT *C0) { fflush(port_file(standard_output_por
 
 PRIMITIVE(do_throw, X ball) { throw_exception(ball); return 0; }
 
+PRIMITIVE(memberchk, X elt, X set) {
+  X *tt = trail_top;
 
-#ifdef EMBEDDED
-# ifndef ENTRY_POINT_NAME
-#  define ENTRY_POINT_NAME   prolog
-# endif
-# define ENTRY_POINT   X ENTRY_POINT_NAME(int argc, char *argv[], X result, int *exit_code)
+  while(!is_FIXNUM(set) && is_PAIR(set)) {
+    if(unify(elt, slot_ref(set, 0))) return 1;
 
-# ifndef VARIABLE_ACCESS_NAME
-#  define VARIABLE_ACCESS_NAME  prolog_variable
-# endif
+    unwind_trail(tt);
+    set = deref(slot_ref(set, 1));
+  }
 
-X VARIABLE_ACCESS_NAME(int index)
-{
-  int i = initial_global_variable_count + index;
-  ASSERT(i < MAX_GLOBAL_VARIABLES, "global-variable index out of range: %d", index);
+  if(is_variable(set)) {
+    X var = make_var();
+    X rest = PAIR(elt, var);
+    return unify(set, rest);
+  }
 
-  if(i > global_variable_counter)
-    global_variable_counter = i + 1;
-
-  return &(global_variables[ i ]);
+  return 0;
 }
-
-#else
-# define ENTRY_POINT   int main(int argc, char *argv[])
-#endif
-
-#endif
 
 
 #endif

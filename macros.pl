@@ -31,6 +31,7 @@ macro(getpid(PID), foreign_call(get_process_id(PID))).
 macro(sleep(SECS), foreign_call(sleep_for_seconds(SECS))).
 macro(set_random_seed(SEED), foreign_call(set_random_seed(SEED))).
 macro(flush, foreign_call(flush_output)).
+macro(memberchk(X, Y), foreign_call(memberchk(X, Y))).
 
 
 % nothing matches - tryi auto-include and finally, fail
@@ -46,7 +47,6 @@ macro(TERM, TERM) :-
 auto_include(length/2, 'lib/lists.pl').
 auto_include(append/3, 'lib/lists.pl').
 auto_include(member/2, 'lib/lists.pl').
-auto_include(memberchk/2, 'lib/lists.pl').
 auto_include(reverse/2, 'lib/lists.pl').
 
 auto_include(compare/3, 'lib/misc.pl').
