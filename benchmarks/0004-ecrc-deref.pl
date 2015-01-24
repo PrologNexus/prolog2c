@@ -1,4 +1,4 @@
-main :- deref(1000).
+main :- deref(10000).
 
 statistics(runtime, [N]) :- N is clock.
 

@@ -1,33 +1,17 @@
-Fri Jan 23 21:55:24 CET 2015
-12c37c3
-  ./bench benchmarks/0001-ecrc-call.pl
-0.0133333333333333
-  ./bench benchmarks/0002-ecrc-cp+backtrack.pl
-0.02
-  ./bench benchmarks/0003-ecrc-index.pl
-0.01
-  ./bench benchmarks/0004-ecrc-deref.pl
-0.793333333333333
-  ./bench benchmarks/0005-ecrc-cut.pl
-0.00666666666666667
-  ./bench benchmarks/0006-self-compile.pl
-2.87
-  ./bench benchmarks/0007-pi.pl
-0.08
 ----------------------------------------
-Sat Jan 24 12:59:59 CET 2015
-853e73d (not unifying singletons in argument-position in head)
+Sat Jan 24 13:43:48 CET 2015
+f4d538a
 benchmarks/0001-ecrc-call.pl
-0.01
+0.72
 benchmarks/0002-ecrc-cp+backtrack.pl
-0.02
+1.86666666666667
 benchmarks/0003-ecrc-index.pl
-0.01
+3.13
 benchmarks/0004-ecrc-deref.pl
-0.8
+7.92333333333333
 benchmarks/0005-ecrc-cut.pl
-0.0
+5.15
 benchmarks/0006-self-compile.pl
-3.02333333333333
+3.06
 benchmarks/0007-pi.pl
-0.0733333333333333
+0.08

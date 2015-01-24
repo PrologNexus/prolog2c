@@ -1,8 +1,8 @@
 main :-
-	choice_point(1000),
-	choice_point0ar(1000),
-	baktrak1(10000),
-	baktrak2(10000).
+	choice_point(1000000),
+	choice_point0ar(1000000),
+	baktrak1(1000000),
+	baktrak2(1000000).
 
 statistics(runtime, [N]) :- N is clock.
 
@@ -68,18 +68,18 @@ compens_loop(X) :- Y is X - 1, compens_loop(Y).
 
 /* loop to test choice point creation   */
 cre_CP(0).
-cre_CP(N):-M is N-1, ccp1(0,0,0), cre_CP(M).
+cre_CP(N):-M is N-1, ccp1(0,0,0), !, cre_CP(M).
 
 cre_CP0ar(0).
-cre_CP0ar(N):-M is N-1, ccp1, cre_CP0ar(M).
+cre_CP0ar(N):-M is N-1, ccp1, !, cre_CP0ar(M).
 
 /* loop to test deep backtracking       */
 deep_back(0).
-deep_back(X) :- pd(_,_,_), Y is X - 1, deep_back(Y).
+deep_back(X) :- pd(_,_,_), !, Y is X - 1, deep_back(Y).
 
 /* loop to test shallow backtracking */
 shallow_back(0).
-shallow_back(X) :- ps(_,a,b), Y is X - 1, shallow_back(Y).
+shallow_back(X) :- ps(_,a,b), !, Y is X - 1, shallow_back(Y).
 
 
 print_times(T1,T2,T3,X,I) :-        /* prints the results */

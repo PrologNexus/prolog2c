@@ -1,4 +1,4 @@
-main :- index(1000).
+main :- index(1000000).
 
 statistics(runtime, [N]) :- N is clock.
 
@@ -23,7 +23,7 @@ index_loop(X) :- p(a), p([a]), p(s(a)), /* queries to the actual */
                  p(e), p([e]), p(w(e)),
                  p(f), p([f]), p(x(f)),
                  p(g), p([g]), p(y(g)),
-                 Y is X - 1, index_loop(Y).
+                 !, Y is X - 1, index_loop(Y).
 
 /* compensation loop */
 compens_loop(0).

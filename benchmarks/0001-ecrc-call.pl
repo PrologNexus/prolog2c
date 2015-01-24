@@ -1,5 +1,5 @@
 main :-
-	boresea(10000).
+	boresea(1000000).
 
 statistics(runtime, [N]) :- N is clock.
 
@@ -37,7 +37,7 @@ print_times(T1,T2,T3,X,I) :-        /* prints the results        */
         write(KLips),nl,nl.
 
 do_max_KLips(0).            /* loop calling the actual benchmark */
-do_max_KLips(X) :- lips1, Y is X - 1, do_max_KLips(Y).
+do_max_KLips(X) :- lips1, !, Y is X - 1, do_max_KLips(Y).
 
 /* predicates to test call */
 
