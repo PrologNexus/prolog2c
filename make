@@ -187,11 +187,12 @@
        (let ((out (temporary-file)))
 	 (for-each
 	  (lambda (fname)
-	    (run (./bench ,fname "2>&1" "|" tee ,out)))
+	    (run (echo ,fname >> ,out))
+	    (run (./bench ,fname "2>&1" "|" tee -a ,out)))
 	  tests)
 	 (run (echo "----------------------------------------" >> benchmarks.txt))
 	 (run (date >> benchmarks.txt))
-	 (run (git rev-parse --short >> benchmarks.txt))
+	 (run (git rev-parse --short HEAD >> benchmarks.txt))
 	 (run (cat ,out >> benchmarks.txt)))))))
 
 (define (clean)
