@@ -123,6 +123,7 @@ system_predicate(told, 'io.pl', 'does nothing if stdout or stderr').
 system_predicate(abolish(+PI), 'cdb.pl').
 system_predicate(append(?X, ?Y, ?Z), 'lists.pl').
 system_predicate(union(+X, +Y, -Z), 'sets.pl').
+system_predicate(symdiff(+X, +Y, -Z), 'sets.pl').
 system_predicate(?X =.. ?Y, 'misc.pl', '"univ"').
 system_predicate(write(+X), 'write.pl').
 system_predicate(writeq(+X), 'write.pl').
