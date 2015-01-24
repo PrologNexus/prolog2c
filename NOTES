@@ -7,9 +7,15 @@ NOTES											              -*- Org -*-
    - implemented in branch /bind-younger/ and seems to work, but trail
      reduction is not much.
    - does this help with file:broken-tests/bench_1_5.pl ?
-** Singleton variables could get special handling when in argument position
-   - unification is a noop, unless nested in another term.
-** TODO Implement memberchk/2 as primitive
+** DONE [#A] Singleton variables could get special handling when in argument position
+   - benchmark.
+** DONE Implement memberchk/2 as primitive
+   - see stash.
+   - when not found, unify set with [ELT|_].
+   - add proper test, including partial list-case.
+   - document, update system-primitives.
+   - needs benchmarking.
+** TODO Implement ord_memberchk/2 as primitive
 ** writeq/1 could use foreign_call(basic_writeq(X)) for atoms
    - but the name needs to be classified anyway, because of the possibly
      required space in front of it.
@@ -63,7 +69,7 @@ NOTES											              -*- Org -*-
    - run some non-trivial test in interpreter.
 * TODO Find better benchmarks
 * Things to test
-** TODO Test on Windows
+** TODO [#B] Test on Windows
    - Port to MSVC
 ** TODO Run some or all tests with pi
 ** TODO Test retract-loop
@@ -80,9 +86,6 @@ NOTES											              -*- Org -*-
       ptr to invoke prolog (similar to BONES).
     - also allow access to global_variables, and (prefixed) access
       function.
-** TODO Add library predicates
-*** TODO ord_membercheck/2
-    - possibly as primitive.
 * Diagnostics
 ** Detect singleton variables
 ** Detect redefinitions of primitives
