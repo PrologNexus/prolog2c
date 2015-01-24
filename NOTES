@@ -44,21 +44,6 @@ NOTES											              -*- Org -*-
 ** Analyze program before compiling to pseudo-instructions
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
-* Benchmark results
-** Self-compile, 5 times, average of medium 3 runtimes
-   - SWI prolog: 1.30s
-   - <2015-01-04 Sun>: 1.79s (unoptimized: 2.38s)
-   - <2015-01-05 Mon>: 1.71s (smaller data area sizes)
-   - <2015-01-08 Thu>: 1.81s (not sure, probably more work done in
-     compiler)
-   - <2015-01-08 Thu>: 1.83s (additional catcher-slot in CP)
-   - <2015-01-16 Fri>: 2.65s (no idea, probably compiler extensions,
-     e.g. clause indexing)
-** TODO Find a better benchmark
-   - because extending the compiler with optimizations will
-     necessarily slow it down.
-   - run some non-trivial test in interpreter.
-* TODO Find better benchmarks
 * Things to test
 ** TODO [#B] Test on Windows
    - Port to MSVC
