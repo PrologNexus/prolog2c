@@ -41,11 +41,6 @@
 # define HEAP_SIZE  100000000
 #endif
 
-#ifndef HEAP_RESERVE
-// percentage
-# define HEAP_RESERVE 20
-#endif
-
 #ifndef TRAIL_STACK_SIZE
 # define TRAIL_STACK_SIZE 1000000
 #endif
@@ -71,6 +66,16 @@
 #endif
 
 
+// percentages
+#ifndef HEAP_RESERVE
+# define HEAP_RESERVE 10
+#endif
+
+#ifndef TRAIL_STACK_RESERVE
+# define TRAIL_STACK_RESERVE 10
+#endif
+
+
 // these sizes are given in elements
 #define MAXIMAL_NUMBER_OF_ARGUMENTS 100
 #define DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT 10
@@ -81,6 +86,7 @@
 #define STRING_BUFFER_SIZE 1024
 #define CATCHER_STACK_SIZE 1024
 #define HASH_LENGTH_CUTOFF 100
+#define TRAIL_STACK_GAP_BUFFER_SIZE 1024
 
 
 /// miscellanous
@@ -223,6 +229,12 @@ typedef struct SAVED_STATE
   X result;
 } SAVED_STATE;
 
+typedef struct TRAIL_STACK_GAP 
+{
+  X *position;
+  WORD size; 
+} TRAIL_STACK_GAP;
+
 
 /// tags and type-codes
 
@@ -346,13 +358,14 @@ static X *fromspace, *fromspace_end, *fromspace_limit, *tospace, *tospace_end;
 static X *tospace_top, *scan_ptr;
 static X *alloc_top;
 static X symbol_table[ SYMBOL_TABLE_SIZE ];
-static WORD heap_reserve;
+static WORD heap_reserve, trail_stack_reserve;
 static int verbose;
 static int variable_counter;
 static X *environment_stack;
 static X *argument_stack;
 static X *trail_stack;
-static X *trail_top, *env_top, *arg_top;
+static X *trail_top, *trail_stack_limit;
+static X *env_top, *arg_top;
 static CHOICE_POINT *choice_point_stack;
 static FINALIZER *active_finalizers, *free_finalizers;
 static WORD gc_count;
@@ -381,6 +394,10 @@ static CATCHER catch_stack[ CATCHER_STACK_SIZE ];
 static CATCHER *catch_top;
 static SAVED_STATE saved_state;
 static X global_variables[ MAX_GLOBAL_VARIABLES ];
+static TRAIL_STACK_GAP *trail_stack_gap_buffer = NULL;
+static WORD trail_stack_gap_buffer_size = TRAIL_STACK_GAP_BUFFER_SIZE;
+static int gc_caused_by_trailing = 0;
+
 
 static CHAR *type_names[] = { 
   "invalid", "integer", "null", "atom", "float", "stream", "variable", "string", "structure", "list", "dbreference"
@@ -1067,6 +1084,11 @@ static inline void push_trail(CHOICE_POINT *C0, X var)
       CRASH("trail-stack overflow");
 #endif
 
+    if(trail_top >= trail_stack_limit) {
+      gc_caused_by_trailing = 1;
+      alloc_top = fromspace_limit + 1; /* trigger GC */
+    }
+
     *(trail_top++) = var;
   }
 }
@@ -1646,7 +1668,8 @@ static inline void mark1(X *addr)
 
 static void collect_garbage(CHOICE_POINT *C)
 {
-  DRIBBLE("[GC ... ");							
+  DRIBBLE(gc_caused_by_trailing ? "[GC (due to trailing) ... " : "[GC ... ");
+  gc_caused_by_trailing = 0;
   tospace_top = tospace; 
   scan_ptr = tospace_top;				
 
@@ -1672,11 +1695,6 @@ static void collect_garbage(CHOICE_POINT *C)
   mark1(&type_error_atom);
   mark1(&evaluation_error_atom);
   mark1(&instantiation_error_atom);
-
-  //XXX preliminary - later don't mark and remove unforwarded items
-  //    (adjusting trail-pointers in CP-stack accordingly)
-  for(X *p = trail_stack; p < trail_top; ++p)
-    mark1(p);
 
   // mark standard ports
   mark1(&standard_input_port);
@@ -1710,6 +1728,61 @@ static void collect_garbage(CHOICE_POINT *C)
       ASSERT(scan_ptr < tospace_end, "scan_ptr exceeded fromspace");
     }
   }
+
+  // drop trail-stack items that refer to unreferenced variables
+  TRAIL_STACK_GAP *gp = trail_stack_gap_buffer;
+  int gap_size = 0;
+  X *tsp = trail_stack;
+
+  // first collect "gaps" of unref'd variables in trail-stack
+  for(X *tp = trail_stack; tp < trail_top; ++tp) {
+    X var = *tp;
+
+    if(gp == NULL || (gp - trail_stack_gap_buffer) >= trail_stack_gap_buffer_size) {
+      trail_stack_gap_buffer_size *= 2;
+      gp = trail_stack_gap_buffer = realloc(trail_stack_gap_buffer, trail_stack_gap_buffer_size * sizeof(X *));
+    }
+
+    if(is_forwarded(var)) {
+      if(gap_size) {		/* forwarded var? close existing gap */
+	gp->size = gap_size;
+	++gp;
+	gap_size = 0;
+      }
+
+      *(tsp++) = fptr_to_ptr(objbits(var));
+    }
+    else if(gap_size) {		/* collected var? add to gap */
+      ++gap_size;
+    }
+    else {			/* collected var, create new gap */
+      gp->position = tp;
+      gap_size = 1;
+    }
+  }
+
+  if(gap_size) {		/* close gap, if one is still open */
+    gp->size = gap_size;
+    ++gp;
+  }
+
+  // now adjust trail-ptrs in choice-point stack
+  int ts_shift = 0;
+  TRAIL_STACK_GAP *gp2 = trail_stack_gap_buffer;
+
+  for(CHOICE_POINT *cp = choice_point_stack; gp2 < gp && cp < C; ++cp) {
+    while(gp2 < gp && cp->T < gp2->position) {
+      ts_shift +=  gp2->size;
+      ++gp2;
+    }
+
+    cp->T -= ts_shift;
+  }
+
+  if(tsp < trail_top)
+    DRIBBLE(WORD_OUTPUT_FORMAT " trailed vars removed ... ", (WORD)(trail_top - tsp));
+
+  trail_top = tsp;
 
   // remove unforwarded symbols from symbol-table
   int gcdsyms = 0;
@@ -1927,7 +2000,7 @@ static void initialize(int argc, char *argv[])
   }
 
   DRIBBLE("[allocating heap of size 2 x " WORD_OUTPUT_FORMAT "]\n", heap_size / 2);
-  heap_reserve = heap_size / HEAP_RESERVE;
+  heap_reserve = heap_size * HEAP_RESERVE / 100.0;
 
   if(mmapped_heap) {
     mmapped_fd = open(mmapped_heap, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
@@ -1963,13 +2036,15 @@ static void initialize(int argc, char *argv[])
   ASSERT(environment_stack, "out of memory - can not allocate environment stack");
   trail_stack = (X *)malloc(trail_stack_size);
   ASSERT(trail_stack, "out of memory - can not allocate environment stack");
+  trail_stack_reserve = trail_stack_size * TRAIL_STACK_RESERVE / 100.0;
+  trail_stack_limit = trail_stack + (trail_stack_size - trail_stack_reserve) / sizeof(X *);
+  trail_top = trail_stack;
   ifthen_stack = (void **)malloc(ifthen_stack_size);
   ASSERT(ifthen_stack, "out of memory - can not allocate if-then stack");
   choice_point_stack = (CHOICE_POINT *)malloc(choice_point_stack_size);
   ASSERT(choice_point_stack, "out of memory - can not allocate choice-point stack");
   argument_stack = (X *)malloc(argument_stack_size);
   ASSERT(argument_stack, "out of memory - can not allocate argument stack");
-  trail_top = trail_stack;
   ifthen_top = ifthen_stack;
   env_top = environment_stack;
   arg_top = argument_stack;
