@@ -12,24 +12,24 @@
   which can be subsequently compiled with a C compiler to an
   executable. The generated code is platform-independent and should be
   portable to a wide range of machines and operating systems. No other
-  dependencies exist, only a C compiler is required. The generated
-  executables are fairly small and can be embedded in existing
-  applications.
+  dependencies exist, only a gcc-compatible C compiler is
+  required. The generated executables are fairly small and can be
+  embedded in existing applications.
 
   This Prolog implementation has no support for dynamic predicates, or
   for calling user-constructed goals - all code must be statically
   visible.  An interactive interpreter is available and can be used as
-  a library in compiled Prolog code, but interpreted code will not be
-  visible to compiled code. Loading (consulting) code at runtime is
+  a library in compiled Prolog code, but interpreted predicates will
+  not be visible to compiled ones. Loading compiled code at runtime is
   not possible and manipulating the clause-database with
-  assert/retract will have no effect on the running program.
+  assert/retract will have no effect on a compiled program.
 
   Performance is reasonable, in micro-benchmarks it is roughly
   comparable to systems like SWI-Prolog[2], but will not be able to
-  compete with such mature Prolog implementations for larger
-  programs. Basic clause-indexing on the type of the first argument of
-  a predicates is provided and tail-call optimization is performed in
-  most cases.
+  compete with such mature Prolog implementations for larger,
+  real-world programs. Basic clause-indexing on the type of the first
+  argument of a predicates is provided and tail-call optimization is
+  performed in many cases.
 
   The dialect of Prolog implemented should be sufficient for usual
   Prolog programming. Basic ISO and Edinburgh system predicates and
@@ -64,8 +64,10 @@
 
   A C compiler with support for C99, including some GNU extensions is
   required, both gcc[4] and clang[5] have been successfully tested.
-  You can edit the variables at the top of the makefile to choose
-  a different compiler or different compilation options.
+  You can edit the variables at the top of the makefile to choose a
+  different compiler or different compilation options. If you don't
+  have GNU make, then compile the files manually, see Makefile for the
+  proper options you have to pass to the compiler.
 
   Several builtin predicates are actually implemented in Prolog and
   reside in separate library files in the "lib" directory. You can
@@ -100,7 +102,7 @@
        			    path.
     -q                      do not show any output while compiling.
 
-  Code compiled with the compiler must be passed to a C compiler
+  Code compiled must then be passed to a C compiler:
 
     gcc -std=gnu99 -I. <program>.c -o <program> -lm
 
@@ -108,8 +110,8 @@
 
     Linux:
 
-      On Linux the "librt" must be linked by adding "-lrt" to the
-      C compiler invocation given above.
+      On Linux the "librt" library must be linked by adding "-lrt" to
+      the C compiler invocation given above.
 
   It is advisable to add some optimization options to improve the
   performance of the compiled executables, recommended are typically
@@ -189,7 +191,7 @@
 
     throw(BALL)			  Throws exception BALL [ISO]
 
-    The goals must be complete, callable terms, merely passing
+    The GOALs must be complete, callable terms, merely passing
     variables containing callable terms is not sufficient.
 
   - Equality and comparison predicates
@@ -782,7 +784,7 @@
   :- verbatim('#include "mystuff.c").   % include header
 
   % wrapper predicate
-  gethostname(N) :- foreign_call(my_gethostname(N1)), copy_term(N1, N).
+  gethostname(N) :- foreign_call(my_gethostname(N1)).
 
   --- 
 
@@ -798,7 +800,7 @@
       system_error(strerror(errno));  % throws exception
 
     /* unifies value with output argument */
-    return unify(intern(CSTRING(buffer)), name);
+    return unify(CSYMBOL(buffer), name);
   }
 
   ---
