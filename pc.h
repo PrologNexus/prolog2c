@@ -588,6 +588,8 @@ static inline int is_dbreference(X x)
   SLOT_INIT((X)s_, 0, (functor));				\
   (X)s_; })
 
+#define CSYMBOL1(alloc, str)   intern(CSTRING1(alloc, str))
+
 
 #ifdef COMPILED_PROLOG_PROGRAM
 
@@ -602,6 +604,7 @@ static inline int is_dbreference(X x)
 #define STRING(len)  STRING1(alloc_top, len)
 #define CSTRING(str)  CSTRING1(alloc_top, str)
 #define SYMBOL(name, next, prev)  SYMBOL1(alloc_top, name, next, prev)
+#define CSYMBOL(str)  CSYMBOL1(alloc_top, str)
 #define STRUCTURE(functor, arity)  STRUCTURE1(alloc_top, functor, arity)
 
 
