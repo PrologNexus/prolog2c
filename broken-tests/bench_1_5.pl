@@ -118,7 +118,6 @@ match_nested_structure(X)
 /* results for Cprolog: N=200  */
 /* Tloop=1.38 Tcomp=0.18 Tnet=1.20 Klips=0.17  */
 general_unification(X) :-
-
         nested_structure1(A),
         nested_structure2(B),
         statistics(runtime,[T1|_]),
@@ -149,35 +148,37 @@ compens_loop(X) :- Y is X - 1, compens_loop(Y).
 /* list constructing loop */
 do_construct_list(0).
 do_construct_list(X) :- cl1(Z1,Z2,Z3), Y is X - 1,
-                        do_construct_list(Y).
+	!, do_construct_list(Y).
 
 /* list matching loop */
 do_match_list(0,Z).
-do_match_list(X,Z) :- cl1(Z,Z,Z), Y is X - 1, do_match_list(Y,Z).
+do_match_list(X,Z) :- cl1(Z,Z,Z), Y is X - 1, !, do_match_list(Y,Z).
 
 /* structure constructing loop */
 do_construct_structure(0).
 do_construct_structure(X) :- cs1(Z1,Z2,Z3), Y is X - 1,
-                             do_construct_structure(Y).
+                             !, do_construct_structure(Y).
 
 /* structure matching loop */
 do_match_structure(0,Z).
 do_match_structure(X,Z) :- cs1(Z,Z,Z), Y is X - 1,
-                           do_match_structure(Y,Z).
+                           !, do_match_structure(Y,Z).
 
 /* loop to match a nested structure */
 do_match_nested_structure(0,Z).
 do_match_nested_structure(X,Z) :-
                               nested_structure2(Z),
                               Y is X - 1,
-                              do_match_nested_structure(Y,Z).
+                              !,
+			      do_match_nested_structure(Y,Z).
 
 /* loop for general unification */
 do_general_unification(0,A,B).
 do_general_unification(X,A,B) :-
                                unify(A,B),
                                Y is X - 1,
-                               do_general_unification(Y,A,B).
+                               !,
+			       do_general_unification(Y,A,B).
 
 /* general unification */
 unify(X,X).

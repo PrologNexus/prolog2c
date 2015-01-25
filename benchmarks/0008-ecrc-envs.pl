@@ -1,6 +1,6 @@
 main :-
-	envir(1000),
-	envir0ar(1000).
+	envir(1000000),
+	envir0ar(1000000).
 
 statistics(runtime, [N]) :- N is clock.
 
@@ -16,7 +16,7 @@ envir(N):-statistics(runtime,[T1|_]),
         print_times(T1,T2,T3,N,159).
 
 cre_env(0).
-cre_env(N):-M is N-1, env0(X,Y,Z), cre_env(M).
+cre_env(N):-M is N-1, env0(X,Y,Z), !, cre_env(M).
 
 compens_loop(0).
 compens_loop(N):-M is N-1,compens_loop(M).
@@ -48,7 +48,7 @@ envir0ar(N):-statistics(runtime,[T1|_]),
         print_times(T1,T2,T3,N,159).
 
 cre_env0ar(0).
-cre_env0ar(N):-M is N-1, env0, cre_env(M).
+cre_env0ar(N):-M is N-1, env0, !, cre_env(M).
 
 
 env0:-env1,env2. /* creates 79 environments */
