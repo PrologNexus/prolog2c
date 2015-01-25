@@ -53,6 +53,8 @@ NOTES											              -*- Org -*-
 * Missing features
 ** TODO once/1
 ** TODO setof/bagof
+   - file:_code/setof.pl works in pi.
+   - needs part of implementation in expansion of setof/bagof call.
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
@@ -69,11 +71,11 @@ NOTES											              -*- Org -*-
 * Once we have a suitable test, compare performance with other implementations
   - SWI, GNU-Prolog, BinProlog
 * Issues
-** TODO [#A] Somehow the system is instable
-   - compiling 0088-chat_parser.pl segfaulted once.
+** TODO [#B] Somehow the system is unstable
+   - compiling 0088-chat_parser.pl with pc1 segfaults sometimes.
    - pc1 produced some garbage output when compiling 0085-boyer.pl.
    - seems very hard to reproduce.
-** TODO Implementation of if-then-else is broken
+** TODO [#B] Implementation of if-then-else is broken
    - if-then stack gets out of balance, found here:
      call_primitive('->', 2, TERM) :-
 	!,
@@ -87,7 +89,7 @@ NOTES											              -*- Org -*-
      many data objects for literals.
 ** TODO Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
-** trail-GC
+** TODO [#B] We need trail-GC
     - and adjust CP-stack entries accordingly.
     - tricky.
 ** Is cycle-checking in =deref= really necessary?
@@ -98,12 +100,10 @@ NOTES											              -*- Org -*-
     - at least as much as possible and sensible.
 ** TODO file:broken-tests/simple_analyzer.pl broken
     - exhausts heap, regardless of size.
-    - probably too much trailing or missed tailcall-opportunities.
 ** TODO file:tests/0085-boyer.pl exhausts heap when run under pi
    - somehow memory leaks, this looks similar to the problem with
      file:broken-tests/simple_analyzer.pl
 ** TODO ecrc benchmarks in file:/broken-tests work, but need higher settings
-   - file:broken-tests/bench_1_3.pl needs -:C20M
    - file:broken-tests/bench_1_5.pl needs -:T5M
 * Interpreter
 ** TODO Add support for file:dcg.pl 
