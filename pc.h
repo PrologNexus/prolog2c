@@ -3063,8 +3063,6 @@ X VARIABLE_ACCESS_NAME(int index)
 # define ENTRY_POINT   int main(int argc, char *argv[])
 #endif
 
-#endif
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3537,24 +3535,7 @@ static int flush_output(CHOICE_POINT *C0) { fflush(port_file(standard_output_por
 
 PRIMITIVE(do_throw, X ball) { throw_exception(ball); return 0; }
 
-PRIMITIVE(memberchk, X elt, X set) {
-  X *tt = trail_top;
 
-  while(!is_FIXNUM(set) && is_PAIR(set)) {
-    if(unify(elt, slot_ref(set, 0))) return 1;
-
-    unwind_trail(tt);
-    set = deref(slot_ref(set, 1));
-  }
-
-  if(is_variable(set)) {
-    X var = make_var();
-    X rest = PAIR(elt, var);
-    return unify(set, rest);
-  }
-
-  return 0;
-}
-
+#endif
 
 #endif

@@ -68,7 +68,6 @@ system_predicate(stream(+X)).
 system_predicate(var(+X)).
 system_predicate(flush).
 system_predicate(suspend(?X, ?Y)).
-system_predicate(memberchk(?X, +Y)).
 
 system_predicate(append(+X), 'io.pl').
 system_predicate(compare(-X, ?X, ?Z), 'misc.pl').
@@ -127,6 +126,7 @@ system_predicate(symdiff(+X, +Y, -Z), 'sets.pl').
 system_predicate(?X =.. ?Y, 'misc.pl', '"univ"').
 system_predicate(write(+X), 'write.pl').
 system_predicate(writeq(+X), 'write.pl').
+system_predicate(memberchk(?X, +Y), 'lib/lists.pl').
 
 arithmetic_operation(- X).
 arithmetic_operation(\ X).
