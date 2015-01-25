@@ -29,7 +29,8 @@
   compete with such mature Prolog implementations for larger,
   real-world programs. Basic clause-indexing on the type of the first
   argument of a predicates is provided and tail-call optimization is
-  performed in many cases.
+  performed in many cases, but otherwise little optimization is being
+  done.
 
   The dialect of Prolog implemented should be sufficient for usual
   Prolog programming. Basic ISO and Edinburgh system predicates and
@@ -39,10 +40,10 @@
   support multithreading. It's just a basic, yet usable Prolog system,
   something that isn't easy to find, nowadays.
 
-  ?-Prolog has currently so far only been tested on Linux and Mac OS
-  X.
+  ?-Prolog has currently so far only been tested on Linux (x86-64 and
+  ARM) and Mac OS X.
 
-  The system is still under development and contain many known and
+  The system is still under development and contains many known and
   unknown bugs. If you experience problems or want to help, please
   don't hesitate to contact me[9].
 
