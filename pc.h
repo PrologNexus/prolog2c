@@ -1780,7 +1780,7 @@ static void collect_garbage(CHOICE_POINT *C)
   }
 
   if(tsp < trail_top)
-    DRIBBLE(WORD_OUTPUT_FORMAT " trailed vars removed ... ", (WORD)(trail_top - tsp));
+    DRIBBLE("trail-stack reduced by " WORD_OUTPUT_FORMAT " ... ", (WORD)(trail_top - tsp));
 
   trail_top = tsp;
 
