@@ -37,6 +37,9 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Things to test
+** DONE [#A] Tests with new trail-GC
+*** TODO Run all tests
+*** TODO Test currently broken examples
 ** TODO [#B] Test on Windows
    - Port to MSVC
 ** TODO Run some or all tests with pi
