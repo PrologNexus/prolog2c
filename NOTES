@@ -55,6 +55,7 @@ NOTES											              -*- Org -*-
 ** TODO setof/bagof
    - file:_code/setof.pl works in pi.
    - needs part of implementation in expansion of setof/bagof call.
+     - extract freevars at c/t.
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"

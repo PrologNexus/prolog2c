@@ -209,7 +209,7 @@ compile_body_expression(\+X, _, D, D, B1, B2, S1, S2) :-
 
 % findall
 compile_body_expression(findall(T, G, L), TAIL, D, D, B1, B2, S1, S2) :-
-	compile_body_expression(findall_start, nontail, D, _, B1, _, S1, S4),
+	compile_body_expression('$findall_start', nontail, D, _, B1, _, S1, S4),
 	gensym('$findall_', P, S4, S5),
 	collect_indexed_variables(G/T, GVARS),
 	findall(I/_, member(I, GVARS), VLIST),
@@ -218,10 +218,10 @@ compile_body_expression(findall(T, G, L), TAIL, D, D, B1, B2, S1, S2) :-
 	findall(V, (member(I/_, VLIST), indexed_variable(V, I)), IARGS),
 	find_unbound_variables(VLIST, VARGS),
 	HEAD =.. [P|VARGS],
-	add_boilerplate(P, (HEAD :- G2, findall_push(T2), fail)),
+	add_boilerplate(P, (HEAD :- G2, '$findall_push'(T2), fail)),
 	HEAD2 =.. [P|IARGS],
 	compile_body_expression(\+HEAD2, nontail, D, _, B1, B3, S5, S6),
-	compile_body_expression(findall_collect(L), TAIL, D, _, B3, B2, S6, S2).
+	compile_body_expression('$findall_collect'(L), TAIL, D, _, B3, B2, S6, S2).
 
 % forall
 compile_body_expression(forall(G, A), TAIL, D, D, B1, B2, S1, S2) :-
