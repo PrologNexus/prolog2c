@@ -47,7 +47,7 @@ NOTES											              -*- Org -*-
 ** TODO setof/bagof
    - file:_code/setof.pl works in pi.
    - needs part of implementation in expansion of setof/bagof call.
-     - extract freevars at c/t.
+   - document, update system-predicates.
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
@@ -64,7 +64,8 @@ NOTES											              -*- Org -*-
 * Once we have a suitable test, compare performance with other implementations
   - SWI, GNU-Prolog, BinProlog
 * Issues
-** TODO [#B] Somehow the system is unstable
+** TODO [#A] Refactor building and mapping of variables in compilation of findall/forall/bagof
+** TODO Somehow the system is unstable
    - compiling 0088-chat_parser.pl with pc1 segfaults sometimes.
    - pc1 produced some garbage output when compiling 0085-boyer.pl.
    - seems very hard to reproduce.

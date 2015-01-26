@@ -75,8 +75,84 @@ map_indexed_variables_to_real_variables(X, VLIST, Y) :-
 	Y =.. [N|ARGS2].
 
 
-%% collect list of variables - this doesn't use findall/3, to avoid renaming
+%% extract second arg of terms in list - this doesn't use findall/3,
+%% to avoid renaming
 
-find_unbound_variables([], []).
-find_unbound_variables([_/V|MORE], [V|REST]) :-
-	find_unbound_variables(MORE, REST).
+extract_second([], []).
+extract_second([T|MORE], [V|REST]) :-
+	arg(2, T, V),
+	extract_second(MORE, REST).
+
+
+%% support for bagof/setof
+
+% (taken from setof.pl of the DEC10 library)
+
+%   In order to handle variables properly, we have to find all the 
+%   universally quantified variables in the Generator.  All variables
+%   as yet unbound are universally quantified, unless
+%	a)  they occur in the template
+%	b)  they are bound by X^P, setof, or bagof
+%   free_variables(Generator, Template, OldList, NewList)
+%   finds this set, using OldList as an accumulator.
+
+free_variables(Term, Bound, VarList, [Term|VarList]) :-
+	indexed_variable(Term, I),
+	term_is_free_of(Bound, I),
+	list_is_free_of(VarList, I),
+	!.
+free_variables(Term, _, VarList, VarList) :-
+	indexed_variable(Term, _),
+	!.
+free_variables(Term, Bound, OldList, NewList) :-
+	explicit_binding(Term, Bound, NewTerm, NewBound),
+	!,
+	free_variables(NewTerm, NewBound, OldList, NewList).
+free_variables(Term, Bound, OldList, NewList) :-
+	functor(Term, _, N),
+	free_variables(N, Term, Bound, OldList, NewList).
+
+free_variables(0, _, _, VarList, VarList) :- !.
+free_variables(N, Term, Bound, OldList, NewList) :-
+	arg(N, Term, Argument),
+	free_variables(Argument, Bound, OldList, MidList),
+	M is N-1, !,
+	free_variables(M, Term, Bound, MidList, NewList).
+
+
+%   explicit_binding checks for goals known to existentially quantify
+%   one or more variables.  In particular \+ is quite common.
+
+explicit_binding(\+ _,  	       Bound, fail,	Bound      ) :- !.
+explicit_binding(not(_),	       Bound, fail,	Bound	   ) :- !.
+explicit_binding(Var^Goal,	       Bound, Goal,	Bound+Var) :- !.
+explicit_binding(setof(Var,Goal,Set),  Bound, Goal-Set, Bound+Var) :- !.
+explicit_binding(bagof(Var,Goal,Bag),  Bound, Goal-Bag, Bound+Var) :- !.
+
+term_is_free_of(Term, I) :-
+	indexed_variable(Term, I2), !,
+	I2 =\= I.
+term_is_free_of(Term, I) :-
+	functor(Term, _, N),
+	term_is_free_of(N, Term, I).
+
+term_is_free_of(0, _, _) :- !.
+term_is_free_of(N, Term, I) :-
+	arg(N, Term, Argument),
+	term_is_free_of(Argument, I),
+	M is N-1, !,
+	term_is_free_of(M, Term, I).
+
+list_is_free_of([Head|Tail], I) :-
+	indexed_variable(Head, I2),
+	I2 =\= I,
+	!,
+	list_is_free_of(Tail, I).
+list_is_free_of([_|R], I) :-
+	list_is_free_of(R, I).
+list_is_free_of([], _).
+
+
+%% drop existential qualifiers from expression
+drop_qualifiers(_^X, Y) :- !, drop_qualifiers(X, Y).
+drop_qualifiers(X, X).
