@@ -68,11 +68,11 @@
 
 // percentages
 #ifndef HEAP_RESERVE
-# define HEAP_RESERVE 10
+# define HEAP_RESERVE 5
 #endif
 
 #ifndef TRAIL_STACK_RESERVE
-# define TRAIL_STACK_RESERVE 10
+# define TRAIL_STACK_RESERVE 5
 #endif
 
 
