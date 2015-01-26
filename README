@@ -933,9 +933,7 @@
   Depending on the nature of the executing program,
   memory-requirements may vary accordingly. Currently, the system is
   not overly memory-efficient with respect to choice-points,
-  environments and the trail-stack. There is currently too much
-  trailing, and the trail does not undergo garbage collection (this
-  may be implemented at some stage).
+  environments and the trail-stack.
 
   The data-areas used at run-time are listed here, together with their
   default sizes. You can override the settings by redefining a macro
