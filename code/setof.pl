@@ -1,8 +1,7 @@
 %   File   : SETOF.PL
 %   Author : R.A.O'Keefe
 %   Updated: 17 November 1983
-%   Purpose: define set_of/3, bagof/3, findall/3, and findall/4
-%   Needs  : Not.Pl
+%   Purpose: define set_of/3, bagof/3
 
 /*  This file defines two predicates which act like setof/3 and bagof/3.
     I have seen the code for these routines in Dec-10 and in C-Prolog,
@@ -91,25 +90,6 @@ bagof(Generator, Template, Vars, Bag) :-
 	recorda('$bagof_accumulator', Template),
 	fail.
 '$bagof_save_instances'(_, _).
-
-
-%   '$bagof_list_instances'(SoFar, Total)
-%   pulls all the -Template instances out of the data base until it
-%   hits the - marker, and puts them on the front of the accumulator
-%   SoFar.  This routine is used by bagof when
-%   the Generator has no free variables.
-
-'$bagof_list_instances'(SoFar, Total) :-
-	recorded('$bagof_accumulator', Term, Ref),
-	erase(Ref), !,		%   must not backtrack
-	'$bagof_list_instances'(Term, SoFar, Total).
-
-
-'$bagof_list_instances'(-, SoFar, Total) :- !,
-	Total = SoFar.		%   = delayed in case Total was bound
-'$bagof_list_instances'(-Template, SoFar, Total) :-
-	'$bagof_list_instances'([Template|SoFar], Total).
-
 
 
 %   '$bagof_list_instances'(Key, NVars, BagIn, BagOut)
