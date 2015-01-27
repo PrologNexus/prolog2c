@@ -211,11 +211,8 @@ compile_body_expression(\+X, _, D, D, B1, B2, S1, S2) :-
 compile_body_expression(findall(T, G, L), TAIL, D, D, B1, B2, S1, S2) :-
 	compile_body_expression('$findall_start', nontail, D, _, B1, _, S1, S4),
 	gensym('$findall_', P, S4, S5),
-	collect_indexed_variables(G/T, GVARS), % collect variable-indices in generator + template
-	findall(I/_, member(I, GVARS), VLIST), % build map of variable-indices to real vars
-	map_indexed_variables_to_real_variables(G/T, VLIST, G2/T2), % substitute indexed vars with real vars
-	findall(V, (member(I/_, VLIST), indexed_variable(V, I)), IARGS), % build list of indexed variables from indices
-	extract_second(VLIST, VARGS), % use real vars in head of newly created predicate
+	goals_and_variables(G/T, VLIST, G2/T2, IARGS),
+	map_second(VLIST, VARGS), % use real vars in head of newly created predicate
 	HEAD =.. [P|VARGS],
 	add_boilerplate(P, (HEAD :- G2, '$findall_push'(T2), fail)),
 	HEAD2 =.. [P|IARGS],
@@ -226,11 +223,8 @@ compile_body_expression(findall(T, G, L), TAIL, D, D, B1, B2, S1, S2) :-
 compile_body_expression(forall(G, A), TAIL, D, D, B1, B2, S1, S2) :-
 	gensym('$forall_', P, S1, S3),
 	gensym('$forall_', P2, S3, S4),
-	collect_indexed_variables(G/A, GVARS),
-	findall(I/_, member(I, GVARS), VLIST),
-	map_indexed_variables_to_real_variables(G/A, VLIST, G2/A2),
-	findall(V, (member(I/_, VLIST), indexed_variable(V, I)), IARGS),
-	extract_second(VLIST, VARGS),
+	goals_and_variables(G/A, VLIST, G2/A2, IARGS),
+	map_second(VLIST, VARGS),
 	HEAD =.. [P|VARGS],
 	add_boilerplate(P, (HEAD :- G2, \+(A2), !, fail)),
 	add_boilerplate(P2, HEAD),
@@ -544,12 +538,9 @@ compile_bagof(T, G, L, [], TAIL, D1, D2, B1, B2, S1, S2) :-
 	compile_body_expression((findall(T, G, L), L \== []), TAIL, D1, D2, B1, B2, S1, S2).
 compile_bagof(T, G, L, VARS, TAIL, D1, D2, B1, B2, S1, S2) :-
 	gensym('$bagof_', P, S1, S3),
-	collect_indexed_variables(G/T, GVARS),
-	findall(I/_, member(I, GVARS), VLIST),
-	map_indexed_variables_to_real_variables(G/T, VLIST, G2/T2),
-	findall(V, (member(I/_, VLIST), indexed_variable(V, I)), IARGS),
+	goals_and_variables(G/T, VLIST, G2/T2, IARGS),
 	map_indexed_variables_to_real_variables(VARS, VLIST, VARS2),
-	extract_second(VLIST, VARGS),
+	map_second(VLIST, VARGS),
 	HEAD =.. [P|VARGS],
 	add_boilerplate(P, (HEAD :- '$bagof_start'(VARS2, T2, T3), G2, '$findall_push'(T3), fail)),
 	HEAD2 =.. [P|IARGS],

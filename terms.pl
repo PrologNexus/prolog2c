@@ -145,5 +145,16 @@ list_is_free_of([], _).
 
 
 %% drop existential qualifiers from expression
+
 drop_qualifiers(_^X, Y) :- !, drop_qualifiers(X, Y).
 drop_qualifiers(X, X).
+
+
+%% collect variables into index/realvar lists and produce new expressions containing the latter,
+%% together with a new list of indexed vars usable is environment in a new clause
+
+goals_and_variables(GOAL, VLIST, NEWGOAL, IARGS) :-
+	collect_indexed_variables(GOAL, GVARS),
+	findall(I/_, member(I, GVARS), VLIST),
+	map_indexed_variables_to_real_variables(GOAL, VLIST, NEWGOAL),
+	findall(V, (member(I/_, VLIST), indexed_variable(V, I)), IARGS).
