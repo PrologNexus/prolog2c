@@ -237,6 +237,12 @@ compile_body_expression(bagof(T, G, L), TAIL, D1, D2, B1, B2, S1, S2) :-
 	drop_qualifiers(G, G2), 
 	compile_bagof(T, G2, L, VARS, TAIL, D1, D2, B1, B2, S1, S2).
 
+% setof
+compile_body_expression(setof(T, G, L), TAIL, D1, D2, B1, B2, S1, S2) :-
+	free_variables(G, T, [], VARS),
+	drop_qualifiers(G, G2), 
+	compile_setof(T, G2, L, VARS, TAIL, D1, D2, B1, B2, S1, S2).
+
 % catch
 compile_body_expression(catch(G, B, R), TAIL, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
@@ -546,3 +552,23 @@ compile_bagof(T, G, L, VARS, TAIL, D1, D2, B1, B2, S1, S2) :-
 	HEAD2 =.. [P|IARGS],
 	compile_body_expression(\+HEAD2, nontail, D1, _, B1, B3, S3, S4),
 	compile_body_expression('$bagof_finish'(L), TAIL, D1, D2, B3, B2, S4, S2).
+
+compile_setof(T, G, L, [], TAIL, D1, D2, B1, B2, S1, S2) :-
+	gensym('$setof_', P, S1, S3),
+	goals_and_variables(G/T/L, VLIST, G2/T2/L2, IARGS),
+	map_second(VLIST, VARGS),
+	HEAD =.. [P|VARGS],
+	add_boilerplate(P, (HEAD :- findall(T2, G2, TMP), TMP \== [], sort(TMP, L2))),
+	HEAD2 =.. [P|IARGS],
+	compile_body_expression(HEAD2, TAIL, D1, D2, B1, B2, S3, S2).
+compile_setof(T, G, L, VARS, TAIL, D1, D2, B1, B2, S1, S2) :-
+	gensym('$setof_', P, S1, S3),
+	gensym('$setof_', P2, S3, S4),
+	goals_and_variables(G/T/L, VLIST, G2/T2/L2, IARGS),
+	map_indexed_variables_to_real_variables(VARS, VLIST, VARS2),
+	map_second(VLIST, VARGS),
+	HEAD =.. [P|VARGS],
+	add_boilerplate(P, (HEAD :- '$bagof_start'(VARS2, T2, T3), G2, '$findall_push'(T3), fail)),
+	add_boilerplate(P2, (HEAD :- '$bagof_finish'(TMP), sort(TMP, L2))),
+	HEAD2 =.. [P|IARGS],
+	compile_body_expression(\+HEAD2, TAIL, D1, D2, B1, B2, S4, S2).
