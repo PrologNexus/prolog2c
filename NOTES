@@ -96,8 +96,6 @@ NOTES											              -*- Org -*-
 ** TODO [#B] We need trail-GC
     - and adjust CP-stack entries accordingly.
     - tricky.
-** Is cycle-checking in =deref= really necessary?
-   - apparently it is (various tests loop if this is disabled)
 ** TODO May a PI (predicate-indicator) be an atom, refering to all available arities?
     - would need to be added to abolish/1.
 ** TODO Throw ISO-compliant exceptions everywhere

@@ -72,7 +72,6 @@
 
 
 // these sizes are given in elements
-#define DEREF_STACK_SIZE 1000
 #define MAXIMAL_NUMBER_OF_ARGUMENTS 100
 #define DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT 10
 #define TRACE_DEBUG_WRITE_LIMIT 5
@@ -633,25 +632,15 @@ static void crash_hook()
 
 static X deref1(X val)
 {
-  static X stack[ DEREF_STACK_SIZE ];
-  X *sp = stack;
-
   for(;;) {
     if(is_FIXNUM(val) || !is_VAR(val))
       return val;
 
-    for(X *p = sp - 1; p >= stack; --p) {
-      if(*p == val) 
-	return val;
-    }
+    X val2 = slot_ref(val, 0);
 
-    *(sp++) = val;
-    val = slot_ref(val, 0);
-
-#ifndef UNSAFE
-    if(sp >= stack + DEREF_STACK_SIZE)
-      CRASH("deref-stack overflow");
-#endif
+    if(val == val2) return val;
+    
+    val = val2;
   }
 }
 
