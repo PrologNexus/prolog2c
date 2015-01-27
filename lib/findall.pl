@@ -31,19 +31,20 @@
 
 %% bagof/3, setof/3
 
-'$bagof_start'(VARS, TEMPLATE, KEY2-TEMPLATE) :-
+'$bagof_start'(VARS, TEMPLATE, KEY-TEMPLATE) :-
 	'$unbound_variables'(VARS, UVARS),
-	KEY =.. ['.'|UVARS],
 	global_ref(bagof_info, OLD),
-	copy_term(KEY, KEY2),
-	global_set(bagof_info, [KEY2|OLD]),
+	KEY =.. ['.'|UVARS],
+	deref_term([KEY|OLD], 2, BI),
+	global_set(bagof_info, BI),
+	'$findall_push'('$<mark>'),
 	!.
 
-'$bagof_finish'(KEY, N, BAG) :-
+'$bagof_finish'(BAG) :-
 	global_ref(bagof_info, [KEY|OLD]),
 	global_set(bagof_info, OLD),
 	functor(KEY, '.', N),
-	global_ref(findall_solutions, SL),
+	'$findall_collect'(SL),
 	'$bagof_list_instances'(SL, KEY, N, [], OmniumGatherum),
 	keysort(OmniumGatherum, Gamut), !,
 	'$concordant_subset'(Gamut, KEY, BAG).
@@ -68,7 +69,7 @@
 	'$bagof_replace_key_variables'(NVARS, KEY, NEWKEY),
 	!,
 	'$bagof_list_instances'(MORE, KEY, NVARS, [NEWKEY-TERM|BAGIN], BAGOUT).
-'$bagof_list_instances'([-|MORE], _, _, BAG, BAG) :-
+'$bagof_list_instances'([], _, _, BAG, BAG) :-
 	global_set(findall_solutions, MORE).
 
 
