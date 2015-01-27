@@ -44,9 +44,10 @@ NOTES											              -*- Org -*-
    - file:tests/0069-cdb.pl
 * Missing features
 ** TODO once/1
-** TODO setof/bagof
-   - file:_code/setof.pl works in pi.
-   - needs part of implementation in expansion of setof/bagof call.
+** DONE setof/bagof
+   - test thoroughly.
+   - what's the point of all this keysorting?
+   - interpreter implementation will need some thought.
    - document, update system-predicates.
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
