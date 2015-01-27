@@ -75,15 +75,6 @@ map_indexed_variables_to_real_variables(X, VLIST, Y) :-
 	Y =.. [N|ARGS2].
 
 
-%% extract second arg of terms in list - this doesn't use findall/3,
-%% to avoid renaming
-
-extract_second([], []).
-extract_second([T|MORE], [V|REST]) :-
-	arg(2, T, V),
-	extract_second(MORE, REST).
-
-
 %% support for bagof/setof
 
 % (taken from setof.pl of the DEC10 library)

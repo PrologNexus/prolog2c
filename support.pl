@@ -60,3 +60,13 @@ split_string(STR, SEP, [PART|P2]) :-
 	!,
 	split_string(MORE, SEP, P2).
 split_string(STR, _, [STR]).
+
+
+%% extract second arg of terms in list - this doesn't use findall/3,
+%% to avoid renaming
+
+map_second([], []).
+map_second([T|MORE], [V|REST]) :-
+	arg(2, T, V),
+	map_second(MORE, REST).
+
