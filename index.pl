@@ -86,6 +86,7 @@ compile_dispatch_sequence([I/T|DMAP], N, A, XS, S1, S2) :-
 	emit(INST),
  	compile_dispatch_sequence(DMAP, N, A, XS, S1, S2).
 
+%% integer already handled
 dispatch_instruction(var, switch_on_var).
 dispatch_instruction(null, switch_on_null).
 dispatch_instruction(pair, switch_on_pair).
