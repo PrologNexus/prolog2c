@@ -548,9 +548,10 @@ compile_bagof(T, G, L, VARS, TAIL, D1, D2, B1, B2, S1, S2) :-
 	findall(I/_, member(I, GVARS), VLIST),
 	map_indexed_variables_to_real_variables(G/T, VLIST, G2/T2),
 	findall(V, (member(I/_, VLIST), indexed_variable(V, I)), IARGS),
+	map_indexed_variables_to_real_variables(VARS, VLIST, VARS2),
 	extract_second(VLIST, VARGS),
 	HEAD =.. [P|VARGS],
-	add_boilerplate(P, (HEAD :- '$bagof_start'(VARS, T2, T3), G2, '$findall_push'(T3), fail)),
+	add_boilerplate(P, (HEAD :- '$bagof_start'(VARS2, T2, T3), G2, '$findall_push'(T3), fail)),
 	HEAD2 =.. [P|IARGS],
 	compile_body_expression(\+HEAD2, nontail, D1, _, B1, B3, S3, S4),
 	compile_body_expression('$bagof_finish'(L), TAIL, D1, D2, B3, B2, S4, S2).
