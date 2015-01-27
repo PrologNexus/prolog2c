@@ -43,7 +43,6 @@ process_input([end_of_file], BLOCK, NA, STATE1) :-
 % detect DCG rules and expand
 process_input([(HEAD --> BODY)|MORE], BLOCK, NA, STATE) :-
         dcg_rule((HEAD --> BODY), EXPANSION),
-	%writeq(EXPANSION), nl,
 	process_input([EXPANSION|MORE], BLOCK, NA, STATE).
 
 % matches N/A? add and continue
@@ -118,9 +117,6 @@ process_directive(global_variable(NAME), S, S) :-
 	mangle_name(NAME, MNAME),
 	recordz(global_variables, MNAME).
 
-process_directive(trace_libraries, S, S) :-
-	recordz(trace_libraries, yes).
-
 process_directive(verbatim(STR), S, S) :-
 	recordz(verbatim_code, STR).
 
@@ -149,7 +145,7 @@ show_intermediate_code.
 %% add clauses for boilerplate code and (pre-)initialization goals
 
 process_boilerplate_code(STATE) :-
-	(recorded(trace_libraries, _); emit(trace_off)),
+	emit(trace_off),
 	findall(B, (recorded(boilerplate, B, REF), erase(REF)), BOILERPLATE),
 	BOILERPLATE \= [],
 	process_input(BOILERPLATE, [], _, STATE).
