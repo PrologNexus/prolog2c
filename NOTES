@@ -48,7 +48,7 @@ NOTES											              -*- Org -*-
    - test thoroughly.
    - what's the point of all this keysorting?
    - interpreter implementation will need some thought.
-   - document, update system-predicates.
+     - perhaps use file:code/setof.pl directly.
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"

@@ -180,8 +180,13 @@
 
     repeat    			  Always succeeds [ISO]
 
-    findall(?T, +GOAL, -R)	  Unify R with the list of all T for goal GOAL 
+    findall(?T, +GOAL, -R)        Unify R with the list of all T for goal GOAL 
     		       		  [ISO]
+
+    bagof(?T, +GOAL, -R)	  All solutions [ISO]
+
+    setof(?T, +GOAL, -R)	  All solutions without duplicates, and sorted 
+    	      	     		  [ISO]
 
     forall(+GOAL1, +GOAL2)        True if GOAL2 unifies for all solutions of 
     		   		  GOAL1.

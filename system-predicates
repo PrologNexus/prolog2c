@@ -12,6 +12,8 @@ control_structure(global_ref(+X, -Y)).
 control_structure(global_set(+X, +Y)).
 control_structure(catch(+X, ?Y, +Z)).
 control_structure(repeat).
+control_structure(bagof(?T, +G, +L)).
+control_structure(setof(?T, +G, +L)).
 
 system_predicate(#X < #Y).
 system_predicate(#X > #Y).
