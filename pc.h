@@ -1741,6 +1741,7 @@ static void collect_garbage(CHOICE_POINT *C)
     if(gp == NULL || (gp - trail_stack_gap_buffer) >= trail_stack_gap_buffer_size) {
       trail_stack_gap_buffer_size *= 2;
       gp = trail_stack_gap_buffer = realloc(trail_stack_gap_buffer, trail_stack_gap_buffer_size * sizeof(X *));
+      ASSERT(gp, "out of memory - can not re-allocate trail-stack gap-buffer");
     }
 
     if(is_forwarded(var)) {
