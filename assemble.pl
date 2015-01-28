@@ -240,11 +240,11 @@ assemble_atom_dispatch(_, []).
 assemble_atom_dispatch(I, [I-(ATOM/LABEL)|MORE]) :-
 	!,
 	mangle_name(ATOM, NAME),
-	gen('{SYMBOL', NAME, ',&&', LABEL, '},'),
+	gen('{(X)SYMBOL', NAME, ',&&', LABEL, '},'),
 	I2 is I + 1,
 	assemble_atom_dispatch(I2, MORE).
 assemble_atom_dispatch(I, ENTRIES) :-
-	gen('{0,NULL},'),
+	gen('{NULL,NULL},'),
 	I2 is I + 1,
 	assemble_atom_dispatch(I2, ENTRIES).
 
