@@ -130,3 +130,45 @@ add_boilerplate(TAG, _) :-
 add_boilerplate(TAG, CODE) :-
 	recordz(boilerplate, CODE),
 	recordz(boilerplate_added, TAG).
+
+
+%% determinateness information
+
+determinate_builtin(memberchk, 2).
+determinate_builtin(compare, 3).
+determinate_builtin(shell, 1).
+determinate_builtin(tab, 1).
+determinate_builtin(skip, 1).
+determinate_builtin(get, 1).
+determinate_builtin(see, 1).
+determinate_builtin(seen, 0).
+determinate_builtin(seeing, 1).
+determinate_builtin(tell, 1).
+determinate_builtin(told, 0).
+determinate_builtin(telling, 1).
+determinate_builtin(op, 3).
+determinate_builtin(throw, 1).
+determinate_builtin(name, 2).
+determinate_builtin('=..', 2).
+determinate_builtin(deref_term, 3).
+determinate_builtin(copy_term, 2).
+determinate_builtin(write, 1).
+determinate_builtin(writeq, 1).
+determinate_builtin(recorda, 2).
+determinate_builtin(recorda, 3).
+determinate_builtin(recordz, 2).
+determinate_builtin(recordz, 3).
+determinate_builtin('$findall_start', 0).
+determinate_builtin('$findall_push', 1).
+determinate_builtin('$findall_collect', 1).
+determinate_builtin(ord_memberchk, 2).
+determinate_builtin(read_tokens, 2).
+determinate_builtin(read1, 1).
+determinate_builtin(abolish, 1).
+determinate_builtin(asserta, 1).
+determinate_builtin(asserta, 2).
+determinate_builtin(assertz, 1).
+determinate_builtin(assertz, 2).
+
+determinate_builtin(NAME, ARITY) :-
+	recorded(determinate, NAME/ARITY).

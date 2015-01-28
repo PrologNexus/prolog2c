@@ -376,12 +376,12 @@ compile_body_expression(TERM, _, _, _, _, _, _, _) :-
 
 %% compile calls (ordinary or type-/order-predicate)
 
-compile_ordinary_call(NAME, TAIL, DLIST, D1, nondet, S1, S2) :- %XXX later analyze for being deterministic
+compile_ordinary_call(NAME, TAIL, DLIST, D1, D2, S1, S2) :-
 	length(DLIST, ARITY),
 	register_unresolved_call(NAME/ARITY),
+	(determinate_builtin(NAME, ARITY) -> D2 = D1; D2 = nondet),
 	gen_label(L, S1, S2),
-	 (TAIL/D1 = tail/det -> emit(tail_call(NAME, DLIST)); emit(call(NAME, DLIST, L))
-	 ).
+	(TAIL/D1 = tail/det -> emit(tail_call(NAME, DLIST)); emit(call(NAME, DLIST, L))).
 
 compile_type_predicate(NAME, [VAL]) :-
 	type_predicate(NAME),

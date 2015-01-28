@@ -120,6 +120,10 @@ process_directive(global_variable(NAME), S, S) :-
 process_directive(verbatim(STR), S, S) :-
 	recordz(verbatim_code, STR).
 
+process_directive(determinate(PI), S, S) :-
+	(PI = [_|_] -> PIL = PI; PIL = [PI]),
+	forall(member(P, PIL), declare_as_determinate(P)).
+
 process_directive(op(P, A, N), S, S) :- op(P, A, N).
 
 process_directive(DECL, STATE, STATE) :-
@@ -177,3 +181,14 @@ report_unresolved_calls :-
 	nl,
 	halt(1).
 report_unresolved_calls.
+
+
+%% add "determinate" declaration for a list of PIs
+
+declare_as_determinate(N/A) :-
+	recordz(determinate, N/A).
+declare_as_determinate(N) :-
+	atom(N),
+	declare_as_determinate(N/_).
+declare_as_determinate(N) :-
+	error(['invalid predicate indicator: ', N]).
