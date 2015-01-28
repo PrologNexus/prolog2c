@@ -42,7 +42,6 @@ scan_indexing_types([I/T|MORE], DONE, [I/T|R]) :-
 
 member_in_indexing_types(_, []) :- !, fail.
 member_in_indexing_types(T, [T|_]) :- !.
-member_in_indexing_types(integer(_), [integer(_)|_]) :- !.
 member_in_indexing_types(atom(_), [atom(_)|_]) :- !.
 member_in_indexing_types(T, [_|MORE]) :- member_in_indexing_types(T, MORE).
 			 
@@ -50,17 +49,33 @@ member_in_indexing_types(T, [_|MORE]) :- member_in_indexing_types(T, MORE).
 %% compile code to dispatch on type
 
 compile_dispatch(DMAP, N, A, S1, S2) :-
-	%% remaining clauses contain integer or var case
-	(select(I1/integer(_), DMAP, DMAP2)
-	; memberchk(I1/var, DMAP), DMAP2 = DMAP
-	),
+	%% remaining clauses contain integer cases
+	findall(X, (member(X, DMAP), X = _/integer(_)), ICASES),
+	ICASES \== [],
+	!,
+	subtract(DMAP, ICASES, DMAP2),
+	DMAP = [I2/_|_],
+	secondary_clause_label(N, A, I2, L2),
+	%% test for fixnum first, otherwise run first clause if arg is var
+	gen_label(L1, S1, S3),	% no integer case matches
+	emit(switch_on_integer(L1), switch_on_var(L2), label(L1)),
+	findall(NUM/LABEL, (member(I/integer(NUM), ICASES),
+			    secondary_clause_label(N, A, I, LABEL)),
+		TABLE),
+	emit(dispatch_on_integer(TABLE)),
+	gen_label(FL, S3, S4),	% no integer case matches
+	emit(label(FL), no_redo, fail), % fail block
+	compile_dispatch_sequence(DMAP2, N, A, s(FL), S4, S2).
+compile_dispatch(DMAP, N, A, S1, S2) :-
+	%% remaining clauses contain no integer cases
+	memberchk(I1/var, DMAP),
 	!,
 	DMAP = [I2/_|_],
 	secondary_clause_label(N, A, I1, L1),
 	secondary_clause_label(N, A, I2, L2),
-	%% test for fixnum first, otherwise run first clause if arg is a var
+	%% test for fixnum case and invoke var-case, otherwise run first clause if arg is a var
 	emit(switch_on_integer(L1), switch_on_var(L2)),
-	compile_dispatch_sequence(DMAP2, N, A, s(no), S1, S2).
+	compile_dispatch_sequence(DMAP, N, A, s(no), S1, S2).
 compile_dispatch(DMAP, N, A, S1, S2) :-
 	%% no integer or var case
 	gen_label(FL, S1, S3),

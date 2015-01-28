@@ -199,6 +199,11 @@ assemble(switch_on_float(L), S, S) :- gen('if(is_FLONUM(A[0])) goto ', L, ';\n')
 assemble(switch_on_pair(L), S, S) :- gen('if(is_PAIR(A[0])) goto ', L, ';\n').
 assemble(switch_on_structure(L), S, S) :- gen('if(is_STRUCTURE(A[0])) goto ', L, ';\n').
 
+assemble(dispatch_on_integer(TABLE), S, S) :-
+	gen('switch(fixnum_to_word(A[0])){\n'),
+	forall(member(N/L, TABLE), gen('case ', N, ': goto ', L, ';\n')),
+	gen('}').
+
 assemble(suspend(R1, L), S, S) :-
 	gen('saved_state.result=', R1, ';\nsaved_state.P=&&', L, ';\n'),
 	gen('goto suspend;\n', L, ':\n', R1, '=saved_state.result;\n').
