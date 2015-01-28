@@ -3654,6 +3654,11 @@ PRIMITIVE(do_make_term, X arity, X functor, X args, X term) {
   return unify(term, make_term_from_list(fixnum_to_word(arity), functor, args));
 }
 
+PRIMITIVE(hash_atom, X sym, X hash) {
+  check_type_SYMBOL(sym);
+  return(unify(slot_ref(sym, 3), hash));
+}
+
 
 #endif
 

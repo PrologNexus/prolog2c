@@ -40,6 +40,7 @@ system_predicate(assertz(+X)).
 system_predicate(assertz(+X, -Y)).		
 system_predicate(atom(+X)).
 system_predicate(atom_codes(?X, ?Y)).
+system_predicate(hash_atom(+X, -Y)).
 system_predicate(atomic(+X)).
 system_predicate(clause(+X, ?Y)).
 system_predicate(clause(+X, ?Y, -Z)).
