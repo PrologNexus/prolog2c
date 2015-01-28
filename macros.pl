@@ -1,4 +1,4 @@
-%%% macro-expansion
+%%% macros and other information about builtins
 
 
 % predefined macros
@@ -57,10 +57,10 @@ auto_include(tab/1, 'lib/io.pl').
 auto_include(skip/1, 'lib/io.pl').
 auto_include(get/1, 'lib/io.pl').
 auto_include(see/1, 'lib/io.pl').
-auto_include(seen/1, 'lib/io.pl').
+auto_include(seen/0, 'lib/io.pl').
 auto_include(seeing/1, 'lib/io.pl').
 auto_include(tell/1, 'lib/io.pl').
-auto_include(told/1, 'lib/io.pl').
+auto_include(told/0, 'lib/io.pl').
 auto_include(telling/1, 'lib/io.pl').
 
 auto_include(op/3, 'lib/op.pl').
