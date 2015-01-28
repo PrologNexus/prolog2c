@@ -201,7 +201,7 @@ assemble(switch_on_structure(L), S, S) :- gen('if(is_STRUCTURE(A[0])) goto ', L,
 
 assemble(dispatch_on_integer(TABLE), S, S) :-
 	gen('switch(fixnum_to_word(A[0])){\n'),
-	forall(member(N/L, TABLE), gen('case ', N, ': goto ', L, ';\n')),
+	forall(member(N/L, TABLE), gen('case ', N, ':goto ', L, ';\n')),
 	gen('}').
 
 assemble(suspend(R1, L), S, S) :-
