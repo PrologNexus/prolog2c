@@ -235,6 +235,12 @@ typedef struct TRAIL_STACK_GAP
   WORD size; 
 } TRAIL_STACK_GAP;
 
+typedef struct SYMBOL_DISPATCH
+{
+  X symbol;
+  void *label;
+} SYMBOL_DISPATCH;
+
 
 /// tags and type-codes
 
@@ -847,6 +853,20 @@ static void intern_static_symbols(X sym1)
   type_error_atom = intern(CSTRING("type_error"));
   evaluation_error_atom = intern(CSTRING("evaluation_error"));
   instantiation_error_atom = intern(CSTRING("instantiation_error"));
+}
+
+
+static void *lookup_symbol_in_table(X sym, SYMBOL_DISPATCH *table, void *deflabel, int len)
+{
+  WORD key = fixnum_to_word(slot_ref(sym, 3)) % len;
+
+  for(int steps = 0; steps < len; ++steps) {
+    if(table[ key ].symbol == sym) return table[ key ].label;
+
+    key = (key + 1) % len;
+  }
+
+  return deflabel;
 }
 
 
@@ -3154,6 +3174,9 @@ suspend:							       \
  saved_state.C0 = C0;						       \
  saved_state.C = C;						       \
  RETURN_RESULT;
+
+
+#define DISPATCH_ON_SYMBOL(table, lbl, len)  goto *(lookup_symbol_in_table(A[0], table, &&lbl, len))
 
 
 /// Entry-points for embedding
