@@ -15,14 +15,8 @@ NOTES											              -*- Org -*-
      required space in front of it.
 ** Mode-declarations
    - can probably be used in many ways, but needs more thought.
-** TODO Determinacy declarations
-   - i.e. ":- determinate(PI)."
-   - file:da.pl
-   - provide predicate "is_deterministic(EXPR)"
-   - add declarations for all library predicates, where appropriate.
-   - use determinism-information to find more tailcall-opportunities.
-     - propagate mode, depending on called predicate, see:
-       compile_ordinary_call in file:compile.pl
+** DONE Determinacy declarations
+   - Test, benchmark.
 ** DONE Extend clause indexing to dispatch on atom- or fixnum list via hashing
    - see branches /integer_dispatch/ and /atom_dispatch/
    - Test.
@@ -97,6 +91,7 @@ NOTES											              -*- Org -*-
     - would need to be added to abolish/1.
 ** TODO Throw ISO-compliant exceptions everywhere
     - at least as much as possible and sensible.
+** TODO Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 ** TODO file:broken-tests/simple_analyzer.pl broken
     - exhausts heap, regardless of size.
 ** TODO file:tests/0085-boyer.pl exhausts heap when run under pi
