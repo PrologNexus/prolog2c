@@ -335,6 +335,9 @@ typedef struct TRAIL_STACK_GAP
 
 #define PREVIOUS_SYMBOL  END_OF_LIST_VAL
 
+#define HASH_LENGTH_CUTOFF 100
+#define HASH_MASK  0x7fffffffUL
+
 
 /// predefined literals and global variables
 
@@ -592,10 +595,11 @@ static inline int is_dbreference(X x)
     memcpy(objdata(s_), str_, len3_);					\
     s_; })
   
-#define SYMBOL1(alloc, name, next)				\
-  ({ ALLOCATE_BLOCK1(alloc, BLOCK *p_, SYMBOL_TYPE, 2);			\
+#define SYMBOL1(alloc, name, next, hash)				\
+  ({ ALLOCATE_BLOCK1(alloc, BLOCK *p_, SYMBOL_TYPE, 3);			\
     SLOT_INIT((X)p_, 0, (name));					\
     SLOT_INIT((X)p_, 1, (next));					\
+    SLOT_INIT((X)p_, 2, (hash));					\
     (X)p_; })
 
 // does not initialize args
@@ -619,7 +623,7 @@ static inline int is_dbreference(X x)
 #define PORT(f, i, o, d)  PORT1(alloc_top, f, i, o, d)
 #define STRING(len)  STRING1(alloc_top, len)
 #define CSTRING(str)  CSTRING1(alloc_top, str)
-#define SYMBOL(name, next)  SYMBOL1(alloc_top, name, next)
+#define SYMBOL(name, next, hash)  SYMBOL1(alloc_top, name, next, hash)
 #define CSYMBOL(str)  CSYMBOL1(alloc_top, str)
 #define STRUCTURE(functor, arity)  STRUCTURE1(alloc_top, functor, arity)
 
@@ -797,16 +801,17 @@ static WORD hash_name(CHAR *name, int len)
   if(len > HASH_LENGTH_CUTOFF) len = HASH_LENGTH_CUTOFF;
 
   while(len--)
-    key ^= (key << 6) + (key >> 2) + *(name++);
+    key = (key ^ ((key << 6) + (key >> 2) + *(name++))) & HASH_MASK;
 
-  return (WORD)(key & 0x7fffffffUL);
+  return (WORD)key;
 }
 
 
 static X intern(X name)
 {
   WORD len = string_length(name);
-  WORD key = hash_name((CHAR *)objdata(name), len) % SYMBOL_TABLE_SIZE;
+  WORD hash = hash_name((CHAR *)objdata(name), len);
+  WORD key = hash % SYMBOL_TABLE_SIZE;
 
   for(X sym = symbol_table[ key ]; sym != END_OF_LIST_VAL; sym = slot_ref(sym, 1)) {
     X name2 = slot_ref(sym, 0);
@@ -817,7 +822,7 @@ static X intern(X name)
   }
 
   X oldsym = symbol_table[ key ];
-  X sym = SYMBOL(name, oldsym);
+  X sym = SYMBOL(name, oldsym, word_to_fixnum(hash));
   symbol_table[ key ] = sym;
   return sym;
 }
@@ -828,7 +833,8 @@ static void intern_static_symbols(X sym1)
   while(sym1 != END_OF_LIST_VAL) {
     X name = slot_ref(sym1, 0);
     WORD len = string_length(name);
-    WORD key = hash_name((CHAR *)objdata(name), len) % SYMBOL_TABLE_SIZE;
+    WORD hash = fixnum_to_word(slot_ref(sym1, 3));
+    WORD key = hash % SYMBOL_TABLE_SIZE;
     X sym = symbol_table[ key ];
     X nextsym = slot_ref(sym1, 1);
     SLOT_SET(sym1, 1, sym);

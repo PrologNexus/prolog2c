@@ -275,8 +275,10 @@ generate_static_literal(I, X, S, S) :-
 	length(STRING, LEN),
 	gen('static STRING_BLOCK lbs', I, '={STRING_TAG|(', LEN, '+1),{'),
 	generate_data_list(STRING),
-	gen(',0}};\nstatic SYMBOL_BLOCK lb', I, '={SYMBOL_TAG|2,(X)&lbs', I),
-	gen(',PREVIOUS_SYMBOL};\n#undef PREVIOUS_SYMBOL\n#define PREVIOUS_SYMBOL (X)&lb', I),
+	gen(',0}};\nstatic SYMBOL_BLOCK lb', I, '={SYMBOL_TAG|3,(X)&lbs', I),
+	hash_atom(X, HASH),
+	gen(',PREVIOUS_SYMBOL,word_to_fixnum(', HASH),
+	gen(')};\n#undef PREVIOUS_SYMBOL\n#define PREVIOUS_SYMBOL (X)&lb', I),
 	gen('\n#define literal_', I, ' &lb', I, '\n'),
 	gen('#define SYMBOL', NAME, ' literal_', I, '\n#else\n'),
 	gen('#define literal_', I, ' SYMBOL', NAME, '\n#endif\n').
