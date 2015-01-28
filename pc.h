@@ -860,13 +860,15 @@ static void *lookup_symbol_in_table(X sym, SYMBOL_DISPATCH *table, void *deflabe
 {
   WORD key = fixnum_to_word(slot_ref(sym, 3)) % len;
 
-  for(int steps = 0; steps < len; ++steps) {
-    if(table[ key ].symbol == sym) return table[ key ].label;
+  for(;;) {
+    X tsym = table[ key ].symbol;
+
+    if(tsym == sym) return table[ key ].label;
+    
+    if(tsym == NULL) return deflabel;
 
     key = (key + 1) % len;
   }
-
-  return deflabel;
 }
 
 
