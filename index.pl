@@ -42,7 +42,6 @@ scan_indexing_types([I/T|MORE], DONE, [I/T|R]) :-
 
 member_in_indexing_types(_, []) :- !, fail.
 member_in_indexing_types(T, [T|_]) :- !.
-member_in_indexing_types(atom(_), [atom(_)|_]) :- !.
 member_in_indexing_types(T, [_|MORE]) :- member_in_indexing_types(T, MORE).
 			 
 
@@ -94,6 +93,19 @@ compile_dispatch_sequence([], _, _, s(FL), S, S) :- % re-use fail-point
 compile_dispatch_sequence([I/var], N, A, _, S, S) :-
 	secondary_clause_label(N, A, I, L),
 	emit(jump(L)).
+compile_dispatch_sequence([I1/atom(ATM1)|DMAP], N, A, XS, S1, S2) :-
+	findall(X, (member(X, DMAP), X = _/atom(_)), ACASES),
+	default_setting(atom_table_index_threshold, T),
+	length(ACASES, TL),
+	TL >= T - 1,		% including first element
+	secondary_clause_label(N, A, I1, L1),
+	findall(ATM/LABEL, (member(I/atom(ATM), ACASES),
+			    secondary_clause_label(N, A, I, LABEL)),
+		TABLE),
+	gen_label(LX, S1, S3),
+	emit(switch_and_dispatch_on_atom([ATM1/L1|TABLE], LX)),
+	subtract(DMAP, ACASES, DMAP2),
+	compile_dispatch_sequence(DMAP2, N, A, XS, S3, S2).
 compile_dispatch_sequence([I/T|DMAP], N, A, XS, S1, S2) :-
 	dispatch_instruction(T, INSTNAME),
 	secondary_clause_label(N, A, I, L),
