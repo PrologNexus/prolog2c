@@ -11,6 +11,11 @@ NOTES											              -*- Org -*-
 ** writeq/1 could use foreign_call(basic_writeq(X)) for atoms
    - but the name needs to be classified anyway, because of the possibly
      required space in front of it.
+** TODO Test /bind-younger/ once more
+   - compare benchmark results.
+   - does it influence /bagof/ ? (comment in support code suggests
+     something about the order in which variables are bound - but that
+     may be nonsense)
 ** Mode-declarations
    - can probably be used in many ways, but needs more thought.
 ** TODO Determinacy declarations
@@ -21,11 +26,9 @@ NOTES											              -*- Org -*-
    - use determinism-information to find more tailcall-opportunities.
      - propagate mode, depending on called predicate, see:
        compile_ordinary_call in file:compile.pl
-** TODO Extend clause indexing
-*** Dispatch on atom- or fixnum list via hashing
-    - add slot containing hash-code to symbol (created during interning)
-    - generate table only for first predicate in list, redo in any of
-      the clauses can jump back to dispatch for this block.
+** DONE Extend clause indexing to dispatch on atom- or fixnum list via hashing
+   - see branches /integer_dispatch/ and /atom_dispatch/
+   - Test.
 ** Arithmetic
    - deref all vars just once at start.
    - track types, use unboxed math.
