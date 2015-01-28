@@ -201,7 +201,7 @@ assemble(switch_on_structure(L), S, S) :- gen('if(is_STRUCTURE(A[0])) goto ', L,
 assemble(switch_and_dispatch_on_atom(TABLE, LX), S, S) :-
 	length(TABLE, LEN),
 	TLEN is 2 * LEN,
-	findall(KEY-(HASH/LABEL),
+	findall(KEY-(ATOM/LABEL),
 		(member(ATOM/LABEL, TABLE),
 		 hash_atom(ATOM, HASH),
 		 KEY is HASH rem TLEN),
@@ -210,7 +210,7 @@ assemble(switch_and_dispatch_on_atom(TABLE, LX), S, S) :-
 	gen('static SYMBOL_DISPATCH dt_', LX, '[]={'),
 	keysort(ENTRIES, ENTRIES2),
 	assemble_atom_dispatch(0, ENTRIES2),
-	gen('};\nDISPATCH_ON_SYMBOL(A[0],dt_', LX, ',', TLEN),
+	gen('};\nDISPATCH_ON_SYMBOL(dt_', LX, ',', LX, ',', TLEN),
 	gen(');\n', LX, ':\n').
 assemble(dispatch_on_integer(TABLE), S, S) :-
 	gen('switch(fixnum_to_word(A[0])){\n'),
@@ -237,9 +237,10 @@ assemble_arguments([X|MORE], I) :-
 %% assemble dispatch table
 
 assemble_atom_dispatch(_, []).
-assemble_atom_dispatch(I, [I-(HASH/LABEL)|MORE]) :-
+assemble_atom_dispatch(I, [I-(ATOM/LABEL)|MORE]) :-
 	!,
-	gen('{', HASH, ',&&', LABEL, '},'),
+	mangle_name(ATOM, NAME),
+	gen('{SYMBOL', NAME, ',&&', LABEL, '},'),
 	I2 is I + 1,
 	assemble_atom_dispatch(I2, MORE).
 assemble_atom_dispatch(I, ENTRIES) :-
