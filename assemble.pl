@@ -198,7 +198,20 @@ assemble(switch_on_atom(L), S, S) :- gen('if(is_SYMBOL(A[0])) goto ', L, ';\n').
 assemble(switch_on_float(L), S, S) :- gen('if(is_FLONUM(A[0])) goto ', L, ';\n').
 assemble(switch_on_pair(L), S, S) :- gen('if(is_PAIR(A[0])) goto ', L, ';\n').
 assemble(switch_on_structure(L), S, S) :- gen('if(is_STRUCTURE(A[0])) goto ', L, ';\n').
-
+assemble(switch_and_dispatch_on_atom(TABLE, LX), S, S) :-
+	length(TABLE, LEN),
+	TLEN is 2 * LEN,
+	findall(KEY-(HASH/LABEL),
+		(member(ATOM/LABEL, TABLE),
+		 hash_atom(ATOM, HASH),
+		 KEY is HASH rem TLEN),
+		ENTRIES),
+	gen('if(!is_SYMBOL(A[0])) goto ', LX, ';\n'),
+	gen('static SYMBOL_DISPATCH dt_', LX, '[]={'),
+	keysort(ENTRIES, ENTRIES2),
+	assemble_atom_dispatch(0, ENTRIES2),
+	gen('};\nDISPATCH_ON_SYMBOL(A[0],dt_', LX, ',', TLEN),
+	gen(');\n', LX, ':\n').
 assemble(dispatch_on_integer(TABLE), S, S) :-
 	gen('switch(fixnum_to_word(A[0])){\n'),
 	forall(member(N/L, TABLE), gen('case ', N, ':goto ', L, ';\n')),
@@ -219,6 +232,20 @@ assemble_arguments([X|MORE], I) :-
 	gen('*(arg_top++)=', X, ';\n'),
 	I2 is I + 1,
 	assemble_arguments(MORE, I2).
+
+
+%% assemble dispatch table
+
+assemble_atom_dispatch(_, []).
+assemble_atom_dispatch(I, [I-(HASH/LABEL)|MORE]) :-
+	!,
+	gen('{', HASH, ',&&', LABEL, '},'),
+	I2 is I + 1,
+	assemble_atom_dispatch(I2, MORE).
+assemble_atom_dispatch(I, ENTRIES) :-
+	gen('{0,NULL},'),
+	I2 is I + 1,
+	assemble_atom_dispatch(I2, ENTRIES).
 
 
 %% generate literal data
