@@ -459,6 +459,7 @@ arithmetic_operation(truncate, 1).
 arithmetic_operation(random, 1).
 arithmetic_operation(clock, 0).
 arithmetic_operation(xor, 2).
+arithmetic_operation(rem, 2).
 
 arithmetic_operation('+', 2, add).
 arithmetic_operation('/\\', 2, bitwise_and).
@@ -472,7 +473,6 @@ arithmetic_operation('-', 1, negate).
 arithmetic_operation('-', 2, subtract).
 arithmetic_operation('//', 2, quotient).
 arithmetic_operation('*', 2, multiply).
-arithmetic_operation('\\\\', 2, rem).
 
 arithmetic_operation(NAME, ARITY, NAME) :- arithmetic_operation(NAME, ARITY).
 

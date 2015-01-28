@@ -444,7 +444,7 @@
 
     X // Y			  Integer division [ISO]
 
-    X \\ Y			  Integer remainder
+    X rem Y			  Integer remainder [ISO]
 
     X /\ Y			  Bitwise and [ISO]
 

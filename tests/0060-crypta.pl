@@ -30,7 +30,7 @@ add(Letter1,Letter2,Ca,Sres,Cr,Poss,Unassig) :-
    digit(Letter1,Poss,Pt),
    digit(Letter2,Pt,Pu),
    M is Letter1+Letter2+Ca,
-   Gres is M \\ 10,
+   Gres is M rem 10,
    check(Sres,Gres,Pu,Unassig),
    calc_carry(Cr,M).
 
