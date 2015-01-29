@@ -23,13 +23,12 @@ X =.. Y :- atomic(X), !, Y = [X].
 X =.. Y :-
 	compound(X), !,
 	functor(X, NAME, ARITY),
-	Y = [NAME|ARGS],
+	Y = [NAME|ARGS],	
 	'$univ_args'(X, 1, ARITY, ARGS).
 X =.. [N|ARGS] :-
 	var(X),
 	length(ARGS, ARITY),
-	functor(X, N, ARITY),
-	'$univ_args'(X, 1, ARITY, ARGS).
+	foreign_call(do_make_term(ARITY, N, ARGS, X)).
 
 '$univ_args'(TERM, I, N, []) :- I > N, !.
 '$univ_args'(TERM, I, N, [X|MORE]) :-

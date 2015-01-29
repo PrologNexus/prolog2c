@@ -2192,16 +2192,40 @@ static X make_term(int arity, X functor, ...)
   va_start(va, functor);
   functor = deref(functor);
   check_type(SYMBOL_TYPE, functor);
-
+ 
   if(arity == 2 && functor == dot_atom) {
     X car = va_arg(va, X);
     return PAIR(car, va_arg(va, X));
   }
+ 
+  X s = STRUCTURE(functor, arity);
+ 
+  for(int i = 1; i <= arity; ++i)
+    SLOT_SET(s, i, va_arg(va, X));
+ 
+  return (X)s;
+}
+
+
+static X make_term_from_list(int arity, X functor, X args)
+{
+  check_type(SYMBOL_TYPE, functor);
+
+  if(arity == 2 && functor == dot_atom) {
+    check_type(PAIR_TYPE, args);
+    X car = slot_ref(args, 0);
+    args = deref(slot_ref(args, 1));
+    check_type(PAIR_TYPE, args);
+    return PAIR(car, slot_ref(args, 0));
+  }
 
   X s = STRUCTURE(functor, arity);
 
-  for(int i = 1; i <= arity; ++i)
-    SLOT_SET(s, i, va_arg(va, X));
+  for(int i = 1; i <= arity; ++i) {
+    check_type(PAIR_TYPE, args);
+    SLOT_SET(s, i, slot_ref(args, 0));
+    args = deref(slot_ref(args, 1));
+  }
 
   return (X)s;
 }
@@ -3526,6 +3550,11 @@ PRIMITIVE(set_random_seed, X seed)
 static int flush_output(CHOICE_POINT *C0) { fflush(port_file(standard_output_port)); return 1; }
 
 PRIMITIVE(do_throw, X ball) { throw_exception(ball); return 0; }
+
+PRIMITIVE(do_make_term, X arity, X functor, X args, X term) {
+  check_fixnum(arity);
+  return unify(term, make_term_from_list(fixnum_to_word(arity), functor, args));
+}
 
 
 #endif
