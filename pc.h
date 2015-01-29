@@ -2186,13 +2186,14 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
 
 /// term-construction
 
+// does not check for arity 0
 static X make_term(int arity, X functor, ...)
 {
   va_list va;
   va_start(va, functor);
   functor = deref(functor);
   check_type(SYMBOL_TYPE, functor);
- 
+
   if(arity == 2 && functor == dot_atom) {
     X car = va_arg(va, X);
     return PAIR(car, va_arg(va, X));
@@ -2207,8 +2208,11 @@ static X make_term(int arity, X functor, ...)
 }
 
 
+// does check for arity 0
 static X make_term_from_list(int arity, X functor, X args)
 {
+  if(arity == 0) return functor;
+
   check_type(SYMBOL_TYPE, functor);
 
   if(arity == 2 && functor == dot_atom) {
