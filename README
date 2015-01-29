@@ -709,6 +709,17 @@
 			     of the generated code, directly after the
 			     inclusion of "pc.h".
 
+  pre_initialization(GOAL)   Declares GAOL to be a pre-initialization goal.
+  			     This is similar to the "initialization"
+			     directive, but pre-initialization goals are
+			     run before all normal initialization goals.
+
+  determinate(PI)	     Declares the predicates specified in PI as
+  			     being determinate, which gives more opportunities
+			     for tail-call optimization. PI should be of the
+			     form "<predicate-name>/<arity>", "<predicate-name>"
+			     or a list of such indicators.
+
   The following directives are available in the compiler and interpreter:
 
   include(FILENAME)          Include the contents of FILENAME at the current
@@ -730,11 +741,6 @@
 			     
   op(P, A, N)                Declares an operator - identical to op/3,
   	   		     but done before reading any further clauses.
-
-  pre_initialization(GOAL)   Declares GAOL to be a pre-initialization goal.
-  			     This is similar to the "initialization"
-			     directive, but pre-initialization goals are
-			     run before all normal initialization goals.
 
 * Performance tips
 

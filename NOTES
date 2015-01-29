@@ -15,8 +15,6 @@ NOTES											              -*- Org -*-
      required space in front of it.
 ** Mode-declarations
    - can probably be used in many ways, but needs more thought.
-** DONE Determinacy declarations
-   - Test, benchmark.
 ** DONE Extend clause indexing to dispatch on atom- or fixnum list via hashing
    - see branches /integer_dispatch/ and /atom_dispatch/
    - Test.
