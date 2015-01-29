@@ -6,16 +6,13 @@ NOTES											              -*- Org -*-
    - try: when binding two unbound vars, bind the younger one.
    - implemented in branch /bind-younger/ and seems to work, but trail
      reduction is not much.
-** DONE Implement memberchk/2 as primitive
-   - needs benchmarking.
-** writeq/1 could use foreign_call(basic_writeq(X)) for atoms
-   - but the name needs to be classified anyway, because of the possibly
-     required space in front of it.
-** TODO Test /bind-younger/ once more
    - compare benchmark results.
    - does it influence /bagof/ ? (comment in support code suggests
      something about the order in which variables are bound - but that
      may be nonsense)
+** writeq/1 could use foreign_call(basic_writeq(X)) for atoms
+   - but the name needs to be classified anyway, because of the possibly
+     required space in front of it.
 ** Mode-declarations
    - can probably be used in many ways, but needs more thought.
 ** TODO Determinacy declarations
