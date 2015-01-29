@@ -44,9 +44,6 @@ NOTES											              -*- Org -*-
    - file:tests/0069-cdb.pl
 * Missing features
 ** TODO once/1
-** DONE setof/bagof
-   - test thoroughly.
-   - what's the point of all this keysorting?
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
