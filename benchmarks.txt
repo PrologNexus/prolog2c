@@ -36,3 +36,22 @@ benchmarks/0007-pi.pl
 0.08
 benchmarks/0008-ecrc-envs.pl
 4.08
+----------------------------------------
+Thu Jan 29 15:32:54 CET 2015
+a4ea0e0 (determinate declarations)
+benchmarks/0001-ecrc-call.pl
+0.766666666666667
+benchmarks/0002-ecrc-cp+backtrack.pl
+1.83333333333333
+benchmarks/0003-ecrc-index.pl
+3.44
+benchmarks/0004-ecrc-deref.pl
+0.183333333333333
+benchmarks/0005-ecrc-cut.pl
+4.85333333333333
+benchmarks/0006-self-compile.pl
+3.13
+benchmarks/0007-pi.pl
+0.0766666666666667
+benchmarks/0008-ecrc-envs.pl
+4.09333333333333
