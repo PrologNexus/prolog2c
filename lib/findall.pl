@@ -31,8 +31,12 @@
 
 %% bagof/3, setof/3
 
-'$bagof_start'(VARS, TEMPLATE, KEY-TEMPLATE) :-
+'$bagof_start'(VARS, TEMPLATE, TEMPLATE2) :-
 	'$unbound_variables'(VARS, UVARS),
+	!,
+	'$bagof_start_unbound'(UVARS, TEMPLATE, TEMPLATE2).
+
+'$bagof_start_unbound'(UVARS, TEMPLATE, KEY-TEMPLATE) :-
 	global_ref(bagof_info, OLD),
 	KEY =.. ['.'|UVARS],
 	deref_term([KEY|OLD], 2, BI),

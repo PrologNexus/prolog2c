@@ -179,6 +179,8 @@ pi_system_predicate(call, 1).
 pi_system_predicate(consult, 1).
 pi_system_predicate(forall, 2).
 pi_system_predicate(findall, 3).
+pi_system_predicate(bagof, 3).
+pi_system_predicate(setof, 3).
 pi_system_predicate(catch, 3).
 pi_system_predicate(repeat, 0).
 pi_system_predicate('->', 2).
@@ -221,6 +223,19 @@ pi_call_primitive('\\+', 1, TERM) :-
 	arg(1, TERM, X),
 	\+call(X).
 pi_call_primitive(repeat, 0, _) :- pi_do_repeat.
+pi_call_primitive(bagof, 3, TERM) :- pi_bagof_setof(bagof, TERM).
+pi_call_primitive(setof, 3, TERM) :- pi_bagof_setof(setof, TERM).
+
+pi_bagof_setof(OP, TERM) :-
+	!,
+	arg(1, TERM, T), arg(2, TERM, G), arg(3, TERM, R),
+	pi_free_variables(G, T, [], VARS),
+	pi_drop_qualifiers(G, G2),
+	pi_bagof(T, G2, VARS, R1),
+	(OP == bagof -> R = R1; sort(R1, R)).
+
+
+%% for repeat/0
 
 pi_do_repeat.
 pi_do_repeat :- pi_do_repeat.
@@ -323,3 +338,79 @@ pi_add_clause(N/A, N, A, HEAD, BODY) :-
 pi_add_clause(PN/PA, N, A, HEAD, BODY) :-
 	(abolish(N/A); true),
 	pi_add_clause(PN/PA, PN, PA, HEAD, BODY).
+
+
+%%% support code for bagof/setof
+
+pi_bagof(T, G, [], R) :-
+	!,
+	findall(T, call(G), R),
+	R \== [].
+pi_bagof(T, G, VARS, _) :-
+	'$bagof_start_unbound'(VARS, T, T2),
+	call(G),
+	'$findall_push'(T2),
+	fail.
+pi_bagof(_, _, _, R) :-
+	'$bagof_finish'(R).
+
+
+%% drop existential qualifiers from expression
+
+pi_drop_qualifiers(_^X, Y) :- !, pi_drop_qualifiers(X, Y).
+pi_drop_qualifiers(X, X).
+
+
+%% from setof.pl in the DEC10 library:
+
+pi_free_variables(Term, Bound, VarList, [Term|VarList]) :-
+	var(Term),
+	pi_term_is_free_of(Bound, Term),
+	pi_list_is_free_of(VarList, Term),
+	!.
+pi_free_variables(Term, Bound, VarList, VarList) :-
+	var(Term),
+	!.
+pi_free_variables(Term, Bound, OldList, NewList) :-
+	pi_explicit_binding(Term, Bound, NewTerm, NewBound),
+	!,
+	pi_free_variables(NewTerm, NewBound, OldList, NewList).
+pi_free_variables(Term, Bound, OldList, NewList) :-
+	functor(Term, _, N),
+	pi_free_variables(N, Term, Bound, OldList, NewList).
+
+pi_free_variables(0, Term, Bound, VarList, VarList) :- !.
+pi_free_variables(N, Term, Bound, OldList, NewList) :-
+	arg(N, Term, Argument),
+	pi_free_variables(Argument, Bound, OldList, MidList),
+	M is N-1, !,
+	pi_free_variables(M, Term, Bound, MidList, NewList).
+
+%%   explicit_binding checks for goals known to existentially quantify
+%%   one or more variables.  In particular \+ is quite common.
+
+pi_explicit_binding(\+ Goal,	       Bound, fail,	Bound      ) :- !.
+pi_explicit_binding(not(Goal),	       Bound, fail,	Bound	   ) :- !.
+pi_explicit_binding(Var^Goal,	       Bound, Goal,	Bound+Var) :- !.
+pi_explicit_binding(setof(Var,Goal,Set),  Bound, Goal-Set, Bound+Var) :- !.
+pi_explicit_binding(bagof(Var,Goal,Bag),  Bound, Goal-Bag, Bound+Var) :- !.
+
+pi_term_is_free_of(Term, Var) :-
+	var(Term), !,
+	Term \== Var.
+pi_term_is_free_of(Term, Var) :-
+	functor(Term, _, N),
+	pi_term_is_free_of(N, Term, Var).
+
+pi_term_is_free_of(0, Term, Var) :- !.
+pi_term_is_free_of(N, Term, Var) :-
+	arg(N, Term, Argument),
+	pi_term_is_free_of(Argument, Var),
+	M is N-1, !,
+	pi_term_is_free_of(M, Term, Var).
+
+pi_list_is_free_of([Head|Tail], Var) :-
+	Head \== Var,
+	!,
+	pi_list_is_free_of(Tail, Var).
+pi_list_is_free_of([], _).
