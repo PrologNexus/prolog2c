@@ -47,24 +47,12 @@ NOTES											              -*- Org -*-
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
-** TODO Make it possible to embed compiled code
-    - "suspend(IN, OUT)" saves state and suspends execution.
-    - define alternative entry-point via macro and return procedure
-      ptr to invoke prolog (similar to BONES).
-    - also allow access to global_variables, and (prefixed) access
-      function.
 * Diagnostics
 ** Detect singleton variables
-** Detect redefinitions of primitives
 ** Report unused predicates
 * Once we have a suitable test, compare performance with other implementations
   - SWI, GNU-Prolog, BinProlog
 * Issues
-** TODO [#A] Refactor building and mapping of variables in compilation of findall/forall/bagof
-** TODO Somehow the system is unstable
-   - compiling 0088-chat_parser.pl with pc1 segfaults sometimes.
-   - pc1 produced some garbage output when compiling 0085-boyer.pl.
-   - seems very hard to reproduce.
 ** TODO [#B] Implementation of if-then-else is broken
    - if-then stack gets out of balance, found here:
      call_primitive('->', 2, TERM) :-
@@ -79,11 +67,11 @@ NOTES											              -*- Org -*-
      many data objects for literals.
 ** TODO Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
-** TODO [#B] We need trail-GC
-    - and adjust CP-stack entries accordingly.
-    - tricky.
-** TODO May a PI (predicate-indicator) be an atom, refering to all available arities?
-    - would need to be added to abolish/1.
+** TODO Reader-error should throw expection
+   - ISO says "syntax_error(<impl-dependent-atom>)"
+   - Should be caught and printed prettily by pc/pi.
+** DONE We need trail-GC
+   - test and merge /trail-gc/ branch.
 ** TODO Throw ISO-compliant exceptions everywhere
     - at least as much as possible and sensible.
 ** TODO Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
@@ -94,6 +82,7 @@ NOTES											              -*- Org -*-
      file:broken-tests/simple_analyzer.pl
 ** TODO ecrc benchmarks in file:/broken-tests work, but need higher settings
    - file:broken-tests/bench_1_5.pl needs -:T5M
+   - works now in /trail-gc/ branch.
 * Interpreter
 ** TODO Add support for file:dcg.pl 
    - term_expansion/2.
