@@ -144,7 +144,6 @@
 (define (full-check)
   (let ((ok #t))
     (cond ((check-self-compile)
-	   (set! ok #f)
 	   (unless (check-pc1) (set! ok #f))
 	   (unless (check-pc1-optimized) (set! ok #f))
 	   (unless (check-embedded) (set! ok #f)))
