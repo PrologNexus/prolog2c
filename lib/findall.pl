@@ -61,7 +61,7 @@
 
 %   '$bagof_list_instances'(Key, NVars, BagIn, BagOut)
 %   pulls all the Key-Template instances out of the data base until
-%   it hits the - marker.  The Generator should not touch recordx(.,_,_).
+%   it hits the marker.  The Generator should not touch recordx(.,_,_).
 %   Note that asserting something into the data base and pulling it out
 %   again renames all the variables; to counteract this we use replace_
 %   key_variables to put the old variables back.  Fortunately if we
@@ -73,8 +73,7 @@
 	'$bagof_replace_key_variables'(NVARS, KEY, NEWKEY),
 	!,
 	'$bagof_list_instances'(MORE, KEY, NVARS, [NEWKEY-TERM|BAGIN], BAGOUT).
-'$bagof_list_instances'([], _, _, BAG, BAG) :-
-	global_set(findall_solutions, MORE).
+'$bagof_list_instances'([], _, _, BAG, BAG).
 
 
 %   There is a bug in the compiled version of arg in Dec-10 Prolog,
