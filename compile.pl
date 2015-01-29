@@ -571,4 +571,4 @@ compile_setof(T, G, L, VARS, TAIL, D1, D2, B1, B2, S1, S2) :-
 	add_boilerplate(P, (HEAD :- '$bagof_start'(VARS2, T2, T3), G2, '$findall_push'(T3), fail)),
 	add_boilerplate(P2, (HEAD :- '$bagof_finish'(TMP), sort(TMP, L2))),
 	HEAD2 =.. [P|IARGS],
-	compile_body_expression(\+HEAD2, TAIL, D1, D2, B1, B2, S4, S2).
+	compile_body_expression(HEAD2, TAIL, D1, D2, B1, B2, S4, S2).
