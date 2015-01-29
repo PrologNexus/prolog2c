@@ -47,8 +47,6 @@ NOTES											              -*- Org -*-
 ** DONE setof/bagof
    - test thoroughly.
    - what's the point of all this keysorting?
-   - interpreter implementation will need some thought.
-     - perhaps use file:code/setof.pl directly.
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
