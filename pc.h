@@ -1424,21 +1424,9 @@ static X thaw_term(X x, int *failed)
 
 
 // delete frozen term, recursively
-static void delete_term(X x)
+static void delete_term_recursive(X x)
 {
   if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return;
-
-  if(is_VAR(x)) {
-    WORD index = fixnum_to_word(slot_ref(x, 1));
-    ensure_freeze_term_var_table_size(index);
-
-    if(freeze_term_var_table[ index ] != NULL) 
-      return;			/*  already deleted */
-
-    free(x);
-    freeze_term_var_table[ index ] = (X)1;
-    return;
-  }
 
   X *tp = lookup_circular_term(x);
 
@@ -1458,11 +1446,19 @@ static void delete_term(X x)
   if(is_specialblock(x)) i = 1;
 
   while(i < size) {
-    delete_term(slot_ref(x, i));
+    delete_term_recursive(slot_ref(x, i));
     ++i;
   }
 
   free(x);
+}
+
+
+static void delete_term(X x)
+{
+  circular_term_counter = 0;
+  delete_term_recursive(x);
+  memset(circular_term_table, 0, circular_term_counter * sizeof(X));
 }
 
 
