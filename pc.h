@@ -394,7 +394,7 @@ static CATCHER catch_stack[ CATCHER_STACK_SIZE ];
 static CATCHER *catch_top;
 static SAVED_STATE saved_state;
 static X global_variables[ MAX_GLOBAL_VARIABLES ];
-static TRAIL_STACK_GAP *trail_stack_gap_buffer = NULL;
+static TRAIL_STACK_GAP *trail_stack_gap_buffer;
 static WORD trail_stack_gap_buffer_size = TRAIL_STACK_GAP_BUFFER_SIZE;
 static int gc_caused_by_trailing = 0;
 
@@ -1728,11 +1728,13 @@ static void collect_garbage(CHOICE_POINT *C)
   // first collect "gaps" of unref'd variables in trail-stack
   for(X *tp = trail_stack; tp < trail_top; ++tp) {
     X var = *tp;
+    int offset = gp - trail_stack_gap_buffer;
 
-    if(gp == NULL || (gp - trail_stack_gap_buffer) >= trail_stack_gap_buffer_size) {
+    if(offset >= trail_stack_gap_buffer_size) {
       trail_stack_gap_buffer_size *= 2;
-      gp = trail_stack_gap_buffer = realloc(trail_stack_gap_buffer, trail_stack_gap_buffer_size * sizeof(X *));
-      ASSERT(gp, "out of memory - can not re-allocate trail-stack gap-buffer");
+      trail_stack_gap_buffer = realloc(trail_stack_gap_buffer, trail_stack_gap_buffer_size * sizeof(TRAIL_STACK_GAP));
+      ASSERT(trail_stack_gap_buffer, "out of memory - can not re-allocate trail-stack gap-buffer");
+      gp = trail_stack_gap_buffer + offset;
     }
 
     if(is_forwarded(var)) {
@@ -1764,7 +1766,7 @@ static void collect_garbage(CHOICE_POINT *C)
 
   for(CHOICE_POINT *cp = choice_point_stack; cp < C; ++cp) {
     while(gp2 < gp && cp->T < gp2->position) {
-      ts_shift +=  gp2->size;
+      ts_shift += gp2->size;
       ++gp2;
     }
 
@@ -2069,6 +2071,8 @@ static void initialize(int argc, char *argv[])
   memset(fromspace, TAINTED_PTR_A & 0xff, (WORD)fromspace_end - (WORD)fromspace);
 #endif
 }
+  trail_stack_gap_buffer = malloc(TRAIL_STACK_GAP_BUFFER_SIZE * sizeof(TRAIL_STACK_GAP));
+  ASSERT(trail_stack_gap_buffer, "out of memory - can not allocate initial trail-stack gap buffer");
 
 
 static void cleanup()
