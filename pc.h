@@ -1615,9 +1615,13 @@ static void db_erase_item(DB_ITEM *item)
   }
   else {
     // otherwise remove from item-chain
-    item->previous->next = item->next;
+    item->previous->next = item->next; /* it's not the first item */
+
+    if(bucket->lastitem == item)
+      bucket->lastitem = item->previous;
   
-    if(item->next) item->next->previous = item->previous;
+    if(item->next) 
+      item->next->previous = item->previous;
   }
 
   item->next = item->previous = NULL;
