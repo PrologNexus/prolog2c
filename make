@@ -167,10 +167,7 @@
 			       (run (./pc ,src -o ,c)))))))))
 
 (define (system-predicates)
-  (make-program 
-   "g-s-p.pl" 
-   "g-s-p"
-   "pc.h")
+  (make-program "g-s-p.pl" "g-s-p")
   (make (("pi_system_predicate.pl" ("g-s-p" "system-predicates")
 	  (run (./g-s-p <system-predicates))))))
 
