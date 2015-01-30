@@ -1088,7 +1088,7 @@ static inline void push_trail(CHOICE_POINT *C0, X var)
 // returns location of associated key + value in circular-term-table
 static X *lookup_circular_term(X x)
 {
-  WORD key = (WORD)x % CIRCULAR_TERM_TABLE_SIZE;
+  WORD key = (WORD)x % circular_term_table_size;
   int f = 0;
   key *= 2;
 
@@ -1099,11 +1099,31 @@ static X *lookup_circular_term(X x)
     // try next
     key += 2;
 
-    if(key >= (CIRCULAR_TERM_TABLE_SIZE * 2)) { /* beyond table size? */
-      if(f) CRASH("circular-term table overflow"); /* already started from the beginning? */
-      
-      f = 1;
-      key = 0;			/* start over from the beginning */
+    if(key >= (circular_term_table_size * 2)) { /* beyond table size? */
+      if(f) {		     /* already started from the beginning? */
+	// resize table and rehash
+	int newsize = circular_term_table_size * 2;
+	X *newtable = malloc(newsize * 2);
+	ASSERT(newtable, "out of memory - can not resize circular term table");
+	memset(newtable, 0, newsize * 2 * sizeof(X));
+	
+	for(int i = 0; i < circular_term_counter; ++i) {
+	  if(circular_term_table[ i * 2 ] != NULL) {
+	    WORD newkey = (WORD)circular_term_table[ i * 2] % newsize;
+	    newtable[ newkey ] = circular_term_table[ i * 2 ];
+	    newtable[ newkey + 1 ] = circular_term_table[ i * 2 + 1 ];
+	  }
+	}
+
+	f = 0;
+	free(circular_term_table);
+	circular_term_table = newtable;
+	circular_term_table_size = newsize;
+      }
+      else {
+	f = 1;
+	key = 0;			/* start over from the beginning */
+      }
     }
     else if(key >= circular_term_counter) /* in unused table part? */
       break;
@@ -2041,6 +2061,9 @@ static void initialize(int argc, char *argv[])
   ifthen_top = ifthen_stack;
   env_top = environment_stack;
   arg_top = argument_stack;
+  circular_term_table_size = CIRCULAR_TERM_TABLE_SIZE;
+  circular_term_table = malloc(CIRCULAR_TERM_TABLE_SIZE * 2 * sizeof(X));
+  ASSERT(circular_term_table, "out of memory - can not allocate circular term table");
   memset(circular_term_table, 0, CIRCULAR_TERM_TABLE_SIZE * 2 * sizeof(X));
   string_buffer = malloc(string_buffer_length = STRING_BUFFER_SIZE);
   ASSERT(argument_stack, "out of memory - can not allocate string buffer");
