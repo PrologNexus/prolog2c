@@ -3686,7 +3686,7 @@ PRIMITIVE(do_make_term, X arity, X functor, X args, X term) {
 
 PRIMITIVE(hash_atom, X sym, X hash) {
   check_type_SYMBOL(sym);
-  return(unify(slot_ref(sym, 3), hash));
+  return(unify(slot_ref(sym, 2), hash));
 }
 
 
