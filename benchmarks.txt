@@ -55,3 +55,22 @@ benchmarks/0007-pi.pl
 0.0766666666666667
 benchmarks/0008-ecrc-envs.pl
 4.09333333333333
+----------------------------------------
+Fri Jan 30 10:01:42 CET 2015
+fe1c4d9 (bagof/setof + new univ)
+benchmarks/0001-ecrc-call.pl
+0.763333333333333
+benchmarks/0002-ecrc-cp+backtrack.pl
+1.82
+benchmarks/0003-ecrc-index.pl
+3.27666666666667
+benchmarks/0004-ecrc-deref.pl
+0.186666666666667
+benchmarks/0005-ecrc-cut.pl
+4.51333333333333
+benchmarks/0006-self-compile.pl
+4.07333333333333
+benchmarks/0007-pi.pl
+0.08
+benchmarks/0008-ecrc-envs.pl
+4.15
