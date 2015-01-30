@@ -381,8 +381,9 @@ static int freeze_term_var_table_size;
 static int freeze_term_var_counter;
 static int global_variable_counter = 0;
 static int initial_global_variable_count;
-static X circular_term_table[ CIRCULAR_TERM_TABLE_SIZE * 2 ];
+static X *circular_term_table;
 static int circular_term_counter;
+static int circular_term_table_size;
 static char *string_buffer;
 static int string_buffer_length;
 static DB_ITEM *deleted_db_items;
@@ -1152,7 +1153,7 @@ static void ensure_freeze_term_var_table_size(WORD index)
 {
   if(index + 2 >= freeze_term_var_table_size) {
     WORD newsize = index + index / 4;
-    freeze_term_var_table = (X *)realloc(freeze_term_var_table, newsize * sizeof(X));
+    freeze_term_var_table = realloc(freeze_term_var_table, newsize * sizeof(X));
     ASSERT(freeze_term_var_table, "out of memory - can not reallocate freeze-term variable table");
     memset(freeze_term_var_table + freeze_term_var_table_size, 0,
 	   (newsize - freeze_term_var_table_size) * sizeof(X));
@@ -1467,11 +1468,11 @@ static void delete_term(X x)
 
 static DB *create_db(char *name, int namelen, WORD tablesize)
 {
-  DB *db = (DB *)malloc(sizeof(DB));
+  DB *db = malloc(sizeof(DB));
   ASSERT(db, "out of memory - can not create database");
   db->name = strndup(name, namelen);
   db->tablesize = tablesize;
-  db->table = (DB_BUCKET **)malloc(sizeof(DB_BUCKET *) * tablesize);
+  db->table = malloc(sizeof(DB_BUCKET *) * tablesize);
   ASSERT(db->table, "out of memory - can not allocate database table");
 
   for(WORD i = 0; i < tablesize; ++i)
@@ -1484,7 +1485,7 @@ static DB *create_db(char *name, int namelen, WORD tablesize)
 static DB_ITEM *db_insert_item(DB *db, char *key, int keylen, X val, int atend)
 {
   WORD hash = hash_name(key, keylen) % db->tablesize;
-  DB_ITEM *item = (DB_ITEM *)malloc(sizeof(DB_ITEM));
+  DB_ITEM *item = malloc(sizeof(DB_ITEM));
   ASSERT(item, "out of memory - can not allocate db-item");
   item->val = freeze_term(val);
   item->erased = 0;
@@ -1511,7 +1512,7 @@ static DB_ITEM *db_insert_item(DB *db, char *key, int keylen, X val, int atend)
     }
   }
 
-  DB_BUCKET *bucket = (DB_BUCKET *)malloc(sizeof(DB_BUCKET));
+  DB_BUCKET *bucket = malloc(sizeof(DB_BUCKET));
   ASSERT(bucket, "out of memory - can not allocate db-bucket");
   bucket->db = db;
   bucket->index = hash;
@@ -2045,18 +2046,18 @@ static void initialize(int argc, char *argv[])
   default_input_port.fp = stdin;
   default_output_port.fp = stdout;
   default_error_port.fp = stderr;
-  environment_stack = (X *)malloc(environment_stack_size);
+  environment_stack = malloc(environment_stack_size);
   ASSERT(environment_stack, "out of memory - can not allocate environment stack");
-  trail_stack = (X *)malloc(trail_stack_size);
+  trail_stack = malloc(trail_stack_size);
   ASSERT(trail_stack, "out of memory - can not allocate environment stack");
   trail_stack_reserve = trail_stack_size * TRAIL_STACK_RESERVE / 100.0;
   trail_stack_limit = trail_stack + (trail_stack_size - trail_stack_reserve) / sizeof(X *);
   trail_top = trail_stack;
-  ifthen_stack = (void **)malloc(ifthen_stack_size);
+  ifthen_stack = malloc(ifthen_stack_size);
   ASSERT(ifthen_stack, "out of memory - can not allocate if-then stack");
-  choice_point_stack = (CHOICE_POINT *)malloc(choice_point_stack_size);
+  choice_point_stack = malloc(choice_point_stack_size);
   ASSERT(choice_point_stack, "out of memory - can not allocate choice-point stack");
-  argument_stack = (X *)malloc(argument_stack_size);
+  argument_stack = malloc(argument_stack_size);
   ASSERT(argument_stack, "out of memory - can not allocate argument stack");
   ifthen_top = ifthen_stack;
   env_top = environment_stack;
@@ -2068,8 +2069,10 @@ static void initialize(int argc, char *argv[])
   string_buffer = malloc(string_buffer_length = STRING_BUFFER_SIZE);
   ASSERT(argument_stack, "out of memory - can not allocate string buffer");
   freeze_term_var_table_size = INITIAL_FREEZE_TERM_VAR_TABLE_SIZE * 2;
-  freeze_term_var_table = (X *)malloc(freeze_term_var_table_size * sizeof(X));
+  freeze_term_var_table = malloc(freeze_term_var_table_size * sizeof(X));
   ASSERT(freeze_term_var_table, "out of memory - can not allocate freeze-term variable table");
+  trail_stack_gap_buffer = malloc(TRAIL_STACK_GAP_BUFFER_SIZE * sizeof(TRAIL_STACK_GAP));
+  ASSERT(trail_stack_gap_buffer, "out of memory - can not allocate initial trail-stack gap buffer");
 
   for(int i = 0; i < SYMBOL_TABLE_SIZE; ++i)
     symbol_table[ i ] = END_OF_LIST_VAL;
@@ -2094,8 +2097,6 @@ static void initialize(int argc, char *argv[])
   memset(fromspace, TAINTED_PTR_A & 0xff, (WORD)fromspace_end - (WORD)fromspace);
 #endif
 }
-  trail_stack_gap_buffer = malloc(TRAIL_STACK_GAP_BUFFER_SIZE * sizeof(TRAIL_STACK_GAP));
-  ASSERT(trail_stack_gap_buffer, "out of memory - can not allocate initial trail-stack gap buffer");
 
 
 static void cleanup()
