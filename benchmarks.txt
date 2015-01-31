@@ -75,23 +75,27 @@ benchmarks/0007-pi.pl
 benchmarks/0008-ecrc-envs.pl
 4.15
 ----------------------------------------
-Fri Jan 30 15:17:06 CET 2015
-0af2529 (trail-gc + smaller symbols)
+Sat Jan 31 11:12:49 CET 2015
+1d88667 (trail-gc + smaller symbols, indexing benchmarks)
 benchmarks/0001-ecrc-call.pl
-0.716666666666667
+0.76
 benchmarks/0002-ecrc-cp+backtrack.pl
-1.85
+1.94333333333333
 benchmarks/0003-ecrc-index.pl
-3.47666666666667
+3.46666666666667
 benchmarks/0004-ecrc-deref.pl
 0.176666666666667
 benchmarks/0005-ecrc-cut.pl
-4.49
+4.51
 benchmarks/0006-self-compile.pl
-3.75333333333333
+3.79
 benchmarks/0007-pi.pl
 0.08
 benchmarks/0008-ecrc-envs.pl
-4.13666666666667
+4.07
 benchmarks/0009-ecrc-unify.pl
-0.0433333333333333
+0.05
+benchmarks/0010-int-index.pl
+1.42
+benchmarks/0011-atom-index.pl
+3.86666666666667
