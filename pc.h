@@ -1468,7 +1468,7 @@ static void delete_term(X x)
 }
 
 
-#ifdef _WIN64
+#ifdef _WIN32
 static char *xstrndup(char *str, int len)
 {
   char *buf = malloc(len + 1);
@@ -2035,7 +2035,7 @@ static void initialize(int argc, char *argv[])
   DRIBBLE("[allocating heap of size 2 x " XWORD_OUTPUT_FORMAT "]\n", heap_size / 2);
   heap_reserve = heap_size * HEAP_RESERVE / 100.0;
 
-#ifndef _WIN64
+#ifndef _WIN32
   if(mmapped_heap) {
     mmapped_fd = open(mmapped_heap, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 
@@ -2123,7 +2123,7 @@ static void initialize(int argc, char *argv[])
 
 static void cleanup()
 {
-#ifndef _WIN64
+#ifndef _WIN32
   if(mmapped_heap) {
     munmap(mmapped_buffer, heap_size);
     close(mmapped_fd);
