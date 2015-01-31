@@ -1915,6 +1915,7 @@ static void collect_garbage(CHOICE_POINT *C)
 
   while(item != NULL) {
     DB_ITEM *next = item->next_deleted;
+    ASSERT(item->erased, "unerased db-item in deleted items list");
 
     if(item->refcount == 0) {
       if(previtem) 
