@@ -1192,8 +1192,7 @@ static void ensure_freeze_term_var_table_size(XWORD index)
     XWORD newsize = index + index / 4;
     freeze_term_var_table = realloc(freeze_term_var_table, newsize * sizeof(X));
     ASSERT(freeze_term_var_table, "out of memory - can not reallocate freeze-term variable table");
-    memset(freeze_term_var_table + freeze_term_var_table_size, 0,
-	   (newsize - freeze_term_var_table_size) * sizeof(X));
+    memset(freeze_term_var_table + freeze_term_var_table_size, 0, (newsize - freeze_term_var_table_size) * sizeof(X));
     freeze_term_var_table_size = newsize;
   }
 }
@@ -1902,6 +1901,7 @@ static void collect_garbage(CHOICE_POINT *C)
   if(alloc_top >= fromspace_limit) 
     CRASH("heap exhausted");				
 
+  //XXX currently not used
   // check finalizers
   FINALIZER *prev = NULL;
   FINALIZER *fp = active_finalizers; 
