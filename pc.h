@@ -630,6 +630,33 @@ static inline int is_dbreference(X x)
 #define STRUCTURE(functor, arity)  STRUCTURE1(alloc_top, functor, arity)
 
 
+/// Custom variants of some libc functions
+
+#ifdef _WIN32
+static char *xstrndup(char *str, int len)
+{
+  char *buf = malloc(len + 1);
+  ASSERT(buf, "can not duplicate string");
+  strncpy(buf, str, len);
+  return buf;
+}
+#else
+# define xstrndup strndup
+#endif
+
+
+#ifdef DEBUG_GC
+static void XFREE(void *mem, size_t size) 
+{
+  memset(mem, 0xd0, size);
+  free(mem);
+}
+#else
+# define XFREE(mem, size)   free(mem)
+#endif
+
+
+
 /// Converting port to string
 
 static char *port_name(X x)
@@ -1444,14 +1471,14 @@ static void delete_term_recursive(X x)
 
   *tp = x;
   tp[ 1 ] = x;			/* just mark as already deleted */
+  XWORD size = objsize(x);
 
   if(is_byteblock(x)) {
-    free(x);
+    XFREE(x, size + sizeof(XWORD));
     return;
   }
 
   XWORD i = 0;
-  XWORD size = objsize(x);
 
   if(is_specialblock(x)) i = 1;
 
@@ -1460,7 +1487,7 @@ static void delete_term_recursive(X x)
     ++i;
   }
 
-  free(x);
+  XFREE(x, size * sizeof(X) + sizeof(XWORD));
 }
 
 
@@ -1470,19 +1497,6 @@ static void delete_term(X x)
   delete_term_recursive(x);
   memset(circular_term_table, 0, circular_term_counter * sizeof(X));
 }
-
-
-#ifdef _WIN32
-static char *xstrndup(char *str, int len)
-{
-  char *buf = malloc(len + 1);
-  ASSERT(buf, "can not duplicate string");
-  strncpy(buf, str, len);
-  return buf;
-}
-#else
-# define xstrndup strndup
-#endif
 
 
 static DB *create_db(char *name, int namelen, XWORD tablesize)
@@ -1622,8 +1636,8 @@ static void db_erase_item(DB_ITEM *item)
 
       bucket->db->table[ bucket->index ] = NULL;
       bucket->previous = bucket->next = NULL;
-      free(bucket->key);
-      free(bucket);
+      XFREE(bucket->key, bucket->keylen);
+      XFREE(bucket, sizeof(DB_BUCKET));
     }
     else {
       // first item in bucket
@@ -1645,7 +1659,7 @@ static void db_erase_item(DB_ITEM *item)
 
   item->next = item->previous = NULL;
   item->bucket = NULL;
-  free(item);
+  XFREE(item, sizeof(DB_ITEM));
 }
 
 
