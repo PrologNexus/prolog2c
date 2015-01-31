@@ -17,7 +17,7 @@ NOTES											              -*- Org -*-
    - can probably be used in many ways, but needs more thought.
 ** DONE Extend clause indexing to dispatch on atom- or fixnum list via hashing
    - see branches /integer_dispatch/ and /atom_dispatch/
-   - Test.
+   - test.
 ** Arithmetic
    - deref all vars just once at start.
    - track types, use unboxed math.
@@ -37,12 +37,6 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Things to test
-** DONE [#A] Tests with new trail-GC
-*** TODO Run all tests
-*** TODO Test currently broken examples
-** TODO [#B] Test on Windows
-   - Port to MSVC
-** TODO Run some or all tests with pi
 ** TODO Test retract-loop
    - file:tests/0069-cdb.pl
 * Missing features
@@ -64,6 +58,9 @@ NOTES											              -*- Org -*-
 	execute(X) -> execute(Y). % parsed as (!, ...) -> execute(Y)
    - adding parens around last goal repaired the problem, but still
      this shouldn't happen.
+** Handle freezing of db-refs
+   - disallow? delete from deleted-items list?
+   - what can happen?
 ** Using multiple threads are currently not possible
    - all static vars would have to be declared TLS, but these may not
      be statically initialized with non-constants, and this applies to
@@ -73,19 +70,12 @@ NOTES											              -*- Org -*-
 ** TODO Reader-error should throw expection
    - ISO says "syntax_error(<impl-dependent-atom>)"
    - Should be caught and printed prettily by pc/pi.
-** DONE We need trail-GC
-   - test and merge /trail-gc/ branch.
 ** TODO Throw ISO-compliant exceptions everywhere
     - at least as much as possible and sensible.
 ** TODO Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 ** TODO file:broken-tests/simple_analyzer.pl broken
     - exhausts heap, regardless of size.
-** TODO file:tests/0085-boyer.pl exhausts heap when run under pi
-   - somehow memory leaks, this looks similar to the problem with
-     file:broken-tests/simple_analyzer.pl
-** TODO ecrc benchmarks in file:/broken-tests work, but need higher settings
-   - file:broken-tests/bench_1_5.pl needs -:T5M
-   - works now in /trail-gc/ branch.
+    - test with trail-gc
 * Interpreter
 ** TODO Add support for file:dcg.pl 
    - term_expansion/2.
