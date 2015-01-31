@@ -787,6 +787,10 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
       fprintf(fp, "<dbreference>(%p)", (void *)slot_ref(x, 0));
       break;
 
+    case STRING_TYPE:
+      fprintf(fp, "<internal string \"%s\">", (char *)objdata(x));
+      break;
+
     default:
       fprintf(fp, "<object of unknown type %p:" XWORD_OUTPUT_FORMAT ">", (void *)x, objtype(x));
     }
