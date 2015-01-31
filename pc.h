@@ -1297,17 +1297,19 @@ static X freeze_term_recursive(X x)
       ensure_freeze_term_var_table_size(freeze_term_var_counter);
       freeze_term_var_table[ freeze_term_var_counter++ ] = x;
       BLOCK *newvar = (BLOCK *)malloc(sizeof(XWORD) * 4);
-      ASSERT(newvar, "out of memory - can mot freeze term");
+      ASSERT(newvar, "out of memory - can not freeze term");
       newvar->h = VAR_TAG | 3;
       newvar->d[ 0 ] = (X)newvar;
       newvar->d[ 1 ] = word_to_fixnum(variable_counter++);
-      newvar->d[ 2 ] = word_to_fixnum(0);
+      newvar->d[ 2 ] = word_to_fixnum(0); /* timestamp */
       freeze_term_var_table[ freeze_term_var_counter++ ] = (X)newvar;
       return (X)newvar;
     }
 
     return y;
   }
+
+  ASSERT(!is_DBREFERENCE(x), "db-references can not be stored");
 
   X *tp = lookup_circular_term(x);
 
@@ -1603,6 +1605,7 @@ static DB_BUCKET *db_enumerate_buckets(DB *db, DB_BUCKET *prev)
 
 static void db_mark_item_as_erased(DB_ITEM *item)
 {
+  ASSERT(!item->erased, "attempt to mark db-item as erased that is already marked");
   item->erased = 1;
   item->next_deleted = deleted_db_items;
   deleted_db_items = item;
@@ -1625,6 +1628,7 @@ static void db_mark_bucket_as_erased(DB_ITEM *item)
 static void db_erase_item(DB_ITEM *item)
 {
   DB_BUCKET *bucket = item->bucket;
+  ASSERT(item->erased, "attempt to delete db-item that is not marked as erased");
   delete_term(item->val);
 
   if(bucket->firstitem == item) {
@@ -3347,16 +3351,20 @@ PRIMITIVE(db_find_bucket, X dbr, X prev, X key, X ref)
   DB *db = (DB *)slot_ref(dbr, 0);
   DB_BUCKET *bucket = NULL;
 
-  if(is_DBREFERENCE(prev))
-    bucket = ((DB_ITEM *)slot_ref(prev, 0))->bucket;
+  if(is_DBREFERENCE(prev)) {
+    DB_ITEM *item = (DB_ITEM *)slot_ref(prev, 0);
+    ASSERT(!item->erased, "attempt to obtain bucket from erased db-item");
+    bucket = item->bucket;
+  }
 
   bucket = db_enumerate_buckets(db, bucket);
 
   if(bucket) {
     X str = STRING(bucket->keylen + 1);
-    memcpy(objdata(str), bucket->key, bucket->keylen + 1);
+    memcpy(objdata(str), bucket->key, bucket->keylen + 1); /* including 0-terminator */
     X bkey = intern(str);
     DB_ITEM *item = bucket->firstitem;
+    ASSERT(!item->erased, "first db-item in bucket is marked as erased");
     ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 2);
     b->d[ 0 ] = (X)item;
     b->d[ 1 ] = ONE;
@@ -3371,8 +3379,8 @@ PRIMITIVE(db_ref, X ref, X result)
   check_type_DBREFERENCE(ref);
   DB_ITEM *item = (DB_ITEM *)slot_ref(ref, 0);
   int failed;
-  ASSERT(slot_ref(ref, 1) != NULL, "attempting to reference database pointer");
-  ASSERT(!item->erased, "attempting to reference erased database item");
+  ASSERT(slot_ref(ref, 1) == ONE, "attempting to reference database pointer");
+  ASSERT(!item->erased, "attempting to reference erased db-item");
   X x = thaw_term(item->val, &failed);
   return !failed && unify(result, x);
 }
