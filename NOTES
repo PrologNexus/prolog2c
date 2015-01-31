@@ -41,6 +41,8 @@ NOTES											              -*- Org -*-
    - file:tests/0069-cdb.pl
 * Missing features
 ** TODO once/1
+** TODO Allow user-defined macros
+   - directive: ":- macro OLD -> NEW" or something like this.
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
@@ -50,6 +52,117 @@ NOTES											              -*- Org -*-
 * Once we have a suitable test, compare performance with other implementations
   - SWI, GNU-Prolog, BinProlog
 * Issues
+** TODO Reduce memory use in pc
+   - seems to build up a lot of choice points.
+** TODO 0085-boyer crashes in pi
+** TODO Self-compile check fails sometimes
+   - produces wrong C output.
+   - disable db-item deletion in GC makes problem disappear.
+   - valgrind run of "pc1 pc.pl -o pc2.c -:v -:h50M":
+==15690== Invalid read of size 8
+==15690==    at 0x4037D7: thaw_term_recursive (pc.h:1345)
+==15690==    by 0x403B67: thaw_term_recursive (pc.h:1407)
+==15690==    by 0x403B67: thaw_term_recursive (pc.h:1407)
+==15690==    by 0x403BDC: thaw_term (pc.h:1425)
+==15690==    by 0x409270: db_ref (pc.h:3357)
+==15690==    by 0x4F9E31: main (pc1.c:35566)
+==15690==  Address 0xa29a300 is 0 bytes inside a block of size 10 free'd
+==15690==    at 0x4C2A82E: free (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==15690==    by 0x403CC1: delete_term_recursive (pc.h:1445)
+==15690==    by 0x403D1B: delete_term_recursive (pc.h:1455)
+==15690==    by 0x403D1B: delete_term_recursive (pc.h:1455)
+==15690==    by 0x403D60: delete_term (pc.h:1466)
+==15690==    by 0x404415: db_erase_item (pc.h:1610)
+==15690==    by 0x4052B0: collect_garbage (pc.h:1925)
+==15690==    by 0x4FBF3E: main (pc1.c:35771)
+==15690== 
+==15690== Invalid read of size 8
+==15690==    at 0x403905: thaw_term_recursive (pc.h:1369)
+==15690==    by 0x403B67: thaw_term_recursive (pc.h:1407)
+==15690==    by 0x403B67: thaw_term_recursive (pc.h:1407)
+==15690==    by 0x403BDC: thaw_term (pc.h:1425)
+==15690==    by 0x409270: db_ref (pc.h:3357)
+==15690==    by 0x4F9E31: main (pc1.c:35566)
+==15690==  Address 0xa29a300 is 0 bytes inside a block of size 10 free'd
+==15690==    at 0x4C2A82E: free (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==15690==    by 0x403CC1: delete_term_recursive (pc.h:1445)
+==15690==    by 0x403D1B: delete_term_recursive (pc.h:1455)
+==15690==    by 0x403D1B: delete_term_recursive (pc.h:1455)
+==15690==    by 0x403D60: delete_term (pc.h:1466)
+==15690==    by 0x404415: db_erase_item (pc.h:1610)
+==15690==    by 0x4052B0: collect_garbage (pc.h:1925)
+==15690==    by 0x4FBF3E: main (pc1.c:35771)
+==15690== 
+==15690== Invalid read of size 8
+==15690==    at 0x403922: thaw_term_recursive (pc.h:1370)
+==15690==    by 0x403B67: thaw_term_recursive (pc.h:1407)
+==15690==    by 0x403B67: thaw_term_recursive (pc.h:1407)
+==15690==    by 0x403BDC: thaw_term (pc.h:1425)
+==15690==    by 0x409270: db_ref (pc.h:3357)
+==15690==    by 0x4F9E31: main (pc1.c:35566)
+==15690==  Address 0xa29a300 is 0 bytes inside a block of size 10 free'd
+==15690==    at 0x4C2A82E: free (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==15690==    by 0x403CC1: delete_term_recursive (pc.h:1445)
+==15690==    by 0x403D1B: delete_term_recursive (pc.h:1455)
+==15690==    by 0x403D1B: delete_term_recursive (pc.h:1455)
+==15690==    by 0x403D60: delete_term (pc.h:1466)
+==15690==    by 0x404415: db_erase_item (pc.h:1610)
+==15690==    by 0x4052B0: collect_garbage (pc.h:1925)
+==15690==    by 0x4FBF3E: main (pc1.c:35771)
+==15690== 
+==15690== Invalid read of size 8
+==15690==    at 0x40397C: thaw_term_recursive (pc.h:1375)
+==15690==    by 0x403B67: thaw_term_recursive (pc.h:1407)
+==15690==    by 0x403B67: thaw_term_recursive (pc.h:1407)
+==15690==    by 0x403BDC: thaw_term (pc.h:1425)
+==15690==    by 0x409270: db_ref (pc.h:3357)
+==15690==    by 0x4F9E31: main (pc1.c:35566)
+==15690==  Address 0xa29a300 is 0 bytes inside a block of size 10 free'd
+==15690==    at 0x4C2A82E: free (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==15690==    by 0x403CC1: delete_term_recursive (pc.h:1445)
+==15690==    by 0x403D1B: delete_term_recursive (pc.h:1455)
+==15690==    by 0x403D1B: delete_term_recursive (pc.h:1455)
+==15690==    by 0x403D60: delete_term (pc.h:1466)
+==15690==    by 0x404415: db_erase_item (pc.h:1610)
+==15690==    by 0x4052B0: collect_garbage (pc.h:1925)
+==15690==    by 0x4FBF3E: main (pc1.c:35771)
+==15690== 
+==15690== Invalid read of size 2
+==15690==    at 0x4C2D050: memcpy@@GLIBC_2.14 (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==15690==    by 0x4039CE: thaw_term_recursive (pc.h:1376)
+==15690==    by 0x403B67: thaw_term_recursive (pc.h:1407)
+==15690==    by 0x403B67: thaw_term_recursive (pc.h:1407)
+==15690==    by 0x403BDC: thaw_term (pc.h:1425)
+==15690==    by 0x409270: db_ref (pc.h:3357)
+==15690==    by 0x4F9E31: main (pc1.c:35566)
+==15690==  Address 0xa29a308 is 8 bytes inside a block of size 10 free'd
+==15690==    at 0x4C2A82E: free (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==15690==    by 0x403CC1: delete_term_recursive (pc.h:1445)
+==15690==    by 0x403D1B: delete_term_recursive (pc.h:1455)
+==15690==    by 0x403D1B: delete_term_recursive (pc.h:1455)
+==15690==    by 0x403D60: delete_term (pc.h:1466)
+==15690==    by 0x404415: db_erase_item (pc.h:1610)
+==15690==    by 0x4052B0: collect_garbage (pc.h:1925)
+==15690==    by 0x4FBF3E: main (pc1.c:35771)
+==15690== 
+==15690== Invalid read of size 8
+==15690==    at 0x4039D3: thaw_term_recursive (pc.h:1378)
+==15690==    by 0x403B67: thaw_term_recursive (pc.h:1407)
+==15690==    by 0x403B67: thaw_term_recursive (pc.h:1407)
+==15690==    by 0x403BDC: thaw_term (pc.h:1425)
+==15690==    by 0x409270: db_ref (pc.h:3357)
+==15690==    by 0x4F9E31: main (pc1.c:35566)
+==15690==  Address 0xa29a300 is 0 bytes inside a block of size 10 free'd
+==15690==    at 0x4C2A82E: free (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==15690==    by 0x403CC1: delete_term_recursive (pc.h:1445)
+==15690==    by 0x403D1B: delete_term_recursive (pc.h:1455)
+==15690==    by 0x403D1B: delete_term_recursive (pc.h:1455)
+==15690==    by 0x403D60: delete_term (pc.h:1466)
+==15690==    by 0x404415: db_erase_item (pc.h:1610)
+==15690==    by 0x4052B0: collect_garbage (pc.h:1925)
+==15690==    by 0x4FBF3E: main (pc1.c:35771)
+   - this seems to be a retrieval of an already deleted db item
+     (location in file:pc1.c indicates record-db access)
 ** TODO [#B] Implementation of if-then-else is broken
    - if-then stack gets out of balance, found here:
      call_primitive('->', 2, TERM) :-
@@ -61,10 +174,24 @@ NOTES											              -*- Org -*-
 ** Handle freezing of db-refs
    - disallow? delete from deleted-items list?
    - what can happen?
+   - currently caught by assertion in freeze_term_recursive()
 ** Using multiple threads are currently not possible
    - all static vars would have to be declared TLS, but these may not
      be statically initialized with non-constants, and this applies to
      many data objects for literals.
+** TODO Sometimes file:tests/0080-sieve.pl contains garbage
+   - in literal definition for "+" operator (op-table in file:lib/op.pl)
+#ifndef SYMBOL____+(
+static STRING_BLOCK lbsf1398_3={STRING_TAG|(1+1),{-88,0}};
+static SYMBOL_BLOCK lbf1398_3={SYMBOL_TAG|2,(X)&lbsf1398_3,PREVIOUS_SYMBOL};
+#undef PREVIOUS_SYMBOL
+#define PREVIOUS_SYMBOL (X)&lbf1398_3
+#define literal_f1398_3 &lbf1398_3
+#define SYMBOL____+( literal_f1398_3
+#else
+#define literal_f1398_3 SYMBOL____+(
+#endif
+   - even with disabled db-item GC.
 ** TODO Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
 ** TODO Reader-error should throw expection
@@ -75,7 +202,7 @@ NOTES											              -*- Org -*-
 ** TODO Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 ** TODO file:broken-tests/simple_analyzer.pl broken
     - exhausts heap, regardless of size.
-    - test with trail-gc
+    - seems to trail excessively.
 * Interpreter
 ** TODO Add support for file:dcg.pl 
    - term_expansion/2.
