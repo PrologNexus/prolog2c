@@ -86,8 +86,7 @@
 #define MAXIMAL_NUMBER_OF_ARGUMENTS 100
 #define DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT 10
 #define TRACE_DEBUG_WRITE_LIMIT 5
-#define INITIAL_FREEZE_TERM_VAR_TABLE_SIZE 1000
-#define CIRCULAR_TERM_TABLE_SIZE 2000
+#define SHARED_TERM_TABLE_SIZE 5000
 #define MAX_GLOBAL_VARIABLES 256
 #define STRING_BUFFER_SIZE 1024
 #define CATCHER_STACK_SIZE 1024
@@ -382,14 +381,11 @@ static char **global_argv;
 static int global_argc;
 static void **ifthen_stack, **ifthen_top;
 static XWORD clock_ticks;
-static X *freeze_term_var_table;
-static int freeze_term_var_table_size;
-static int freeze_term_var_counter;
 static int global_variable_counter = 0;
 static int initial_global_variable_count;
-static X *circular_term_table;
-static int circular_term_counter;
-static int circular_term_table_size;
+static X *shared_term_table;
+static XWORD *shared_term_table_positions;
+static int shared_term_counter;
 static char *string_buffer;
 static int string_buffer_length;
 static DB_ITEM *deleted_db_items;
@@ -1080,6 +1076,46 @@ static inline X check_output_port(X x)
 }
 
 
+/// Management of the "shared term table"
+
+static void clear_shared_term_table()
+{
+  for(int i = 0; i < shared_term_counter; ++i) {
+    XWORD p = shared_term_table_positions[ i ];
+    shared_term_table[ p ] = shared_term_table[ p + 1 ] = NULL;
+  }
+
+  shared_term_counter = 0;
+}
+
+
+static X *lookup_shared_term(X x, int addnew)
+{
+  XWORD key = (XWORD)x % SHARED_TERM_TABLE_SIZE;
+  int f = 0;
+  key *= 2;
+
+  while(shared_term_table[ key ] != x) { /* found? */
+    if(shared_term_table[ key ] == NULL) { /* unused entry? */
+      if(!addnew) return NULL;
+
+      shared_term_table_positions[ shared_term_counter++ ] = key;
+      break;
+    }
+
+    key += 2;			// try next
+    
+    if(key >= (SHARED_TERM_TABLE_SIZE * 2)) { /* beyond table size? */
+      ASSERT(!f, "shared term table full");
+      f = 1;
+      key = 0;			/* start over from the beginning */
+    }
+  }
+
+  return &(shared_term_table[ key ]); /* entry found */
+} 
+
+
 /// Variable + trail handling
 
 static inline X make_var()
@@ -1123,82 +1159,7 @@ static inline void push_trail(CHOICE_POINT *C0, X var)
 }
 
 
-// returns location of associated key + value in circular-term-table
-static X *lookup_circular_term(X x)
-{
-  XWORD key = (XWORD)x % circular_term_table_size;
-  int f = 0;
-  key *= 2;
-
-  while(circular_term_table[ key ] != x) {
-    if(circular_term_table[ key ] == NULL) /* unused entry? */
-      break;
-
-    // try next
-    key += 2;
-
-    if(key >= (circular_term_table_size * 2)) { /* beyond table size? */
-      if(f) {		     /* already started from the beginning? */
-	// resize table and rehash
-	int newsize = circular_term_table_size * 2;
-	X *newtable = malloc(newsize * 2);
-	ASSERT(newtable, "out of memory - can not resize circular term table");
-	memset(newtable, 0, newsize * 2 * sizeof(X));
-	
-	for(int i = 0; i < circular_term_counter; ++i) {
-	  if(circular_term_table[ i * 2 ] != NULL) {
-	    XWORD newkey = (XWORD)circular_term_table[ i * 2] % newsize;
-	    newtable[ newkey ] = circular_term_table[ i * 2 ];
-	    newtable[ newkey + 1 ] = circular_term_table[ i * 2 + 1 ];
-	  }
-	}
-
-	f = 0;
-	free(circular_term_table);
-	circular_term_table = newtable;
-	circular_term_table_size = newsize;
-      }
-      else {
-	f = 1;
-	key = 0;			/* start over from the beginning */
-      }
-    }
-    else if(key >= circular_term_counter) /* in unused table part? */
-      break;
-  }
-
-  if(key > circular_term_counter)
-    circular_term_counter = key + 2;
-
-  return &(circular_term_table[ key ]); /* entry found */
-} 
-
-
-static X find_frozen_variable(X var)
-{
-  //XXX could use hashing, but probably not worth the trouble
-  for(int i = 0; i < freeze_term_var_counter; i += 2) {
-    if(var == freeze_term_var_table[ i ]) 
-      return freeze_term_var_table[ i + 1 ];
-  }
-
-  return (X)NULL;
-}
-
-
-static void ensure_freeze_term_var_table_size(XWORD index)
-{
-  if(index + 2 >= freeze_term_var_table_size) {
-    XWORD newsize = index + index / 4;
-    freeze_term_var_table = realloc(freeze_term_var_table, newsize * sizeof(X));
-    ASSERT(freeze_term_var_table, "out of memory - can not reallocate freeze-term variable table");
-    memset(freeze_term_var_table + freeze_term_var_table_size, 0, (newsize - freeze_term_var_table_size) * sizeof(X));
-    freeze_term_var_table_size = newsize;
-  }
-}
-
-
-// deref recursively, needed for global variables (or the assigned value may not survive backtracking)
+// deref recursively, effectively copying term
 static X deref_recursive(X val, int limit, int *failed)
 {
   *failed = 0;
@@ -1209,37 +1170,28 @@ static X deref_recursive(X val, int limit, int *failed)
     val = deref1(val);
 
     if(is_variable(val)) {
-      X x = find_frozen_variable(val);
+      X *tp = lookup_shared_term(val, 1);
 
-      if(x == NULL) {
-	ensure_freeze_term_var_table_size(freeze_term_var_counter);
-	freeze_term_var_table[ freeze_term_var_counter++ ] = val;
+      if(*tp != NULL) return tp[ 1 ];
 
-	if(alloc_top + 4 > fromspace_limit) {
-	  *failed = 1;
-	  return val;
-	}
+      *tp = val;
 
-	ALLOCATE_BLOCK(BLOCK *newvar, VAR_TYPE, 3);
-	newvar->d[ 0 ] = (X)newvar;
-	newvar->d[ 1 ] = word_to_fixnum(variable_counter++);
-	newvar->d[ 2 ] = word_to_fixnum(clock_ticks++);
-	freeze_term_var_table[ freeze_term_var_counter++ ] = (X)newvar;
-	return (X)newvar;
+      if(alloc_top + 4 > fromspace_limit) {
+	*failed = 1;
+	return val;
       }
 
-      return x;
+      ALLOCATE_BLOCK(BLOCK *newvar, VAR_TYPE, 3);
+      newvar->d[ 0 ] = (X)newvar;
+      newvar->d[ 1 ] = word_to_fixnum(variable_counter++);
+      newvar->d[ 2 ] = word_to_fixnum(clock_ticks++);
+      return tp[ 1 ] = (X)newvar;
     }
   }
 
-  if(is_FIXNUM(val) || val == END_OF_LIST_VAL || is_byteblock(val) || is_SYMBOL(val) || !IS_IN_HEAP(val)) 
+  if(is_FIXNUM(val) || val == END_OF_LIST_VAL || is_byteblock(val) || is_SYMBOL(val))
     return val;
 
-  X *tp = lookup_circular_term(val);
-
-  if(*tp == val) return tp[ 1 ];
-
-  *tp = val;
   XWORD s = objsize(val);
 
   if(alloc_top + s + 1 > fromspace_limit) {
@@ -1248,7 +1200,6 @@ static X deref_recursive(X val, int limit, int *failed)
   }
 
   ALLOCATE_BLOCK(BLOCK *p, objtype(val), s);
-  tp[ 1 ] = (X)p;
   --limit;
   int i = 0;
 
@@ -1271,18 +1222,15 @@ static X deref_recursive(X val, int limit, int *failed)
 
 static X deref_all(X val, int limit, int *failed)
 {
-  freeze_term_var_counter = 0;
-  circular_term_counter = 0;
   X y = deref_recursive(val, limit, failed);
-  memset(freeze_term_var_table, 0, freeze_term_var_counter * sizeof(X));
-  memset(circular_term_table, 0, circular_term_counter * sizeof(X));
+  clear_shared_term_table();
   return y;
 }
 
 
 /// Databases
 
-// evict into malloc'd memory, replacing variables with new ones with indexes from 0 to N
+// evict into malloc'd memory
 static X freeze_term_recursive(X x)
 {
   x = deref(x);
@@ -1290,37 +1238,26 @@ static X freeze_term_recursive(X x)
   if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return x;
 
   if(is_VAR(x)) {
-    X y = find_frozen_variable(x);
+    X *tp = lookup_shared_term(x, 1);
 
-    if(y == NULL) {
-      ensure_freeze_term_var_table_size(freeze_term_var_counter);
-      freeze_term_var_table[ freeze_term_var_counter++ ] = x;
-      BLOCK *newvar = (BLOCK *)malloc(sizeof(XWORD) * 4);
-      ASSERT(newvar, "out of memory - can not freeze term");
-      newvar->h = VAR_TAG | 3;
-      newvar->d[ 0 ] = (X)newvar;
-      newvar->d[ 1 ] = word_to_fixnum(variable_counter++);
-      newvar->d[ 2 ] = word_to_fixnum(0); /* timestamp */
-      freeze_term_var_table[ freeze_term_var_counter++ ] = (X)newvar;
-      return (X)newvar;
-    }
+    if(*tp != NULL) return tp[ 1 ];
 
-    return y;
+    *tp = x;
+    BLOCK *newvar = (BLOCK *)malloc(sizeof(XWORD) * 4);
+    ASSERT(newvar, "out of memory - can not freeze variable");
+    newvar->h = VAR_TAG | 3;
+    newvar->d[ 0 ] = (X)newvar;
+    newvar->d[ 1 ] = word_to_fixnum(variable_counter++);
+    newvar->d[ 2 ] = word_to_fixnum(0); /* timestamp */
+    return tp[ 1 ] = (X)newvar;
   }
 
-  ASSERT(!is_DBREFERENCE(x), "db-references can not be stored");
-
-  X *tp = lookup_circular_term(x);
-
-  if(*tp == x) return tp[ 1 ];
-
-  *tp = x;
+  ASSERT(!is_DBREFERENCE(x), "db-references can not be frozen");
 
   if(is_byteblock(x)) {
     XWORD size = objsize(x);
     BYTEBLOCK *b = (BYTEBLOCK *)malloc(sizeof(XWORD) + size);
-    ASSERT(b, "out of memory - can not allocate byteblock");
-    tp[ 1 ] = (X)b;
+    ASSERT(b, "out of memory - can not freeze byteblock");
     b->h = objbits(x);
     memcpy(b->d, objdata(x), size);
     return (X)b;
@@ -1328,16 +1265,20 @@ static X freeze_term_recursive(X x)
 
   if(is_SYMBOL(x)) {
     // just freeze string - it will be interned when thawed
-    X y = freeze_term_recursive(slot_ref(x, 0));
-    tp[ 1 ] = y;
-    return y;
+    X str = slot_ref(x, 0);
+    X *tp = lookup_shared_term(str, 1);
+
+    if(*tp != NULL) return tp[ 1 ];
+
+    *tp = x;
+    X y = freeze_term_recursive(str);
+    return tp[ 1 ] = y;
   }
 
   XWORD size = objsize(x);
   XWORD i = 0;
   BLOCK *b = (BLOCK *)malloc(sizeof(XWORD) * (size + 1));
-  ASSERT(b, "out of memory - can not allocate block");
-  tp[ 1 ] = (X)b;
+  ASSERT(b, "out of memory - can not freeze block");
   b->h = objbits(x);
 
   if(is_specialblock(x)) {
@@ -1356,11 +1297,8 @@ static X freeze_term_recursive(X x)
 
 static X freeze_term(X x)
 {
-  circular_term_counter = 0;
-  freeze_term_var_counter = 0;
   X y = freeze_term_recursive(x);
-  memset(freeze_term_var_table, 0, freeze_term_var_counter * sizeof(X));
-  memset(circular_term_table, 0, circular_term_counter * sizeof(X));
+  clear_shared_term_table();
   return y;
 }
 
@@ -1375,30 +1313,35 @@ static int thaw_term_recursive(X *xp)
   if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return 1;
 
   if(is_VAR(x)) {
-    X y = find_frozen_variable(x);
+    X *tp = lookup_shared_term(x, 1);
 
-    if(y == NULL) {
-      ensure_freeze_term_var_table_size(freeze_term_var_counter);
-      freeze_term_var_table[ freeze_term_var_counter++ ] = x;
-
-      if(alloc_top + objsize(x) + 1 >= fromspace_limit) return 0;
-
-      *xp = make_var();
-      freeze_term_var_table[ freeze_term_var_counter++ ] = *xp;
+    if(*tp != NULL) {
+      *xp = tp[ 1 ];
+      return 1;
     }
-    else *xp = y;
 
-    return 1;
-  }
+    *tp = x;
 
-  X *tp = lookup_circular_term(x);
-
-  if(*tp == x) {
-    *xp = tp[ 1 ];
+    if(alloc_top + objsize(x) + 1 >= fromspace_limit) return 0;
+    
+    tp[ 1 ] = *xp = make_var();
     return 1;
   }
 
   if(is_byteblock(x)) {
+    X *tp;
+
+    if(is_STRING(x)) {
+      tp = lookup_shared_term(x, 1);
+
+      if(*tp != NULL) {
+	*xp = tp[ 1 ];
+	return 1;
+      }
+
+      *tp = x;
+    }
+
     XWORD size = objsize(x);
 
     if(alloc_top + bytes_to_words(size + 1) > fromspace_limit)
@@ -1407,21 +1350,18 @@ static int thaw_term_recursive(X *xp)
     ALLOCATE_BYTEBLOCK(BYTEBLOCK *b, objtype(x), size);
     memcpy(b->d, objdata(x), size);
 
-    if(is_STRING(x)) *xp = intern((X)b);
+    if(is_STRING(x)) tp[ 1 ] = *xp = intern((X)b);
     else *xp = (X)b;
 
-    tp[ 1 ] = *xp;
     return 1;
   }
 
-  *tp = x;
   XWORD i = 0;
   XWORD size = objsize(x);
 
   if(alloc_top + size + 1 > fromspace_limit) return 0;
 
   ALLOCATE_BLOCK(BLOCK *b, objtype(x), size);
-  tp[ 1 ] = (X)b;
   
   // initialize, in case thawing elements fails
   for(i = 0; i < size; ++i)
@@ -1452,11 +1392,8 @@ static int thaw_term_recursive(X *xp)
 static X thaw_term(X x, int *failed)
 {
   X y = x;
-  freeze_term_var_counter = 0;
-  circular_term_counter = 0;
   *failed = !thaw_term_recursive(&y);
-  memset(freeze_term_var_table, 0, freeze_term_var_counter * sizeof(X));
-  memset(circular_term_table, 0, circular_term_counter * sizeof(X));
+  clear_shared_term_table();
   return y;
 }
 
@@ -1466,15 +1403,26 @@ static void delete_term_recursive(X x)
 {
   if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return;
 
-  X *tp = lookup_circular_term(x);
+  // must be lookup up first, as it's header may already be destroyed
+  X *tp = lookup_shared_term(x, 0);
 
-  if(*tp == x) return;
+  if(tp) return;
+  
+  if(is_VAR(x)) {
+    tp = lookup_shared_term(x, 1);
+    *tp = x;			/* just add val to mark it */
+    XFREE(x, objsize(x) * sizeof(X) + sizeof(XWORD));
+    return;
+  }
 
-  *tp = x;
-  tp[ 1 ] = x;			/* just mark as already deleted */
   XWORD size = objsize(x);
 
   if(is_byteblock(x)) {
+    if(is_STRING(x)) {
+      tp = lookup_shared_term(x, 1);
+      *tp = x;			/* s.a. */
+    }
+      
     XFREE(x, size + sizeof(XWORD));
     return;
   }
@@ -1494,9 +1442,8 @@ static void delete_term_recursive(X x)
 
 static void delete_term(X x)
 {
-  circular_term_counter = 0;
   delete_term_recursive(x);
-  memset(circular_term_table, 0, circular_term_counter * sizeof(X));
+  clear_shared_term_table();
 }
 
 
@@ -1604,8 +1551,9 @@ static DB_BUCKET *db_enumerate_buckets(DB *db, DB_BUCKET *prev)
 
 static void db_mark_item_as_erased(DB_ITEM *item)
 {
-  ASSERT(!item->erased, "attempt to mark db-item as erased that is already marked");
-  item->erased = 1;
+  if(item->erased) return;
+
+  item->erased= 1;
   item->next_deleted = deleted_db_items;
   deleted_db_items = item;
 }
@@ -2107,15 +2055,13 @@ static void initialize(int argc, char *argv[])
   ifthen_top = ifthen_stack;
   env_top = environment_stack;
   arg_top = argument_stack;
-  circular_term_table_size = CIRCULAR_TERM_TABLE_SIZE;
-  circular_term_table = malloc(CIRCULAR_TERM_TABLE_SIZE * 2 * sizeof(X));
-  ASSERT(circular_term_table, "out of memory - can not allocate circular term table");
-  memset(circular_term_table, 0, CIRCULAR_TERM_TABLE_SIZE * 2 * sizeof(X));
   string_buffer = malloc(string_buffer_length = STRING_BUFFER_SIZE);
   ASSERT(argument_stack, "out of memory - can not allocate string buffer");
-  freeze_term_var_table_size = INITIAL_FREEZE_TERM_VAR_TABLE_SIZE * 2;
-  freeze_term_var_table = malloc(freeze_term_var_table_size * sizeof(X));
-  ASSERT(freeze_term_var_table, "out of memory - can not allocate freeze-term variable table");
+  shared_term_table = malloc(SHARED_TERM_TABLE_SIZE * 2 * sizeof(X));
+  ASSERT(shared_term_table, "out of memory - can not allocate shared term table");
+  memset(shared_term_table, 0, SHARED_TERM_TABLE_SIZE * 2 * sizeof(X));
+  shared_term_table_positions = malloc(SHARED_TERM_TABLE_SIZE * sizeof(XWORD));
+  ASSERT(shared_term_table, "out of memory - can not allocate shared term positions table");
   trail_stack_gap_buffer = malloc(TRAIL_STACK_GAP_BUFFER_SIZE * sizeof(TRAIL_STACK_GAP));
   ASSERT(trail_stack_gap_buffer, "out of memory - can not allocate initial trail-stack gap buffer");
 
@@ -2134,7 +2080,7 @@ static void initialize(int argc, char *argv[])
   gc_count = 0;
   active_finalizers = free_finalizers = NULL;
   clock_ticks = 0;
-  circular_term_counter = 0;
+  shared_term_counter = 0;
   variable_counter = 0;
 
 #ifdef DEBUG_GC
@@ -2164,7 +2110,8 @@ static void cleanup()
   free(argument_stack);
   free(environment_stack);
   free(string_buffer);
-  free(freeze_term_var_table);
+  free(shared_term_table);
+  free(shared_term_table_positions);
 }
 
 
