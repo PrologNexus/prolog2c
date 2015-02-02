@@ -3635,7 +3635,16 @@ PRIMITIVE(enable_trace, X flag)
 }
 
 PRIMITIVE(get_process_id, X pid) { return unify(pid, word_to_fixnum(getpid())); }
-PRIMITIVE(sleep_for_seconds, X secs) { check_fixnum(secs); sleep(fixnum_to_word(secs)); return 1; }
+
+PRIMITIVE(sleep_for_seconds, X secs) {
+  check_fixnum(secs); 
+#ifdef _WIN32
+  Sleep(fixnum_to_word(secs)); 
+#else
+  sleep(fixnum_to_word(secs)); 
+#endif
+  return 1; 
+}
 
 PRIMITIVE(set_random_seed, X seed) 
 {
