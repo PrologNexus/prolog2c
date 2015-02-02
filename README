@@ -163,7 +163,8 @@
 
 * Builtin predicates
 
-  DCG rules of the form "HEAD --> BODY" are supported in compiled code.
+  DCG rules, including semicontext notation, are supported in compiled
+  code.
 
   - Control structures
 

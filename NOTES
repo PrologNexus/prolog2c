@@ -42,6 +42,9 @@ NOTES											              -*- Org -*-
    - in other words: actually take advantage of having a static whole-program compiler.
 * Things to test
 * Missing features
+** TODO Some sort of formatted output would be nice
+   - file:code/writef.pl uses those funny succ/2 and plus/3 predicates.
+     - see file:code/arith.pl
 ** TODO once/1
 ** TODO Builtin to read full atom
    - "read_atom(LENGTH)"
@@ -51,6 +54,9 @@ NOTES											              -*- Org -*-
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
+* Build options
+** Allow static allocation of data-areas
+** Allow keeping db-data in GC'd heap
 * Diagnostics
 ** Detect singleton variables
 ** Report unused predicates
