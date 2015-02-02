@@ -1,6 +1,10 @@
 NOTES											              -*- Org -*-
 
 
+* TODO Implement simple wrapper generator
+  - similar to "bind"
+  - "RTYPE NAME(ARGTYPE, ...)", generate .c file with primitive defs
+    and a .pl for the wrapper predicates.
 * Optimization opportunities
 ** DONE Check: take advantage of timestamps when binding vars in unify() ?
    - try: when binding two unbound vars, bind the younger one.
@@ -37,10 +41,11 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Things to test
-** TODO Test retract-loop
-   - file:tests/0069-cdb.pl
 * Missing features
 ** TODO once/1
+** TODO Builtin to read full atom
+   - "read_atom(LENGTH)"
+   - much cheaper than reading list.
 ** TODO Allow user-defined macros
    - directive: ":- macro OLD -> NEW" or something like this.
 ** TODO Extend numerical operators
@@ -73,28 +78,13 @@ NOTES											              -*- Org -*-
    - disallow? delete from deleted-items list?
    - what can happen?
    - currently caught by assertion in freeze_term_recursive()
-** Using multiple threads are currently not possible
+** Using multiple threads is currently not possible
    - all static vars would have to be declared TLS, but these may not
      be statically initialized with non-constants, and this applies to
      many data objects for literals.
-** TODO Sometimes file:tests/0080-sieve.pl contains garbage
-   - in literal definition for "+" operator (op-table in file:lib/op.pl)
-#ifndef SYMBOL____+(
-static STRING_BLOCK lbsf1398_3={STRING_TAG|(1+1),{-88,0}};
-static SYMBOL_BLOCK lbf1398_3={SYMBOL_TAG|2,(X)&lbsf1398_3,PREVIOUS_SYMBOL};
-#undef PREVIOUS_SYMBOL
-#define PREVIOUS_SYMBOL (X)&lbf1398_3
-#define literal_f1398_3 &lbf1398_3
-#define SYMBOL____+( literal_f1398_3
-#else
-#define literal_f1398_3 SYMBOL____+(
-#endif
-   - even with disabled db-item GC.
 ** TODO Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
-** TODO Reader-error should throw expection
-   - ISO says "syntax_error(<impl-dependent-atom>)"
-   - Should be caught and printed prettily by pc/pi.
+** Reader-error should throw syntax_error(MSG)
 ** TODO Throw ISO-compliant exceptions everywhere
     - at least as much as possible and sensible.
 ** TODO Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
