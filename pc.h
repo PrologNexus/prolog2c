@@ -3639,7 +3639,7 @@ PRIMITIVE(get_process_id, X pid) { return unify(pid, word_to_fixnum(getpid())); 
 PRIMITIVE(sleep_for_seconds, X secs) {
   check_fixnum(secs); 
 #ifdef _WIN32
-  Sleep(fixnum_to_word(secs)); 
+  Sleep(fixnum_to_word(secs) * 1000); 
 #else
   sleep(fixnum_to_word(secs)); 
 #endif
