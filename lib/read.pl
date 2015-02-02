@@ -336,7 +336,7 @@ syntax_error(Message, List) :-
 	display_list(Message),
 	tell(OLD),
 	length(List, Length),
-	recorda(syntax_error, length(Length), _), !,
+	recorda(syntax_error, length(Length)), !,
 	fail.
 
 display_list([Head|Tail]) :-
