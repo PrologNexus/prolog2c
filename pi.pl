@@ -17,10 +17,11 @@ banner :-
 	
 repl :-
 	display('?- '), flush,
-	seeing(CURRENT),
+	seeing(IN), telling(OUT),
 	read(TERM, VARS), 
 	(TERM == end_of_file, halt
-	; catch(run_goal(TERM, VARS), EXN, (report_exception(EXN), see(CURRENT)))),
+	; catch(run_goal(TERM, VARS), EXN, (report_exception(EXN), see(IN), tell(OUT)))
+	),
 	!,			% force tailcall
 	repl.
 repl :-
