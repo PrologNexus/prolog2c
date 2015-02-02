@@ -354,7 +354,7 @@ syntax_error(List) :-
 	telling(OLD), current_error_output(ERR), tell(ERR),
 	display_list(List, BeforeError), !,
 	tell(OLD),
-	fail.
+	throw(syntax_error).
 
 display_list(X, 0) :-
 	display('<<here>> '), !,
