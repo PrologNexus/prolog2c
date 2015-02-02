@@ -626,6 +626,14 @@ static inline int is_dbreference(X x)
 #define STRUCTURE(functor, arity)  STRUCTURE1(alloc_top, functor, arity)
 
 
+/// Hook called when the system terminates
+
+static void crash_hook()
+{
+  return;
+}
+
+
 /// Custom variants of some libc functions
 
 #ifdef _WIN32
@@ -661,14 +669,6 @@ static char *port_name(X x)
   static CHAR buffer[ 256 ];
   sprintf(buffer, "<%s-stream>(%p)", p->dir != ZERO ? "input" : "output", (void *)p->fp);
   return buffer;
-}
-
-
-/// Hook called when the system terminates
-
-static void crash_hook()
-{
-  return;
 }
 
 
