@@ -63,8 +63,8 @@ compile_dispatch(DMAP, N, A, S1, S2) :-
 			    secondary_clause_label(N, A, I, LABEL)),
 		TABLE),
 	emit(dispatch_on_integer(TABLE)),
-	gen_label(FL, S3, S4),	% no integer case matches
-	emit(label(FL), no_redo, fail), % fail block
+	%% no integer case matches - dispatch on non-integer cases
+	compile_dispatch_integer_fail(DMAP2, N, A, FL, S3, S4),
 	compile_dispatch_sequence(DMAP2, N, A, s(FL), S4, S2).
 compile_dispatch(DMAP, N, A, S1, S2) :-
 	%% remaining clauses contain no integer cases
@@ -86,6 +86,17 @@ compile_dispatch(DMAP, N, A, S1, S2) :-
 	emit(switch_on_integer(FL), switch_on_var(L2), jump(L1)),
 	emit(label(FL), no_redo, fail, label(L1)),
 	compile_dispatch_sequence(DMAP, N, A, s(FL), S4, S2).
+
+compile_dispatch_integer_fail(DMAP, N, A, no, S, S) :-
+	%% arg was non-matching integer - is there a var case?
+	memberchk(I1/var, DMAP),
+	!,
+	secondary_clause_label(N, A, I1, L1),
+	emit(jump(L1)).
+compile_dispatch_integer_fail(_, _, _, FL, S1, S2) :-
+	%% generate fail block
+	gen_label(FL, S1, S2),
+	emit(label(FL), no_redo, fail).
 
 compile_dispatch_sequence([], _, _, s(no), S, S) :-
 	emit(no_redo, fail).
