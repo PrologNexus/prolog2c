@@ -20,6 +20,6 @@ hash_atom(A, H) :-
 hash_atom(I, AL, H, H) :-
 	(I > 100; AL == []), !.
 hash_atom(I, [C|R], H1, H2) :-
-	H is (H1 xor ((H1 << 6) + (H1 >> 2) + C)) /\ 2147483647,
+	H is (H1 xor ((H1 << 6) + (H1 >> 2) + C)) /\ 1073741823,
 	I2 is I + 1,
 	hash_atom(I2, R, H, H2).

@@ -336,7 +336,7 @@ syntax_error(Message, List) :-
 	display_list(Message),
 	tell(OLD),
 	length(List, Length),
-	recorda(syntax_error, length(Length), _), !,
+	recorda(syntax_error, length(Length)), !,
 	fail.
 
 display_list([Head|Tail]) :-
@@ -354,7 +354,7 @@ syntax_error(List) :-
 	telling(OLD), current_error_output(ERR), tell(ERR),
 	display_list(List, BeforeError), !,
 	tell(OLD),
-	fail.
+	throw(syntax_error).
 
 display_list(X, 0) :-
 	display('<<here>> '), !,

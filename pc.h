@@ -25,7 +25,13 @@
 #include <errno.h>
 #include <strings.h>
 #include <limits.h>
-#include <sys/mman.h>
+
+#ifdef _WIN32
+# include <windows.h>
+#else
+# include <sys/mman.h>
+#endif 
+
 #include <fcntl.h>
 #include <sys/types.h>
 #include <setjmp.h>
@@ -80,8 +86,7 @@
 #define MAXIMAL_NUMBER_OF_ARGUMENTS 100
 #define DEBUG_WRITE_TERM_LIST_LENGTH_LIMIT 10
 #define TRACE_DEBUG_WRITE_LIMIT 5
-#define INITIAL_FREEZE_TERM_VAR_TABLE_SIZE 1000
-#define CIRCULAR_TERM_TABLE_SIZE 1000
+#define SHARED_TERM_TABLE_SIZE 5000
 #define MAX_GLOBAL_VARIABLES 256
 #define STRING_BUFFER_SIZE 1024
 #define CATCHER_STACK_SIZE 1024
@@ -90,14 +95,14 @@
 
 /// miscellanous
 
-#ifdef __LLP64__
-# define WORD_OUTPUT_FORMAT_LENGTH  "ll"
+#if defined(__LLP64__) || defined(_WIN64)
+# define XWORD_OUTPUT_FORMAT_LENGTH  "ll"
 #else
-# define WORD_OUTPUT_FORMAT_LENGTH  "l"
+# define XWORD_OUTPUT_FORMAT_LENGTH  "l"
 #endif
 
-#define WORD_OUTPUT_FORMAT   "%" WORD_OUTPUT_FORMAT_LENGTH "d"
-#define FLOAT_OUTPUT_FORMAT  "%.15g"
+#define XWORD_OUTPUT_FORMAT   "%" XWORD_OUTPUT_FORMAT_LENGTH "d"
+#define XFLOAT_OUTPUT_FORMAT  "%.15g"
 
 #ifdef UNSAFE
 # ifdef TRACE
@@ -112,57 +117,57 @@
 
 typedef void *X;
 
-#ifdef __LLP64__
-typedef long long WORD;
-typedef unsigned long long UWORD;
+#if defined(__LLP64__) || defined(_WIN64)
+typedef long long XWORD;
+typedef unsigned long long UXWORD;
 #else
-typedef long WORD;
-typedef unsigned long UWORD;
+typedef long XWORD;
+typedef unsigned long UXWORD;
 #endif
 
-typedef double FLOAT;
+typedef double XFLOAT;
 typedef char CHAR;
 
 typedef struct BLOCK { 
-  WORD h;
+  XWORD h;
   X d[];
 } BLOCK;
 
 typedef struct SPECIALBLOCK { 
-  WORD h;
+  XWORD h;
   void *p;
   X d[];
 } SPECIALBLOCK;
 
 typedef struct BYTEBLOCK { 
-  WORD h;
+  XWORD h;
   char d[];
 } BYTEBLOCK;
 
 typedef struct STRING_BLOCK {
-  WORD h;
+  XWORD h;
   CHAR s[];
 } STRING_BLOCK;
 
 typedef struct SYMBOL_BLOCK {
-  WORD h;
+  XWORD h;
   X s;
   struct SYMBOL_STRUCT *next;
 } SYMBOL_BLOCK;
 
 typedef struct STRUCTURE_BLOCK {
-  WORD h;
+  XWORD h;
   X f;
   X a[];
 } STRUCTURE_BLOCK;
 
 typedef struct FLONUM_BLOCK {
-  WORD h;
-  FLOAT n;
+  XWORD h;
+  XFLOAT n;
 } FLONUM_BLOCK;
 
 typedef struct PORT_BLOCK {
-  WORD h;
+  XWORD h;
   FILE *fp;
   X dir;			/* 1 = input */
   X open;			/* 1 = open */
@@ -174,7 +179,7 @@ typedef struct CHOICE_POINT {
   struct CHOICE_POINT *C0;
   void *P;
   struct CATCHER *catch_top;
-  WORD timestamp;
+  XWORD timestamp;
 } CHOICE_POINT;
 
 typedef struct FINALIZER
@@ -187,16 +192,16 @@ typedef struct FINALIZER
 typedef struct DB
 {
   char *name;
-  WORD tablesize;
+  XWORD tablesize;
   struct DB_BUCKET **table;
 } DB;
 
 typedef struct DB_BUCKET
 {
   DB *db;
-  WORD index;
+  XWORD index;
   char *key;
-  WORD keylen;
+  XWORD keylen;
   struct DB_ITEM *firstitem, *lastitem;
   struct DB_BUCKET *previous, *next;
 } DB_BUCKET;
@@ -204,8 +209,8 @@ typedef struct DB_BUCKET
 typedef struct DB_ITEM 
 {
   X val;
-  WORD refcount;
-  WORD erased;
+  XWORD refcount;
+  XWORD erased;
   DB_BUCKET *bucket;
   struct DB_ITEM *previous, *next;
   struct DB_ITEM *next_deleted;
@@ -231,7 +236,7 @@ typedef struct SAVED_STATE
 typedef struct TRAIL_STACK_GAP 
 {
   X *position;
-  WORD size; 
+  XWORD size; 
 } TRAIL_STACK_GAP;
 
 typedef struct SYMBOL_DISPATCH
@@ -253,23 +258,23 @@ typedef struct SYMBOL_DISPATCH
 #endif
 
 #ifdef __LLP64__
-# define WORD_SIGN_BIT   0x8000000000000000LL
-# define WORD_TOP_BIT    0x4000000000000000LL
+# define XWORD_SIGN_BIT   0x8000000000000000LL
+# define XWORD_TOP_BIT    0x4000000000000000LL
 #elif defined(SIXTYFOUR)
-# define WORD_SIGN_BIT   0x8000000000000000L
-# define WORD_TOP_BIT    0x4000000000000000L
+# define XWORD_SIGN_BIT   0x8000000000000000L
+# define XWORD_TOP_BIT    0x4000000000000000L
 #else
-# define WORD_SIGN_BIT   0x80000000L
-# define WORD_TOP_BIT    0x40000000L
+# define XWORD_SIGN_BIT   0x80000000L
+# define XWORD_TOP_BIT    0x40000000L
 #endif
 
 
 #ifdef SIXTYFOUR
 # define TYPE_SHIFT 56
-# define WORD_SIZE  8
+# define XWORD_SIZE  8
 #else
 # define TYPE_SHIFT 24
-# define WORD_SIZE  4
+# define XWORD_SIZE  4
 #endif
 
 #ifdef DEBUG_GC
@@ -290,13 +295,13 @@ typedef struct SYMBOL_DISPATCH
 # define IS_TAINTED_PTR(p)   0
 #endif 
 
-#define GC_MARK_BIT ((WORD)0x80 << TYPE_SHIFT)
-#define BYTEBLOCK_MARK_BIT ((WORD)0x20 << TYPE_SHIFT)
-#define SPECIALBLOCK_MARK_BIT ((WORD)0x40 << TYPE_SHIFT)
+#define GC_MARK_BIT ((XWORD)0x80 << TYPE_SHIFT)
+#define BYTEBLOCK_MARK_BIT ((XWORD)0x20 << TYPE_SHIFT)
+#define SPECIALBLOCK_MARK_BIT ((XWORD)0x40 << TYPE_SHIFT)
 
-#define HEADER_BITS_MASK  ((WORD)0xff << TYPE_SHIFT)
+#define HEADER_BITS_MASK  ((XWORD)0xff << TYPE_SHIFT)
 #define HEADER_SIZE_MASK  (~HEADER_BITS_MASK)
-#define HEADER_TYPE_MASK  ((WORD)0x3f << TYPE_SHIFT)
+#define HEADER_TYPE_MASK  ((XWORD)0x3f << TYPE_SHIFT)
 
 #define FIXNUM_TYPE  1
 #define END_OF_LIST_TYPE  2
@@ -309,8 +314,8 @@ typedef struct SYMBOL_DISPATCH
 #define PAIR_TYPE  9
 #define DBREFERENCE_TYPE 0x4a
 
-#define TYPE_TO_TAG(t)  ((WORD)(t) << TYPE_SHIFT)
-#define TAG_TO_TYPE(t)  ((WORD)(t) >> TYPE_SHIFT)
+#define TYPE_TO_TAG(t)  ((XWORD)(t) << TYPE_SHIFT)
+#define TAG_TO_TYPE(t)  ((XWORD)(t) >> TYPE_SHIFT)
 
 #define PAIR_TAG  TYPE_TO_TAG(PAIR_TYPE)
 #define VAR_TAG  TYPE_TO_TAG(VAR_TYPE)
@@ -322,17 +327,17 @@ typedef struct SYMBOL_DISPATCH
 #define PORT_TAG  TYPE_TO_TAG(PORT_TYPE)
 #define DBREFERENCE_TAG TYPE_TO_TAG(DBREFERENCE_TYPE)
 
-#define fixnum_to_word(n)  ((WORD)(n) >> 1)
-#define word_to_fixnum(n)  ((X)((WORD)(n) << 1 | FIXNUM_MARK_BIT))
-#define word_to_float(n)   ((FLOAT)(n))
-#define float_to_word(n)   ((WORD)trunc(n))
+#define fixnum_to_word(n)  ((XWORD)(n) >> 1)
+#define word_to_fixnum(n)  ((X)((XWORD)(n) << 1 | FIXNUM_MARK_BIT))
+#define word_to_float(n)   ((XFLOAT)(n))
+#define float_to_word(n)   ((XWORD)trunc(n))
 #define flonum_to_float(x)  (((FLONUM_BLOCK *)(x))->n)
-#define flonum_to_word(x)  ((WORD)((FLONUM_BLOCK *)(x))->n)
-#define fixnum_to_float(x)  ((FLOAT)fixnum_to_word(x))
+#define flonum_to_word(x)  ((XWORD)((FLONUM_BLOCK *)(x))->n)
+#define fixnum_to_float(x)  ((XFLOAT)fixnum_to_word(x))
 
 #define is_forwarded(x)    ((objbits(x) & GC_MARK_BIT) != 0)
 
-#define ptr_to_fptr(ptr)        (((WORD)(ptr) >> 1) | GC_MARK_BIT)
+#define ptr_to_fptr(ptr)        (((XWORD)(ptr) >> 1) | GC_MARK_BIT)
 #define fptr_to_ptr(fptr)       ((X)((fptr) << 1))
 
 #define ZERO     word_to_fixnum(0)
@@ -366,7 +371,7 @@ static X *fromspace, *fromspace_end, *fromspace_limit, *tospace, *tospace_end;
 static X *tospace_top, *scan_ptr;
 static X *alloc_top;
 static X symbol_table[ SYMBOL_TABLE_SIZE ];
-static WORD heap_reserve, trail_stack_reserve;
+static XWORD heap_reserve, trail_stack_reserve;
 static int verbose;
 static int variable_counter;
 static X *environment_stack;
@@ -376,35 +381,32 @@ static X *trail_top, *trail_stack_limit;
 static X *env_top, *arg_top;
 static CHOICE_POINT *choice_point_stack;
 static FINALIZER *active_finalizers, *free_finalizers;
-static WORD gc_count;
+static XWORD gc_count;
 static char *mmapped_heap = NULL;
 static int mmapped_fd;
 static void *mmapped_buffer;
 static char **global_argv;
 static int global_argc;
 static void **ifthen_stack, **ifthen_top;
-static WORD clock_ticks;
-static X *freeze_term_var_table;
-static int freeze_term_var_table_size;
-static int freeze_term_var_counter;
+static XWORD clock_ticks;
 static int global_variable_counter = 0;
 static int initial_global_variable_count;
-static X *circular_term_table;
-static int circular_term_counter;
-static int circular_term_table_size;
+static X *shared_term_table;
+static XWORD *shared_term_table_positions;
+static int shared_term_counter;
 static char *string_buffer;
 static int string_buffer_length;
 static DB_ITEM *deleted_db_items;
 static int debugging;
-static WORD environment_stack_size, argument_stack_size, choice_point_stack_size;
-static WORD trail_stack_size, ifthen_stack_size, heap_size;
+static XWORD environment_stack_size, argument_stack_size, choice_point_stack_size;
+static XWORD trail_stack_size, ifthen_stack_size, heap_size;
 static jmp_buf exception_handler;
 static CATCHER catch_stack[ CATCHER_STACK_SIZE ];
 static CATCHER *catch_top;
 static SAVED_STATE saved_state;
 static X global_variables[ MAX_GLOBAL_VARIABLES ];
 static TRAIL_STACK_GAP *trail_stack_gap_buffer;
-static WORD trail_stack_gap_buffer_size = TRAIL_STACK_GAP_BUFFER_SIZE;
+static XWORD trail_stack_gap_buffer_size = TRAIL_STACK_GAP_BUFFER_SIZE;
 static int gc_caused_by_trailing = 0;
 
 
@@ -415,7 +417,7 @@ static CHAR *type_names[] = {
 #endif
 
 
-#define type_name(t)         (type_names[ (WORD)(t) & 0x1f ])
+#define type_name(t)         (type_names[ (XWORD)(t) & 0x1f ])
 #define tag_to_type_name(t)  type_name(objtype(t))
 
 
@@ -446,14 +448,14 @@ static CHAR *type_names[] = {
 # define FPALIGN(alloc)
 # define ALIGN(n)  (((n) + 7) & ~7L)
 #else
-# define FPALIGNED(x)  (((WORD)objdata(x) & 0x7) == 0)
-# define FPALIGN(alloc)  alloc = (X)((((WORD)alloc + 7) & ~7L) + 4)
+# define FPALIGNED(x)  (((XWORD)objdata(x) & 0x7) == 0)
+# define FPALIGN(alloc)  alloc = (X)((((XWORD)alloc + 7) & ~7L) + 4)
 # define ALIGN(n)  (((n) + 3) & ~3L)
 #endif
 
-#define bytes_to_words(n)  (ALIGN(n) / WORD_SIZE)
-#define words_to_bytes(n)  ((n) * WORD_SIZE)
-#define floats_to_bytes(n)  ((n) * sizeof(FLOAT))
+#define bytes_to_words(n)  (ALIGN(n) / XWORD_SIZE)
+#define words_to_bytes(n)  ((n) * XWORD_SIZE)
+#define floats_to_bytes(n)  ((n) * sizeof(XFLOAT))
 
 #define objbits(x)  (((BLOCK *)(x))->h)
 #define objtype(x)  (objbits(x) >> TYPE_SHIFT)
@@ -463,7 +465,7 @@ static CHAR *type_names[] = {
 #define is_byteblock(x)  ((objbits(x) & BYTEBLOCK_MARK_BIT) != 0)
 #define is_specialblock(x)  ((objbits(x) & SPECIALBLOCK_MARK_BIT) != 0)
 
-#define is_FIXNUM(x)  (((WORD)(x) & FIXNUM_MARK_BIT) != 0)
+#define is_FIXNUM(x)  (((XWORD)(x) & FIXNUM_MARK_BIT) != 0)
 
 // END_OF_LIST_VAL is not available to external C code
 #ifdef COMPILED_PROLOG_PROGRAM
@@ -514,8 +516,8 @@ static inline int is_compound(X x)
 }
 
 
-static inline int is_in_fixnum_range(WORD n) {
-  return (n & WORD_SIGN_BIT) == ((n & WORD_TOP_BIT) << 1);
+static inline int is_in_fixnum_range(XWORD n) {
+  return (n & XWORD_SIGN_BIT) == ((n & XWORD_TOP_BIT) << 1);
 }
 
 
@@ -559,17 +561,17 @@ static inline int is_dbreference(X x)
 
 #define ALLOCATE_BLOCK1(alloc, dest, type, size)				\
   dest = (void *)alloc;						\
-  ((BLOCK *)alloc)->h = ((WORD)(type) << TYPE_SHIFT) | (size);		\
+  ((BLOCK *)alloc)->h = ((XWORD)(type) << TYPE_SHIFT) | (size);		\
   alloc += (size) + 1
 
 #define ALLOCATE_BYTEBLOCK1(alloc, dest, type, size)			\
   dest = (void *)alloc;							\
-  ((BLOCK *)alloc)->h = ((WORD)(type) << TYPE_SHIFT) | (size);		\
-  alloc = (X)ALIGN((WORD)alloc + (size) + sizeof(WORD))
+  ((BLOCK *)alloc)->h = ((XWORD)(type) << TYPE_SHIFT) | (size);		\
+  alloc = (X)ALIGN((XWORD)alloc + (size) + sizeof(XWORD))
 
 #define FLONUM1(alloc, m)  \
   ({ FPALIGN(alloc);							\
-    ALLOCATE_BYTEBLOCK1(alloc, FLONUM_BLOCK *p_, FLONUM_TYPE, sizeof(FLOAT)); \
+    ALLOCATE_BYTEBLOCK1(alloc, FLONUM_BLOCK *p_, FLONUM_TYPE, sizeof(XFLOAT)); \
     p_->n = (m); \
     (X)p_; })
 
@@ -588,14 +590,14 @@ static inline int is_dbreference(X x)
      (X)p_; })
 
 #define STRING1(alloc, len)						\
-  ({ WORD len2_ = (len);							\
+  ({ XWORD len2_ = (len);							\
     ALLOCATE_BYTEBLOCK1(alloc, BLOCK *p_, STRING_TYPE, len2_ + 1);	\
     ((CHAR *)(p_->d))[ len2_ ] = '\0';					\
     (X)p_; })
   
 #define CSTRING1(alloc, str)			\
   ({ char *str_ = str; \
-    WORD len3_ = strlen(str);						\
+    XWORD len3_ = strlen(str);						\
     X s_ = (X)STRING1(alloc, len3_);					\
     memcpy(objdata(s_), str_, len3_);					\
     s_; })
@@ -633,6 +635,41 @@ static inline int is_dbreference(X x)
 #define STRUCTURE(functor, arity)  STRUCTURE1(alloc_top, functor, arity)
 
 
+/// Hook called when the system terminates
+
+static void crash_hook()
+{
+  return;
+}
+
+
+/// Custom variants of some libc functions
+
+#ifdef _WIN32
+static char *xstrndup(char *str, int len)
+{
+  char *buf = malloc(len + 1);
+  ASSERT(buf, "can not duplicate string");
+  strncpy(buf, str, len);
+  return buf;
+}
+#else
+# define xstrndup strndup
+#endif
+
+
+#ifdef DEBUG_GC
+static void XFREE(void *mem, size_t size) 
+{
+  memset(mem, 0xd0, size);
+  free(mem);
+}
+#else
+# define XFREE(mem, size)   free(mem)
+#endif
+
+
+
 /// Converting port to string
 
 static char *port_name(X x)
@@ -641,14 +678,6 @@ static char *port_name(X x)
   static CHAR buffer[ 256 ];
   sprintf(buffer, "<%s-stream>(%p)", p->dir != ZERO ? "input" : "output", (void *)p->fp);
   return buffer;
-}
-
-
-/// Hook called when the system terminates
-
-static void crash_hook()
-{
-  return;
 }
 
 
@@ -678,11 +707,11 @@ static X deref1(X val)
 static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) { 
   if(limit == 0) fputs("...", fp);
   else if(is_FIXNUM(x)) 
-    fprintf(fp, WORD_OUTPUT_FORMAT, fixnum_to_word(x));
+    fprintf(fp, XWORD_OUTPUT_FORMAT, fixnum_to_word(x));
   else {
     switch(objtype(x)) {
     case FLONUM_TYPE:
-      fprintf(fp, FLOAT_OUTPUT_FORMAT, flonum_to_float(x));
+      fprintf(fp, XFLOAT_OUTPUT_FORMAT, flonum_to_float(x));
       break;
 
     case END_OF_LIST_TYPE:
@@ -690,13 +719,13 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
       break;
 
     case VAR_TYPE:
-      fprintf(fp, "_" WORD_OUTPUT_FORMAT, fixnum_to_word(slot_ref(x, 1)));
+      fprintf(fp, "_" XWORD_OUTPUT_FORMAT, fixnum_to_word(slot_ref(x, 1)));
       break;
 
     case SYMBOL_TYPE: {
       X str = slot_ref(x, 0);
       char *name = (char *)objdata(str);
-      WORD len = string_length(str);
+      XWORD len = string_length(str);
       int q = 0;
 
       if(quote) {
@@ -773,7 +802,7 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
       --limit;
       basic_write_term(fp, debug, limit, quote, slot_ref(x, 0));
       fputc('(', fp);
-      WORD len = objsize(x);
+      XWORD len = objsize(x);
       
       for(int i = 1; i < len; ++i) {
 	if(i > 1) 
@@ -790,8 +819,12 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
       fprintf(fp, "<dbreference>(%p)", (void *)slot_ref(x, 0));
       break;
 
+    case STRING_TYPE:
+      fprintf(fp, "<internal string \"%s\">", (char *)objdata(x));
+      break;
+
     default:
-      fprintf(fp, "<object of unknown type %p:" WORD_OUTPUT_FORMAT ">", (void *)x, objtype(x));
+      fprintf(fp, "<object of unknown type %p:" XWORD_OUTPUT_FORMAT ">", (void *)x, objtype(x));
     }
   }
 }
@@ -799,7 +832,7 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
 
 /// symbol-table management
 
-static WORD hash_name(CHAR *name, int len)
+static XWORD hash_name(CHAR *name, int len)
 {
   unsigned long key = 0;
   
@@ -808,15 +841,15 @@ static WORD hash_name(CHAR *name, int len)
   while(len--)
     key = (key ^ ((key << 6) + (key >> 2) + *(name++))) & HASH_MASK;
 
-  return (WORD)key;
+  return (XWORD)(key & 0x3fffffffUL);
 }
 
 
 static X intern(X name)
 {
-  WORD len = string_length(name);
-  WORD hash = hash_name((CHAR *)objdata(name), len);
-  WORD key = hash % SYMBOL_TABLE_SIZE;
+  XWORD len = string_length(name);
+  XWORD hash = hash_name((CHAR *)objdata(name), len);
+  XWORD key = hash % SYMBOL_TABLE_SIZE;
 
   for(X sym = symbol_table[ key ]; sym != END_OF_LIST_VAL; sym = slot_ref(sym, 1)) {
     X name2 = slot_ref(sym, 0);
@@ -837,9 +870,9 @@ static void intern_static_symbols(X sym1)
 {
   while(sym1 != END_OF_LIST_VAL) {
     X name = slot_ref(sym1, 0);
-    WORD len = string_length(name);
-    WORD hash = fixnum_to_word(slot_ref(sym1, 3));
-    WORD key = hash % SYMBOL_TABLE_SIZE;
+    XWORD len = string_length(name);
+    XWORD hash = fixnum_to_word(slot_ref(sym1, 3));
+    XWORD key = hash % SYMBOL_TABLE_SIZE;
     X sym = symbol_table[ key ];
     X nextsym = slot_ref(sym1, 1);
     SLOT_SET(sym1, 1, sym);
@@ -926,7 +959,7 @@ static void evaluation_error(char *msg)
 
 /// type checking
 
-static void check_type_failed(WORD t, X x)
+static void check_type_failed(XWORD t, X x)
 {
   if(is_FIXNUM(x) || !is_VAR(x))
     type_error(type_name(t), x);
@@ -935,7 +968,7 @@ static void check_type_failed(WORD t, X x)
 }
 
 
-static inline X check_type(WORD t, X x)
+static inline X check_type(XWORD t, X x)
 {
 #ifndef UNSAFE
   if(is_FIXNUM(x) || objtype(x) != t)
@@ -996,7 +1029,7 @@ static inline X check_integer(X x)
     return x;
 
   if(objtype(x) == FLONUM_TYPE) {
-    FLOAT n;
+    XFLOAT n;
 
     if(modf(flonum_to_float(x), &n) == 0)
       return x;
@@ -1070,6 +1103,46 @@ static inline X check_output_port(X x)
 }
 
 
+/// Management of the "shared term table"
+
+static void clear_shared_term_table()
+{
+  for(int i = 0; i < shared_term_counter; ++i) {
+    XWORD p = shared_term_table_positions[ i ];
+    shared_term_table[ p ] = shared_term_table[ p + 1 ] = NULL;
+  }
+
+  shared_term_counter = 0;
+}
+
+
+static X *lookup_shared_term(X x, int addnew)
+{
+  XWORD key = (XWORD)x % SHARED_TERM_TABLE_SIZE;
+  int f = 0;
+  key *= 2;
+
+  while(shared_term_table[ key ] != x) { /* found? */
+    if(shared_term_table[ key ] == NULL) { /* unused entry? */
+      if(!addnew) return NULL;
+
+      shared_term_table_positions[ shared_term_counter++ ] = key;
+      break;
+    }
+
+    key += 2;			// try next
+    
+    if(key >= (SHARED_TERM_TABLE_SIZE * 2)) { /* beyond table size? */
+      ASSERT(!f, "shared term table full");
+      f = 1;
+      key = 0;			/* start over from the beginning */
+    }
+  }
+
+  return &(shared_term_table[ key ]); /* entry found */
+} 
+
+
 /// Variable + trail handling
 
 static inline X make_var()
@@ -1087,7 +1160,7 @@ static void unwind_trail(X *tp)
   while(trail_top != tp) {
     BLOCK *var = (BLOCK *)(*(--trail_top));
 #ifdef DEBUGGING
-    DRIBBLE("[detrail: _" WORD_OUTPUT_FORMAT "]\n", fixnum_to_word(slot_ref((X)var, 1)));
+    DRIBBLE("[detrail: _" XWORD_OUTPUT_FORMAT "]\n", fixnum_to_word(slot_ref((X)var, 1)));
 #endif
     SLOT_SET(var, 0, var);
   }
@@ -1099,7 +1172,7 @@ static inline void push_trail(CHOICE_POINT *C0, X var)
   // trail-check
   if(fixnum_to_word(slot_ref(var, 2)) < C0->timestamp) {
 #ifndef UNSAFE
-    if((WORD)trail_top >= (WORD)trail_stack + trail_stack_size)
+    if((XWORD)trail_top >= (XWORD)trail_stack + trail_stack_size)
       CRASH("trail-stack overflow");
 #endif
 
@@ -1113,83 +1186,7 @@ static inline void push_trail(CHOICE_POINT *C0, X var)
 }
 
 
-// returns location of associated key + value in circular-term-table
-static X *lookup_circular_term(X x)
-{
-  WORD key = (WORD)x % circular_term_table_size;
-  int f = 0;
-  key *= 2;
-
-  while(circular_term_table[ key ] != x) {
-    if(circular_term_table[ key ] == NULL) /* unused entry? */
-      break;
-
-    // try next
-    key += 2;
-
-    if(key >= (circular_term_table_size * 2)) { /* beyond table size? */
-      if(f) {		     /* already started from the beginning? */
-	// resize table and rehash
-	int newsize = circular_term_table_size * 2;
-	X *newtable = malloc(newsize * 2);
-	ASSERT(newtable, "out of memory - can not resize circular term table");
-	memset(newtable, 0, newsize * 2 * sizeof(X));
-	
-	for(int i = 0; i < circular_term_counter; ++i) {
-	  if(circular_term_table[ i * 2 ] != NULL) {
-	    WORD newkey = (WORD)circular_term_table[ i * 2] % newsize;
-	    newtable[ newkey ] = circular_term_table[ i * 2 ];
-	    newtable[ newkey + 1 ] = circular_term_table[ i * 2 + 1 ];
-	  }
-	}
-
-	f = 0;
-	free(circular_term_table);
-	circular_term_table = newtable;
-	circular_term_table_size = newsize;
-      }
-      else {
-	f = 1;
-	key = 0;			/* start over from the beginning */
-      }
-    }
-    else if(key >= circular_term_counter) /* in unused table part? */
-      break;
-  }
-
-  if(key > circular_term_counter)
-    circular_term_counter = key + 2;
-
-  return &(circular_term_table[ key ]); /* entry found */
-} 
-
-
-static X find_frozen_variable(X var)
-{
-  //XXX could use hashing, but probably not worth the trouble
-  for(int i = 0; i < freeze_term_var_counter; i += 2) {
-    if(var == freeze_term_var_table[ i ]) 
-      return freeze_term_var_table[ i + 1 ];
-  }
-
-  return (X)NULL;
-}
-
-
-static void ensure_freeze_term_var_table_size(WORD index)
-{
-  if(index + 2 >= freeze_term_var_table_size) {
-    WORD newsize = index + index / 4;
-    freeze_term_var_table = realloc(freeze_term_var_table, newsize * sizeof(X));
-    ASSERT(freeze_term_var_table, "out of memory - can not reallocate freeze-term variable table");
-    memset(freeze_term_var_table + freeze_term_var_table_size, 0,
-	   (newsize - freeze_term_var_table_size) * sizeof(X));
-    freeze_term_var_table_size = newsize;
-  }
-}
-
-
-// deref recursively, needed for global variables (or the assigned value may not survive backtracking)
+// deref recursively, effectively copying term
 static X deref_recursive(X val, int limit, int *failed)
 {
   *failed = 0;
@@ -1200,38 +1197,29 @@ static X deref_recursive(X val, int limit, int *failed)
     val = deref1(val);
 
     if(is_variable(val)) {
-      X x = find_frozen_variable(val);
+      X *tp = lookup_shared_term(val, 1);
 
-      if(x == NULL) {
-	ensure_freeze_term_var_table_size(freeze_term_var_counter);
-	freeze_term_var_table[ freeze_term_var_counter++ ] = val;
+      if(*tp != NULL) return tp[ 1 ];
 
-	if(alloc_top + 4 > fromspace_limit) {
-	  *failed = 1;
-	  return val;
-	}
+      *tp = val;
 
-	ALLOCATE_BLOCK(BLOCK *newvar, VAR_TYPE, 3);
-	newvar->d[ 0 ] = (X)newvar;
-	newvar->d[ 1 ] = word_to_fixnum(variable_counter++);
-	newvar->d[ 2 ] = word_to_fixnum(clock_ticks++);
-	freeze_term_var_table[ freeze_term_var_counter++ ] = (X)newvar;
-	return (X)newvar;
+      if(alloc_top + 4 > fromspace_limit) {
+	*failed = 1;
+	return val;
       }
 
-      return x;
+      ALLOCATE_BLOCK(BLOCK *newvar, VAR_TYPE, 3);
+      newvar->d[ 0 ] = (X)newvar;
+      newvar->d[ 1 ] = word_to_fixnum(variable_counter++);
+      newvar->d[ 2 ] = word_to_fixnum(clock_ticks++);
+      return tp[ 1 ] = (X)newvar;
     }
   }
 
-  if(is_FIXNUM(val) || val == END_OF_LIST_VAL || is_byteblock(val) || is_SYMBOL(val) || !IS_IN_HEAP(val)) 
+  if(is_FIXNUM(val) || val == END_OF_LIST_VAL || is_byteblock(val) || is_SYMBOL(val))
     return val;
 
-  X *tp = lookup_circular_term(val);
-
-  if(*tp == val) return tp[ 1 ];
-
-  *tp = val;
-  WORD s = objsize(val);
+  XWORD s = objsize(val);
 
   if(alloc_top + s + 1 > fromspace_limit) {
     *failed = 1;
@@ -1239,7 +1227,6 @@ static X deref_recursive(X val, int limit, int *failed)
   }
 
   ALLOCATE_BLOCK(BLOCK *p, objtype(val), s);
-  tp[ 1 ] = (X)p;
   --limit;
   int i = 0;
 
@@ -1262,18 +1249,15 @@ static X deref_recursive(X val, int limit, int *failed)
 
 static X deref_all(X val, int limit, int *failed)
 {
-  freeze_term_var_counter = 0;
-  circular_term_counter = 0;
   X y = deref_recursive(val, limit, failed);
-  memset(freeze_term_var_table, 0, freeze_term_var_counter * sizeof(X));
-  memset(circular_term_table, 0, circular_term_counter * sizeof(X));
+  clear_shared_term_table();
   return y;
 }
 
 
 /// Databases
 
-// evict into malloc'd memory, replacing variables with new ones with indexes from 0 to N
+// evict into malloc'd memory
 static X freeze_term_recursive(X x)
 {
   x = deref(x);
@@ -1281,35 +1265,26 @@ static X freeze_term_recursive(X x)
   if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return x;
 
   if(is_VAR(x)) {
-    X y = find_frozen_variable(x);
+    X *tp = lookup_shared_term(x, 1);
 
-    if(y == NULL) {
-      ensure_freeze_term_var_table_size(freeze_term_var_counter);
-      freeze_term_var_table[ freeze_term_var_counter++ ] = x;
-      BLOCK *newvar = (BLOCK *)malloc(sizeof(WORD) * 4);
-      ASSERT(newvar, "out of memory - can mot freeze term");
-      newvar->h = VAR_TAG | 3;
-      newvar->d[ 0 ] = (X)newvar;
-      newvar->d[ 1 ] = word_to_fixnum(variable_counter++);
-      newvar->d[ 2 ] = word_to_fixnum(0);
-      freeze_term_var_table[ freeze_term_var_counter++ ] = (X)newvar;
-      return (X)newvar;
-    }
+    if(*tp != NULL) return tp[ 1 ];
 
-    return y;
+    *tp = x;
+    BLOCK *newvar = (BLOCK *)malloc(sizeof(XWORD) * 4);
+    ASSERT(newvar, "out of memory - can not freeze variable");
+    newvar->h = VAR_TAG | 3;
+    newvar->d[ 0 ] = (X)newvar;
+    newvar->d[ 1 ] = word_to_fixnum(variable_counter++);
+    newvar->d[ 2 ] = word_to_fixnum(0); /* timestamp */
+    return tp[ 1 ] = (X)newvar;
   }
 
-  X *tp = lookup_circular_term(x);
-
-  if(*tp == x) return tp[ 1 ];
-
-  *tp = x;
+  ASSERT(!is_DBREFERENCE(x), "db-references can not be frozen");
 
   if(is_byteblock(x)) {
-    WORD size = objsize(x);
-    BYTEBLOCK *b = (BYTEBLOCK *)malloc(sizeof(WORD) + size);
-    ASSERT(b, "out of memory - can not allocate byteblock");
-    tp[ 1 ] = (X)b;
+    XWORD size = objsize(x);
+    BYTEBLOCK *b = (BYTEBLOCK *)malloc(sizeof(XWORD) + size);
+    ASSERT(b, "out of memory - can not freeze byteblock");
     b->h = objbits(x);
     memcpy(b->d, objdata(x), size);
     return (X)b;
@@ -1317,16 +1292,20 @@ static X freeze_term_recursive(X x)
 
   if(is_SYMBOL(x)) {
     // just freeze string - it will be interned when thawed
-    X y = freeze_term_recursive(slot_ref(x, 0));
-    tp[ 1 ] = y;
-    return y;
+    X str = slot_ref(x, 0);
+    X *tp = lookup_shared_term(str, 1);
+
+    if(*tp != NULL) return tp[ 1 ];
+
+    *tp = x;
+    X y = freeze_term_recursive(str);
+    return tp[ 1 ] = y;
   }
 
-  WORD size = objsize(x);
-  WORD i = 0;
-  BLOCK *b = (BLOCK *)malloc(sizeof(WORD) * (size + 1));
-  ASSERT(b, "out of memory - can not allocate block");
-  tp[ 1 ] = (X)b;
+  XWORD size = objsize(x);
+  XWORD i = 0;
+  BLOCK *b = (BLOCK *)malloc(sizeof(XWORD) * (size + 1));
+  ASSERT(b, "out of memory - can not freeze block");
   b->h = objbits(x);
 
   if(is_specialblock(x)) {
@@ -1345,11 +1324,8 @@ static X freeze_term_recursive(X x)
 
 static X freeze_term(X x)
 {
-  circular_term_counter = 0;
-  freeze_term_var_counter = 0;
   X y = freeze_term_recursive(x);
-  memset(freeze_term_var_table, 0, freeze_term_var_counter * sizeof(X));
-  memset(circular_term_table, 0, circular_term_counter * sizeof(X));
+  clear_shared_term_table();
   return y;
 }
 
@@ -1364,31 +1340,36 @@ static int thaw_term_recursive(X *xp)
   if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return 1;
 
   if(is_VAR(x)) {
-    X y = find_frozen_variable(x);
+    X *tp = lookup_shared_term(x, 1);
 
-    if(y == NULL) {
-      ensure_freeze_term_var_table_size(freeze_term_var_counter);
-      freeze_term_var_table[ freeze_term_var_counter++ ] = x;
-
-      if(alloc_top + objsize(x) + 1 >= fromspace_limit) return 0;
-
-      *xp = make_var();
-      freeze_term_var_table[ freeze_term_var_counter++ ] = *xp;
+    if(*tp != NULL) {
+      *xp = tp[ 1 ];
+      return 1;
     }
-    else *xp = y;
 
-    return 1;
-  }
+    *tp = x;
 
-  X *tp = lookup_circular_term(x);
-
-  if(*tp == x) {
-    *xp = tp[ 1 ];
+    if(alloc_top + objsize(x) + 1 >= fromspace_limit) return 0;
+    
+    tp[ 1 ] = *xp = make_var();
     return 1;
   }
 
   if(is_byteblock(x)) {
-    WORD size = objsize(x);
+    X *tp;
+
+    if(is_STRING(x)) {
+      tp = lookup_shared_term(x, 1);
+
+      if(*tp != NULL) {
+	*xp = tp[ 1 ];
+	return 1;
+      }
+
+      *tp = x;
+    }
+
+    XWORD size = objsize(x);
 
     if(alloc_top + bytes_to_words(size + 1) > fromspace_limit)
       return 0;
@@ -1396,21 +1377,18 @@ static int thaw_term_recursive(X *xp)
     ALLOCATE_BYTEBLOCK(BYTEBLOCK *b, objtype(x), size);
     memcpy(b->d, objdata(x), size);
 
-    if(is_STRING(x)) *xp = intern((X)b);
+    if(is_STRING(x)) tp[ 1 ] = *xp = intern((X)b);
     else *xp = (X)b;
 
-    tp[ 1 ] = *xp;
     return 1;
   }
 
-  *tp = x;
-  WORD i = 0;
-  WORD size = objsize(x);
+  XWORD i = 0;
+  XWORD size = objsize(x);
 
   if(alloc_top + size + 1 > fromspace_limit) return 0;
 
   ALLOCATE_BLOCK(BLOCK *b, objtype(x), size);
-  tp[ 1 ] = (X)b;
   
   // initialize, in case thawing elements fails
   for(i = 0; i < size; ++i)
@@ -1441,11 +1419,8 @@ static int thaw_term_recursive(X *xp)
 static X thaw_term(X x, int *failed)
 {
   X y = x;
-  freeze_term_var_counter = 0;
-  circular_term_counter = 0;
   *failed = !thaw_term_recursive(&y);
-  memset(freeze_term_var_table, 0, freeze_term_var_counter * sizeof(X));
-  memset(circular_term_table, 0, circular_term_counter * sizeof(X));
+  clear_shared_term_table();
   return y;
 }
 
@@ -1455,20 +1430,31 @@ static void delete_term_recursive(X x)
 {
   if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return;
 
-  X *tp = lookup_circular_term(x);
+  // must be lookup up first, as it's header may already be destroyed
+  X *tp = lookup_shared_term(x, 0);
 
-  if(*tp == x) return;
-
-  *tp = x;
-  tp[ 1 ] = x;			/* just mark as already deleted */
-
-  if(is_byteblock(x)) {
-    free(x);
+  if(tp) return;
+  
+  if(is_VAR(x)) {
+    tp = lookup_shared_term(x, 1);
+    *tp = x;			/* just add val to mark it */
+    XFREE(x, objsize(x) * sizeof(X) + sizeof(XWORD));
     return;
   }
 
-  WORD i = 0;
-  WORD size = objsize(x);
+  XWORD size = objsize(x);
+
+  if(is_byteblock(x)) {
+    if(is_STRING(x)) {
+      tp = lookup_shared_term(x, 1);
+      *tp = x;			/* s.a. */
+    }
+      
+    XFREE(x, size + sizeof(XWORD));
+    return;
+  }
+
+  XWORD i = 0;
 
   if(is_specialblock(x)) i = 1;
 
@@ -1477,28 +1463,27 @@ static void delete_term_recursive(X x)
     ++i;
   }
 
-  free(x);
+  XFREE(x, size * sizeof(X) + sizeof(XWORD));
 }
 
 
 static void delete_term(X x)
 {
-  circular_term_counter = 0;
   delete_term_recursive(x);
-  memset(circular_term_table, 0, circular_term_counter * sizeof(X));
+  clear_shared_term_table();
 }
 
 
-static DB *create_db(char *name, int namelen, WORD tablesize)
+static DB *create_db(char *name, int namelen, XWORD tablesize)
 {
   DB *db = malloc(sizeof(DB));
   ASSERT(db, "out of memory - can not create database");
-  db->name = strndup(name, namelen);
+  db->name = xstrndup(name, namelen);
   db->tablesize = tablesize;
   db->table = malloc(sizeof(DB_BUCKET *) * tablesize);
   ASSERT(db->table, "out of memory - can not allocate database table");
 
-  for(WORD i = 0; i < tablesize; ++i)
+  for(XWORD i = 0; i < tablesize; ++i)
     db->table[ i ] = NULL;
 
   return db;
@@ -1507,7 +1492,7 @@ static DB *create_db(char *name, int namelen, WORD tablesize)
 
 static DB_ITEM *db_insert_item(DB *db, char *key, int keylen, X val, int atend)
 {
-  WORD hash = hash_name(key, keylen) % db->tablesize;
+  XWORD hash = hash_name(key, keylen) % db->tablesize;
   DB_ITEM *item = malloc(sizeof(DB_ITEM));
   ASSERT(item, "out of memory - can not allocate db-item");
   item->val = freeze_term(val);
@@ -1539,7 +1524,7 @@ static DB_ITEM *db_insert_item(DB *db, char *key, int keylen, X val, int atend)
   ASSERT(bucket, "out of memory - can not allocate db-bucket");
   bucket->db = db;
   bucket->index = hash;
-  bucket->key = strndup(key, keylen);
+  bucket->key = xstrndup(key, keylen);
   bucket->keylen = keylen;
   bucket->firstitem = item;
   item->next = NULL;
@@ -1555,7 +1540,7 @@ static DB_ITEM *db_insert_item(DB *db, char *key, int keylen, X val, int atend)
 
 static DB_ITEM *db_find_first_item(DB *db, char *key, int keylen)
 {
-  WORD hash = hash_name(key, keylen) % db->tablesize;
+  XWORD hash = hash_name(key, keylen) % db->tablesize;
 
   for(DB_BUCKET *bucket = db->table[ hash ]; bucket != NULL; bucket = bucket->next) {
     if(bucket->keylen == keylen && !strncmp(key, bucket->key, keylen)) {
@@ -1593,7 +1578,9 @@ static DB_BUCKET *db_enumerate_buckets(DB *db, DB_BUCKET *prev)
 
 static void db_mark_item_as_erased(DB_ITEM *item)
 {
-  item->erased = 1;
+  if(item->erased) return;
+
+  item->erased= 1;
   item->next_deleted = deleted_db_items;
   deleted_db_items = item;
 }
@@ -1615,6 +1602,7 @@ static void db_mark_bucket_as_erased(DB_ITEM *item)
 static void db_erase_item(DB_ITEM *item)
 {
   DB_BUCKET *bucket = item->bucket;
+  ASSERT(item->erased, "attempt to delete db-item that is not marked as erased");
   delete_term(item->val);
 
   if(bucket->firstitem == item) {
@@ -1626,8 +1614,8 @@ static void db_erase_item(DB_ITEM *item)
 
       bucket->db->table[ bucket->index ] = NULL;
       bucket->previous = bucket->next = NULL;
-      free(bucket->key);
-      free(bucket);
+      XFREE(bucket->key, bucket->keylen);
+      XFREE(bucket, sizeof(DB_BUCKET));
     }
     else {
       // first item in bucket
@@ -1649,7 +1637,7 @@ static void db_erase_item(DB_ITEM *item)
 
   item->next = item->previous = NULL;
   item->bucket = NULL;
-  free(item);
+  XFREE(item, sizeof(DB_ITEM));
 }
 
 
@@ -1657,21 +1645,21 @@ static void db_erase_item(DB_ITEM *item)
 
 static void mark(X *addr) 
 {
-  WORD h = ((BLOCK *)(*addr))->h;
+  XWORD h = ((BLOCK *)(*addr))->h;
 
   if((h & GC_MARK_BIT) != 0) {
     *addr = fptr_to_ptr(h);
     return;
   }
 
-  WORD size = h & HEADER_SIZE_MASK;
+  XWORD size = h & HEADER_SIZE_MASK;
 
   if((h & BYTEBLOCK_MARK_BIT) == 0) 
-    size *= sizeof(WORD);
+    size *= sizeof(XWORD);
   else
     size = ALIGN(size);
 
-  WORD t = TAG_TO_TYPE(h);
+  XWORD t = TAG_TO_TYPE(h);
 
 #ifndef SIXTYFOUR
   if(t == FLONUM_TYPE && !FPALIGNED(tospace_top))
@@ -1685,9 +1673,9 @@ static void mark(X *addr)
   }
 
   X nptr = tospace_top;
-  WORD fptr = ptr_to_fptr(tospace_top);
-  memcpy(tospace_top, *addr, size + sizeof(WORD));
-  tospace_top = (X)((WORD)tospace_top + size + sizeof(WORD));
+  XWORD fptr = ptr_to_fptr(tospace_top);
+  memcpy(tospace_top, *addr, size + sizeof(XWORD));
+  tospace_top = (X)((XWORD)tospace_top + size + sizeof(XWORD));
   ((BLOCK *)(*addr))->h = fptr;
   *addr = nptr;
 }
@@ -1695,7 +1683,7 @@ static void mark(X *addr)
 
 static inline void mark1(X *addr)  
 { 
-  WORD p = (WORD)(*addr);
+  XWORD p = (XWORD)(*addr);
 
   if(IS_TAINTED_PTR(p))
     CRASH("access of tainted pointer");
@@ -1742,12 +1730,12 @@ static void collect_garbage(CHOICE_POINT *C)
 
   while(scan_ptr < tospace_top) {						
 #ifndef SIXTYFOUR
-    if(((WORD)scan_ptr & 7) == 0 && *scan_ptr == ALIGNMENT_HOLE_MARKER) 
+    if(((XWORD)scan_ptr & 7) == 0 && *scan_ptr == ALIGNMENT_HOLE_MARKER) 
       ++scan_ptr; 
 #endif
 
-    WORD h = (WORD)(*scan_ptr);						
-    WORD size = h & HEADER_SIZE_MASK;					
+    XWORD h = (XWORD)(*scan_ptr);						
+    XWORD size = h & HEADER_SIZE_MASK;					
 
     // DRIBBLE("H: %08lx\n", h);
 
@@ -1822,7 +1810,7 @@ static void collect_garbage(CHOICE_POINT *C)
   }
 
   if(tsp < trail_top)
-    DRIBBLE("trail-stack reduced by " WORD_OUTPUT_FORMAT " ... ", (WORD)(trail_top - tsp));
+    DRIBBLE("trail-stack reduced by " XWORD_OUTPUT_FORMAT " ... ", (XWORD)(trail_top - tsp));
 
   trail_top = tsp;
 
@@ -1873,27 +1861,28 @@ static void collect_garbage(CHOICE_POINT *C)
   tospace_end = tmp;	
   fromspace_limit = (X)((char *)fromspace_end - heap_reserve);	
   alloc_top = tospace_top;
-  WORD total = (WORD)fromspace_end - (WORD)fromspace;
-  WORD used = (WORD)alloc_top - (WORD)fromspace;
-  DRIBBLE("finished (" WORD_OUTPUT_FORMAT "%% in use, T: " WORD_OUTPUT_FORMAT
-	  ", C: " WORD_OUTPUT_FORMAT ", A: " WORD_OUTPUT_FORMAT ", E: " 
-	  WORD_OUTPUT_FORMAT ")]\n",
-	  (WORD)((double)used / total * 100),
-	  (WORD)trail_top - (WORD)trail_stack,
-	  (WORD)C - (WORD)choice_point_stack,
-	  (WORD)arg_top - (WORD)argument_stack,
-	  (WORD)env_top - (WORD)environment_stack);
+  XWORD total = (XWORD)fromspace_end - (XWORD)fromspace;
+  XWORD used = (XWORD)alloc_top - (XWORD)fromspace;
+  DRIBBLE("finished (" XWORD_OUTPUT_FORMAT "%% in use, T: " XWORD_OUTPUT_FORMAT
+	  ", C: " XWORD_OUTPUT_FORMAT ", A: " XWORD_OUTPUT_FORMAT ", E: " 
+	  XWORD_OUTPUT_FORMAT ")]\n",
+	  (XWORD)((double)used / total * 100),
+	  (XWORD)trail_top - (XWORD)trail_stack,
+	  (XWORD)C - (XWORD)choice_point_stack,
+	  (XWORD)arg_top - (XWORD)argument_stack,
+	  (XWORD)env_top - (XWORD)environment_stack);
   ++gc_count;
   
   if(alloc_top >= fromspace_limit) 
     CRASH("heap exhausted");				
 
+  //XXX currently not used
   // check finalizers
   FINALIZER *prev = NULL;
   FINALIZER *fp = active_finalizers; 
 
   while(fp != NULL) {
-    WORD h = objbits(fp->object);
+    XWORD h = objbits(fp->object);
 
     if((h & GC_MARK_BIT) != 0) {
       fp->object = fptr_to_ptr(h);
@@ -1923,6 +1912,7 @@ static void collect_garbage(CHOICE_POINT *C)
 
   while(item != NULL) {
     DB_ITEM *next = item->next_deleted;
+    ASSERT(item->erased, "unerased db-item in deleted items list");
 
     if(item->refcount == 0) {
       if(previtem) 
@@ -1942,8 +1932,8 @@ static void collect_garbage(CHOICE_POINT *C)
     DRIBBLE("[%d db-items deleted]\n", deleted);
 
 #ifdef DEBUG_GC
-  memset(tospace, TAINTED_PTR_B & 0xff, (WORD)tospace_end - (WORD)tospace);
-  memset(alloc_top, TAINTED_PTR_A & 0xff, (WORD)fromspace_end - (WORD)alloc_top);
+  memset(tospace, TAINTED_PTR_B & 0xff, (XWORD)tospace_end - (XWORD)tospace);
+  memset(alloc_top, TAINTED_PTR_A & 0xff, (XWORD)fromspace_end - (XWORD)alloc_top);
 #endif
 }
 
@@ -1961,17 +1951,17 @@ static void set_finalizer(X x, void (*fn)(X))
 /// runtime initialization and abnormal exit
 
 
-static WORD numeric_arg(char *arg)
+static XWORD numeric_arg(char *arg)
 {
   int len = strlen(arg);
-  WORD m = 1L;
+  XWORD m = 1L;
 
   switch(toupper(arg[ len - 1 ])) {
   case 'K': m = 1024L; break;
   case 'M': m = 1024L * 1024L; break;
   case 'G': m = 1024L * 1024L * 1024L; break;
 #ifdef SIXTYFOUR
-  case 'T': m = 1024L * 1024L * 1024L * 1024L; break;
+  case 'T': m = (XWORD)1024L * 1024L * 1024L * 1024L; break;
 #endif
   default: return atol(arg);
   }
@@ -2040,9 +2030,10 @@ static void initialize(int argc, char *argv[])
     }
   }
 
-  DRIBBLE("[allocating heap of size 2 x " WORD_OUTPUT_FORMAT "]\n", heap_size / 2);
+  DRIBBLE("[allocating heap of size 2 x " XWORD_OUTPUT_FORMAT "]\n", heap_size / 2);
   heap_reserve = heap_size * HEAP_RESERVE / 100.0;
 
+#ifndef _WIN32
   if(mmapped_heap) {
     mmapped_fd = open(mmapped_heap, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 
@@ -2058,17 +2049,19 @@ static void initialize(int argc, char *argv[])
       CRASH("unable to map heap file into memory: %s", strerror(errno));
 
     fromspace = mmapped_buffer;
-    tospace = (X *)((WORD)fromspace + heap_size / 2);
+    tospace = (X *)((XWORD)fromspace + heap_size / 2);
   }
-  else {
+  else
+#endif
+  {
     fromspace = malloc(heap_size / 2);
     tospace = malloc(heap_size / 2);
     ASSERT(fromspace && tospace, "can not allocate heap");
   }
 
-  fromspace_end = (X *)((WORD)fromspace + heap_size / 2);
-  tospace_end = (X *)((WORD)tospace + heap_size / 2);
-  fromspace_limit = (X *)((WORD)fromspace_end - heap_reserve);
+  fromspace_end = (X *)((XWORD)fromspace + heap_size / 2);
+  tospace_end = (X *)((XWORD)tospace + heap_size / 2);
+  fromspace_limit = (X *)((XWORD)fromspace_end - heap_reserve);
   alloc_top = fromspace;
   default_input_port.fp = stdin;
   default_output_port.fp = stdout;
@@ -2089,15 +2082,13 @@ static void initialize(int argc, char *argv[])
   ifthen_top = ifthen_stack;
   env_top = environment_stack;
   arg_top = argument_stack;
-  circular_term_table_size = CIRCULAR_TERM_TABLE_SIZE;
-  circular_term_table = malloc(CIRCULAR_TERM_TABLE_SIZE * 2 * sizeof(X));
-  ASSERT(circular_term_table, "out of memory - can not allocate circular term table");
-  memset(circular_term_table, 0, CIRCULAR_TERM_TABLE_SIZE * 2 * sizeof(X));
   string_buffer = malloc(string_buffer_length = STRING_BUFFER_SIZE);
   ASSERT(argument_stack, "out of memory - can not allocate string buffer");
-  freeze_term_var_table_size = INITIAL_FREEZE_TERM_VAR_TABLE_SIZE * 2;
-  freeze_term_var_table = malloc(freeze_term_var_table_size * sizeof(X));
-  ASSERT(freeze_term_var_table, "out of memory - can not allocate freeze-term variable table");
+  shared_term_table = malloc(SHARED_TERM_TABLE_SIZE * 2 * sizeof(X));
+  ASSERT(shared_term_table, "out of memory - can not allocate shared term table");
+  memset(shared_term_table, 0, SHARED_TERM_TABLE_SIZE * 2 * sizeof(X));
+  shared_term_table_positions = malloc(SHARED_TERM_TABLE_SIZE * sizeof(XWORD));
+  ASSERT(shared_term_table, "out of memory - can not allocate shared term positions table");
   trail_stack_gap_buffer = malloc(TRAIL_STACK_GAP_BUFFER_SIZE * sizeof(TRAIL_STACK_GAP));
   ASSERT(trail_stack_gap_buffer, "out of memory - can not allocate initial trail-stack gap buffer");
 
@@ -2116,23 +2107,26 @@ static void initialize(int argc, char *argv[])
   gc_count = 0;
   active_finalizers = free_finalizers = NULL;
   clock_ticks = 0;
-  circular_term_counter = 0;
+  shared_term_counter = 0;
   variable_counter = 0;
 
 #ifdef DEBUG_GC
-  memset(tospace, TAINTED_PTR_B & 0xff, (WORD)tospace_end - (WORD)tospace);
-  memset(fromspace, TAINTED_PTR_A & 0xff, (WORD)fromspace_end - (WORD)fromspace);
+  memset(tospace, TAINTED_PTR_B & 0xff, (XWORD)tospace_end - (XWORD)tospace);
+  memset(fromspace, TAINTED_PTR_A & 0xff, (XWORD)fromspace_end - (XWORD)fromspace);
 #endif
 }
 
 
 static void cleanup()
 {
+#ifndef _WIN32
   if(mmapped_heap) {
     munmap(mmapped_buffer, heap_size);
     close(mmapped_fd);
   }
-  else {
+  else 
+#endif
+  {
     free(fromspace);
     free(tospace);
   }
@@ -2143,18 +2137,19 @@ static void cleanup()
   free(argument_stack);
   free(environment_stack);
   free(string_buffer);
-  free(freeze_term_var_table);
+  free(shared_term_table);
+  free(shared_term_table_positions);
 }
 
 
 static void terminate(CHOICE_POINT *C, int code)
 {
-  DRIBBLE("[terminating - T: " WORD_OUTPUT_FORMAT ", C: " WORD_OUTPUT_FORMAT
-	  ", A: " WORD_OUTPUT_FORMAT ", E: " WORD_OUTPUT_FORMAT "]\n",
-	  (WORD)trail_top - (WORD)trail_stack,
-	  (WORD)C - (WORD)choice_point_stack,
-	  (WORD)arg_top - (WORD)argument_stack,
-	  (WORD)env_top - (WORD)environment_stack);
+  DRIBBLE("[terminating - T: " XWORD_OUTPUT_FORMAT ", C: " XWORD_OUTPUT_FORMAT
+	  ", A: " XWORD_OUTPUT_FORMAT ", E: " XWORD_OUTPUT_FORMAT "]\n",
+	  (XWORD)trail_top - (XWORD)trail_stack,
+	  (XWORD)C - (XWORD)choice_point_stack,
+	  (XWORD)arg_top - (XWORD)argument_stack,
+	  (XWORD)env_top - (XWORD)environment_stack);
   cleanup();
   exit(code);
 }
@@ -2244,13 +2239,13 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
   if(is_FIXNUM(x) && is_FIXNUM(y)) 
     return x == y;
 
-  WORD xt = is_FIXNUM(x) ? FIXNUM_TYPE : objtype(x);
-  WORD yt = is_FIXNUM(y) ? FIXNUM_TYPE : objtype(y);
+  XWORD xt = is_FIXNUM(x) ? FIXNUM_TYPE : objtype(x);
+  XWORD yt = is_FIXNUM(y) ? FIXNUM_TYPE : objtype(y);
 
   if(xt == VAR_TYPE) {
 #ifdef DEBUGGING
     if(verbose) {
-      DRIBBLE("[binding _" WORD_OUTPUT_FORMAT " <- ", fixnum_to_word(slot_ref(x, 1)));
+      DRIBBLE("[binding _" XWORD_OUTPUT_FORMAT " <- ", fixnum_to_word(slot_ref(x, 1)));
       basic_write_term(stderr, 1, 9999, 1, y);
       fputs("]\n", stderr);
     }
@@ -2264,7 +2259,7 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
   if(yt == VAR_TYPE) {
 #ifdef DEBUGGING
     if(verbose) {
-      DRIBBLE("[binding _" WORD_OUTPUT_FORMAT " <- ", fixnum_to_word(slot_ref(y, 1)));
+      DRIBBLE("[binding _" XWORD_OUTPUT_FORMAT " <- ", fixnum_to_word(slot_ref(y, 1)));
       basic_write_term(stderr, 1, 9999, 1, x);
       fputs("]\n", stderr);
     }
@@ -2281,7 +2276,7 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
   if(xt == FIXNUM_TYPE)
     return 1;
 
-  WORD s = objsize(x);
+  XWORD s = objsize(x);
 
   if(s != objsize(y)) 
     return 0;
@@ -2498,15 +2493,15 @@ static inline X num_rem(X x, X y)
 
 static inline X num_mod(X x, X y)
 {
-  WORD x2 = fixnum_to_word(check_fixnum(deref(x)));
-  WORD y2 = fixnum_to_word(check_fixnum(deref(y)));
+  XWORD x2 = fixnum_to_word(check_fixnum(deref(x)));
+  XWORD y2 = fixnum_to_word(check_fixnum(deref(y)));
 
 #ifndef UNSAFE
   if(y2 == 0)
     evaluation_error("zero_divisor");
 #endif
 
-  WORD z = x2 % y2;
+  XWORD z = x2 % y2;
     
   if(y2 < 0)
     return z <= 0 ? word_to_fixnum(z) : word_to_fixnum(z + y2);
@@ -2556,14 +2551,14 @@ static inline X num_float(X x)
 
 static inline X num_frac(X x)
 {
-  FLOAT i;
+  XFLOAT i;
   return FLONUM(modf(flonum_to_float(check_type_FLONUM(deref(x))), &i));
 }
 
 
 static inline X num_int(X x)
 {
-  FLOAT i;
+  XFLOAT i;
   modf(flonum_to_float(check_type_FLONUM(deref(x))), &i);
   return FLONUM(i);
 }
@@ -2589,7 +2584,7 @@ static inline X num_abs(X x)
     return fixnum_to_word(x) < 0 ? word_to_fixnum(-fixnum_to_word(x)) : x;
 
   if(is_FLONUM(x)) {
-    FLOAT n = flonum_to_float(x);
+    XFLOAT n = flonum_to_float(x);
 
     if(n < 0) return FLONUM(-n);
     
@@ -2616,7 +2611,7 @@ static inline X num_sign(X x)
   }
 
   if(is_FLONUM(x)) {
-    FLOAT n = flonum_to_float(x);
+    XFLOAT n = flonum_to_float(x);
 
     if(n < 0.0) return FLONUM(-1);
     
@@ -2662,21 +2657,21 @@ static inline X num_clock()
 #if defined(__linux__)
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
-  return FLONUM((FLOAT)ts.tv_sec + (FLOAT)ts.tv_nsec / 1000000000.0);
+  return FLONUM((XFLOAT)ts.tv_sec + (XFLOAT)ts.tv_nsec / 1000000000.0);
 #elif defined(__OpenBSD__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
   struct timespec ts;
   clock_gettime(CLOCK_REALTIME, &ts);
-  return FLONUM((FLOAT)ts.tv_sec + (FLOAT)ts.tv_nsec / 1000000000.0);
+  return FLONUM((XFLOAT)ts.tv_sec + (XFLOAT)ts.tv_nsec / 1000000000.0);
 #elif defined(_WIN32)
-  WORD ts, tr;
+  LARGE_INTEGER ts, tr;
   QueryPerformanceCounter(&ts);
   QueryPerformanceFrequency(&tr);
-  return FLONUM((FLOAT)ts / (FLOAT)tr);
+  return FLONUM((XFLOAT)ts.QuadPart / (XFLOAT)tr.QuadPart);
 #elif defined(__APPLE__) && defined(__MACH__)
-  WORD tm = mach_absolute_time();
+  XWORD tm = mach_absolute_time();
   mach_timebase_info_data_t tr;
   mach_timebase_info(&tr);
-  return FLONUM((FLOAT)tm * (FLOAT)tr.numer / (FLOAT)tr.denom / 1000000000.0);
+  return FLONUM((XFLOAT)tm * (XFLOAT)tr.numer / (XFLOAT)tr.denom / 1000000000.0);
 #else
   system_error("clock not available for this platform");
   return ZERO;
@@ -2695,7 +2690,7 @@ static int is_recursively_identical(X x, X y)
 
   if(is_FIXNUM(x) || is_FIXNUM(y)) return 0;
 
-  WORD t = objtype(x);
+  XWORD t = objtype(x);
 
   if(t != objtype(y)) return 0;
 
@@ -2704,14 +2699,14 @@ static int is_recursively_identical(X x, X y)
   if(t == VAR_TYPE) 
     return slot_ref(x, 1) == slot_ref(y, 1);
 
-  WORD s = objsize(x);
+  XWORD s = objsize(x);
 
   if(s != objsize(y)) return 0;
 
   if(is_byteblock(x))
     return !memcmp(objdata(x), objdata(y), s);
 
-  WORD i = 0;
+  XWORD i = 0;
 
   if(is_specialblock(x)) {
     if(slot_ref(x, 0) != slot_ref(y, 0)) return 0;
@@ -2741,9 +2736,9 @@ static inline int is_identical(X x, X y)
 }
 
 
-static inline int compare_strings(CHAR *str1, WORD len1, CHAR *str2, WORD len2)
+static inline int compare_strings(CHAR *str1, XWORD len1, CHAR *str2, XWORD len2)
 {
-  WORD d = strncmp(str1, str2, len1 < len2 ? len1 : len2);
+  XWORD d = strncmp(str1, str2, len1 < len2 ? len1 : len2);
   return d == 0 ? len2 - len1 : -d;
 }
 
@@ -2752,10 +2747,10 @@ static int compare_terms(X x, X y)
 {
   if(x == y) return 0;
 
-  WORD xt = is_FIXNUM(x) ? FIXNUM_TYPE : objtype(x);
-  WORD yt = is_FIXNUM(y) ? FIXNUM_TYPE : objtype(y);
+  XWORD xt = is_FIXNUM(x) ? FIXNUM_TYPE : objtype(x);
+  XWORD yt = is_FIXNUM(y) ? FIXNUM_TYPE : objtype(y);
   static int type_order[] = { 0, 3, 4, 4, 2, 4, 1, 0, 5, 5 };
-  WORD d = type_order[ yt & 0x1f ] - type_order[ xt & 0x1f ];
+  XWORD d = type_order[ yt & 0x1f ] - type_order[ xt & 0x1f ];
 
   if(d != 0) return d;
 
@@ -2778,8 +2773,8 @@ static int compare_terms(X x, X y)
     case SYMBOL_TYPE:
       { X str1 = slot_ref(x, 0);
 	X str2 = slot_ref(y, 0);
-	WORD len1 = string_length(str1);
-	WORD len2 = string_length(str2);
+	XWORD len1 = string_length(str1);
+	XWORD len2 = string_length(str2);
 	return compare_strings((CHAR *)objdata(str1), len1, (CHAR *)objdata(str2), len2); }
 
     case END_OF_LIST_TYPE:
@@ -2817,12 +2812,12 @@ static int compare_terms(X x, X y)
     return 0;
     
   case VAR_TYPE:
-    return (WORD)slot_ref(y, 1) - (WORD)slot_ref(x, 1);
+    return (XWORD)slot_ref(y, 1) - (XWORD)slot_ref(x, 1);
 
   case STRUCTURE_TYPE:
     switch(yt) {
     case STRUCTURE_TYPE:
-      { WORD s = objsize(y);
+      { XWORD s = objsize(y);
 	d = s - objsize(x);
 
 	if(d != 0) return d;
@@ -2883,7 +2878,7 @@ static int compare_terms(X x, X y)
     }
 
   case DBREFERENCE_TYPE:
-    return (WORD)slot_ref(y, 0) - (WORD)slot_ref(x, 0);
+    return (XWORD)slot_ref(y, 0) - (XWORD)slot_ref(x, 0);
   }
 
   CRASH("unable to compare terms");
@@ -2910,8 +2905,8 @@ static CHAR *to_string(X x, int *size)
 	if(len >= string_buffer_length - 1) {
 	  string_buffer = realloc(string_buffer, string_buffer_length *= 2);
 	  ASSERT(string_buffer, 
-		 "out of memory - can not increase size of string-buffer to " WORD_OUTPUT_FORMAT, 
-		 (WORD)string_buffer_length);
+		 "out of memory - can not increase size of string-buffer to " XWORD_OUTPUT_FORMAT, 
+		 (XWORD)string_buffer_length);
 	}
 
 	X c = deref(slot_ref(x, 0));
@@ -2974,7 +2969,7 @@ static X string_to_list(CHAR *str, int len)
     C->C0 = C0;							\
     C->P = lbl;							\
     C0 = C++;							\
-    ASSERT((WORD)C < (WORD)choice_point_stack + choice_point_stack_size, "choice-point stack overflow"); }
+    ASSERT((XWORD)C < (XWORD)choice_point_stack + choice_point_stack_size, "choice-point stack overflow"); }
 
 #define COPY_CHOICE_POINT(lbl)						\
   { C->T = trail_top;							\
@@ -2988,7 +2983,7 @@ static X string_to_list(CHAR *str, int len)
     C->C0 = C0;								\
     C->P = lbl;								\
     ++C;								\
-    ASSERT((WORD)C < (WORD)choice_point_stack + choice_point_stack_size, "choice-point stack overflow"); }
+    ASSERT((XWORD)C < (XWORD)choice_point_stack + choice_point_stack_size, "choice-point stack overflow"); }
 
 #define ADJUST_CHOICE_POINT(lbl)						\
   { C0->T = trail_top;							\
@@ -3003,7 +2998,7 @@ static X string_to_list(CHAR *str, int len)
     *(ifthen_top++) = C0->P;						\
     *(ifthen_top++) = C0;						\
     *(ifthen_top++) = C;						\
-    ASSERT((WORD)ifthen_top < (WORD)ifthen_stack + ifthen_stack_size, "if-then stack overflow"); }
+    ASSERT((XWORD)ifthen_top < (XWORD)ifthen_stack + ifthen_stack_size, "if-then stack overflow"); }
 
 #define RESTORE_CHOICE_POINTS	 \
   { C = *(--ifthen_top);	 \
@@ -3070,7 +3065,7 @@ static X string_to_list(CHAR *str, int len)
 #define ENVIRONMENT(len)  \
   { E = env_top;							\
     for(int _i = 0; _i < (len); ++_i) *(env_top++) = ZERO;		\
-    ASSERT((WORD)env_top < (WORD)environment_stack + environment_stack_size, "environment-stack overflow"); } 
+    ASSERT((XWORD)env_top < (XWORD)environment_stack + environment_stack_size, "environment-stack overflow"); } 
 
 #define SET_REDO(lbl)   C0->P = (lbl)
 
@@ -3333,16 +3328,20 @@ PRIMITIVE(db_find_bucket, X dbr, X prev, X key, X ref)
   DB *db = (DB *)slot_ref(dbr, 0);
   DB_BUCKET *bucket = NULL;
 
-  if(is_DBREFERENCE(prev))
-    bucket = ((DB_ITEM *)slot_ref(prev, 0))->bucket;
+  if(is_DBREFERENCE(prev)) {
+    DB_ITEM *item = (DB_ITEM *)slot_ref(prev, 0);
+    ASSERT(!item->erased, "attempt to obtain bucket from erased db-item");
+    bucket = item->bucket;
+  }
 
   bucket = db_enumerate_buckets(db, bucket);
 
   if(bucket) {
     X str = STRING(bucket->keylen + 1);
-    memcpy(objdata(str), bucket->key, bucket->keylen + 1);
+    memcpy(objdata(str), bucket->key, bucket->keylen + 1); /* including 0-terminator */
     X bkey = intern(str);
     DB_ITEM *item = bucket->firstitem;
+    ASSERT(!item->erased, "first db-item in bucket is marked as erased");
     ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 2);
     b->d[ 0 ] = (X)item;
     b->d[ 1 ] = ONE;
@@ -3357,8 +3356,8 @@ PRIMITIVE(db_ref, X ref, X result)
   check_type_DBREFERENCE(ref);
   DB_ITEM *item = (DB_ITEM *)slot_ref(ref, 0);
   int failed;
-  ASSERT(slot_ref(ref, 1) != NULL, "attempting to reference database pointer");
-  ASSERT(!item->erased, "attempting to reference erased database item");
+  ASSERT(slot_ref(ref, 1) == ONE, "attempting to reference database pointer");
+  ASSERT(!item->erased, "attempting to reference erased db-item");
   X x = thaw_term(item->val, &failed);
   return !failed && unify(result, x);
 }
@@ -3571,10 +3570,10 @@ PRIMITIVE(number_codes, X num, X lst)
     if(isalpha(*ptr)) return 0;
 
     CHAR *endptr;
-    WORD n = strtol(ptr, &endptr, 10);
+    XWORD n = strtol(ptr, &endptr, 10);
 
     if(*endptr != '\0' || ((n == LONG_MIN || n == LONG_MAX) && errno == ERANGE) || !is_in_fixnum_range(n)) {
-      FLOAT f = strtod(ptr, &endptr);
+      XFLOAT f = strtod(ptr, &endptr);
 
       if(*endptr != '\0' || ((f == 0 || f == HUGE_VAL || f == -HUGE_VAL) && errno == ERANGE)) 
 	return 0;
@@ -3588,9 +3587,9 @@ PRIMITIVE(number_codes, X num, X lst)
   check_number(num);
 
   if(is_FIXNUM(num))
-    sprintf(string_buffer, WORD_OUTPUT_FORMAT, fixnum_to_word(num));
+    sprintf(string_buffer, XWORD_OUTPUT_FORMAT, fixnum_to_word(num));
   else
-    sprintf(string_buffer, FLOAT_OUTPUT_FORMAT, flonum_to_float(num));
+    sprintf(string_buffer, XFLOAT_OUTPUT_FORMAT, flonum_to_float(num));
 
   int len = strlen(string_buffer);
   X p = END_OF_LIST_VAL;
@@ -3641,7 +3640,7 @@ PRIMITIVE(functor, X term, X name, X arity)
 PRIMITIVE(term_arg, X index, X term, X arg)
 {
   check_fixnum(index);
-  WORD i = fixnum_to_word(index);
+  XWORD i = fixnum_to_word(index);
 
   if(is_PAIR(term))
     return i > 0 && i < 3 && unify(arg, slot_ref(term, i - 1));
@@ -3666,7 +3665,16 @@ PRIMITIVE(enable_trace, X flag)
 }
 
 PRIMITIVE(get_process_id, X pid) { return unify(pid, word_to_fixnum(getpid())); }
-PRIMITIVE(sleep_for_seconds, X secs) { check_fixnum(secs); sleep(fixnum_to_word(secs)); return 1; }
+
+PRIMITIVE(sleep_for_seconds, X secs) {
+  check_fixnum(secs); 
+#ifdef _WIN32
+  Sleep(fixnum_to_word(secs) * 1000); 
+#else
+  sleep(fixnum_to_word(secs)); 
+#endif
+  return 1; 
+}
 
 PRIMITIVE(set_random_seed, X seed) 
 {

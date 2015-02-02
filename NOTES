@@ -1,6 +1,10 @@
 NOTES											              -*- Org -*-
 
 
+* TODO Implement simple wrapper generator
+  - similar to "bind"
+  - "RTYPE NAME(ARGTYPE, ...)", generate .c file with primitive defs
+    and a .pl for the wrapper predicates.
 * Optimization opportunities
 ** DONE Check: take advantage of timestamps when binding vars in unify() ?
    - try: when binding two unbound vars, bind the younger one.
@@ -17,7 +21,7 @@ NOTES											              -*- Org -*-
    - can probably be used in many ways, but needs more thought.
 ** DONE Extend clause indexing to dispatch on atom- or fixnum list via hashing
    - see branches /integer_dispatch/ and /atom_dispatch/
-   - Test.
+   - test.
 ** Arithmetic
    - deref all vars just once at start.
    - track types, use unboxed math.
@@ -37,16 +41,13 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Things to test
-** DONE [#A] Tests with new trail-GC
-*** TODO Run all tests
-*** TODO Test currently broken examples
-** TODO [#B] Test on Windows
-   - Port to MSVC
-** TODO Run some or all tests with pi
-** TODO Test retract-loop
-   - file:tests/0069-cdb.pl
 * Missing features
 ** TODO once/1
+** TODO Builtin to read full atom
+   - "read_atom(LENGTH)"
+   - much cheaper than reading list.
+** TODO Allow user-defined macros
+   - directive: ":- macro OLD -> NEW" or something like this.
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
@@ -56,6 +57,10 @@ NOTES											              -*- Org -*-
 * Once we have a suitable test, compare performance with other implementations
   - SWI, GNU-Prolog, BinProlog
 * Issues
+** TODO Reduce memory use in pc
+   - seems to build up a lot of choice points.
+** TODO 0085-boyer crashes in pi
+   - sometimes.
 ** TODO [#B] Implementation of if-then-else is broken
    - if-then stack gets out of balance, found here:
      call_primitive('->', 2, TERM) :-
@@ -64,28 +69,28 @@ NOTES											              -*- Org -*-
 	execute(X) -> execute(Y). % parsed as (!, ...) -> execute(Y)
    - adding parens around last goal repaired the problem, but still
      this shouldn't happen.
-** Using multiple threads are currently not possible
+** Erasing a db-entry that is already marked is currently ignored
+   - actual deletion will happen on next GC.
+   - should we throw an error?
+   - note that 0069-cdb deletes twice: first the retract of hello(X)
+     and then the abolish of hello/1.
+** Handle freezing of db-refs
+   - disallow? delete from deleted-items list?
+   - what can happen?
+   - currently caught by assertion in freeze_term_recursive()
+** Using multiple threads is currently not possible
    - all static vars would have to be declared TLS, but these may not
      be statically initialized with non-constants, and this applies to
      many data objects for literals.
 ** TODO Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
-** TODO Reader-error should throw expection
-   - ISO says "syntax_error(<impl-dependent-atom>)"
-   - Should be caught and printed prettily by pc/pi.
-** DONE We need trail-GC
-   - test and merge /trail-gc/ branch.
+** Reader-error should throw syntax_error(MSG)
 ** TODO Throw ISO-compliant exceptions everywhere
     - at least as much as possible and sensible.
 ** TODO Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 ** TODO file:broken-tests/simple_analyzer.pl broken
     - exhausts heap, regardless of size.
-** TODO file:tests/0085-boyer.pl exhausts heap when run under pi
-   - somehow memory leaks, this looks similar to the problem with
-     file:broken-tests/simple_analyzer.pl
-** TODO ecrc benchmarks in file:/broken-tests work, but need higher settings
-   - file:broken-tests/bench_1_5.pl needs -:T5M
-   - works now in /trail-gc/ branch.
+    - seems to trail excessively.
 * Interpreter
 ** TODO Add support for file:dcg.pl 
    - term_expansion/2.

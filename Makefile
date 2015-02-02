@@ -13,7 +13,7 @@ LIBS += -lrt
 endif
 
 
-.PHONY: all clean spotless
+.PHONY: all check clean spotless
 
 
 all: pc pi
@@ -31,3 +31,8 @@ clean:
 
 spotless: clean
 	rm pc.c pi.c
+
+
+check: all
+	./pc pc.pl -o pc2.c
+	cmp pc.c pc2.c

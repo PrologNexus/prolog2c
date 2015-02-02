@@ -264,7 +264,7 @@ generate_static_literal(I, X, S, S) :-
 	gen('#define literal_', I, ' word_to_fixnum(', X, ')\n').
 generate_static_literal(I, X, S, S) :-
 	number(X), !,
-	gen('static FLONUM_BLOCK lb', I, '={FLONUM_TAG|sizeof(FLOAT),', X, '};\n'),
+	gen('static FLONUM_BLOCK lb', I, '={FLONUM_TAG|sizeof(XFLOAT),', X, '};\n'),
 	gen('#define literal_', I, ' &lb', I, '\n').
 generate_static_literal(I, [], S, S) :-
 	!, gen('#define literal_', I, ' END_OF_LIST_VAL\n').
