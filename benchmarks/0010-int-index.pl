@@ -1,11 +1,15 @@
 main :-
-	loop(1000000).
+	loop(10000).
 
 loop(N) :-
-	between(1, N, I),
+	between(1, N, _),
+	spin.
+loop(_).
+
+spin :-
+	between(1, 100, I),
 	jump(I),
 	fail.
-loop(_).
 
 jump(1).
 jump(2).

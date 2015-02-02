@@ -1,6 +1,10 @@
 NOTES											              -*- Org -*-
 
 
+* TODO Implement simple wrapper generator
+  - similar to "bind"
+  - "RTYPE NAME(ARGTYPE, ...)", generate .c file with primitive defs
+    and a .pl for the wrapper predicates.
 * Optimization opportunities
 ** DONE Check: take advantage of timestamps when binding vars in unify() ?
    - try: when binding two unbound vars, bind the younger one.
@@ -37,10 +41,13 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Things to test
-** TODO Test retract-loop
-   - file:tests/0069-cdb.pl
 * Missing features
 ** TODO once/1
+** TODO Builtin to read full atom
+   - "read_atom(LENGTH)"
+   - much cheaper than reading list.
+** TODO Allow user-defined macros
+   - directive: ":- macro OLD -> NEW" or something like this.
 ** TODO Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
@@ -50,6 +57,10 @@ NOTES											              -*- Org -*-
 * Once we have a suitable test, compare performance with other implementations
   - SWI, GNU-Prolog, BinProlog
 * Issues
+** TODO Reduce memory use in pc
+   - seems to build up a lot of choice points.
+** TODO 0085-boyer crashes in pi
+   - sometimes.
 ** TODO [#B] Implementation of if-then-else is broken
    - if-then stack gets out of balance, found here:
      call_primitive('->', 2, TERM) :-
@@ -58,24 +69,28 @@ NOTES											              -*- Org -*-
 	execute(X) -> execute(Y). % parsed as (!, ...) -> execute(Y)
    - adding parens around last goal repaired the problem, but still
      this shouldn't happen.
+** Erasing a db-entry that is already marked is currently ignored
+   - actual deletion will happen on next GC.
+   - should we throw an error?
+   - note that 0069-cdb deletes twice: first the retract of hello(X)
+     and then the abolish of hello/1.
 ** Handle freezing of db-refs
    - disallow? delete from deleted-items list?
    - what can happen?
-** Using multiple threads are currently not possible
+   - currently caught by assertion in freeze_term_recursive()
+** Using multiple threads is currently not possible
    - all static vars would have to be declared TLS, but these may not
      be statically initialized with non-constants, and this applies to
      many data objects for literals.
 ** TODO Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
-** TODO Reader-error should throw expection
-   - ISO says "syntax_error(<impl-dependent-atom>)"
-   - Should be caught and printed prettily by pc/pi.
+** Reader-error should throw syntax_error(MSG)
 ** TODO Throw ISO-compliant exceptions everywhere
     - at least as much as possible and sensible.
 ** TODO Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 ** TODO file:broken-tests/simple_analyzer.pl broken
     - exhausts heap, regardless of size.
-    - test with trail-gc
+    - seems to trail excessively.
 * Interpreter
 ** TODO Add support for file:dcg.pl 
    - term_expansion/2.

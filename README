@@ -13,7 +13,7 @@
   executable. The generated code is platform-independent and should be
   portable to a wide range of machines and operating systems. No other
   dependencies exist, only a gcc-compatible C compiler is
-  required. The generated executables are fairly small and can be
+  required. The generated executables are usually small and can be
   embedded in existing applications.
 
   This Prolog implementation has no support for dynamic predicates, or
@@ -27,10 +27,9 @@
   Performance is reasonable, in micro-benchmarks it is roughly
   comparable to systems like SWI-Prolog[2], but will not be able to
   compete with such mature Prolog implementations for larger,
-  real-world programs. Basic clause-indexing on the type of the first
-  argument of a predicates is provided and tail-call optimization is
-  performed in many cases, but otherwise little optimization is being
-  done.
+  real-world programs. Basic clause-indexing on the first argument of
+  a predicates is performed and tail-calls are optimized in many
+  cases, but otherwise little optimization is currently being done.
 
   The dialect of Prolog implemented should be sufficient for usual
   Prolog programming. Basic ISO and Edinburgh system predicates and
@@ -40,8 +39,8 @@
   support multithreading. It's just a basic, yet usable Prolog system,
   something that isn't easy to find, nowadays.
 
-  ?-Prolog has currently so far only been tested on Linux (x86-64 and
-  ARM) and Mac OS X.
+  ?-Prolog has currently only been tested on Linux (x86, x86-64 and
+  ARM), Mac OS X and Windows 7 (with the mingw64 toolchain.)
 
   The system is still under development and contains many known and
   unknown bugs. If you experience problems or want to help, please
@@ -752,6 +751,9 @@
   Compile the generated C code with "-DUNSAFE" to disable all safety
   checks.
 
+  Asserting and retrieving terms in the record- or clause-database
+  involves copying and thus should be avoided in time-critical code.
+
 * Calling code written in other languages
 
   To call foreign functions, a single form named "foreign_call" is
@@ -945,6 +947,12 @@
   not overly memory-efficient with respect to choice-points,
   environments and the trail-stack.
 
+  Terms stored in the record- or clause-database are copied into
+  normal memory (allocated with malloc(3)) and are not subject to GC.
+  This means that the amount of data stored in databases is only
+  limited by available memory. Terms retrieved from the databases will
+  be copied back into the garbage-collected heap.
+
   The data-areas used at run-time are listed here, together with their
   default sizes. You can override the settings by redefining a macro
   when compiling generated C code or by passing the appropriate
@@ -964,6 +972,15 @@
   simplify heap-exhaustion checks: once the amount of storage
   currently in used exceeds the heap-size minus this percentage, a
   garbage collection is triggered.
+
+  If you need a very large heap, you can use a file-backed
+  memory-mapped heap by starting a compiled program with the
+  "-:m<filename>" runtime option. This creates a file with the given
+  name and uses it as a backing store for the complete
+  garbage-collected heap. This file can be of arbitrary size.  Note
+  that the necessary swapping in and out of memory pages to and from
+  the file can be quite slow. This is an experimental feature and
+  hasn't been tested much.
 
 * License
 

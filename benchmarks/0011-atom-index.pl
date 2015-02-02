@@ -1,12 +1,17 @@
 main :-
-	loop(1000000).
+	loop(10000).
 
 loop(N) :-
-	between(1, N, I),
+	between(1, N, _),
+	spin,
+	fail.
+loop(_).
+
+spin :-
+	between(1, 100, I),
 	sym(I, A),
 	jump(A),
 	fail.
-loop(_).
 
 sym(I, A) :-
 	number_codes(I, IL),

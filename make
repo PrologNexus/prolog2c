@@ -83,7 +83,7 @@
 
 (define (pc2.c)
   (pc1)
-  (make/proc (list (list "pc2.c" source-files
+  (make/proc (list (list "pc2.c" (cons "pc.h" source-files)
 			 (lambda () (run (./pc1 pc.pl -o pc2.c)))))
 	     "pc2.c"))
 
@@ -159,7 +159,7 @@
   (let-optionals more ((exe (strip-suffix src))
 		       deps)
     (let ((c (replace-suffix "c" src)))
-      (make/proc (list (list exe (list c)
+      (make/proc (list (list exe (list "pc.h" c)
 			     (lambda ()
 			       (run (gcc ,@gcc-compile-options ,c -lm -lrt -o ,exe))))
 		       (list c (cons src deps)
