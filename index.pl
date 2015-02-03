@@ -57,14 +57,16 @@ compile_dispatch(DMAP, N, A, S1, S2) :-
 	secondary_clause_label(N, A, I2, L2),
 	%% test for fixnum first, otherwise run first clause if arg is var
 	gen_label(L1, S1, S3),	% no integer case matches
-	emit(switch_on_integer(L1), switch_on_var(L2), label(L1)),
+	gen_label(L3, S3, S4),	% no integer case matches
+	emit(switch_on_integer(L1), switch_on_var(L2), jump(L3), label(L1)),
 	findall(NUM/LABEL, (member(I/integer(NUM), ICASES),
 			    secondary_clause_label(N, A, I, LABEL)),
 		TABLE),
 	emit(dispatch_on_integer(TABLE)),
 	%% no integer case matches - dispatch on non-integer cases
-	compile_dispatch_integer_fail(DMAP2, N, A, FL, S3, S4),
-	compile_dispatch_sequence(DMAP2, N, A, s(FL), S4, S2).
+	compile_dispatch_integer_fail(DMAP2, N, A, FL, S4, S5),
+	emit(label(L3)),
+	compile_dispatch_sequence(DMAP2, N, A, s(FL), S5, S2).
 compile_dispatch(DMAP, N, A, S1, S2) :-
 	%% remaining clauses contain no integer cases
 	memberchk(I1/var, DMAP),
