@@ -102,6 +102,9 @@
        			    path.
     -q                      do not show any output while compiling.
 
+  Any output preceeded with "%" is purely for informational purposes
+  and can be disabled with the "-q" option.
+
   Code compiled must then be passed to a C compiler:
 
     gcc -std=gnu99 -I. <program>.c -o <program> -lm
@@ -231,6 +234,8 @@
     name(?X, ?Y)		  Unifies X with the atom or number constructed
     	     			  from the character codes in the list Y or 
 				  vice versa.
+
+    atom_hash(+ATOM, -X)	  Unifies X with the hash-code of ATOM.
 
   - Term-construction and deconstruction predicates
 
@@ -442,7 +447,8 @@
 
     X // Y			  Integer division [ISO]
 
-    X \\ Y			  Integer remainder
+    X \\ Y
+    X rem Y			  Integer remainder [ISO]
 
     X /\ Y			  Bitwise and [ISO]
 

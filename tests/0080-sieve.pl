@@ -15,7 +15,7 @@ sift([],[]).
 sift([I | Is], [I | Ps]) :- remove(I,Is,New), sift(New, Ps).
 
 remove(P,[],[]).
-remove(P,[I | Is], [I | Nis]) :- \+(0 is I \\ P), !, remove(P,Is,Nis).
-remove(P,[I | Is], Nis) :- 0 is I \\ P, !, remove(P,Is,Nis).
+remove(P,[I | Is], [I | Nis]) :- \+(0 is I rem P), !, remove(P,Is,Nis).
+remove(P,[I | Is], Nis) :- 0 is I rem P, !, remove(P,Is,Nis).
 
 :- initialization sieve.

@@ -90,7 +90,6 @@
 #define MAX_GLOBAL_VARIABLES 256
 #define STRING_BUFFER_SIZE 1024
 #define CATCHER_STACK_SIZE 1024
-#define HASH_LENGTH_CUTOFF 100
 #define TRAIL_STACK_GAP_BUFFER_SIZE 1024
 
 
@@ -154,6 +153,7 @@ typedef struct SYMBOL_BLOCK {
   XWORD h;
   X s;
   struct SYMBOL_STRUCT *next;
+  X hash;
 } SYMBOL_BLOCK;
 
 typedef struct STRUCTURE_BLOCK {
@@ -239,6 +239,12 @@ typedef struct TRAIL_STACK_GAP
   X *position;
   XWORD size; 
 } TRAIL_STACK_GAP;
+
+typedef struct SYMBOL_DISPATCH
+{
+  X symbol;
+  void *label;
+} SYMBOL_DISPATCH;
 
 
 /// tags and type-codes
@@ -339,6 +345,9 @@ typedef struct TRAIL_STACK_GAP
 #define ONE      word_to_fixnum(1)
 
 #define PREVIOUS_SYMBOL  END_OF_LIST_VAL
+
+#define HASH_LENGTH_CUTOFF 100
+#define HASH_MASK  0x3fffffffUL
 
 
 /// predefined literals and global variables
@@ -594,10 +603,11 @@ static inline int is_dbreference(X x)
     memcpy(objdata(s_), str_, len3_);					\
     s_; })
   
-#define SYMBOL1(alloc, name, next)				\
-  ({ ALLOCATE_BLOCK1(alloc, BLOCK *p_, SYMBOL_TYPE, 2);			\
+#define SYMBOL1(alloc, name, next, hash)				\
+  ({ ALLOCATE_BLOCK1(alloc, BLOCK *p_, SYMBOL_TYPE, 3);			\
     SLOT_INIT((X)p_, 0, (name));					\
     SLOT_INIT((X)p_, 1, (next));					\
+    SLOT_INIT((X)p_, 2, (hash));					\
     (X)p_; })
 
 // does not initialize args
@@ -621,7 +631,7 @@ static inline int is_dbreference(X x)
 #define PORT(f, i, o, d)  PORT1(alloc_top, f, i, o, d)
 #define STRING(len)  STRING1(alloc_top, len)
 #define CSTRING(str)  CSTRING1(alloc_top, str)
-#define SYMBOL(name, next)  SYMBOL1(alloc_top, name, next)
+#define SYMBOL(name, next, hash)  SYMBOL1(alloc_top, name, next, hash)
 #define CSYMBOL(str)  CSYMBOL1(alloc_top, str)
 #define STRUCTURE(functor, arity)  STRUCTURE1(alloc_top, functor, arity)
 
@@ -825,21 +835,22 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
 
 static XWORD hash_name(CHAR *name, int len)
 {
-  unsigned long key = 0;
+  XWORD key = 0;
   
   if(len > HASH_LENGTH_CUTOFF) len = HASH_LENGTH_CUTOFF;
 
   while(len--)
-    key ^= (key << 6) + (key >> 2) + *(name++);
+    key = (key ^ ((key << 6) + (key >> 2) + *(name++))) & HASH_MASK;
 
-  return (XWORD)(key & 0x7fffffffUL);
+  return key;
 }
 
 
 static X intern(X name)
 {
   XWORD len = string_length(name);
-  XWORD key = hash_name((CHAR *)objdata(name), len) % SYMBOL_TABLE_SIZE;
+  XWORD hash = hash_name((CHAR *)objdata(name), len);
+  XWORD key = hash % SYMBOL_TABLE_SIZE;
 
   for(X sym = symbol_table[ key ]; sym != END_OF_LIST_VAL; sym = slot_ref(sym, 1)) {
     X name2 = slot_ref(sym, 0);
@@ -850,7 +861,7 @@ static X intern(X name)
   }
 
   X oldsym = symbol_table[ key ];
-  X sym = SYMBOL(name, oldsym);
+  X sym = SYMBOL(name, oldsym, word_to_fixnum(hash));
   symbol_table[ key ] = sym;
   return sym;
 }
@@ -861,7 +872,8 @@ static void intern_static_symbols(X sym1)
   while(sym1 != END_OF_LIST_VAL) {
     X name = slot_ref(sym1, 0);
     XWORD len = string_length(name);
-    XWORD key = hash_name((CHAR *)objdata(name), len) % SYMBOL_TABLE_SIZE;
+    XWORD hash = fixnum_to_word(slot_ref(sym1, 2));
+    XWORD key = hash % SYMBOL_TABLE_SIZE;
     X sym = symbol_table[ key ];
     X nextsym = slot_ref(sym1, 1);
     SLOT_SET(sym1, 1, sym);
@@ -874,6 +886,22 @@ static void intern_static_symbols(X sym1)
   type_error_atom = intern(CSTRING("type_error"));
   evaluation_error_atom = intern(CSTRING("evaluation_error"));
   instantiation_error_atom = intern(CSTRING("instantiation_error"));
+}
+
+
+static void *lookup_symbol_in_table(X sym, SYMBOL_DISPATCH *table, void *deflabel, int len)
+{
+  XWORD key = fixnum_to_word(slot_ref(sym, 2)) % len;
+
+  for(;;) {
+    X tsym = table[ key ].symbol;
+
+    if(tsym == sym) return table[ key ].label;
+    
+    if(tsym == NULL) return deflabel;
+
+    key = (key + 1) % len;
+  }
 }
 
 
@@ -3146,6 +3174,9 @@ suspend:							       \
  RETURN_RESULT;
 
 
+#define DISPATCH_ON_SYMBOL(table, lbl, len)  goto *(lookup_symbol_in_table(A[0], table, &&lbl, len))
+
+
 /// Entry-points for embedding
 
 #ifdef EMBEDDED
@@ -3661,6 +3692,11 @@ PRIMITIVE(do_throw, X ball) { throw_exception(ball); return 0; }
 PRIMITIVE(do_make_term, X arity, X functor, X args, X term) {
   check_fixnum(arity);
   return unify(term, make_term_from_list(fixnum_to_word(arity), functor, args));
+}
+
+PRIMITIVE(atom_hash, X sym, X hash) {
+  check_type_SYMBOL(sym);
+  return(unify(slot_ref(sym, 2), hash));
 }
 
 

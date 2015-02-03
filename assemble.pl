@@ -199,6 +199,17 @@ assemble(switch_on_atom(L), S, S) :- gen('if(is_SYMBOL(A[0])) goto ', L, ';\n').
 assemble(switch_on_float(L), S, S) :- gen('if(is_FLONUM(A[0])) goto ', L, ';\n').
 assemble(switch_on_pair(L), S, S) :- gen('if(is_PAIR(A[0])) goto ', L, ';\n').
 assemble(switch_on_structure(L), S, S) :- gen('if(is_STRUCTURE(A[0])) goto ', L, ';\n').
+assemble(switch_and_dispatch_on_atom(ENTRIES, TLEN, LX), S, S) :-
+	gen('if(!is_SYMBOL(A[0])) goto ', LX, ';\n'),
+	gen('static SYMBOL_DISPATCH dt_', LX, '[]={'),
+	assemble_atom_dispatch(0, TLEN, ENTRIES),
+	gen('};\nDISPATCH_ON_SYMBOL(dt_', LX, ','),
+	gen(LX, ',', TLEN),
+	gen(');\n', LX, ':\n').
+assemble(dispatch_on_integer(TABLE), S, S) :-
+	gen('switch(fixnum_to_word(A[0])){\n'),
+	forall(member(N/L, TABLE), gen('case ', N, ':goto ', L, ';\n')),
+	gen('}').
 
 assemble(suspend(R1, L), S, S) :-
 	gen('saved_state.result=', R1, ';\nsaved_state.P=&&', L, ';\n'),
@@ -215,6 +226,21 @@ assemble_arguments([X|MORE], I) :-
 	gen('*(arg_top++)=', X, ';\n'),
 	I2 is I + 1,
 	assemble_arguments(MORE, I2).
+
+
+%% assemble dispatch table
+
+assemble_atom_dispatch(I, I, _).
+assemble_atom_dispatch(I, LEN, [I-(ATOM/LABEL)|MORE]) :-
+	!,
+	mangle_name(ATOM, NAME),
+	gen('{(X)SYMBOL', NAME, ',&&', LABEL, '},'),
+	I2 is I + 1,
+	assemble_atom_dispatch(I2, LEN, MORE).
+assemble_atom_dispatch(I, LEN, ENTRIES) :-
+	gen('{NULL,NULL},'),
+	I2 is I + 1,
+	assemble_atom_dispatch(I2, LEN, ENTRIES).
 
 
 %% generate literal data
@@ -244,8 +270,10 @@ generate_static_literal(I, X, S, S) :-
 	length(STRING, LEN),
 	gen('static STRING_BLOCK lbs', I, '={STRING_TAG|(', LEN, '+1),{'),
 	generate_data_list(STRING),
-	gen(',0}};\nstatic SYMBOL_BLOCK lb', I, '={SYMBOL_TAG|2,(X)&lbs', I),
-	gen(',PREVIOUS_SYMBOL};\n#undef PREVIOUS_SYMBOL\n#define PREVIOUS_SYMBOL (X)&lb', I),
+	gen(',0}};\nstatic SYMBOL_BLOCK lb', I, '={SYMBOL_TAG|3,(X)&lbs', I),
+	atom_hash(X, HASH),
+	gen(',PREVIOUS_SYMBOL,word_to_fixnum(', HASH),
+	gen(')};\n#undef PREVIOUS_SYMBOL\n#define PREVIOUS_SYMBOL (X)&lb', I),
 	gen('\n#define literal_', I, ' &lb', I, '\n'),
 	gen('#define SYMBOL', NAME, ' literal_', I, '\n#else\n'),
 	gen('#define literal_', I, ' SYMBOL', NAME, '\n#endif\n').

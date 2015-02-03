@@ -42,25 +42,41 @@ scan_indexing_types([I/T|MORE], DONE, [I/T|R]) :-
 
 member_in_indexing_types(_, []) :- !, fail.
 member_in_indexing_types(T, [T|_]) :- !.
-member_in_indexing_types(integer(_), [integer(_)|_]) :- !.
-member_in_indexing_types(atom(_), [atom(_)|_]) :- !.
 member_in_indexing_types(T, [_|MORE]) :- member_in_indexing_types(T, MORE).
 			 
 
 %% compile code to dispatch on type
 
 compile_dispatch(DMAP, N, A, S1, S2) :-
-	%% remaining clauses contain integer or var case
-	(select(I1/integer(_), DMAP, DMAP2)
-	; memberchk(I1/var, DMAP), DMAP2 = DMAP
-	),
+	%% remaining clauses contain integer cases
+	findall(X, (member(X, DMAP), X = _/integer(_)), ICASES),
+	ICASES \== [],
+	!,
+	subtract(DMAP, ICASES, DMAP2),
+	DMAP = [I2/_|_],
+	secondary_clause_label(N, A, I2, L2),
+	%% test for fixnum first, otherwise run first clause if arg is var
+	gen_label(L1, S1, S3),	% no integer case matches
+	gen_label(L3, S3, S4),	% no integer case matches
+	emit(switch_on_integer(L1), switch_on_var(L2), jump(L3), label(L1)),
+	findall(NUM/LABEL, (member(I/integer(NUM), ICASES),
+			    secondary_clause_label(N, A, I, LABEL)),
+		TABLE),
+	emit(dispatch_on_integer(TABLE)),
+	%% no integer case matches - dispatch on non-integer cases
+	compile_dispatch_integer_fail(DMAP2, N, A, FL, S4, S5),
+	emit(label(L3)),
+	compile_dispatch_sequence(DMAP2, N, A, s(FL), S5, S2).
+compile_dispatch(DMAP, N, A, S1, S2) :-
+	%% remaining clauses contain no integer cases
+	memberchk(I1/var, DMAP),
 	!,
 	DMAP = [I2/_|_],
 	secondary_clause_label(N, A, I1, L1),
 	secondary_clause_label(N, A, I2, L2),
-	%% test for fixnum first, otherwise run first clause if arg is a var
+	%% test for fixnum case and invoke var-case, otherwise run first clause if arg is a var
 	emit(switch_on_integer(L1), switch_on_var(L2)),
-	compile_dispatch_sequence(DMAP2, N, A, s(no), S1, S2).
+	compile_dispatch_sequence(DMAP, N, A, s(no), S1, S2).
 compile_dispatch(DMAP, N, A, S1, S2) :-
 	%% no integer or var case
 	gen_label(FL, S1, S3),
@@ -72,6 +88,17 @@ compile_dispatch(DMAP, N, A, S1, S2) :-
 	emit(label(FL), no_redo, fail, label(L1)),
 	compile_dispatch_sequence(DMAP, N, A, s(FL), S4, S2).
 
+compile_dispatch_integer_fail(DMAP, N, A, no, S, S) :-
+	%% arg was non-matching integer - is there a var case?
+	memberchk(I1/var, DMAP),
+	!,
+	secondary_clause_label(N, A, I1, L1),
+	emit(jump(L1)).
+compile_dispatch_integer_fail(_, _, _, FL, S1, S2) :-
+	%% generate fail block
+	gen_label(FL, S1, S2),
+	emit(label(FL), no_redo, fail).
+
 compile_dispatch_sequence([], _, _, s(no), S, S) :-
 	emit(no_redo, fail).
 compile_dispatch_sequence([], _, _, s(FL), S, S) :- % re-use fail-point
@@ -79,6 +106,33 @@ compile_dispatch_sequence([], _, _, s(FL), S, S) :- % re-use fail-point
 compile_dispatch_sequence([I/var], N, A, _, S, S) :-
 	secondary_clause_label(N, A, I, L),
 	emit(jump(L)).
+compile_dispatch_sequence([I1/atom(ATM1)|DMAP], N, A, XS, S1, S2) :-
+	findall(X, (member(X, DMAP), X = _/atom(_)), ACASES),
+	default_setting(atom_table_index_threshold, T),
+	length(ACASES, TL),
+	TL >= T - 1,		% including first element
+	secondary_clause_label(N, A, I1, L1),
+	findall(ATM/LABEL, (member(I/atom(ATM), ACASES),
+			    secondary_clause_label(N, A, I, LABEL)),
+		TABLE),
+	gen_label(LX, S1, S3),
+	length(TABLE, LEN),
+	default_setting(atom_table_size_factor, F),
+	TLEN is F * (LEN + 1),
+	findall(KEY-(ATOM/LABEL),
+		(member(ATOM/LABEL, [ATM1/L1|TABLE]),
+		 atom_hash(ATOM, HASH),
+		 KEY is HASH rem TLEN),
+		ENTRIES),
+	keysort(ENTRIES, ENTRIES2),
+	adjust_atom_dispatch_table(ENTRIES2, TLEN, ENTRIES3, DUPS),
+	(recorded(silent, yes);
+	 display('% duplicates in dispatch-table for '),
+	 write(N/A), display(': '), write(DUPS/TLEN), nl
+	),
+	emit(switch_and_dispatch_on_atom(ENTRIES3, TLEN, LX)),
+	subtract(DMAP, ACASES, DMAP2),
+	compile_dispatch_sequence(DMAP2, N, A, XS, S3, S2).
 compile_dispatch_sequence([I/T|DMAP], N, A, XS, S1, S2) :-
 	dispatch_instruction(T, INSTNAME),
 	secondary_clause_label(N, A, I, L),
@@ -93,3 +147,34 @@ dispatch_instruction(pair, switch_on_pair).
 dispatch_instruction(float, switch_on_float).
 dispatch_instruction(atom(_), switch_on_atom).
 dispatch_instruction(structure, switch_on_structure).
+
+
+%% adjust atom dispatch-table by moving colliding entries
+
+adjust_atom_dispatch_table(E1, LEN, E, COUNT) :-
+	duplicate_dispatch_table_entries(E1, ED, E2),
+	insert_dispatch_table_entries(ED, LEN, E2, E3),
+	length(ED, COUNT),
+	keysort(E3, E).
+
+duplicate_dispatch_table_entries([], [], []).
+duplicate_dispatch_table_entries([I1-E1, I1-E2|ER], [I1-E2|ER2], EN) :-
+	duplicate_dispatch_table_entries([I1-E1|ER], ER2, EN).
+duplicate_dispatch_table_entries([X|ER], ER2, [X|EN]) :-
+	duplicate_dispatch_table_entries(ER, ER2, EN).
+
+insert_dispatch_table_entries([], _, E, E).
+insert_dispatch_table_entries([I1-E1|ER], LEN, ES, ER2) :-
+	I2 is I1 + 1,
+	find_free_dispatch_table_entry(I2, LEN, ES, II),
+	insert_dispatch_table_entries(ER, LEN, [II-E1|ES], ER2).
+
+find_free_dispatch_table_entry(I, LEN, ES, IR) :-
+	I >= LEN,
+	find_free_dispatch_table_entry(0, LEN, ES, IR).
+find_free_dispatch_table_entry(I, LEN, ES, IR) :-
+	member(I-_, ES),
+	!,
+	I2 is I + 1,
+	find_free_dispatch_table_entry(I2, LEN, ES, IR).
+find_free_dispatch_table_entry(I, _, _, I).

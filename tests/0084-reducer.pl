@@ -146,7 +146,7 @@ eval(  '+', C, A, B) :- C is A + B.
 eval(  '-', C, A, B) :- C is A - B.
 eval(  '*', C, A, B) :- C is A * B.
 eval( '//', C, A, B) :- C is A // B.
-eval('mod', C, A, B) :- C is A \\ B.
+eval('mod', C, A, B) :- C is A rem B.
 
 eval1('-', C, A) :- C is -A.
 
