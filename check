@@ -8,16 +8,24 @@
 
 (define args (command-line-arguments))
 (define opts '("-g" "-save-temps=obj" "-DTRACE" "-DDEBUG_GC"))
+(define moreopts '())
 (define pi #f)
 
-(match args
-  (("-O" . _)
-   (pop! args)
-   (set! opts '("-O3" "-fomit-frame-pointer" "-fno-strict-aliasing" "-fwrapv" "-DUNSAFE")))
-  (("-i" . _)
-   (pop! args)
-   (set! pi #t))
-  (_ #f))
+(let loop ()
+  (match args
+    (("-O" . _)
+     (pop! args)
+     (set! opts '("-O3" "-fomit-frame-pointer" "-fno-strict-aliasing" "-fwrapv" "-DUNSAFE"))
+     (loop))
+    (("-i" . _)
+     (pop! args)
+     (set! pi #t)
+     (loop))
+    (("-m32" . _)
+     (pop! args)
+     (set! moreopts '("-m32"))
+     (loop))
+    (_ #f)))
 
 (define file (car args))
 (define bfile (basename file))
@@ -51,7 +59,7 @@
 
 (unless pi
   (run (,pc -q ,file -o ,cfile))
-  (run (gcc -std=gnu99 -I. ,cfile ,@opts -o ,xfile -lm -lrt)))
+  (run (gcc -std=gnu99 -I. ,cfile ,@opts ,@moreopts -o ,xfile -lm -lrt)))
 
 (define status
   (if pi

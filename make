@@ -118,6 +118,11 @@
   (fluid-let ((check-options '("-i")))
     (check)))
 
+(define (check-32)
+  (pi)
+  (fluid-let ((check-options '("-m32")))
+    (check)))
+
 (define (check-optimized)
   (fluid-let ((check-options '("-O")))
     (check)))
