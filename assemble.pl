@@ -198,19 +198,12 @@ assemble(switch_on_atom(L), S, S) :- gen('if(is_SYMBOL(A[0])) goto ', L, ';\n').
 assemble(switch_on_float(L), S, S) :- gen('if(is_FLONUM(A[0])) goto ', L, ';\n').
 assemble(switch_on_pair(L), S, S) :- gen('if(is_PAIR(A[0])) goto ', L, ';\n').
 assemble(switch_on_structure(L), S, S) :- gen('if(is_STRUCTURE(A[0])) goto ', L, ';\n').
-assemble(switch_and_dispatch_on_atom(TABLE, LX), S, S) :-
-	length(TABLE, LEN),
-	TLEN is 2 * LEN,
-	findall(KEY-(ATOM/LABEL),
-		(member(ATOM/LABEL, TABLE),
-		 hash_atom(ATOM, HASH),
-		 KEY is HASH rem TLEN),
-		ENTRIES),
+assemble(switch_and_dispatch_on_atom(ENTRIES, TLEN, LX), S, S) :-
 	gen('if(!is_SYMBOL(A[0])) goto ', LX, ';\n'),
 	gen('static SYMBOL_DISPATCH dt_', LX, '[]={'),
-	keysort(ENTRIES, ENTRIES2),
-	assemble_atom_dispatch(0, ENTRIES2),
-	gen('};\nDISPATCH_ON_SYMBOL(dt_', LX, ',', LX, ',', TLEN),
+	assemble_atom_dispatch(0, TLEN, ENTRIES),
+	gen('};\nDISPATCH_ON_SYMBOL(dt_', LX, ','),
+	gen(LX, ',', TLEN),
 	gen(');\n', LX, ':\n').
 assemble(dispatch_on_integer(TABLE), S, S) :-
 	gen('switch(fixnum_to_word(A[0])){\n'),
@@ -236,17 +229,17 @@ assemble_arguments([X|MORE], I) :-
 
 %% assemble dispatch table
 
-assemble_atom_dispatch(_, []).
-assemble_atom_dispatch(I, [I-(ATOM/LABEL)|MORE]) :-
+assemble_atom_dispatch(I, I, _).
+assemble_atom_dispatch(I, LEN, [I-(ATOM/LABEL)|MORE]) :-
 	!,
 	mangle_name(ATOM, NAME),
 	gen('{(X)SYMBOL', NAME, ',&&', LABEL, '},'),
 	I2 is I + 1,
-	assemble_atom_dispatch(I2, MORE).
-assemble_atom_dispatch(I, ENTRIES) :-
+	assemble_atom_dispatch(I2, LEN, MORE).
+assemble_atom_dispatch(I, LEN, ENTRIES) :-
 	gen('{NULL,NULL},'),
 	I2 is I + 1,
-	assemble_atom_dispatch(I2, ENTRIES).
+	assemble_atom_dispatch(I2, LEN, ENTRIES).
 
 
 %% generate literal data

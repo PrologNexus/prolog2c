@@ -116,7 +116,17 @@ compile_dispatch_sequence([I1/atom(ATM1)|DMAP], N, A, XS, S1, S2) :-
 			    secondary_clause_label(N, A, I, LABEL)),
 		TABLE),
 	gen_label(LX, S1, S3),
-	emit(switch_and_dispatch_on_atom([ATM1/L1|TABLE], LX)),
+	length(TABLE, LEN),
+	default_setting(atom_table_size_factor, F),
+	TLEN is F * (LEN + 1),
+	findall(KEY-(ATOM/LABEL),
+		(member(ATOM/LABEL, [ATM1/L1|TABLE]),
+		 atom_hash(ATOM, HASH),
+		 KEY is HASH rem TLEN),
+		ENTRIES),
+	keysort(ENTRIES, ENTRIES2),
+	adjust_atom_dispatch_table(ENTRIES2, TLEN, ENTRIES3, DUPS),
+	emit(switch_and_dispatch_on_atom(ENTRIES3, TLEN, LX)),
 	subtract(DMAP, ACASES, DMAP2),
 	compile_dispatch_sequence(DMAP2, N, A, XS, S3, S2).
 compile_dispatch_sequence([I/T|DMAP], N, A, XS, S1, S2) :-
@@ -133,3 +143,33 @@ dispatch_instruction(pair, switch_on_pair).
 dispatch_instruction(float, switch_on_float).
 dispatch_instruction(atom(_), switch_on_atom).
 dispatch_instruction(structure, switch_on_structure).
+
+
+%% adjust atom dispatch-table by moving colliding entries
+
+adjust_atom_dispatch_table(E1, LEN, E, ED) :-
+	duplicate_dispatch_table_entries(E1, ED, E2),
+	insert_dispatch_table_entries(ED, LEN, E2, E3),
+	keysort(E3, E).
+
+duplicate_dispatch_table_entries([], [], []).
+duplicate_dispatch_table_entries([I1-E1, I1-E2|ER], [I1-E2|ER2], EN) :-
+	duplicate_dispatch_table_entries([I1-E1|ER], ER2, EN).
+duplicate_dispatch_table_entries([X|ER], ER2, [X|EN]) :-
+	duplicate_dispatch_table_entries(ER, ER2, EN).
+
+insert_dispatch_table_entries([], _, E, E).
+insert_dispatch_table_entries([I1-E1|ER], LEN, ES, ER2) :-
+	I2 is I1 + 1,
+	find_free_dispatch_table_entry(I2, LEN, ES, II),
+	insert_dispatch_table_entries(ER, LEN, [II-E1|ES], ER2).
+
+find_free_dispatch_table_entry(I, LEN, ES, IR) :-
+	I >= LEN,
+	find_free_dispatch_table_entry(0, LEN, ES, IR).
+find_free_dispatch_table_entry(I, LEN, ES, IR) :-
+	member(I-_, ES),
+	!,
+	I2 is I + 1,
+	find_free_dispatch_table_entry(I2, LEN, ES, IR).
+find_free_dispatch_table_entry(I, _, _, I).
