@@ -153,6 +153,7 @@ typedef struct SYMBOL_BLOCK {
   XWORD h;
   X s;
   struct SYMBOL_STRUCT *next;
+  X hash;
 } SYMBOL_BLOCK;
 
 typedef struct STRUCTURE_BLOCK {
@@ -346,7 +347,7 @@ typedef struct SYMBOL_DISPATCH
 #define PREVIOUS_SYMBOL  END_OF_LIST_VAL
 
 #define HASH_LENGTH_CUTOFF 100
-#define HASH_MASK  0x7fffffffUL
+#define HASH_MASK  0x3fffffffUL
 
 
 /// predefined literals and global variables
@@ -834,14 +835,14 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
 
 static XWORD hash_name(CHAR *name, int len)
 {
-  unsigned long key = 0;
+  XWORD key = 0;
   
   if(len > HASH_LENGTH_CUTOFF) len = HASH_LENGTH_CUTOFF;
 
   while(len--)
     key = (key ^ ((key << 6) + (key >> 2) + *(name++))) & HASH_MASK;
 
-  return (XWORD)(key & 0x3fffffffUL);
+  return key;
 }
 
 
@@ -871,7 +872,7 @@ static void intern_static_symbols(X sym1)
   while(sym1 != END_OF_LIST_VAL) {
     X name = slot_ref(sym1, 0);
     XWORD len = string_length(name);
-    XWORD hash = fixnum_to_word(slot_ref(sym1, 3));
+    XWORD hash = fixnum_to_word(slot_ref(sym1, 2));
     XWORD key = hash % SYMBOL_TABLE_SIZE;
     X sym = symbol_table[ key ];
     X nextsym = slot_ref(sym1, 1);
@@ -890,7 +891,7 @@ static void intern_static_symbols(X sym1)
 
 static void *lookup_symbol_in_table(X sym, SYMBOL_DISPATCH *table, void *deflabel, int len)
 {
-  WORD key = fixnum_to_word(slot_ref(sym, 3)) % len;
+  XWORD key = fixnum_to_word(slot_ref(sym, 2)) % len;
 
   for(;;) {
     X tsym = table[ key ].symbol;
