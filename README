@@ -487,6 +487,8 @@
 
     sqrt(X)			  Square-root [ISO]
 
+    tan(X)                        Tangent [ISO]
+
     truncate(X)			  Truncate to integer [ISO]
 
     X xor Y			  Bitwise xor

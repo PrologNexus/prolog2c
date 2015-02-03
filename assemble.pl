@@ -161,6 +161,7 @@ assemble(log(R1, R2), S, S) :- gen('X ', R2, '=num_log(', R1, ');\n').
 assemble(round(R1, R2), S, S) :- gen('X ', R2, '=num_round(', R1, ');\n').
 assemble(sign(R1, R2), S, S) :- gen('X ', R2, '=num_sign(', R1, ');\n').
 assemble(sin(R1, R2), S, S) :- gen('X ', R2, '=num_sin(', R1, ');\n').
+assemble(tan(R1, R2), S, S) :- gen('X ', R2, '=num_tan(', R1, ');\n').
 assemble(sqrt(R1, R2), S, S) :- gen('X ', R2, '=num_sqrt(', R1, ');\n').
 assemble(truncate(R1, R2), S, S) :- gen('X ', R2, '=num_truncate(', R1, ');\n').
 assemble(negate(R1, R2), S, S) :- gen('X ', R2, '=num_negate(', R1, ');\n').

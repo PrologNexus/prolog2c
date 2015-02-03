@@ -454,6 +454,7 @@ arithmetic_operation(log, 1).
 arithmetic_operation(round, 1).
 arithmetic_operation(sign, 1).
 arithmetic_operation(sin, 1).
+arithmetic_operation(tan, 1).
 arithmetic_operation(sqrt, 1).
 arithmetic_operation(truncate, 1).
 arithmetic_operation(random, 1).

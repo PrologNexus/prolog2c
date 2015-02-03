@@ -2543,6 +2543,7 @@ static inline X num_round(X x) { return FLONUM(round(flonum_to_float(check_type_
 static inline X num_truncate(X x) { return FLONUM(trunc(flonum_to_float(check_type_FLONUM(deref(x))))); }
 static inline X num_sin(X x) { return FLONUM(sin(flonum_to_float(check_type_FLONUM(deref(x))))); }
 static inline X num_cos(X x) { return FLONUM(cos(flonum_to_float(check_type_FLONUM(deref(x))))); }
+static inline X num_tan(X x) { return FLONUM(tan(flonum_to_float(check_type_FLONUM(deref(x))))); }
 static inline X num_atan(X x) { return FLONUM(atan(flonum_to_float(check_type_FLONUM(deref(x))))); }
 static inline X num_exp(X x) { return FLONUM(exp(flonum_to_float(check_type_FLONUM(deref(x))))); }
 static inline X num_log(X x) { return FLONUM(log(flonum_to_float(check_type_FLONUM(deref(x))))); }
