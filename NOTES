@@ -57,6 +57,68 @@ NOTES											              -*- Org -*-
 * Build options
 ** Allow static allocation of data-areas
 ** Allow keeping db-data in GC'd heap
+   - freeze/thaw would be just a deep copy.
+** Make use of floating-point optional
+** Currently imported symbols:
+   | Name             | Class |
+   |------------------+-------|
+   | __ctype_b_loc    | R     |
+   | __errno_location | D     |
+   | _setjmp          | A     |
+   | atan             | O     |
+   | atol             | R/O   |
+   | ceil             | R/O   |
+   | clock_gettime    | D     |
+   | close            | D     |
+   | cos              | O     |
+   | exit             | D     |
+   | exp              | O     |
+   | fclose           | D     |
+   | fflush           | D     |
+   | fgetc            | R/A   |
+   | floor            | R/O   |
+   | fopen            | D     |
+   | fprintf          |       |
+   | fputc            | R/A   |
+   | fputs            |       |
+   | free             | -     |
+   | ftruncate        |       |
+   | fwrite           | R/A   |
+   | getenv           | D     |
+   | getpid           | D     |
+   | log              | O     |
+   | longjmp          | A     |
+   | malloc           | -     |
+   | memcmp           | R     |
+   | memcpy           | R     |
+   | memset           | R     |
+   | mmap             | D     |
+   | modf             | O     |
+   | munmap           | D     |
+   | open             |       |
+   | pow              |       |
+   | rand             | D     |
+   | realloc          | -     |
+   | round            | R/O   |
+   | sin              | O     |
+   | sleep            | D     |
+   | sprintf          |       |
+   | sqrt             | O     |
+   | srand            | D     |
+   | stat             | D     |
+   | stderr           | R/A   |
+   | stdin            | R/A   |
+   | stdout           | R/A   |
+   | strerror         | D     |
+   | strncmp          | R     |
+   | strndup          | -     |
+   | strtod           |       |
+   | strtol           |       |
+   | system           | D     |
+   | toupper          | R     |
+   | trunc            | R/O   |
+   | ungetc           | R     |
+   Class: R = reimplement, D = drop, O = optional, A = asm impl.
 * Diagnostics
 ** Detect singleton variables
 ** Report unused predicates
