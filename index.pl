@@ -126,6 +126,10 @@ compile_dispatch_sequence([I1/atom(ATM1)|DMAP], N, A, XS, S1, S2) :-
 		ENTRIES),
 	keysort(ENTRIES, ENTRIES2),
 	adjust_atom_dispatch_table(ENTRIES2, TLEN, ENTRIES3, DUPS),
+	(recorded(silent, yes);
+	 display('% duplicate entries in dispatch-table for '),
+	 write(N/A), display(': '), display(DUPS), nl
+	),
 	emit(switch_and_dispatch_on_atom(ENTRIES3, TLEN, LX)),
 	subtract(DMAP, ACASES, DMAP2),
 	compile_dispatch_sequence(DMAP2, N, A, XS, S3, S2).
@@ -147,9 +151,10 @@ dispatch_instruction(structure, switch_on_structure).
 
 %% adjust atom dispatch-table by moving colliding entries
 
-adjust_atom_dispatch_table(E1, LEN, E, ED) :-
+adjust_atom_dispatch_table(E1, LEN, E, COUNT) :-
 	duplicate_dispatch_table_entries(E1, ED, E2),
 	insert_dispatch_table_entries(ED, LEN, E2, E3),
+	length(ED, COUNT),
 	keysort(E3, E).
 
 duplicate_dispatch_table_entries([], [], []).
