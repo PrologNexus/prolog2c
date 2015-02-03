@@ -21,7 +21,7 @@
 
 (let ((s (suffix file)))
   (unless (string=? "c" s)
-    (run (./pc ,file -o ,cfile))))
+    (run (./pc -q ,file -o ,cfile))))
 
 (run (gcc -std=gnu99 -I. ,cfile -o ,xfile -lm -lrt ,@opts))
 (exit (run* (,(string-append "./" xfile) ,@(cdr args))))
