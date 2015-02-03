@@ -102,6 +102,9 @@
        			    path.
     -q                      do not show any output while compiling.
 
+  Any output preceeded with "%" is purely for informational purposes
+  and can be disabled with the "-q" option.
+
   Code compiled must then be passed to a C compiler:
 
     gcc -std=gnu99 -I. <program>.c -o <program> -lm
