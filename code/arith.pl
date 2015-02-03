@@ -16,43 +16,6 @@
  [KJ]
 */
 
-:- op(500,yfx,[++,--]).
-:- op(400,yfx,[div,mod]).
-:- op(300,xfy,[:,^]).
-
-:- public
-	divide/4,
-	ge/2,
-	gt/2,
-	le/2,
-	lt/2,
-	plus/3,
-	succ/2,
-	times/3.
-
-:- mode
-	instantiation_fault_(+),
-	ge(?, ?),
-	gt(?, ?),
-	le(?, ?),
-	lt(?, ?),
-	succ(?, ?),
-	plus(?, ?, ?),
-	times(?, ?, ?),
-	times(+, +, ?, ?, ?),
-	divide(?, ?, ?, ?).
-
-/* :- pred
-	ge(integer, integer),
-	gt(integer, integer),
-	le(integer, integer),
-	lt(integer, integer),
-	succ(integer, integer),
-	plus(integer, integer, integer),
-	times(integer, integer, integer),
-	    times(integer, integer, integer, integer, integer),
-	divide(integer, integer, integer, integer).
-*/
 /*  These predicates are now primitives in C Prolog.  My original
     reason for adding them to C-Prolog was efficiency, as the "is"
     expression interpreter (which has to handle floating point as
@@ -107,9 +70,7 @@
 %   to generate full frames for them.  
 
 instantiation_fault_(Goal) :-
-	nl, write('! instantiation fault in '),
-	print(Goal), nl,
-	break, abort.
+	throw(instantiation_error(Goal)).
 
 
 
@@ -243,8 +204,8 @@ times(A, B, P) :-
 times(P, A, B, _, _) :-
 	A \== 0,
 	!,
-	0 is P mod A,
-	B is P div A.
+	0 is P rem A,
+	B is P // A.
 times(0, 0, _, X, Y) :-
 	instantiation_fault_(times(X,Y,0)).
 
@@ -291,10 +252,10 @@ divide(A, B, Q, R) :-
 	nonvar(A),
 	nonvar(B),
 	!,
-	( B > 0, A >= 0, Q1 is A div B
-	; B > 0, A <  0, Q1 is -((-A) div B)
-	; B < 0, A >= 0, Q1 is -(A div (-B))
-	; B < 0, A <  0, Q1 is (-A) div (-B)
+	( B > 0, A >= 0, Q1 is A // B
+	; B > 0, A <  0, Q1 is -((-A) // B)
+	; B < 0, A >= 0, Q1 is -(A // (-B))
+	; B < 0, A <  0, Q1 is (-A) // (-B)
 	), !,
 	Q = Q1,
 	R is A-Q1*B.
@@ -310,8 +271,8 @@ divide(A, B, Q, R) :-
 	; true
 	),
 	!,
-	0 is (A-R) mod Q,
-	B is (A-R) div Q.
+	0 is (A-R) rem Q,
+	B is (A-R) // Q.
 divide(A, B, Q, R) :-
 	nonvar(B),
 	nonvar(Q),
