@@ -231,7 +231,7 @@
     	     			  from the character codes in the list Y or 
 				  vice versa.
 
-    hash_atom(+ATOM, -X)	  Unifies X with the hash-code of ATOM.
+    atom_hash(+ATOM, -X)	  Unifies X with the hash-code of ATOM.
 
   - Term-construction and deconstruction predicates
 
