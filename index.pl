@@ -127,8 +127,8 @@ compile_dispatch_sequence([I1/atom(ATM1)|DMAP], N, A, XS, S1, S2) :-
 	keysort(ENTRIES, ENTRIES2),
 	adjust_atom_dispatch_table(ENTRIES2, TLEN, ENTRIES3, DUPS),
 	(recorded(silent, yes);
-	 display('% duplicate entries in dispatch-table for '),
-	 write(N/A), display(': '), display(DUPS), nl
+	 display('% duplicates in dispatch-table for '),
+	 write(N/A), display(': '), write(DUPS/TLEN), nl
 	),
 	emit(switch_and_dispatch_on_atom(ENTRIES3, TLEN, LX)),
 	subtract(DMAP, ACASES, DMAP2),
