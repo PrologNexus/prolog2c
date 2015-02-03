@@ -42,6 +42,7 @@
 						  op(700,xfx,'>='),
 						  op(1200,xfx,'-->'),
 						  op(1105,xfy,'|'),
+						  op(400,yfx,'\\\\'),
 						  op(400,yfx,'rem')])).
 
 current_op(P, A, N) :-
