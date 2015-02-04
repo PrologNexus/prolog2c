@@ -57,6 +57,8 @@ NOTES											              -*- Org -*-
 ** Allow keeping db-data in GC'd heap
    - freeze/thaw would be just a deep copy.
 ** Make use of floating-point optional
+   - see /intmath/ branch.
+   - had funny behaviour with pi (use of flonum simple aborts.)
 ** Currently imported symbols:
    | Name             | Class |
    |------------------+-------|
