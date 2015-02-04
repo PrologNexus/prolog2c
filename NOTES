@@ -125,6 +125,8 @@ NOTES											              -*- Org -*-
 * Once we have a suitable test, compare performance with other implementations
   - SWI, GNU-Prolog, BinProlog
 * Issues
+** TODO The output of TRACE_TAILCALL() is somewhat confusing
+   - can we get rid of this?
 ** TODO name/2 and functor/3 (and others?) may exceed heap-reserve for large inputs
 ** DONE [#A] Some tests crash in 32-bit mode
    - apparently "key" in lookup_shared_term() is negative, or overflows.
