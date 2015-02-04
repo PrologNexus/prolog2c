@@ -258,7 +258,7 @@ typedef struct SYMBOL_DISPATCH
 # define SIXTYFOUR
 #endif
 
-#ifdef __LLP64__
+#if defined(__LLP64__) || defined(_WIN64)
 # define XWORD_SIGN_BIT   0x8000000000000000LL
 # define XWORD_TOP_BIT    0x4000000000000000LL
 #elif defined(SIXTYFOUR)
@@ -280,7 +280,7 @@ typedef struct SYMBOL_DISPATCH
 
 #ifdef DEBUG_GC
 # ifdef SIXTYFOUR
-#  ifdef __LLP64__
+#  if defined(__LLP64__) || defined(_WIN64)
 #   define TAINTED_PTR_A   0xbabababababababaLL
 #   define TAINTED_PTR_B   0xfefefefefefefefeLL
 #  else
