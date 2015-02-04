@@ -13,24 +13,17 @@ LIBS += -lrt
 endif
 
 
-.PHONY: all check clean spotless
+.PHONY: all check clean
 
 
-all: pc pi
+all: pc pi pb
 
-
-pc: pc.c pc.h
+%.c : %.c pc.h
 	$(CC) $(SETTINGS) $(OPTFLAGS) $(CFLAGS) $< -o $@ $(LIBS)
 
-pi: pi.c pc.h
-	$(CC) $(SETTINGS) $(OPTFLAGS) $(CFLAGS) $< -o $@ $(LIBS)
 
 clean:
-	rm -f pc
-
-
-spotless: clean
-	rm pc.c pi.c
+	rm -f pc pi pb
 
 
 check: all
