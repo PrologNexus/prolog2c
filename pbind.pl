@@ -3,21 +3,25 @@
 %
 % Currently understands the following:
 %
-% TYPE IDENTIFIER [("[" (NUMBER) "]") ...]
-% TYPE IDENTIFIER "(" (TYPE [IDENTIFIER [("[" (NUMBER) "]") ...]]) "," ... ")"
+% [STORAGE] TYPE IDENTIFIER [("[" (NUMBER) "]") ...]
+% [STORAGE] TYPE IDENTIFIER "(" ([DIRECTION] TYPE [IDENTIFIER [("[" (NUMBER) "]") ...]]) "," ... ")"
 %
 % TYPE = ["const"] BASETYPE ("const" | "*") ...
+% STORAGE = "extern" | "static"
+% DIRECTION = "/*" ("in" | "out") "*/"
 
 
 %% parsing of definitions
 
 parse_definition(NAME, REALNAME, RTYPE, ARGTYPES) -->
-	ws, result_type(RTYPE1), ws, entity_name(NAME, REALNAME),
+	ws, storage, result_type(RTYPE1), ws, entity_name(NAME, REALNAME),
 	ws, parse_suffix(RTYPE1, RTYPE, ARGTYPES), ws, (";"; "").
 
 parse_suffix(RTYPE, FINALRTYPE, ARGTYPES) --> indices(RTYPE, FINALRTYPE).
 parse_suffix(RTYPE, RTYPE, ARGTYPES) --> arguments(ARGTYPES).
 parse_suffix(RTYPE, RTYPE, none) --> [].
+
+storage --> ("extern"; "static"; "").
 	     
 %%XXX handle comments
 ws([C|R], OUT) :- memberchk(C, [32, 10, 13, 9]), !, ws(R, OUT).
@@ -26,8 +30,6 @@ ws(IN, IN).
 eof(IN) :- ws(IN, []).
 
 result_type(TYPE) --> type(TYPE).
-
-argument_type(TYPE) -->	type(TYPE).
 
 identifier(ID, [C|IN], OUT) :-
 	(uppercase(C); lowercase(C); C == 95),
@@ -44,8 +46,7 @@ numeric_literal(NUM, [C|IN], OUT) :-
 	number_chars(IN, OUT, IR),
 	number_codes(NUM, [C|IR]).
 
-number_chars([C|IN], OUT, [C|MORE]) :-
-	digit(C), number_chars(IN, OUT, MORE).
+number_chars([C|IN], OUT, [C|MORE]) :- digit(C), number_chars(IN, OUT, MORE).
 number_chars(IN, IN, "").
 
 entity_name(NAME, NAME) -->
@@ -59,11 +60,22 @@ indices(RTYPE, FINALRTYPE) -->
 arguments([]) --> "(", ws, ")".
 arguments(ARGTYPES) --> "(", ws, argument_type_list(ARGTYPES), ws, ")".
 
+direction(in) --> "/*", ws, "in", ws, "*/".
+direction(out) --> "/*", ws, "out", ws, "*/".
+direction(in) --> [].
+
 argument_type_list([TYPE|MORE]) -->
-	argument_type(TYPE1), ws,
-	(identifier(_), argument_type_suffix(TYPE1, TYPE); {TYPE1 = TYPE}),
-	ws, ",", ws, argument_type_list(MORE).
-argument_type_list([TYPE]) --> argument_type(TYPE).
+	argument_type(TYPE), ws, ",", ws, argument_type_list(MORE).
+argument_type_list([TYPE]) -->
+	argument_type(TYPE).
+
+argument_type(TYPE) -->
+	direction(DIR), ws, type(TYPE1), ws,
+	(identifier(_), argument_type_suffix(TYPE1, TYPE2); {TYPE2 = TYPE1}),
+	{apply_direction(DIR, TYPE2, TYPE)}.
+
+apply_direction(in, T, T).
+apply_direction(out, T, out(T)).
 
 argument_type_suffix(T1, T2) --> indices(T1, T2).
 argument_type_suffix(T, T) --> [].
@@ -86,10 +98,10 @@ type_qualifiers(TYPE, TYPE) --> [].
 %% maintain stored definition info
 
 store_definition(NAME, REALNAME, RESULTTYPE, none) :-
-	write(variable(REALNAME, RESULTTYPE)), nl,
+	display('% '), write(variable(REALNAME, RESULTTYPE)), nl,
 	recordz(definitions, variable(NAME, REALNAME, RESULTTYPE)).
 store_definition(NAME, REALNAME, RESULTTYPE, ARGTYPES) :-
-	write(function(REALNAME, RESULTTYPE, ARGTYPES)), nl,
+	display('% '), write(function(REALNAME, RESULTTYPE, ARGTYPES)), nl,
 	recordz(definitions, function(NAME, REALNAME, RESULTTYPE, ARGTYPES)).	
 
 
@@ -123,7 +135,7 @@ function_primitive(NAME, REALNAME, void, []) :-
 function_primitive(NAME, REALNAME, RTYPE, []) :-
 	gen('\nPRIMITIVE(f_', REALNAME, ',X r){\n'),
 	gen_call(RTYPE, NAME, [], 'x'),
-	gen('\nreturn unify('),
+	gen('return unify('),
 	p_value(RTYPE, 'x'),
 	gen(',r);}\n'), !.
 function_primitive(NAME, REALNAME, RTYPE, ARGTYPES) :-
@@ -131,16 +143,22 @@ function_primitive(NAME, REALNAME, RTYPE, ARGTYPES) :-
 	length(ARGTYPES, ARGC),
 	forall(between(1, ARGC, I), gen(',X x', I)),
 	gen('){\n'),
+	gen_out_vars(1, ARGTYPES),
 	gen_call(RTYPE, NAME, ARGTYPES, 'x'),
-	gen('\nreturn unify('),
+	gen_out_results(1, ARGTYPES),
+	gen('return unify('),
 	p_value(RTYPE, 'x'),
 	gen(',r);}\n'), !.
 
+gen_type(pointer(T)) :- !, gen_type(T), gen('*').
+gen_type(const(T)) :- !, gen('const '), gen_type(T).
+gen_type(T) :- gen(T).
+
 gen_call(RTYPE, NAME, ARGTYPES, RESULT) :-
-	gen(RTYPE, ' ', RESULT, '=', NAME),
+	gen_type(RTYPE), gen(' ', RESULT, '=', NAME),
 	gen('('),
 	gen_call(1, ARGTYPES),
-	gen(');').
+	gen(');\n').
 
 gen_call(_, []).
 gen_call(I, [ATYPE]) :-
@@ -151,11 +169,37 @@ gen_call(I, [ATYPE|R]) :-
 	I2 is I + 1,
 	gen_call(I2, R).
 
+gen_call_arg(I, out(T)) :-
+	number_codes(I, IL),
+	name(ARG, [114|IL]),	% "r"
+	gen('&', ARG).
 gen_call_arg(I, TYPE) :-
 	number_codes(I, IL),
-	name(ARG, [120|IL]),
+	name(ARG, [120|IL]),	% "x"
 	c_value(TYPE, ARG).
 
+gen_out_vars(_, []).
+gen_out_vars(I, [out(pointer(T))|R]) :- %XXX may not be sufficient
+	number_codes(I, IL),
+	name(VAR,[114|IL]), 	% "r"
+	gen_type(T), gen(' ', VAR, ';\n'),
+	I2 is I + 1,
+	gen_out_vars(I2, R).
+gen_out_vars(I, [_|R]) :-
+	I2 is I + 1,
+	gen_out_vars(I2, R).
+	
+gen_out_results(_, []).
+gen_out_results(I, [out(pointer(T))|R]) :- %XXX may not be sufficient
+	number_codes(I, IL),
+	name(VAR,[114|IL]), 	% "r"
+	gen('if(!unify('), p_value(T, VAR), gen(',x', I, ')) return 0;\n'),
+	I2 is I + 1,
+	gen_out_results(I2, R).
+gen_out_results(I, [_|R]) :-
+	I2 is I + 1,
+	gen_out_results(I2, R).
+	
 
 %% generate file with wrapper predicates
 
@@ -198,7 +242,9 @@ function_wrapper(NAME, ARGTYPES) :-
 %% value conversion from and to C
 
 p_value(const(T), REF) :- p_value(T, REF).
+p_value(pointer(const(T)), REF) :- p_value(pointer(T), REF).
 p_value(pointer(char), REF) :- gen('CATOM(', REF, ')'). %XXX ptr to const char
+p_value('X', REF) :- gen(REF).
 p_value(ITYPE, REF) :-
 	memberchk(ITYPE, [char, int, long, short]),
 	gen('word_to_fixnum(', REF, ')').
@@ -206,10 +252,12 @@ p_value(FTYPE, REF) :-
 	memberchk(FTYPE, [float, double]),
 	gen('FLONUM(', REF, ')').
 p_value(TYPE, _) :-
-	error('no C->Prolog conversion for type', TYPE).
+	error('No C->Prolog conversion for type', TYPE).
 
 c_value(const(T), REF) :- c_value(T, REF).
+c_value(pointer(const(T)), REF) :- c_value(pointer(T), REF).
 c_value(pointer(char), REF) :-gen('((const char *)objdata(', REF, '))'). %XXX s.a.
+c_value('X', REF) :- gen(REF).
 c_value(ITYPE, REF) :-
 	memberchk(ITYPE, [char, int, long, short]),
 	gen('(is_FIXNUM(', REF, ')?fixnum_to_word(', REF),
@@ -219,14 +267,14 @@ c_value(FTYPE, REF) :-
 	gen('(is_FIXNUM(', REF, ')?fixnum_to_float(', REF),
 	gen('):flonum_to_float(check_type_FLONUM(', REF, ')))').
 c_value(TYPE, _) :-
-	error('no Prolog->C conversion for type', TYPE).
+	error('No Prolog->C conversion for type', TYPE).
 
 
 %% utilities
 
 error(MSG, ARG) :-
 	current_error_output(OUT), tell(OUT),
-	gen(MSG, ': '), writeq(ARG), nl,
+	nl, gen('*** ', MSG, ': '), writeq(ARG), nl,
 	halt(1).
 
 gen(T) :- display(T).
@@ -286,7 +334,7 @@ process_input(INPUT) :-
 	take_list(INPUT, 100, LST),
 	append(LST, "...", LST2),
 	name(STR, LST2),
-	error('invalid syntax', STR).
+	error('Invalid syntax', STR).
 
 main :-
 	command_line_arguments(ARGS),
