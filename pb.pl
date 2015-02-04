@@ -123,7 +123,7 @@ generate_primitives.
 variable_primitive(NAME, REALNAME, RTYPE) :-
 	gen('\nPRIMITIVE(v_', REALNAME, ',X x){\nreturn unify('),
 	p_value(RTYPE, NAME),
-	gen(',x_);}\n'),
+	gen(',x);}\n'),
 	%%XXX no setter if const
 	gen('\nPRIMITIVE(set_v_', REALNAME, ',X x){\n', NAME, '='),
 	c_value(RTYPE, 'x'),
@@ -294,6 +294,7 @@ digit(C) :- C >= 48, C =< 57.
 basename(FNAME, BNAME) :-
 	(atom(FNAME) -> name(FNAME, LST); LST = FNAME),
 	append(BNAME, [46|_], LST), !.
+basename(FNAME, BNAME) :- name(FNAME, BNAME).
 
 read_all(LST) :- get0(C), read_all(C, LST).
 
@@ -336,13 +337,17 @@ process_input(INPUT) :-
 	name(STR, LST2),
 	error('Invalid syntax', STR).
 
+derive_filename(user, EXT, NEW) :- derive_filename(bind, EXT, NEW).
+derive_filename(FNAME, EXT, NEW) :-
+	basename(FNAME, BASENAME),
+	append(BASENAME, EXT, NEW).
+
 main :-
 	command_line_arguments(ARGS),
 	parse_arguments(ARGS),
 	(recorded(source_file, SOURCEFILE); SOURCEFILE = user),
 	process_input_file(SOURCEFILE),
-	basename(SOURCEFILE, BASENAME),
-	append(BASENAME, ".h", HNAME),
+	derive_filename(SOURCEFILE, ".h", HNAME),
 	generate_header_file(HNAME),
-	append(BASENAME, ".pl", PLNAME),
+	derive_filename(SOURCEFILE, ".pl", PLNAME),
 	generate_wrapper_file(PLNAME, HNAME).
