@@ -3,13 +3,13 @@
 %
 % Currently understands the following:
 %
-% [STORAGE] TYPE IDENTIFIER [("[" (NUMBER) "]") ...]
-% [STORAGE] TYPE IDENTIFIER "(" ([DIRECTION] TYPE [IDENTIFIER [("[" (NUMBER) "]") ...]]) "," ... ")"
+% [STORAGE] TYPE IDENTIFIER [("[" (INTEGER) "]") ...]
+% [STORAGE] TYPE IDENTIFIER "(" ([DIRECTION] TYPE [IDENTIFIER [("[" (INTEGER) "]") ...]]) "," ... ")"
 %
 % TYPE = ["const"] BASETYPE ("const" | "*") ...
 % STORAGE = "extern" | "static"
 % DIRECTION = "/*" ("in" | "out") "*/"
-% BASETYPE = "int" | "char" | "short" | "long" | "float" | "double"
+% BASETYPE = ["unsigned"] ("int" | "char" | "short" | "long" | "float" | "double")
 
 
 %% parsing of definitions
@@ -66,7 +66,7 @@ entity_name(NAME, NAME) -->
 
 indices(RTYPE, FINALRTYPE) -->
 	"[", ws, (numeric_literal(_); ""), ws, "]",
-	(indices(pointer(RTYPE), FINALRTYPE); {FINALRTYPE = RTYPE}).
+	(indices(pointer(RTYPE), FINALRTYPE); {FINALRTYPE = pointer(RTYPE)}).
 
 arguments([]) --> "(", ws, ")".
 arguments(ARGTYPES) --> "(", ws1, argument_type_list(ARGTYPES), ws, ")".
@@ -94,9 +94,10 @@ argument_type_suffix(T, T) --> [].
 type(TYPE) -->
 	type_prefixes(PREFIXED, BASETYPE), ws, identifier(BASETYPE), ws, type_qualifiers(PREFIXED, TYPE).
 
-%%XXX unsigned
 type_prefixes(const(TYPE), VAR) -->
 	identifier(const), ws, type_prefixes(TYPE, VAR).
+type_prefixes(unsigned(TYPE), VAR) -->
+	identifier(unsigned), ws, type_prefixes(TYPE, VAR).
 type_prefixes(VAR, VAR) --> [].
 
 type_qualifiers(BASETYPE, TYPE) -->
@@ -170,6 +171,7 @@ function_primitive(NAME, REALNAME, RTYPE, ARGTYPES) :-
 
 gen_type(pointer(T)) :- !, gen_type(T), gen('*').
 gen_type(const(T)) :- !, gen('const '), gen_type(T).
+gen_type(unsigned(T)) :- !, gen('unsigned '), gen_type(T).
 gen_type(T) :- gen(T).
 
 gen_call(RTYPE, NAME, ARGTYPES, RESULT) :-
@@ -266,6 +268,7 @@ function_wrapper(NAME, ARGTYPES) :-
 %% value conversion from and to C
 
 p_value(const(T), REF) :- p_value(T, REF).
+p_value(unsigned(T), REF) :- p_value(T, REF).
 p_value(pointer(const(T)), REF) :- p_value(pointer(T), REF).
 p_value(pointer(char), REF) :- gen('CATOM(', REF, ')').
 p_value('X', REF) :- gen(REF).
@@ -279,6 +282,7 @@ p_value(TYPE, _) :-
 	error('No C->Prolog conversion for type', TYPE).
 
 c_value(const(T), REF) :- c_value(T, REF).
+c_value(unsigned(T), REF) :- c_value(T, REF).
 c_value(pointer(const(T)), REF) :- c_value(pointer(T), REF).
 c_value(pointer(char), REF) :-
 	gen('((const char *)objdata(slot_ref(check_type_SYMBOL(', REF, '),0)))').
