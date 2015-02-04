@@ -757,8 +757,11 @@
 
 * Performance tips
 
+  Compiling the generated C code with "-DNDEBUG" will disable various
+  internal sanity checks and assertions.
+
   Compile the generated C code with "-DUNSAFE" to disable all safety
-  checks.
+  checks (implies "-DNDEBUG".)
 
   Asserting and retrieving terms in the record- or clause-database
   involves copying and thus should be avoided in time-critical code.
