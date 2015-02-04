@@ -9,6 +9,7 @@
 % TYPE = ["const"] BASETYPE ("const" | "*") ...
 % STORAGE = "extern" | "static"
 % DIRECTION = "/*" ("in" | "out") "*/"
+% BASETYPE = "int" | "char" | "short" | "long" | "float" | "double"
 
 
 %% parsing of definitions
@@ -23,9 +24,19 @@ parse_suffix(RTYPE, RTYPE, none) --> [].
 
 storage --> ("extern"; "static"; "").
 	     
-%%XXX handle comments
-ws([C|R], OUT) :- memberchk(C, [32, 10, 13, 9]), !, ws(R, OUT).
-ws(IN, IN).
+ws1([C|R], OUT) :- memberchk(C, [32, 10, 13, 9]), !, ws1(R, OUT).
+ws1 --> "//", skip_line, !, ws1.
+ws1 --> [].
+
+ws --> ws1, (ws2; "").
+
+ws2 --> "/*", skip_comment, !, ws.
+
+skip_line --> [10], !.
+skip_line --> [_], !, skip_line.
+
+skip_comment --> "*/", !.
+skip_comment --> [_], !, skip_comment.
 
 eof(IN) :- ws(IN, []).
 
@@ -34,7 +45,7 @@ result_type(TYPE) --> type(TYPE).
 identifier(ID, [C|IN], OUT) :-
 	(uppercase(C); lowercase(C); C == 95),
 	identifier_chars(IN, OUT, IR),
-	name(ID, [C|IR]).
+	!, name(ID, [C|IR]).
 
 identifier_chars([C|IN], OUT, [C|MORE]) :-
 	(uppercase(C); lowercase(C); digit(C); C == 95),
@@ -58,14 +69,14 @@ indices(RTYPE, FINALRTYPE) -->
 	(indices(pointer(RTYPE), FINALRTYPE); {FINALRTYPE = RTYPE}).
 
 arguments([]) --> "(", ws, ")".
-arguments(ARGTYPES) --> "(", ws, argument_type_list(ARGTYPES), ws, ")".
+arguments(ARGTYPES) --> "(", ws1, argument_type_list(ARGTYPES), ws, ")".
 
 direction(in) --> "/*", ws, "in", ws, "*/".
 direction(out) --> "/*", ws, "out", ws, "*/".
 direction(in) --> [].
 
 argument_type_list([TYPE|MORE]) -->
-	argument_type(TYPE), ws, ",", ws, argument_type_list(MORE).
+	argument_type(TYPE), ws, ",", ws1, argument_type_list(MORE).
 argument_type_list([TYPE]) -->
 	argument_type(TYPE).
 
@@ -85,13 +96,13 @@ type(TYPE) -->
 
 %%XXX unsigned
 type_prefixes(const(TYPE), VAR) -->
-	"const", ws, type_prefixes(TYPE, VAR).
+	identifier(const), ws, type_prefixes(TYPE, VAR).
 type_prefixes(VAR, VAR) --> [].
 
 type_qualifiers(BASETYPE, TYPE) -->
 	"*", ws, type_qualifiers(pointer(BASETYPE), TYPE).
 type_qualifiers(BASETYPE, TYPE) -->
-	"const", ws, type_qualifiers(const(BASETYPE), TYPE).
+	identifier(const), ws, type_qualifiers(const(BASETYPE), TYPE).
 type_qualifiers(TYPE, TYPE) --> [].
 
 
@@ -120,14 +131,21 @@ generate_primitives :-
 	fail.
 generate_primitives.
 
+variable_primitive(NAME, REALNAME, const(T)) :-
+	variable_getter(NAME, REALNAME, T), !.
 variable_primitive(NAME, REALNAME, RTYPE) :-
+	variable_getter(NAME, REALNAME, RTYPE),
+	variable_setter(NAME, REALNAME, RTYPE), !.
+	
+variable_getter(NAME, REALNAME, RTYPE) :-	
 	gen('\nPRIMITIVE(v_', REALNAME, ',X x){\nreturn unify('),
 	p_value(RTYPE, NAME),
-	gen(',x);}\n'),
-	%%XXX no setter if const
+	gen(',x);}\n').
+
+variable_setter(NAME, REALNAME, RTYPE) :-
 	gen('\nPRIMITIVE(set_v_', REALNAME, ',X x){\n', NAME, '='),
 	c_value(RTYPE, 'x'),
-	gen(';\nreturn 1;}\n'),	!.
+	gen(';\nreturn 1;}\n').
 
 function_primitive(NAME, REALNAME, void, []) :-
 	gen('\nstatic inline int f_', REALNAME, '(CHOICE_POINT *C0){\n'),
@@ -211,8 +229,8 @@ generate_wrapper_file(FNAME, HNAME) :-
 	told.
 
 generate_wrappers :-
-	recorded(definitions, variable(_, REALNAME, _)),
-	variable_wrapper(REALNAME),
+	recorded(definitions, variable(_, REALNAME, RTYPE)),
+	variable_wrapper(REALNAME, RTYPE),
 	fail.
 generate_wrappers :-
 	recorded(definitions, function(_, REALNAME, _, ARGTYPES)),
@@ -220,12 +238,18 @@ generate_wrappers :-
 	fail.
 generate_wrappers.
 
-variable_wrapper(NAME) :-
-	gen(':- determinate([', NAME, '/1, set_', NAME, '/1]).\n'),
-	gen(NAME, '(X) :- foreign_call(v_', NAME, '(X)).\n'),
-	%%XXX no setter if const
-	gen('set_', NAME, '(X) :- foreign_call(set_v_', NAME, '(X)).\n'),
-	!.
+variable_wrapper(NAME, const(_)) :-
+	variable_getter_wrapper(NAME), !.
+variable_wrapper(NAME, _) :-
+	variable_getter_wrapper(NAME),
+	variable_setter_wrapper(NAME), !.
+
+variable_getter_wrapper(NAME) :-
+	gen(':- determinate(', NAME, '/1).\n'),
+	gen(NAME, '(X) :- foreign_call(v_', NAME, '(X)).\n').
+variable_setter_wrapper(NAME) :-	
+	gen(':- determinate(set_', NAME, '/1).\n'),
+	gen('set_', NAME, '(X) :- foreign_call(set_v_', NAME, '(X)).\n').
 
 function_wrapper(NAME, ARGTYPES) :-
 	findall(_, member(_, ARGTYPES), VARS),
@@ -243,7 +267,7 @@ function_wrapper(NAME, ARGTYPES) :-
 
 p_value(const(T), REF) :- p_value(T, REF).
 p_value(pointer(const(T)), REF) :- p_value(pointer(T), REF).
-p_value(pointer(char), REF) :- gen('CATOM(', REF, ')'). %XXX ptr to const char
+p_value(pointer(char), REF) :- gen('CATOM(', REF, ')').
 p_value('X', REF) :- gen(REF).
 p_value(ITYPE, REF) :-
 	memberchk(ITYPE, [char, int, long, short]),
@@ -256,7 +280,8 @@ p_value(TYPE, _) :-
 
 c_value(const(T), REF) :- c_value(T, REF).
 c_value(pointer(const(T)), REF) :- c_value(pointer(T), REF).
-c_value(pointer(char), REF) :-gen('((const char *)objdata(', REF, '))'). %XXX s.a.
+c_value(pointer(char), REF) :-
+	gen('((const char *)objdata(slot_ref(check_type_SYMBOL(', REF, '),0)))').
 c_value('X', REF) :- gen(REF).
 c_value(ITYPE, REF) :-
 	memberchk(ITYPE, [char, int, long, short]),
@@ -332,7 +357,7 @@ process_input(INPUT) :-
 process_input(INPUT) :-
 	eof(INPUT), !.
 process_input(INPUT) :-
-	take_list(INPUT, 100, LST),
+	take_list(INPUT, 40, LST),
 	append(LST, "...", LST2),
 	name(STR, LST2),
 	error('Invalid syntax', STR).
