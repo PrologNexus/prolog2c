@@ -331,9 +331,7 @@ typedef struct SYMBOL_DISPATCH
 #define fixnum_to_word(n)  ((XWORD)(n) >> 1)
 #define word_to_fixnum(n)  ((X)((XWORD)(n) << 1 | FIXNUM_MARK_BIT))
 #define word_to_float(n)   ((XFLOAT)(n))
-#define float_to_word(n)   ((XWORD)trunc(n))
 #define flonum_to_float(x)  (((FLONUM_BLOCK *)(x))->n)
-#define flonum_to_word(x)  ((XWORD)((FLONUM_BLOCK *)(x))->n)
 #define fixnum_to_float(x)  ((XFLOAT)fixnum_to_word(x))
 
 #define is_forwarded(x)    ((objbits(x) & GC_MARK_BIT) != 0)
