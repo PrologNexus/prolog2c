@@ -2,10 +2,11 @@ NOTES											              -*- Org -*-
 
 
 * TODO Implement simple wrapper generator
-  - similar to "bind"
-  - "RTYPE NAME(ARGTYPE, ...)", generate .c file with primitive defs
-    and a .pl for the wrapper predicates.
-  - functions, vars, immutable (const) vars.
+** TODO Add support for immutable ("const") variables
+** TODO Document in README
+   - find some interesting (but small) application.
+** TODO Add proper test
+   - add to fullcheck.
 * Optimization opportunities
 ** DONE Check: take advantage of timestamps when binding vars in unify() ?
    - try: when binding two unbound vars, bind the younger one.
@@ -38,9 +39,6 @@ NOTES											              -*- Org -*-
 ** Analyze program before compiling to pseudo-instructions
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
-* Things to test
-* Documentation
-** TODO README: document pb
 * Missing features
 ** TODO Some sort of formatted output would be nice
    - file:code/writef.pl uses those funny succ/2 and plus/3 predicates.
@@ -127,6 +125,10 @@ NOTES											              -*- Org -*-
 * Once we have a suitable test, compare performance with other implementations
   - SWI, GNU-Prolog, BinProlog
 * Issues
+** TODO Test once more on WIN64
+** TODO Test once more on [pi]
+** TODO Does retract-loop work?
+   - we know it works for the rdb, but should also test for cdb.
 ** TODO The output of TRACE_TAILCALL() is somewhat confusing
    - can we get rid of this?
 ** TODO name/2 and functor/3 (and others?) may exceed heap-reserve for large inputs
