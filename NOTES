@@ -39,6 +39,8 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Things to test
+* Documentation
+** TODO README: document pb
 * Missing features
 ** TODO Some sort of formatted output would be nice
    - file:code/writef.pl uses those funny succ/2 and plus/3 predicates.
@@ -131,11 +133,10 @@ NOTES											              -*- Org -*-
 ** DONE [#A] Some tests crash in 32-bit mode
    - apparently "key" in lookup_shared_term() is negative, or overflows.
    - changed to use "unsigned long".
-   - run make check once again.
+   - run make check-m32 once again.
 ** TODO Reduce memory use in pc
    - seems to build up a lot of choice points.
-** TODO 0085-boyer crashes in pi
-   - sometimes.
+** TODO 0085-boyer crashes in pi sometimes
 ** TODO [#B] Implementation of if-then-else is broken
    - if-then stack gets out of balance, found here:
      call_primitive('->', 2, TERM) :-
