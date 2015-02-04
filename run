@@ -6,13 +6,20 @@
 
 ;(run-verbose #t)
 (define opts '("-g" "-save-temps=obj" "-DTRACE" "-DEBUG_GC"))
+(define moreopts '())
 (define args (command-line-arguments))
 
-(match args
-  (("-O" . _)
-   (pop! args)
-   (set! opts '("-O3" "-fomit-frame-pointer" "-fno-strict-aliasing" "-fwrapv" "-DUNSAFE")))
-  (_ #f))
+(let loop ()
+  (match args
+    (("-O" . _)
+     (pop! args)
+     (set! opts '("-O3" "-fomit-frame-pointer" "-fno-strict-aliasing" "-fwrapv" "-DUNSAFE"))
+     (loop))
+    (("-m32" . _)
+     (pop! args)
+     (push! "-m32" moreopts)
+     (loop))
+    (_ #f)))
 
 (define file (car args))
 (define bfile (basename file))
@@ -23,5 +30,5 @@
   (unless (string=? "c" s)
     (run (./pc -q ,file -o ,cfile))))
 
-(run (gcc -std=gnu99 -I. ,cfile -o ,xfile -lm -lrt ,@opts))
+(run (gcc -std=gnu99 -I. ,@opts ,@moreopts ,cfile -o ,xfile -lm -lrt))
 (exit (run* (,(string-append "./" xfile) ,@(cdr args))))
