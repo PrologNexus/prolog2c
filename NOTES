@@ -5,6 +5,7 @@ NOTES											              -*- Org -*-
   - similar to "bind"
   - "RTYPE NAME(ARGTYPE, ...)", generate .c file with primitive defs
     and a .pl for the wrapper predicates.
+  - functions, vars, immutable (const) vars.
 * Optimization opportunities
 ** DONE Check: take advantage of timestamps when binding vars in unify() ?
    - try: when binding two unbound vars, bind the younger one.
@@ -19,9 +20,6 @@ NOTES											              -*- Org -*-
      required space in front of it.
 ** Mode-declarations
    - can probably be used in many ways, but needs more thought.
-** DONE Extend clause indexing to dispatch on atom- or fixnum list via hashing
-   - see branches /integer_dispatch/ and /atom_dispatch/
-   - test.
 ** Arithmetic
    - deref all vars just once at start.
    - track types, use unboxed math.
@@ -125,6 +123,11 @@ NOTES											              -*- Org -*-
 * Once we have a suitable test, compare performance with other implementations
   - SWI, GNU-Prolog, BinProlog
 * Issues
+** TODO name/2 and functor/3 (and others?) may exceed heap-reserve for large inputs
+** DONE [#A] Some tests crash in 32-bit mode
+   - apparently "key" in lookup_shared_term() is negative, or overflows.
+   - changed to use "unsigned long".
+   - run make check once again.
 ** TODO Reduce memory use in pc
    - seems to build up a lot of choice points.
 ** TODO 0085-boyer crashes in pi
