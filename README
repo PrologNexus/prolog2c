@@ -40,7 +40,8 @@
   something that isn't easy to find, nowadays.
 
   ?-Prolog has currently only been tested on Linux (x86, x86-64 and
-  ARM), Mac OS X and Windows 7 (with the mingw64 toolchain.)
+  ARM), Mac OS X and Windows 7 (with the mingw32 and mingw64
+  toolchains.)
 
   The system is still under development and contains many known and
   unknown bugs. If you experience problems or want to help, please
