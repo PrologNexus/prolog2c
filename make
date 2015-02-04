@@ -32,7 +32,7 @@
     "main.pl"
     "pc.pl"))
 
-(define pc/pi-compile-options
+(define pc-compile-options
   '("-DTRAIL_STACK_SIZE=10000000"
     "-DCHOICE_POINT_STACK_SIZE=100000000"
     "-DENVIRONMENT_STACK_SIZE=20000000"
@@ -55,7 +55,9 @@
     "pc.c"
     "pc.h"
     "pi.c"
+    "pb.c"
     "g-s-p.pl" "system-predicates"
+    "pb.pl"
     "pi.pl" "lib/interp.pl" "pi_call_primitive.pl" "pi_evaluate_op.pl" "pi_system_predicate.pl"
     ,@source-files))
 
@@ -73,13 +75,13 @@
 (define (pc1)
   (pc1.c)
   (make (("pc1" ("pc1.c" "pc.h")
-	  (run (gcc ,@gcc-compile-options pc1.c -lm -lrt -o pc1 ,@pc/pi-compile-options))))))
+	  (run (gcc ,@gcc-compile-options pc1.c -lm -lrt -o pc1 ,@pc-compile-options))))))
 
 (define (pc1o)
   (pc1.c)
   (make (("pc1o" ("pc1.c" "pc.h")
 	  (run (gcc ,@gcc-optimized-compile-options pc1.c -lm -lrt -o pc1o
-		    ,@pc/pi-compile-options))))))
+		    ,@pc-compile-options))))))
 
 (define (pc2.c)
   (pc1)
@@ -118,7 +120,7 @@
   (fluid-let ((check-options '("-i")))
     (check)))
 
-(define (check-32)
+(define (check-m32)
   (pi)
   (fluid-let ((check-options '("-m32")))
     (check)))
@@ -178,9 +180,13 @@
 
 (define (pi)
   (system-predicates)
-  (fluid-let ((gcc-compile-options (append gcc-compile-options pc/pi-compile-options)))
+  (fluid-let ((gcc-compile-options (append gcc-compile-options pc-compile-options)))
     (make-program "pi.pl" "pi" "lib/interp.pl" "pi_system_predicate.pl" "pi_call_primitive.pl" 
 		  "pi_evaluate_op.pl")))
+
+(define (pb)
+  (fluid-let ((gcc-compile-options (append gcc-compile-options pc-compile-options)))
+    (make-program "pb.pl" "pb")))
 
 (define (bench)
   (let ((tests (string-split (capture (ls benchmarks/*.pl)) "\n")))
@@ -202,6 +208,8 @@
 
 (define (dist)
   (pc2.c)
+  (pi)
+  (pb)
   (let* ((date (capture (date +%Y-%m-%d)))
 	 (dname "pc.tar.gz")
 	 (ddir (string-append "pc-" date)))
