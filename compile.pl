@@ -403,6 +403,7 @@ type_predicate(var).
 type_predicate(nonvar).
 type_predicate(stream).
 type_predicate(db_reference).
+type_predicate(foreign_pointer).
 
 compile_order_predicate('@<', X, Y) :- emit(term_less(X, Y)).
 compile_order_predicate('@>', X, Y) :- emit(term_less(Y, X)).

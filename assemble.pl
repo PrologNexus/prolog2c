@@ -178,6 +178,7 @@ assemble(compound(R), S, S) :- gen('if(!is_compound(deref(', R, '))) FAIL;\n').
 assemble(float(R), S, S) :- gen('if(!is_float(deref(', R, '))) FAIL;\n').
 assemble(stream(R), S, S) :- gen('if(!is_stream(deref(', R, '))) FAIL;\n').
 assemble(db_reference(R), S, S) :- gen('if(!is_dbreference(deref(', R, '))) FAIL;\n').
+assemble(foreign_pointer(R), S, S) :- gen('if(!is_pointer(deref(', R, '))) FAIL;\n').
 
 assemble(term_less(R1, R2), S, S) :- gen('if(compare_terms(deref(', R1, '),deref(', R2, ')) <= 0) FAIL;\n').
 assemble(term_not_less(R1, R2), S, S) :- gen('if(compare_terms(deref(', R1, '),deref(', R2, ')) > 0) FAIL;\n').

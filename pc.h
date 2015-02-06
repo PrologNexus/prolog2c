@@ -314,6 +314,7 @@ typedef struct SYMBOL_DISPATCH
 #define STRUCTURE_TYPE  8
 #define PAIR_TYPE  9
 #define DBREFERENCE_TYPE 0x4a
+#define POINTER_TYPE 0x4b
 
 #define TYPE_TO_TAG(t)  ((XWORD)(t) << TYPE_SHIFT)
 #define TAG_TO_TYPE(t)  ((XWORD)(t) >> TYPE_SHIFT)
@@ -482,6 +483,7 @@ static CHAR *type_names[] = {
 #define is_PORT(x)  is(PORT_TYPE, (x))
 #define is_FLONUM(x)  is(FLONUM_TYPE, (x))
 #define is_DBREFERENCE(x)  is(DBREFERENCE_TYPE, (x))
+#define is_POINTER(x)  is(POINTER_TYPE, (x))
 
 #define GLOBAL_REF(index)  global_variables[ index ]
 #define GLOBAL_SET(index, x)  global_variables[ index ] = deref(x)
@@ -555,6 +557,11 @@ static inline int is_dbreference(X x)
   return !is_FIXNUM(x) && is_DBREFERENCE(x);
 }
 
+static inline int is_pointer(X x)
+{
+  return !is_FIXNUM(x) && is_POINTER(x);
+}
+
 
 /// General allocators (externally visible9
 
@@ -616,6 +623,11 @@ static inline int is_dbreference(X x)
 
 #define CSYMBOL1(alloc, str)   intern(CSTRING1(alloc, str))
 
+#define POINTER1(alloc, ptr)  \
+  ({ ALLOCATE_BLOCK(alloc, SPECIALBLOCK *p_, POINTER_TYPE, 1);	\
+    SLOT_INIT((X)p_, 0, )ptr);					\
+    (X)p_; })
+
 
 #ifdef COMPILED_PROLOG_PROGRAM
 
@@ -632,6 +644,7 @@ static inline int is_dbreference(X x)
 #define SYMBOL(name, next, hash)  SYMBOL1(alloc_top, name, next, hash)
 #define CSYMBOL(str)  CSYMBOL1(alloc_top, str)
 #define STRUCTURE(functor, arity)  STRUCTURE1(alloc_top, functor, arity)
+#define POINTER(ptr)  POINTER1(alloc_top, ptr)
 
 
 /// Hook called when the system terminates
@@ -719,6 +732,10 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
 
     case VAR_TYPE:
       fprintf(fp, "_" XWORD_OUTPUT_FORMAT, fixnum_to_word(slot_ref(x, 1)));
+      break;
+
+    case POINTER_TYPE:
+      fprintf(fp, "<foreign pointer %p>", ((SPECIALBLOCK *)x)->p);
       break;
 
     case SYMBOL_TYPE: {
@@ -1068,6 +1085,7 @@ static inline X check_atomic(X x)
 #define check_type_PORT(x)  check_type(PORT_TYPE, (x))
 #define check_type_STRUCTURE(x)  check_type(STRUCTURE_TYPE, (x))
 #define check_type_DBREFERENCE(x)  check_type(DBREFERENCE_TYPE, (x))
+#define check_type_POINTER(x)  check_type(POINTER_TYPE, (x))
 
 
 static inline int is_port_and_direction(X x, X d)
@@ -2749,7 +2767,9 @@ static int compare_terms(X x, X y)
 
   XWORD xt = is_FIXNUM(x) ? FIXNUM_TYPE : objtype(x);
   XWORD yt = is_FIXNUM(y) ? FIXNUM_TYPE : objtype(y);
-  static int type_order[] = { 0, 3, 4, 4, 2, 4, 1, 0, 5, 5 };
+  // {-, fixnum, eol, symbol, flonum, port, var, string, structure, pair, -, dbref, ptr}
+  // gives order: var < float < integer < atom(eol, port) < structure < dbref(ptr)
+  static int type_order[] = { 0, 3, 4, 4, 2, 4, 1, 0, 5, 5, 0, 6, 6 };
   XWORD d = type_order[ yt & 0x1f ] - type_order[ xt & 0x1f ];
 
   if(d != 0) return d;
@@ -2878,6 +2898,7 @@ static int compare_terms(X x, X y)
     }
 
   case DBREFERENCE_TYPE:
+  case POINTER_TYPE:
     return (XWORD)slot_ref(y, 0) - (XWORD)slot_ref(x, 0);
   }
 
