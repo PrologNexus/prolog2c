@@ -41,8 +41,7 @@ NOTES											              -*- Org -*-
    - arbitrary character codes in strings (UTF-8?)
    - atom-length.
 ** once/1
-** TODO Integrate file:lib/writef.pl and file:lib/arith.pl properly
-   - add auto-includes.
+** TODO Document predicates in arith.pl and writef.pl
 ** Builtin to read full atom
    - "read_atom(LENGTH)"
    - much cheaper than reading list.
@@ -127,6 +126,8 @@ NOTES											              -*- Org -*-
 * Once we have a suitable test, compare performance with other implementations
   - SWI, GNU-Prolog, BinProlog
 * Issues
+** TODO Use separate name + arity for auto_include
+   - allows indexing.
 ** 32-bit version can't tokenize fractional part of real if it doesn't fit into an integer
    - e.g.:
      main :- f(0.463647609000806).

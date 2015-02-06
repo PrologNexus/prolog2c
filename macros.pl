@@ -125,6 +125,20 @@ auto_include(asserta/2, 'lib/cdb.pl').
 auto_include(assertz/1, 'lib/cdb.pl').
 auto_include(assertz/2, 'lib/cdb.pl').
 
+auto_include(ge/2, 'lib/arith.pl').
+auto_include(gt/2, 'lib/arith.pl').
+auto_include(le/2, 'lib/arith.pl').
+auto_include(lt/2, 'lib/arith.pl').
+auto_include(succ/2, 'lib/arith.pl').
+auto_include(plus/3, 'lib/arith.pl').
+auto_include(times/3, 'lib/arith.pl').
+auto_include(divide/4, 'lib/arith.pl').
+
+auto_include(writef/1, 'lib/writef.pl').
+auto_include(writef/2, 'lib/writef.pl').
+auto_include(fwritef/2, 'lib/writef.pl').
+auto_include(fwritef/3, 'lib/writef.pl').
+
 auto_include(_, _) :- fail.
 
 
@@ -176,6 +190,18 @@ determinate_builtin(assertz, 1).
 determinate_builtin(assertz, 2).
 determinate_builtin(open, 3).
 determinate_builtin(open, 4).
+determinate_builtin(gt, 2).
+determinate_builtin(ge, 2).
+determinate_builtin(lt, 2).
+determinate_builtin(le, 2).
+determinate_builtin(succ, 2).
+determinate_builtin(plus, 2).
+determinate_builtin(times, 3).
+determinate_builtin(divide, 4).
+determinate_builtin(writef, 1).
+determinate_builtin(writef, 2).
+determinate_builtin(fwritef, 2).
+determinate_builtin(fwritef, 3).
 
 determinate_builtin(NAME, ARITY) :-
 	recorded(determinate, NAME/ARITY).

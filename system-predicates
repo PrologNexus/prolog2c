@@ -131,7 +131,19 @@ system_predicate(write(+X), 'write.pl').
 system_predicate(writeq(+X), 'write.pl').
 system_predicate(memberchk(?X, +Y), 'lib/lists.pl').
 system_predicate(open(+X,+Y,-Z), 'lib/io.pl').
-system_predicate(open(+X,+Y,-Z,+Q), 'lib/io.pl').
+system_predicate(ge(?X,?Y), 'lib/arith.pl').
+system_predicate(gt(?X,?Y), 'lib/arith.pl').
+system_predicate(le(?X,?Y), 'lib/arith.pl').
+system_predicate(lt(?X,?Y), 'lib/arith.pl').
+system_predicate(succ(?X,?Y), 'lib/arith.pl').
+system_predicate(plus(?X,?Y,?Z), 'lib/arith.pl').
+system_predicate(times(?X,?Y,?Z), 'lib/arith.pl').
+system_predicate(divide(?X,?Y,?Z,?U), 'lib/arith.pl').
+
+system_predicate(writef(+X), 'lib/writef.pl').
+system_predicate(writef(+X,+Y), 'lib/writef.pl').
+system_predicate(fwritef(+X,+Y), 'lib/writef.pl').
+system_predicate(fwritef(+X,+Y,+Z), 'lib/writef.pl').
 
 arithmetic_operation(- X).
 arithmetic_operation(\ X).
