@@ -173,7 +173,7 @@ prconj(A) :-
 	tab(4), write(A), nl.
 
 
-
+/*
 			% Pretty print a simple logical expression
 			%  This is done by first printing the logical
 			%  structure using X1 X2 etc to name the components
@@ -209,7 +209,7 @@ prexpr([Head|Tail], M) :-
 	succ(M, N), !,
 	prexpr(Tail, N).
 prexpr([], _).
-
+*/
 
 			% Formatted write utility
 			%  This converts the format atom to a string and
@@ -286,8 +286,8 @@ wf_act( 99, [Head|Tail], Tail) :-	%   Conjunction
 wf_act(100, [Head|Tail], Tail) :-	%   Display
 	display(Head).
 
-wf_act(101, [Head|Tail], Tail) :-	%   Expression
-	nl, !, prexpr(Head).
+%wf_act(101, [Head|Tail], Tail) :-	%   Expression
+%	nl, !, prexpr(Head).
 
 wf_act(102, List, List) :-		%   Flush
 	flush.
