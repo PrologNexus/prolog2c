@@ -1090,7 +1090,7 @@
   Integer numbers are limited to signed integers in a range of 31 bits
   on 32-bit platforms and 63 bits on 64-bit platforms.
 
-  UNICODE is not supported, the system uses 256-bit character codes,
+  UNICODE is not supported, the system uses 8-bit character codes,
   dependent on the default character set of the environment.
 
   The system is fairly minimal but robust enough to execute many
