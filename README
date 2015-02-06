@@ -390,6 +390,61 @@
     Note that all streams opened via see/1 and tell/1 are opened in binary 
     mode.
 
+  - Formatted output
+
+    writef(FORMAT)                Writes a format-string. This is the same as
+    				  "writef(FORMAT, [])".
+
+    writef(FORMAT, ARGS)          Writes output according to the format-string
+    		   		  FORMAT and a list of arguments.
+
+    fwritef(OUT, FORMAT)	  Writes a format-string to OUT, which must be
+    		 		  a filename (atom) or an output stream. This
+				  is the same as "fwritef(OUT, FORMAT, [])".
+
+    fwritef(OUT, FORMAT, ARGS)    Writes output to the file or stream OUT, 
+    		 	 	  according to the format-string FORMAT and a 
+				  list of arguments.
+
+    The format-string (an atom or a string) may contain the following special 
+    character sequences:
+
+      \n		newline
+      \l		linefeed
+      \r		carriage return
+      \t		tab
+      \e		escape
+      \\		\
+      \%		%
+      \nnn		character with ASCII code nnn (decimal)
+
+      %t		output the next argument (same as %w)
+      %w		write the next argument
+      %q		writeq the next argument
+      %d		display the next argument
+      %p		same as %t
+      %l		outputs the next argument as a list, with each element on
+      			a new line, indented by 4 characters
+      %c		output a conjunction (terms combined by &/2 or ,/2),
+      			with each element on a new line, indented by 4 characters
+      %n		put the next argument as a character (integer code)
+      %r		repeat the next argument N times, where N is the second
+      			next argument
+      %s		write the next argument as a string
+      %i		the next arguments are a format-string and a list
+      			(indirect writef)
+      %f                perform flush/0
+      %g                writes a compound of the form NAME(ARG, ...) as 
+      			ARG1 NAME ARG2 NAME ...
+      %x		skips the next argument
+      %Nc               write the next argument centered in N columns
+      %Nl		write the next argument left justified in N columns
+      %Nr		write the next argument right justified in N columns
+
+    If the argument list is neither [] or the empty list, it is turned into
+    a one-element list.
+
+
   - Database access predicates
 
     abolish(+PI)		  Removes all clauses in the clause-database
@@ -461,6 +516,23 @@
 
     -X is Y			  Unifies X with the result of evaluating 
        	  			  expression Y [ISO]
+
+    divide(X, Y, Q, R)		  True if X divided by Y is Q * R. Either and A
+    	      	    		  and B must be ground, or on of A and B and both
+				  Q and R must be ground. All arguments must be
+				  integers or unbound.
+
+    plus(X, Y, Z)		  True if Y plus Z is X, at least two arguments must
+    	       			  be ground. All arguments must be integers or
+				  unbound.
+
+    succ(X, Y)			  True if Y is the next integer after X, at least
+    	    			  one argument must be ground. X and Y must be
+				  integers or unbound
+
+    times(X, Y, Z)		  True if X times Y is Z, at least 2 arguments
+    	     			  must be ground. All arguments must be integers
+				  or unbound.
 
     Note that variables in expressions must contain numerical values.
     Expressions in variables are not evaluated (as is normally
