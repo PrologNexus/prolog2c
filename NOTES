@@ -1,8 +1,7 @@
 NOTES											              -*- Org -*-
 
 
-* TODO Implement simple wrapper generator
-** TODO Handle multiple, comma-separated variables
+* Wrapper generator
 ** TODO Find a good example
 ** Add support for structs
    - struct X* <-> "X(...)"
@@ -44,8 +43,6 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Missing features
-** DONE Add make-target to check dist
-   - test.
 ** TODO Version
    - version-file, compiled into pc/pi/pb.
    - option to print version and exit.
@@ -199,3 +196,5 @@ NOTES											              -*- Org -*-
 * Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
+** file:/archive/iclpgcbenches.tar.gz
+
