@@ -657,7 +657,6 @@ static void crash_hook()
 
 /// Custom variants of some libc functions
 
-#ifdef _WIN32
 static char *xstrndup(char *str, int len)
 {
   char *buf = malloc(len + 1);
@@ -665,9 +664,6 @@ static char *xstrndup(char *str, int len)
   strncpy(buf, str, len);
   return buf;
 }
-#else
-# define xstrndup strndup
-#endif
 
 
 #ifdef DEBUG_GC
