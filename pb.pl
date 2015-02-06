@@ -201,8 +201,8 @@ gen_type(unsigned(T)) :- !, gen('unsigned '), gen_type(T).
 gen_type(T) :- gen(T).
 
 gen_call(RTYPE, NAME, ARGTYPES, RESULT) :-
-	gen_type(RTYPE), gen(' ', RESULT, '=', NAME),
-	gen('('),
+	(RTYPE == void; gen_type(RTYPE), gen(' ', RESULT, '=')),
+	gen(NAME, '('),
 	gen_call(1, ARGTYPES),
 	gen(');\n').
 
@@ -261,8 +261,8 @@ generate_wrappers :-
 	variable_wrapper(REALNAME, RTYPE),
 	fail.
 generate_wrappers :-
-	recorded(definitions, function(_, REALNAME, _, ARGTYPES)),
-	function_wrapper(REALNAME, ARGTYPES),
+	recorded(definitions, function(_, REALNAME, RTYPE, ARGTYPES)),
+	function_wrapper(REALNAME, RTYPE, ARGTYPES),
 	fail.
 generate_wrappers.
 
@@ -279,7 +279,10 @@ variable_setter_wrapper(NAME) :-
 	gen(':- determinate(set_', NAME, '/1).\n'),
 	gen('set_', NAME, '(X) :- foreign_call(set_v_', NAME, '(X)).\n').
 
-function_wrapper(NAME, ARGTYPES) :-
+function_wrapper(NAME, void, []) :-
+	gen(':- determinate(', NAME, '/0).\n'),
+	gen(NAME, ' :- foreign_call(f_', NAME, ').\n'), !.
+function_wrapper(NAME, void, ARGTYPES) :-
 	findall(_, member(_, ARGTYPES), VARS),
 	length(VARS, N),
 	gen(':- determinate(', NAME, '/', N, ').\n'),
@@ -287,8 +290,17 @@ function_wrapper(NAME, ARGTYPES) :-
 	gen_list(VARS),
 	gen(') :- foreign_call(f_', NAME, '('),
 	gen_list(VARS),
-	gen(')).\n'),
-	!.
+	gen(')).\n'), !.
+function_wrapper(NAME, RTYPE, ARGTYPES) :-
+	findall(_, member(_, ARGTYPES), VARS),
+	length(VARS, N),
+	N2 is N + 1,
+	gen(':- determinate(', NAME, '/', N2, ').\n'),
+	gen(NAME, '('),
+	gen_list(VARS),
+	gen(',R) :- foreign_call(f_', NAME, '('),
+	gen_list(VARS),
+	gen(',R)).\n'), !.
 
 
 %% value conversion from and to C
