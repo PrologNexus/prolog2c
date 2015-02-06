@@ -12,13 +12,7 @@ NOTES											              -*- Org -*-
    - http://www.burtleburtle.net/bob/hash/perfect.html
 ** Special-case primitives that are known to always succeed?
 ** DONE Check: take advantage of timestamps when binding vars in unify() ?
-   - try: when binding two unbound vars, bind the younger one.
    - implemented in branch /bind-younger/ and seems to work, but trail
-     reduction is not much.
-   - compare benchmark results.
-   - does it influence /bagof/ ? (comment in support code suggests
-     something about the order in which variables are bound - but that
-     may be nonsense)
 ** writeq/1 could use foreign_call(basic_writeq(X)) for atoms
    - but the name needs to be classified anyway, because of the possibly
      required space in front of it.
