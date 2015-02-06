@@ -63,6 +63,8 @@ auto_include(seeing/1, 'lib/io.pl').
 auto_include(tell/1, 'lib/io.pl').
 auto_include(told/0, 'lib/io.pl').
 auto_include(telling/1, 'lib/io.pl').
+auto_include(open/3, 'lib/io.pl').
+auto_include(open/4, 'lib/io.pl').
 
 auto_include(op/3, 'lib/op.pl').
 auto_include(current_op/3, 'lib/op.pl').
@@ -172,6 +174,8 @@ determinate_builtin(asserta, 1).
 determinate_builtin(asserta, 2).
 determinate_builtin(assertz, 1).
 determinate_builtin(assertz, 2).
+determinate_builtin(open, 3).
+determinate_builtin(open, 4).
 
 determinate_builtin(NAME, ARITY) :-
 	recorded(determinate, NAME/ARITY).

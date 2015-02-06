@@ -308,6 +308,21 @@
     nl				  Writes the newline character on the current
     				  output stream [ISO]
 
+    open(+NAME, +MODE, -STREAM)   Equivalent to open(NAME, MODE, STREAM, [])
+    		       		  [ISO]
+
+    open(+NAME, +MODE, -STREAM, +OPTIONS)
+    		       		  Opens a file stream. MODE may be one of the 
+				  atoms "read", "write" or "append". OPTIONS
+				  should be a list of open-options, currently
+				  supported are only the following:
+
+				    type(text)        the default
+				    type(binary)
+
+				  To make the stream the current input or output
+				  port use see/1 or tell/1, respectively [ISO]
+
     peek(+X)			  Reads the next character from the current
     				  input-stream and unifies the character code
 				  with X (-1 if end of file is reached). The
