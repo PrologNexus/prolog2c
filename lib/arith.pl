@@ -73,14 +73,15 @@ instantiation_fault_(Goal) :-
 	throw(instantiation_error(Goal)).
 
 
-
+/*
+  
 %   {ge|gt|le|lt}(X,Y) <-> integer(X) & integer(Y) & X {>=|>|=<|<} Y
 %   Note that there is no eq or ne, = and \= will do fine.
 
 ge(X, Y) :-
 	integer(X), integer(Y),
 	!,
-	X @>= Y.
+	X >= Y.
 ge(X, Y) :-
 	( var(X) ; integer(X) ),
 	( var(Y) ; integer(Y) ),
@@ -91,7 +92,7 @@ ge(X, Y) :-
 gt(X, Y) :-
 	integer(X), integer(Y),
 	!,
-	X @> Y.
+	X > Y.
 gt(X, Y) :-
 	( var(X) ; integer(X) ),
 	( var(Y) ; integer(Y) ),
@@ -102,7 +103,7 @@ gt(X, Y) :-
 le(X, Y) :-
 	integer(X), integer(Y),
 	!,
-	X @=< Y.
+	X =< Y.
 le(X, Y) :-
 	( var(X) ; integer(X) ),
 	( var(Y) ; integer(Y) ),
@@ -113,13 +114,14 @@ le(X, Y) :-
 lt(X, Y) :-
 	integer(X), integer(Y),
 	!,
-	X @< Y.
+	X < Y.
 lt(X, Y) :-
 	( var(X) ; integer(X) ),
 	( var(Y) ; integer(Y) ),
 	!,
 	instantiation_fault_(lt(X,Y)).
 
+  */
 
 
 %   succ(P, S) <-> integer(P) & integer(S) & P >= 0 & S = P+1
