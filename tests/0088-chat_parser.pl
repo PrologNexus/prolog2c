@@ -515,7 +515,7 @@ rel_rest(B,C,D,D,E,E,F,F,G,G).
 
 
 rel(B,rel(C,D),E,F,G,H,I) :-
-   open(F,J,H,K),
+   xopen(F,J,H,K),
    variable(B,C,J,L,K,M),
    s(D,N,L,O,M,P),
    trace(Q),
@@ -566,7 +566,7 @@ reduced_rel_rest(B,C,D,D,E,E,F,F,G,G).
 
 
 reduced_rel(B,reduced_rel(C,D),E,F,G,H,I) :-
-   open(F,J,H,K),
+   xopen(F,J,H,K),
    reduced_wh(B,C,J,L,K,M),
    s(D,N,L,O,M,P),
    trace(Q),
@@ -657,7 +657,7 @@ close(B,B,C,D) :-
    virtual(close,C,D).
 
 
-open(B,B,C,x(gap,nonterminal,close,C)).
+xopen(B,B,C,x(gap,nonterminal,close,C)).
 
 
 verb_args(B+C,D,E,F,G,H,I,J,K) :-
