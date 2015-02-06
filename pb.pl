@@ -3,20 +3,27 @@
 %
 % Currently understands the following:
 %
-% [STORAGE] TYPE IDENTIFIER [("[" (INTEGER) "]") ...]
-% [STORAGE] TYPE IDENTIFIER "(" ([DIRECTION] TYPE [IDENTIFIER [("[" (INTEGER) "]") ...]]) "," ... ")"
+% "#" ... ["\" \n ...]
+% [STORAGE] TYPE IDENTIFIER [("[" [INTEGER] "]") ...] [";"]
+% [STORAGE] TYPE IDENTIFIER "(" ([DIRECTION] TYPE [IDENTIFIER [("[" [INTEGER] "]") ...]]) "," ... ")" [";"]
 %
 % TYPE = ["const"] BASETYPE ("const" | "*") ...
 % STORAGE = "extern" | "static"
 % DIRECTION = "/*" ("in" | "out") "*/"
-% BASETYPE = ["unsigned"] ("int" | "char" | "short" | "long" | "float" | "double")
+% BASETYPE = ["unsigned"] ("int" | "char" | "short" | "long" | "float" | "double" | "void") 
 
 
 %% parsing of definitions
 
+parse_definition(none, _, _, _) -->
+	ws, "#", verbatim_block(BLOCK), {add_verbatim_block([35|BLOCK])}.
 parse_definition(NAME, REALNAME, RTYPE, ARGTYPES) -->
 	ws, storage, result_type(RTYPE1), ws, entity_name(NAME, REALNAME),
 	ws, parse_suffix(RTYPE1, RTYPE, ARGTYPES), ws, (";"; "").
+
+verbatim_block([92,10|R]) --> "\\", skip_line, verbatim_block(R).
+verbatim_block([10]) --> [10].
+verbatim_block([C|R]) --> [C], verbatim_block(R).
 
 parse_suffix(RTYPE, FINALRTYPE, ARGTYPES) --> indices(RTYPE, FINALRTYPE).
 parse_suffix(RTYPE, RTYPE, ARGTYPES) --> arguments(ARGTYPES).
@@ -114,13 +121,25 @@ store_definition(NAME, REALNAME, RESULTTYPE, none) :-
 	recordz(definitions, variable(NAME, REALNAME, RESULTTYPE)).
 store_definition(NAME, REALNAME, RESULTTYPE, ARGTYPES) :-
 	display('% '), write(function(REALNAME, RESULTTYPE, ARGTYPES)), nl,
-	recordz(definitions, function(NAME, REALNAME, RESULTTYPE, ARGTYPES)).	
+	recordz(definitions, function(NAME, REALNAME, RESULTTYPE, ARGTYPES)).
+
+add_verbatim_block(LST) :-
+	name(CODE, LST), recordz(verbatim_block, CODE).
 
 
 %% generate file with primitives
 
 generate_header_file(FNAME) :-
-	tell(FNAME), generate_primitives, told.
+	tell(FNAME),
+	generate_verbatim_code,
+	generate_primitives,
+	told.
+
+generate_verbatim_code :-
+	recorded(verbatim_block, CODE),
+	gen(CODE),
+	fail.
+generate_verbatim_code.
 
 generate_primitives :-
 	recorded(definitions, variable(NAME, REALNAME, RTYPE)),
@@ -158,9 +177,10 @@ function_primitive(NAME, REALNAME, RTYPE, []) :-
 	p_value(RTYPE, 'x'),
 	gen(',r);}\n'), !.
 function_primitive(NAME, REALNAME, RTYPE, ARGTYPES) :-
-	gen('\nPRIMITIVE(f_', REALNAME, ',X r'),
+	gen('\nPRIMITIVE(f_', REALNAME, ','),
 	length(ARGTYPES, ARGC),
 	forall(between(1, ARGC, I), gen(',X x', I)),
+	(RTYPE == void; gen('X r')),
 	gen('){\n'),
 	gen_out_vars(1, ARGTYPES),
 	gen_call(RTYPE, NAME, ARGTYPES, 'x'),
@@ -270,7 +290,8 @@ function_wrapper(NAME, ARGTYPES) :-
 p_value(const(T), REF) :- p_value(T, REF).
 p_value(unsigned(T), REF) :- p_value(T, REF).
 p_value(pointer(const(T)), REF) :- p_value(pointer(T), REF).
-p_value(pointer(char), REF) :- gen('CATOM(', REF, ')').
+p_value(pointer(char), REF) :- gen('(', REF, '?CSYMBOL(', REF, '):ZERO)').
+p_value(pointer(_), REF) :- gen('(', REF, '?POINTER(', REF, '):ZERO)').
 p_value('X', REF) :- gen(REF).
 p_value(ITYPE, REF) :-
 	memberchk(ITYPE, [char, int, long, short]),
@@ -285,7 +306,9 @@ c_value(const(T), REF) :- c_value(T, REF).
 c_value(unsigned(T), REF) :- c_value(T, REF).
 c_value(pointer(const(T)), REF) :- c_value(pointer(T), REF).
 c_value(pointer(char), REF) :-
-	gen('((const char *)objdata(slot_ref(check_type_SYMBOL(', REF, '),0)))').
+	gen('(', REF, '==ZERO?NULL:((const char *)objdata(slot_ref(check_type_SYMBOL(', REF, '),0))))').
+c_value(pointer(_), REF) :-
+	gen('(', REF, '==ZERO?NULL:(void *)slot_ref(check_type_POINTER(', REF, '),0))').
 c_value('X', REF) :- gen(REF).
 c_value(ITYPE, REF) :-
 	memberchk(ITYPE, [char, int, long, short]),
@@ -339,13 +362,19 @@ take_list([X|R], N, [X|R2]) :- N2 is N - 1, take_list(R, N2, R2).
 
 parse_arguments([]).
 parse_arguments(['-h'|_]) :- usage(0).
+parse_arguments(['-help'|_]) :- usage(0).
+parse_arguments(['--help'|_]) :- usage(0).
+parse_arguments(['-o', OUTNAME|MORE]) :-
+	name(OUTNAME, OUTL),
+	recordz(output_filename, OUTL),
+	parse_arguments(MORE).
 parse_arguments([FILENAME|MORE]) :-
 	(\+recorded(source_file, _); usage(1)),
 	recordz(source_file, FILENAME),
 	parse_arguments(MORE).
 
 usage(CODE) :-
-	display('usage: pbind [FILENAME]\n'),
+	display('usage: pbind [-h] [-o OUTPUTNAME] [FILENAME]\n'),
 	halt(CODE).
 
 process_input_file(user) :-
@@ -356,7 +385,7 @@ process_input_file(FILENAME) :-
 
 process_input(INPUT) :-
 	parse_definition(N, RN, RT, AT, INPUT, REST),
-	store_definition(N, RN, RT, AT),
+	(N == none; store_definition(N, RN, RT, AT)),
 	!, process_input(REST).
 process_input(INPUT) :-
 	eof(INPUT), !.
@@ -367,6 +396,9 @@ process_input(INPUT) :-
 	error('Invalid syntax', STR).
 
 derive_filename(user, EXT, NEW) :- derive_filename(bind, EXT, NEW).
+derive_filename(_, EXT, NEW) :-
+	recorded(output_filename, OUTNAME),
+	!, append(OUTNAME, EXT, NEW).
 derive_filename(FNAME, EXT, NEW) :-
 	basename(FNAME, BASENAME),
 	append(BASENAME, EXT, NEW).
