@@ -130,6 +130,8 @@ system_predicate(?X =.. ?Y, 'misc.pl', '"univ"').
 system_predicate(write(+X), 'write.pl').
 system_predicate(writeq(+X), 'write.pl').
 system_predicate(memberchk(?X, +Y), 'lib/lists.pl').
+system_predicate(open(+X,+Y,-Z), 'lib/io.pl').
+system_predicate(open(+X,+Y,-Z,+Q), 'lib/io.pl').
 
 arithmetic_operation(- X).
 arithmetic_operation(\ X).
