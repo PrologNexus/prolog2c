@@ -151,13 +151,11 @@
 %
 
 
-print(X) :- write(X).
-
 			% Print a list, one element per line
 
 prlist([]) :- !.
 prlist([Head|Tail]) :-
-	tab(4), print(Head), nl,
+	tab(4), write(Head), nl,
 	prlist(Tail).
 
 
@@ -172,7 +170,7 @@ prconj((A,B)) :-
 	prconj(A), !,
 	prconj(B).
 prconj(A) :-
-	tab(4), print(A), nl.
+	tab(4), write(A), nl.
 
 
 
@@ -207,7 +205,7 @@ prexpr(Term, Nin, Nout, [Term|Z], Z) :-
 
 prexpr([Head|Tail], M) :-
 	write('    X'), write(M), write(' =  '),
-	print(Head), nl,
+	write(Head), nl,
 	succ(M, N), !,
 	prexpr(Tail, N).
 prexpr([], _).
@@ -292,7 +290,7 @@ wf_act(101, [Head|Tail], Tail) :-	%   Expression
 	nl, !, prexpr(Head).
 
 wf_act(102, List, List) :-		%   Flush
-	ttyflush.
+	flush.
 
 wf_act(103, [Head|Tail], Tail) :-	%   aGglutinated
 	functor(Head, F, N),
@@ -308,7 +306,7 @@ wf_act(110, [Char|Tail], Tail) :-	%   iNteger (character)
 	put(Char).
 
 wf_act(112,  [Head|Tail], Tail) :-	%   Print
-	print(Head).
+	write(Head).
 
 wf_act(113, [Head|Tail], Tail) :-	%   Quoted
 	writeq(Head).
@@ -320,7 +318,7 @@ wf_act(115, [Head|Tail], Tail) :-	%   String
 	padout(Head).
 
 wf_act(116, [Head|Tail], Tail) :-	%   Term
-	print(Head).
+	write(Head).
 
 % (flw) disabled, as we have no numbervars/3, yet
 %wf_act(118, List, List) :-		%   numberVars
@@ -373,10 +371,10 @@ writelots(_, _).
 
 praggl(N, N, _, Term) :- !,
 	arg(N, Term, Arg),
-	print(Arg).
+	write(Arg).
 praggl(L, N, F, Term) :-
 	arg(L, Term, Arg),
-	print(Arg),
+	write(Arg),
 	put(32), write(F), put(32),
 	succ(L, M), !,
 	praggl(M, N, F, Term).
@@ -427,7 +425,7 @@ padout(r, Size, Length, Left, 0) :- !,
 	getpad(Excess, 1, Left).
 padout(c, Size, Length, Left, Right) :-
 	plus(Excess, Length, Size),
-	is(Prefix, div, Excess, 2),
+	Prefix is Excess // 2,
 	plus(Remainder, Prefix, Excess),
 	getpad(Prefix, 1, Left),
 	getpad(Remainder, 1, Right).

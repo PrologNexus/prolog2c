@@ -40,12 +40,9 @@ NOTES											              -*- Org -*-
 ** Unicode
    - arbitrary character codes in strings (UTF-8?)
    - atom-length.
-** Some sort of formatted output would be nice
-   - file:code/writef.pl uses those funny succ/2 and plus/3 predicates.
-     - see file:code/arith.pl
 ** once/1
-** DONE We need a foreign-pointer type
-   - test.
+** TODO Integrate file:lib/writef.pl and file:lib/arith.pl properly
+   - add auto-includes.
 ** Builtin to read full atom
    - "read_atom(LENGTH)"
    - much cheaper than reading list.

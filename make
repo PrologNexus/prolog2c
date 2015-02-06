@@ -51,7 +51,7 @@
 (define manifest
   `("Makefile"
     "README"
-    "lib/sorts.pl" "lib/ordset.pl"
+    "lib/sorts.pl" "lib/ordset.pl" "lib/writef.pl" "lib/arith.pl"
     "pc.c"
     "pc.h"
     "pi.c"
