@@ -128,7 +128,7 @@
 (define (check-dist)
   (dist)
   (run (mkdir -p tmp ";" rm -fr tmp/pc-* ";" cp pc.tar.gz tmp ";" cd tmp ";" tar xfz pc.tar.gz))
-  (run (make -C tmp/pc-* all check)))
+  (run (/usr/bin/make -C tmp/pc-* all check)))
 
 (define (check-optimized)
   (fluid-let ((check-options '("-O")))
