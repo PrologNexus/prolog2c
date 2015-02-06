@@ -18,7 +18,7 @@ endif
 
 all: pc pi pb
 
-%.c : %.c pc.h
+% : %.c pc.h
 	$(CC) $(SETTINGS) $(OPTFLAGS) $(CFLAGS) $< -o $@ $(LIBS)
 
 
