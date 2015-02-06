@@ -928,9 +928,9 @@
 
   Variable definitions may be of the form
 
-    [STORAGECLASS] TYPE IDENTIFIER ["[" [SIZE] "]" ...]
+    [STORAGECLASS] TYPE IDENTIFIER ["[" [SIZE] "]" ...] "," ...
 
-  (Elements in "[...]" are optional)
+  (Elements in brackets are optional)
 
   Function definitions should look like this:
 
@@ -943,8 +943,9 @@
   Definitions may be followed by an option semicolon (";").
 
   STORAGECLASS is optional any may be either "static" or "extern".
-  SIZE should be an integer, if given, and IDENTIFIER should be a
-  legal C name.
+  SIZE should be an integer, if given. IDENTIFIER should be a legal C
+  name and may be followed by "/* => REALNAME */", which will result
+  in REALNAME being chosen for the Prolog wrapper.
 
   TYPE is a basic type, optionally decorated with one or more "const",
   "unsigned" or "*" qualifiers. Basic types are
@@ -962,11 +963,14 @@
   variable definition like
 
     int foo;
+    const double xpos, ypos;
 
-  will result in the two predicates
+  will result in the predicates
 
     foo(-X)
     set_foo(+X)
+    xpos(-X)
+    ypos(-X)
 
   For functions, a predicate taking as many arguments as the C function,
   plus an additional argument for the result (if any) is created:
@@ -986,19 +990,23 @@
     --------------------------------------------------------------
     int, short, char, long          integer
     float, double     		    float
-    char *                          atom
+    char *                          atom (zero-terminated)
     <any> *                         foreign-pointer
     X                               <any>
+
+  Arguments of type "char *" and "X" are only valid until the next
+  garbage collection takes place, that is, whenever Prolog code
+  executes.
 
   Finally, C "output" arguments are supported by preceding the
   argument with a direction specifier, either "/* in */" or "/* out
   */", so
 
-    double modf(double x, /* out */ double *intpart);
+    double modf /* => int_and_frac */ (double x, /* out */ double *intpart);
 
   will produce:
 
-    modf(+X, -Y, -Z)
+    int_and_frac(+X, -Y, -Z)
 
   where Y will be unified with the "intpart" result and Z with
   "modf"'s function result.
