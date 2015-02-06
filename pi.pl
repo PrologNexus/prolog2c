@@ -50,8 +50,9 @@ report_exception(EXN) :-
 	writeq(EXN), nl.
 
 parse_arguments([]).
-parse_arguments(['-h'|_]) :-
-	usage(0).
+parse_arguments(['-h'|_]) :- usage(0).
+parse_arguments(['-help'|_]) :- usage(0).
+parse_arguments(['--help'|_]) :- usage(0).
 parse_arguments(['-t'|MORE]) :-
 	global_set(pi_trace_depth, 0),
 	parse_arguments(MORE).
