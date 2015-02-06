@@ -29,7 +29,8 @@
   compete with such mature Prolog implementations for larger,
   real-world programs. Basic clause-indexing on the first argument of
   a predicates is performed and tail-calls are optimized in many
-  cases, but otherwise little optimization is currently being done.
+  cases, but otherwise very little optimization is currently being
+  done.
 
   The dialect of Prolog implemented should be sufficient for usual
   Prolog programming. Basic ISO and Edinburgh system predicates and
@@ -1106,7 +1107,9 @@
   Depending on the nature of the executing program,
   memory-requirements may vary accordingly. Currently, the system is
   not overly memory-efficient with respect to choice-points,
-  environments and the trail-stack.
+  environments and the trail-stack. Green cuts may be often necessary
+  to increase the frequency of tail-calls and avoid piling up too many
+  choice points.
 
   Terms stored in the record- or clause-database are copied into
   normal memory (allocated with malloc(3)) and are not subject to GC.
