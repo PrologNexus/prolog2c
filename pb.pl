@@ -4,7 +4,7 @@
 % Currently understands the following:
 %
 % "#" ... ["\" \n ...]
-% [STORAGE] TYPE IDENTIFIER [("[" [INTEGER] "]") ...] [";"]
+% [STORAGE] TYPE IDENTIFIER [("[" [INTEGER] "]") ...] "," ... [";"]
 % [STORAGE] TYPE IDENTIFIER "(" ([DIRECTION] TYPE [IDENTIFIER [("[" [INTEGER] "]") ...]]) "," ... ")" [";"]
 %
 % TYPE = ["const"] BASETYPE ("const" | "*") ...
@@ -16,10 +16,20 @@
 %% parsing of definitions
 
 parse_definition(none, _, _, _) -->
-	ws, "#", verbatim_block(BLOCK), {add_verbatim_block([35|BLOCK])}.
+	ws, "#", verbatim_block(BLOCK),
+	{add_verbatim_block([35|BLOCK])}.
 parse_definition(NAME, REALNAME, RTYPE, ARGTYPES) -->
 	ws, storage, result_type(RTYPE1), ws, entity_name(NAME, REALNAME),
-	ws, parse_suffix(RTYPE1, RTYPE, ARGTYPES), ws, (";"; "").
+	ws, parse_suffix(RTYPE1, RTYPE, ARGTYPES),
+	{store_definition(NAME, REALNAME, RTYPE, ARGTYPES)},
+	ws, next_definition(RTYPE).
+
+next_definition(RTYPE1) -->
+	",", ws, entity_name(NAME, REALNAME), ws,
+	parse_suffix(RTYPE1, RTYPE, ARGTYPES),
+	{store_definition(NAME, REALNAME, RTYPE, ARGTYPES)},
+	!, ws, next_definition(RTYPE).
+next_definition(_) --> (";"; "").
 
 verbatim_block([92,10|R]) --> "\\", skip_line, verbatim_block(R).
 verbatim_block([10]) --> [10].
@@ -67,9 +77,10 @@ numeric_literal(NUM, [C|IN], OUT) :-
 number_chars([C|IN], OUT, [C|MORE]) :- digit(C), number_chars(IN, OUT, MORE).
 number_chars(IN, IN, "").
 
-entity_name(NAME, NAME) -->
-	%%XXX allow renaming of the form "/* => IDENTIFIER */"
-	identifier(NAME).
+entity_name(NAME, RNAME) --> identifier(NAME), ws1, real_identifier(NAME, RNAME).
+
+real_identifier(_, RNAME) --> "/*", ws1, "=>", ws, identifier(RNAME), ws1, "*/".
+real_identifier(NAME, NAME) --> [].
 
 indices(RTYPE, FINALRTYPE) -->
 	"[", ws, (numeric_literal(_); ""), ws, "]",
@@ -78,8 +89,8 @@ indices(RTYPE, FINALRTYPE) -->
 arguments([]) --> "(", ws, ")".
 arguments(ARGTYPES) --> "(", ws1, argument_type_list(ARGTYPES), ws, ")".
 
-direction(in) --> "/*", ws, "in", ws, "*/".
-direction(out) --> "/*", ws, "out", ws, "*/".
+direction(in) --> "/*", ws1, "in", ws1, "*/".
+direction(out) --> "/*", ws1, "out", ws1, "*/".
 direction(in) --> [].
 
 argument_type_list([TYPE|MORE]) -->
@@ -170,24 +181,19 @@ variable_setter(NAME, REALNAME, RTYPE) :-
 function_primitive(NAME, REALNAME, void, []) :-
 	gen('\nstatic inline int f_', REALNAME, '(CHOICE_POINT *C0){\n'),
 	gen(NAME, '();\nreturn 1;}\n'), !.
-function_primitive(NAME, REALNAME, RTYPE, []) :-
-	gen('\nPRIMITIVE(f_', REALNAME, ',X r){\n'),
-	gen_call(RTYPE, NAME, [], 'x'),
-	gen('return unify('),
-	p_value(RTYPE, 'x'),
-	gen(',r);}\n'), !.
 function_primitive(NAME, REALNAME, RTYPE, ARGTYPES) :-
-	gen('\nPRIMITIVE(f_', REALNAME, ','),
+	gen('\nPRIMITIVE(f_', REALNAME),
 	length(ARGTYPES, ARGC),
 	forall(between(1, ARGC, I), gen(',X x', I)),
-	(RTYPE == void; gen('X r')),
+	(RTYPE == void; gen(',X r')),
 	gen('){\n'),
 	gen_out_vars(1, ARGTYPES),
 	gen_call(RTYPE, NAME, ARGTYPES, 'x'),
 	gen_out_results(1, ARGTYPES),
-	gen('return unify('),
-	p_value(RTYPE, 'x'),
-	gen(',r);}\n'), !.
+	(RTYPE \== void 
+	-> gen('return unify('), p_value(RTYPE, 'x'), gen(',r);}\n')
+	; gen('return 1;}\n')
+	), !.
 
 gen_type(pointer(T)) :- !, gen_type(T), gen('*').
 gen_type(const(T)) :- !, gen('const '), gen_type(T).
@@ -219,7 +225,7 @@ gen_call_arg(I, TYPE) :-
 	c_value(TYPE, ARG).
 
 gen_out_vars(_, []).
-gen_out_vars(I, [out(pointer(T))|R]) :- %XXX may not be sufficient
+gen_out_vars(I, [out(pointer(T))|R]) :-
 	number_codes(I, IL),
 	name(VAR,[114|IL]), 	% "r"
 	gen_type(T), gen(' ', VAR, ';\n'),
@@ -230,7 +236,7 @@ gen_out_vars(I, [_|R]) :-
 	gen_out_vars(I2, R).
 	
 gen_out_results(_, []).
-gen_out_results(I, [out(pointer(T))|R]) :- %XXX may not be sufficient
+gen_out_results(I, [out(pointer(T))|R]) :-
 	number_codes(I, IL),
 	name(VAR,[114|IL]), 	% "r"
 	gen('if(!unify('), p_value(T, VAR), gen(',x', I, ')) return 0;\n'),
@@ -385,7 +391,6 @@ process_input_file(FILENAME) :-
 
 process_input(INPUT) :-
 	parse_definition(N, RN, RT, AT, INPUT, REST),
-	(N == none; store_definition(N, RN, RT, AT)),
 	!, process_input(REST).
 process_input(INPUT) :-
 	eof(INPUT), !.
