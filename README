@@ -47,6 +47,7 @@
   unknown bugs. If you experience problems or want to help, please
   don't hesitate to contact me[9].
 
+
 * Building and installation
 
   Assuming you obtained the sources from the distribution archive,
@@ -55,10 +56,10 @@
   bitbucket[8], but this uses a custom build-environment and contains
   mostly tests and supporting code.
 
-  The compiler itself is written in Prolog and must be pre-compiled to
-  C before it can be used. In the distribution archive that contains
-  the file your are currently reading, pre-compiled code for the
-  compiler and interpreter are included, so all that remains to be
+  The compiler itself is written in ?-Prolog and must be pre-compiled
+  to C before it can be used. In the distribution archive that
+  contains the file your are currently reading, pre-compiled code for
+  the compiler and interpreter are included, so all that remains to be
   done is to compile these using GNU make(1):
 
     make
@@ -69,6 +70,8 @@
   different compiler or different compilation options. If you don't
   have GNU make, then compile the files manually, see Makefile for the
   proper options you have to pass to the compiler.
+
+  Compilation may take a while, particularly with clang.
 
   Several builtin predicates are actually implemented in Prolog and
   reside in separate library files in the "lib" directory. You can
@@ -83,6 +86,7 @@
   directories to be searched, separated by ":" (which should not
   include the "lib/" part - i.e. the path(s) should point to the
   location in which the "lib" directory resides.)
+
 
 * Usage
 
@@ -125,13 +129,22 @@
   The latter two will prevent the C compiler from taking advantage of
   some unintuitive interpretations of the C language and should be
   used when optimizations are enabled for code produced by the Prolog
-  compiler.
+  compiler. For development builds it is advisable to compile without
+  optimization options, as this reduces compilation time.
+
 
 * Interpreter
 
   The interpreter can be run interactively by simply starting it, or
-  can run and execute a Prolog source file, given on the command-line.
-  Giving the command-line option "-t", execution starts in "trace"
+  can run and execute a Prolog source file, given on the command-line:
+
+    pi <FILENAME>
+
+  Any file listed on the command line is "consulted" (its clauses are
+  loaded) and finally the interactive prompt will be displayed, and
+  allows you to enter queries.
+
+  Given the command-line option "-t", execution starts in "trace"
   mode, which shows how predicates are called, exit, fail or
   re-execute during backtracking. The interpreter has all
   library-predicates included and does not need to have access to the
@@ -142,13 +155,15 @@
   source file.
 
   In contrast to the compiler, the clause-database represents the
-  program that is currently executing and manipulations of the database
-  will influence running code. The effect of asserting or retracting
-  clauses for predicates that currently execute is undefined.
+  program that is currently executing and manipulations of the
+  database using arsserta/assertz will influence running code. The
+  effect of asserting or retracting clauses for predicates that
+  currently execute is undefined.
 
   Note that the interpreter is a simple meta-circular evaluator and is
   thus rather slow. DCG grammars are currently not supported in
   interpreted code.
+
 
 * Debugging and error messages
 
@@ -164,6 +179,7 @@
   with some rough indication about the place where the problem
   occurred. Runtime-errors will throw an exception, which can be
   caught by user code using catch/3. 
+
 
 * Builtin predicates
 
@@ -263,7 +279,7 @@
 
     compound(+X)		  True if X is a non-atomic structure [ISO]
 
-    db_reference(+X)		  True if X is a database-reference
+    db_reference(+X)		  True if X is a database-reference.
 
     float(+X)			  True if X is a floating-point number [ISO]
 
@@ -274,7 +290,9 @@
     number(+X)			  True if X is an integer or floating-point 
     				  number [ISO]
 
-    stream(+X)			  True if X is an input/output stream
+    foreign_pointer(+X)           True if X is a foreign-pointer object.
+
+    stream(+X)			  True if X is an input/output stream.
 
     var(+X)			  True if X is an unbound variable [ISO]
 
@@ -663,6 +681,7 @@
 				  If the file has the extension ".pl", then
 				  this extension may be omitted.
 
+
 * Precedence of builtin operators
 
   | Name             | Associativity | Precedence |
@@ -708,6 +727,7 @@
   | is               | xfx           |        700 |
   | xor              | yfx           |        400 |
   | |                | xfy           |       1105 |
+
 
 * Directives
 
@@ -756,6 +776,7 @@
   op(P, A, N)                Declares an operator - identical to op/3,
   	   		     but done before reading any further clauses.
 
+
 * Performance tips
 
   Compiling the generated C code with "-DNDEBUG" will disable various
@@ -766,6 +787,7 @@
 
   Asserting and retrieving terms in the record- or clause-database
   involves copying and thus should be avoided in time-critical code.
+
 
 * Calling code written in other languages
 
@@ -815,7 +837,7 @@
 
   --- 
 
-  /* mystuff.c - implements C implementation*/
+  /* mystuff.c - implements C-side */
 
   #include <unistd.h>
   #include <errno.h>
@@ -880,6 +902,108 @@
     - This isn't much information here - you really should study
       "pc.h" if you want to interface to C code in earnest.
 
+  This is the low-level way of calling C code. The other is
+
+
+* Automatic generation of wrapper-code
+
+  Also included in this Prolog implementation is "pb", a generator for
+  C and Prolog files intended to simplify the process of interfacing
+  to foreign code. It is called like this:
+
+    pb <FILENAME>
+
+  <FILENAME> should contain C variable-definitions and function
+  prototypes, from which "pb" will generate all code required to use
+  these in your own programs. Not all of C is allowed, but a simple
+  subset that should be sufficient for many uses. Two files will be
+  produced, "<FILENAME>.h" containing C code and "<FILENAME>.pl"
+  containing Prolog code that uses the former.
+
+  Comments are ignored, both C style comments ("/* ... */") and
+  C++/C99 style ("// ..."). Lines starting with "#" will be copied
+  unchanged into the ".h" file (including "... \" continuation lines).
+  All other text should be hold valid variable- or
+  function-definitions.
+
+  Variable definitions may be of the form
+
+    [STORAGECLASS] TYPE IDENTIFIER ["[" [SIZE] "]" ...]
+
+  (Elements in "[...]" are optional)
+
+  Function definitions should look like this:
+
+    [STORAGECLASS] TYPE IDENTIFIER "(" [ARGUMENT "," ...] ")"
+
+  where ARGUMENT is
+
+    [DIRECTION] TYPE [IDENTIFIER ["[" [SIZE] "]" ...]]
+
+  Definitions may be followed by an option semicolon (";").
+
+  STORAGECLASS is optional any may be either "static" or "extern".
+  SIZE should be an integer, if given, and IDENTIFIER should be a
+  legal C name.
+
+  TYPE is a basic type, optionally decorated with one or more "const",
+  "unsigned" or "*" qualifiers. Basic types are
+  
+    void
+    char
+    short
+    int
+    long
+    float
+    double
+
+  For every variable-definition, a Prolog predicate with one argument
+  is created for setting and getting the variables value, so a
+  variable definition like
+
+    int foo;
+
+  will result in the two predicates
+
+    foo(-X)
+    set_foo(+X)
+
+  For functions, a predicate taking as many arguments as the C function,
+  plus an additional argument for the result (if any) is created:
+
+    int bar(int, char *);
+
+  results in:
+
+    bar(+X, +Y, -Z)
+
+  A function with return-type "void" will have no final result
+  argument.
+
+  Argument and result conversion is as follows:
+
+    C type                  <->     Prolog type
+    --------------------------------------------------------------
+    int, short, char, long          integer
+    float, double     		    float
+    char *                          atom
+    <any> *                         foreign-pointer
+    X                               <any>
+
+  Finally, C "output" arguments are supported by preceding the
+  argument with a direction specifier, either "/* in */" or "/* out
+  */", so
+
+    double modf(double x, /* out */ double *intpart);
+
+  will produce:
+
+    modf(+X, -Y, -Z)
+
+  where Y will be unified with the "intpart" result and Z with
+  "modf"'s function result.
+
+
 * Embedding
 
   If you compile the C code with the "-DEMBEDDED" option, then the
@@ -932,6 +1056,7 @@
   changes by redefining VARIABLE_ACCESS_NAME.
 
   The compiled Prolog code is not reentrant or thread-safe.
+
 
 * Limitations
 
@@ -995,6 +1120,7 @@
   the file can be quite slow. This is an experimental feature and
   hasn't been tested much.
 
+
 * License
 
   Copyright (c) 2015, Felix L. Winkelmann
@@ -1034,6 +1160,7 @@
     encouraged by the Alvey Special Interest Group: Artificial
     Intelligence.  We would appreciate it if you were to acknowledge
     these bodies when you use or re-distribute any of these files.
+
 
 * References
 
