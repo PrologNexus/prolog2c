@@ -77,6 +77,11 @@
   (make (("pc1" ("pc1.c" "pc.h")
 	  (run (gcc ,@gcc-compile-options pc1.c -lm -lrt -o pc1 ,@pc-compile-options))))))
 
+(define (pc32)
+  (pc1.c)
+  (make (("pc32" ("pc1.c" "pc.h")
+	  (run (gcc -m32 ,@gcc-compile-options pc1.c -lm -lrt -o pc32 ,@pc-compile-options))))))
+
 (define (pc1o)
   (pc1.c)
   (make (("pc1o" ("pc1.c" "pc.h")
@@ -121,8 +126,13 @@
     (check)))
 
 (define (check-m32)
-  (pi)
   (fluid-let ((check-options '("-m32")))
+    (check)))
+
+(define (check-pc32)
+  (pc32)
+  (fluid-let ((check-pc "./pc32")
+	      (check-options '("-m32")))
     (check)))
 
 (define (check-dist)
