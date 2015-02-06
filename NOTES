@@ -5,7 +5,7 @@ NOTES											              -*- Org -*-
 ** Find a good example
 ** Add support for structs
    - struct X* <-> "X(...)"
-** Add proper test
+** TODO Add proper test
    - add to fullcheck.
 * Optimization opportunities
 ** Use perfect hashing for atom-tables
@@ -37,6 +37,9 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Missing features
+** Unicode
+   - arbitrary character codes in strings (UTF-8?)
+   - atom-length.
 ** Some sort of formatted output would be nice
    - file:code/writef.pl uses those funny succ/2 and plus/3 predicates.
      - see file:code/arith.pl

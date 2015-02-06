@@ -239,6 +239,9 @@
     (run (tar cfz ,dname ,ddir))
     (run (rm -fr ,ddir))))
 
+(define (upload)
+  (run (upload -d prolog pc.tar.gz README)))
+
 
 ;;
 
