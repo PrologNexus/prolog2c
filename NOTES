@@ -8,6 +8,7 @@ NOTES											              -*- Org -*-
 ** TODO Add proper test
    - add to fullcheck.
 * Optimization opportunities
+** TODO Add "determinate" declarations and green cuts in library code
 ** Use perfect hashing for atom-tables
    - http://www.burtleburtle.net/bob/hash/perfect.html
 ** Special-case primitives that are known to always succeed?
@@ -22,7 +23,7 @@ NOTES											              -*- Org -*-
    - deref all vars just once at start.
    - track types, use unboxed math.
 ** With some sort of type/groundness analysis many primitives can be rewritten to simpler forms
-   - functor, arg, name, '=..', etc.
+   - functor, arg, name, univ, etc.
 ** Matching term in db could be done in C
 *** Unify inside db_find/db_next (properly undwinding trail on failure)
     - handling heap-full case on thawing still makes this ugly.
@@ -41,10 +42,6 @@ NOTES											              -*- Org -*-
    - arbitrary character codes in strings (UTF-8?)
    - atom-length.
 ** once/1
-** TODO Document predicates in arith.pl and writef.pl
-** Builtin to read full atom
-   - "read_atom(LENGTH)"
-   - much cheaper than reading list.
 ** Allow user-defined macros
    - directive: ":- macro OLD -> NEW" or something like this.
 ** Extend numerical operators
