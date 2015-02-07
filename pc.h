@@ -126,7 +126,7 @@ typedef unsigned long UXWORD;
 #endif
 
 typedef double XFLOAT;
-typedef char CHAR;
+typedef char XCHAR;
 
 typedef struct BLOCK { 
   XWORD h;
@@ -146,7 +146,7 @@ typedef struct BYTEBLOCK {
 
 typedef struct STRING_BLOCK {
   XWORD h;
-  CHAR s[];
+  XCHAR s[];
 } STRING_BLOCK;
 
 typedef struct SYMBOL_BLOCK {
@@ -394,7 +394,7 @@ static int initial_global_variable_count;
 static X *shared_term_table;
 static XWORD *shared_term_table_positions;
 static int shared_term_counter;
-static char *string_buffer;
+static XCHAR *string_buffer, *string_buffer_top;
 static int string_buffer_length;
 static DB_ITEM *deleted_db_items;
 static int debugging;
@@ -410,7 +410,7 @@ static XWORD trail_stack_gap_buffer_size = TRAIL_STACK_GAP_BUFFER_SIZE;
 static int gc_caused_by_trailing = 0;
 
 
-static CHAR *type_names[] = { 
+static XCHAR *type_names[] = { 
   "invalid", "integer", "null", "atom", "float", "stream", "variable", "string", "structure", "list", "dbreference"
 };
 
@@ -488,14 +488,14 @@ static CHAR *type_names[] = {
 #define GLOBAL_REF(index)  global_variables[ index ]
 #define GLOBAL_SET(index, x)  global_variables[ index ] = deref(x)
 
-#define string_length(x)  ((objsize(x) / sizeof(CHAR)) - 1)
+#define string_length(x)  ((objsize(x) / sizeof(XCHAR)) - 1)
 
 #define IS_IN_HEAP(ptr)  ((X*)(ptr) >= fromspace && (X*)(ptr) < fromspace_end)
 
 #define slot_ref(x, i)          (objdata(x)[ i ])
 #define atomic_slot_set(x, i, y)  (objdata(x)[ i ] = (y))
-#define string_ref(x, i)        code_char(((CHAR *)objdata(x))[ i ])
-#define string_set(x, i, y)     ({ X c_ = (y); (((CHAR *)objdata(x))[ i ]) = char_code(c_); c_; })
+#define string_ref(x, i)        code_char(((XCHAR *)objdata(x))[ i ])
+#define string_set(x, i, y)     ({ X c_ = (y); (((XCHAR *)objdata(x))[ i ]) = char_code(c_); c_; })
 
 #define ASSIGN(dest, x)  dest = (x)
 
@@ -598,7 +598,7 @@ static inline int is_pointer(X x)
 #define STRING1(alloc, len)						\
   ({ XWORD len2_ = (len);							\
     ALLOCATE_BYTEBLOCK1(alloc, BLOCK *p_, STRING_TYPE, len2_ + 1);	\
-    ((CHAR *)(p_->d))[ len2_ ] = '\0';					\
+    ((XCHAR *)(p_->d))[ len2_ ] = '\0';					\
     (X)p_; })
   
 #define CSTRING1(alloc, str)			\
@@ -683,7 +683,7 @@ static void XFREE(void *mem, size_t size)
 static char *port_name(X x)
 {
   PORT_BLOCK *p = (PORT_BLOCK *)x;
-  static CHAR buffer[ 256 ];
+  static XCHAR buffer[ 256 ];
   sprintf(buffer, "<%s-stream>(%p)", p->dir != ZERO ? "input" : "output", (void *)p->fp);
   return buffer;
 }
@@ -844,7 +844,7 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
 
 /// symbol-table management
 
-static XWORD hash_name(CHAR *name, int len)
+static XWORD hash_name(XCHAR *name, int len)
 {
   XWORD key = 0;
   
@@ -860,14 +860,14 @@ static XWORD hash_name(CHAR *name, int len)
 static X intern(X name)
 {
   XWORD len = string_length(name);
-  XWORD hash = hash_name((CHAR *)objdata(name), len);
+  XWORD hash = hash_name((XCHAR *)objdata(name), len);
   XWORD key = hash % SYMBOL_TABLE_SIZE;
 
   for(X sym = symbol_table[ key ]; sym != END_OF_LIST_VAL; sym = slot_ref(sym, 1)) {
     X name2 = slot_ref(sym, 0);
 
     if(string_length(name2) == len &&
-       !strncmp((CHAR *)objdata(name), (CHAR *)objdata(name2), len)) //UUU
+       !strncmp((XCHAR *)objdata(name), (XCHAR *)objdata(name2), len)) //UUU
       return sym;
   }
 
@@ -1851,7 +1851,7 @@ static void collect_garbage(CHOICE_POINT *C)
 	sym = next;
       }
       else {
-	// DRIBBLE("reclaimed symbol: \'%s\'\n", (CHAR *)objdata(slot_ref(sym, 0)));
+	// DRIBBLE("reclaimed symbol: \'%s\'\n", (XCHAR *)objdata(slot_ref(sym, 0)));
 	++gcdsyms;
 	sym = slot_ref(sym, 1);
       }
@@ -2190,7 +2190,7 @@ static void dump_symbol_table()
 	f = 1;
       }
 
-      fprintf(stderr, "'%s' ", (CHAR *)objdata(name2));
+      fprintf(stderr, "'%s' ", (XCHAR *)objdata(name2));
     }
   }
 
@@ -2750,7 +2750,7 @@ static inline int is_identical(X x, X y)
 }
 
 
-static inline int compare_strings(CHAR *str1, XWORD len1, CHAR *str2, XWORD len2)
+static inline int compare_strings(XCHAR *str1, XWORD len1, XCHAR *str2, XWORD len2)
 {
   XWORD d = strncmp(str1, str2, len1 < len2 ? len1 : len2);
   return d == 0 ? len2 - len1 : -d;
@@ -2779,7 +2779,7 @@ static int compare_terms(X x, X y)
 
     case SYMBOL_TYPE:
       { X str = slot_ref(y, 0);
-	return compare_strings("[]", 2, (CHAR *)objdata(str), string_length(str)); }
+	return compare_strings("[]", 2, (XCHAR *)objdata(str), string_length(str)); }
 
     case PORT_TYPE: return '<' - '[';
     }
@@ -2791,16 +2791,16 @@ static int compare_terms(X x, X y)
 	X str2 = slot_ref(y, 0);
 	XWORD len1 = string_length(str1);
 	XWORD len2 = string_length(str2);
-	return compare_strings((CHAR *)objdata(str1), len1, (CHAR *)objdata(str2), len2); }
+	return compare_strings((XCHAR *)objdata(str1), len1, (XCHAR *)objdata(str2), len2); }
 
     case END_OF_LIST_TYPE:
       { X str = slot_ref(x, 0);
-	return compare_strings((CHAR *)objdata(str), string_length(str), "[]", 2); }
+	return compare_strings((XCHAR *)objdata(str), string_length(str), "[]", 2); }
       
     case PORT_TYPE:
       { char *buf = port_name(y);
 	X str = slot_ref(x, 0);
-	return compare_strings((CHAR *)objdata(str), string_length(str), buf, strlen(buf)); }
+	return compare_strings((XCHAR *)objdata(str), string_length(str), buf, strlen(buf)); }
     }
 
   case PORT_TYPE:
@@ -2812,7 +2812,7 @@ static int compare_terms(X x, X y)
     case SYMBOL_TYPE:
       { char *buf = port_name(x);
 	X str = slot_ref(y, 0);
-	return compare_strings(buf, strlen(buf), (CHAR *)objdata(str), string_length(str)); }
+	return compare_strings(buf, strlen(buf), (XCHAR *)objdata(str), string_length(str)); }
       
     case PORT_TYPE:
       { char *buf1 = port_name(x);
@@ -2903,7 +2903,7 @@ static int compare_terms(X x, X y)
 
 
 // assumes x is deref'd, returns pointer to char that should not be modified
-static CHAR *to_string(X x, int *size)
+static XCHAR *to_string(X x, int *size)
 {
   if(is_FIXNUM(x))
     type_error("atom_or_string", x);
@@ -2912,11 +2912,11 @@ static CHAR *to_string(X x, int *size)
   case SYMBOL_TYPE:
     { X str = slot_ref(x, 0);
       *size = string_length(str);
-      return (CHAR *)objdata(str); }
+      return (XCHAR *)objdata(str); }
 
   case PAIR_TYPE:
     { int len = 0;
-      CHAR *ptr = string_buffer;
+      XCHAR *ptr = string_buffer;
       
       while(!is_FIXNUM(x) && objtype(x) == PAIR_TYPE) {
 	if(len >= string_buffer_length - 1) {
@@ -2951,10 +2951,10 @@ static CHAR *to_string(X x, int *size)
 
 
 // does not check for full heap, so make sure the string isn't too long
-static X string_to_list(CHAR *str, int len)
+static X string_to_list(XCHAR *str, int len)
 {
   X lst = END_OF_LIST_VAL;
-  CHAR *ptr = str + len;
+  XCHAR *ptr = str + len;
 
   while(len > 0)
     lst = PAIR(word_to_fixnum(ptr[ --len ]), lst);
@@ -3246,7 +3246,7 @@ PRIMITIVE(put_byte, X c)
 PRIMITIVE(put_string, X str)
 {
   int len;
-  CHAR *ptr = to_string(str, &len);
+  XCHAR *ptr = to_string(str, &len);
   fputs(ptr, port_file(standard_output_port));
   return 1;
 }
@@ -3296,7 +3296,7 @@ PRIMITIVE(db_create, X name, X size, X result)
   check_type_SYMBOL(name);
   check_fixnum(size);
   X str = slot_ref(name, 0);
-  DB *db = create_db((CHAR *)objdata(str), string_length(str), fixnum_to_word(size));
+  DB *db = create_db((XCHAR *)objdata(str), string_length(str), fixnum_to_word(size));
   // this is a fake db-reference, not usable for lookup
   ALLOCATE_BLOCK(BLOCK *dbr, DBREFERENCE_TYPE, 2);
   dbr->d[ 0 ] = (X)db;
@@ -3310,7 +3310,7 @@ PRIMITIVE(db_find, X dbr, X key, X ref)
   check_type_SYMBOL(key);
   X str = slot_ref(key, 0);
   DB *db = (DB *)slot_ref(dbr, 0);
-  DB_ITEM *item = db_find_first_item(db, (CHAR *)objdata(str), string_length(str));
+  DB_ITEM *item = db_find_first_item(db, (XCHAR *)objdata(str), string_length(str));
 
   if(item) {
     ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 2);
@@ -3401,7 +3401,7 @@ PRIMITIVE(db_record, X dbr, X atend, X key, X val, X result)
   check_type_SYMBOL(key);
   X str = slot_ref(key, 0);
   DB *db = (DB *)slot_ref(dbr, 0);
-  DB_ITEM *item = db_insert_item(db, (CHAR *)objdata(str), string_length(str), val, atend != ZERO);
+  DB_ITEM *item = db_insert_item(db, (XCHAR *)objdata(str), string_length(str), val, atend != ZERO);
   ALLOCATE_BLOCK(BLOCK *b, DBREFERENCE_TYPE, 2);
   b->d[ 0 ] = (X)item;
   b->d[ 1 ] = ONE;
@@ -3412,7 +3412,7 @@ PRIMITIVE(file_exists, X name)
 {
   struct stat info;
   int len;
-  CHAR *fname = to_string(name, &len);
+  XCHAR *fname = to_string(name, &len);
   return !stat(fname, &info) && S_ISREG(info.st_mode);
 }
 
@@ -3435,8 +3435,8 @@ PRIMITIVE(peek_byte, X c)
 PRIMITIVE(open_stream, X name, X input, X mode, X result)
 {
   int len;
-  CHAR *str = to_string(name, &len);
-  CHAR *m = to_string(mode, &len);
+  XCHAR *str = to_string(name, &len);
+  XCHAR *m = to_string(mode, &len);
   FILE *fp = fopen(str, m);
 
   if(fp == NULL) {
@@ -3482,7 +3482,7 @@ PRIMITIVE(close_stream, X stream)
 PRIMITIVE(shell_command, X cmd, X status)
 {
   int len;
-  CHAR *ptr = to_string(cmd, &len);
+  XCHAR *ptr = to_string(cmd, &len);
   int s = system(ptr);
   return unify(word_to_fixnum(s), status);
 }
@@ -3490,8 +3490,8 @@ PRIMITIVE(shell_command, X cmd, X status)
 PRIMITIVE(get_environment_variable, X name, X result)
 {
   int len;
-  CHAR *ptr = to_string(name, &len);
-  CHAR *val = getenv(ptr);
+  XCHAR *ptr = to_string(name, &len);
+  XCHAR *val = getenv(ptr);
 
   if(!val) return 0;
 
@@ -3545,7 +3545,7 @@ PRIMITIVE(atom_codes, X atom, X lst)
 {
   if(is_variable(atom)) {
     int len;
-    CHAR *ptr = to_string(lst, &len);
+    XCHAR *ptr = to_string(lst, &len);
 
     if(!strcmp(ptr, "[]")) 
       return unify(atom, END_OF_LIST_VAL);
@@ -3556,7 +3556,7 @@ PRIMITIVE(atom_codes, X atom, X lst)
   }
 
   int len;
-  CHAR *ptr;
+  XCHAR *ptr;
 
   if(atom == END_OF_LIST_VAL) {
     len = 2;
@@ -3566,7 +3566,7 @@ PRIMITIVE(atom_codes, X atom, X lst)
     check_type_SYMBOL(atom);
     X str = slot_ref(atom, 0);
     len = string_length(str);
-    ptr = (CHAR *)objdata(str);
+    ptr = (XCHAR *)objdata(str);
   }
 
   X p = END_OF_LIST_VAL;
@@ -3581,12 +3581,12 @@ PRIMITIVE(number_codes, X num, X lst)
 {
   if(is_variable(num)) {
     int len;
-    CHAR *ptr = to_string(lst, &len);
+    XCHAR *ptr = to_string(lst, &len);
 
     // catch "nan" and "inf" (user at least should add "+"/"-")
     if(isalpha(*ptr)) return 0;
 
-    CHAR *endptr;
+    XCHAR *endptr;
     XWORD n = strtol(ptr, &endptr, 10);
 
     if(*endptr != '\0' || ((n == LONG_MIN || n == LONG_MAX) && errno == ERANGE) || !is_in_fixnum_range(n)) {
@@ -3712,6 +3712,51 @@ PRIMITIVE(do_make_term, X arity, X functor, X args, X term) {
 PRIMITIVE(atom_hash, X sym, X hash) {
   check_type_SYMBOL(sym);
   return(unify(slot_ref(sym, 2), hash));
+}
+
+PRIMITIVE(read_atom, X len, X atom) {
+  FILE *fp = port_file(standard_input_port);
+  XCHAR *ptr = string_buffer;
+  int c, f = 1;
+
+  if(!is_FIXNUM(len)) f = 0;
+
+  while(!f || len) {
+    if((c = fgetc(fp)) == EOF) break;
+
+    if(ptr >= string_buffer + string_buffer_length + 1) {
+      string_buffer = realloc(string_buffer, string_buffer_length *= 2);
+      ASSERT(string_buffer, 
+	     "out of memory - can not increase size of string-buffer to " XWORD_OUTPUT_FORMAT, 
+	     (XWORD)string_buffer_length);
+    }
+
+    *(ptr++) = c;
+    --len;
+  }
+
+  string_buffer_top = ptr;
+  XWORD slen = ptr - string_buffer;
+
+  if(((XWORD)alloc_top + slen + sizeof(XWORD) + 1) >= (XWORD)fromspace_limit) {
+    alloc_top = fromspace_limit; /* force GC */
+    return 0;			
+  }
+
+  X str = STRING(slen);
+  memcpy(objdata(str), string_buffer, slen);
+  return(unify(intern(str), atom));
+}
+
+PRIMITIVE(re_intern, X atom) {
+  XWORD len = string_buffer_top - string_buffer;
+
+  if(((XWORD)alloc_top + len + sizeof(XWORD) + 1) >= (XWORD)fromspace_limit)
+    CRASH("out of memory - can not allocate atom of length " XWORD_OUTPUT_FORMAT, len);
+
+  X str = STRING(len);
+  memcpy(objdata(str), string_buffer, len);
+  return(unify(intern(str), atom));  
 }
 
 

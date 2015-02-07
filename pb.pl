@@ -366,10 +366,7 @@ basename(FNAME, BNAME) :-
 	append(BNAME, [46|_], LST), !.
 basename(FNAME, BNAME) :- name(FNAME, BNAME).
 
-read_all(LST) :- get0(C), read_all(C, LST).
-
-read_all(-1, []) :- !.
-read_all(C, [C|R]) :- get0(C2), read_all(C2, R).
+read_all(LST) :- read_atom(all, X), name(X, LST).
 
 take_list([], _, []).
 take_list(_, 0, []).
@@ -392,7 +389,7 @@ parse_arguments([FILENAME|MORE]) :-
 	parse_arguments(MORE).
 
 usage(CODE) :-
-	display('usage: pbind [-h] [-o OUTPUTNAME] [FILENAME]\n'),
+	display('usage: pb [-h] [-o OUTPUTNAME] [FILENAME]\n'),
 	halt(CODE).
 
 process_input_file(user) :-

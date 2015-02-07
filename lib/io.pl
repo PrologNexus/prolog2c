@@ -70,3 +70,10 @@ open(NAME, MODE, INPUT, MODE, [type(binary)|MORE], STREAM) :-
 	open(NAME, MODE, INPUT, MODE2, MORE, STREAM).
 open(NAME, MODE, INPUT, MODE, [_|MORE], STREAM) :-
 	open(NAME, MODE, INPUT, MODE, MORE, STREAM).
+
+read_atom(LEN, ATM) :-
+	foreign_call(read_atom(LEN, A1)), !, ATM = A1.
+read_atom(_, ATM) :-
+	!, read_atom(0, 0).	% force GC by re-ENTER
+read_atom(0, 0) :-
+	foreign_call(re_intern(ATM)).

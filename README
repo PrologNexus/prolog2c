@@ -356,6 +356,11 @@
 				  each variable (different from "_") in the
 				  read term.
 
+    read_atom(+LEN, -X)           Read up to LEN characters from the current input
+    		    		  port and unify X with an atom composed of those
+				  characters. If LEN is not an integer, all remaining
+				  input will be read.
+
     see(+X)			  Sets the current input-stream to X, which may
     				  be a stream or a filename (an atom or a list
 				  of character codes.)
