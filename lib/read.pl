@@ -27,7 +27,7 @@ read1(Answer, Variables) :-
 	repeat,
 	    read_tokens(Tokens, Variables),
 	    (   read(Tokens, 1200, Term, LeftOver), all_read(LeftOver)
-	    ;   syntax_error(Tokens)
+	    ;   read_syntax_error(Tokens)
 	    ),
 	!,
 	Answer = Term.
@@ -38,7 +38,7 @@ read1(Answer, Variables) :-
 
 all_read([]) :- !.
 all_read(S) :-
-	syntax_error([operator,expected,after,expression], S).
+	read_syntax_error([operator,expected,after,expression], S).
 
 
 %   expect(Token, TokensIn, TokensOut)
@@ -48,7 +48,7 @@ all_read(S) :-
 
 expect(Token, [Token|Rest], Rest) :- !.
 expect(Token, S0, _) :-
-	syntax_error([Token,or,operator,expected], S0).
+	read_syntax_error([Token,or,operator,expected], S0).
 
 
 %   I want to experiment with having the operator information held as
@@ -92,7 +92,7 @@ ambigop(F, L1, O1, R1, L2, O2) :-
 read([Token|RestTokens], Precedence, Term, LeftOver) :-
 	read(Token, RestTokens, Precedence, Term, LeftOver).
 read([], _, _, _) :-
-	syntax_error([expression,expected], []).
+	read_syntax_error([expression,expected], []).
 
 
 %   read(+Token, +RestTokens, +Precedence, -Term, -LeftOver)
@@ -165,7 +165,7 @@ read(string(List), S0, Precedence, Answer, S) :- !,
 	exprtl0(S0, List, Precedence, Answer, S).
 
 read(Token, S0, _, _, _) :-
-	syntax_error([Token,cannot,start,an,expression], S0).
+	read_syntax_error([Token,cannot,start,an,expression], S0).
 
 
 %   read_args(+Tokens, -TermList, -LeftOver)
@@ -176,7 +176,7 @@ read_args([','|S1], [Term|Rest], S) :- !,
 	read_args(S2, Rest, S).
 read_args([')'|S], [], S) :- !.
 read_args(S, _, _) :-
-	syntax_error([', or )',expected,in,arguments], S).
+	read_syntax_error([', or )',expected,in,arguments], S).
 
 
 %   read_list(+Tokens, -TermList, -LeftOver)
@@ -191,7 +191,7 @@ read_list(['|'|S1], Rest, S) :- !,
 	expect(']', S2, S).
 read_list([']'|S], [], S) :- !.
 read_list(S, _, _) :-
-	syntax_error([', | or ]',expected,in,list], S).
+	read_syntax_error([', | or ]',expected,in,list], S).
 
 
 %   after_prefix_op(+Op, +Prec, +ArgPrec, +Rest, +Precedence, 
@@ -199,7 +199,7 @@ read_list(S, _, _) :-
 
 after_prefix_op(Op, Oprec, _, S0, Precedence, _, _) :-
 	Precedence < Oprec, !,
-	syntax_error([prefix,operator,Op,in,context,
+	read_syntax_error([prefix,operator,Op,in,context,
 		with,precedence,Precedence], S0).
 
 after_prefix_op(Op, Oprec, _, S0, Precedence, Answer, S) :-
@@ -272,7 +272,7 @@ exprtl0(['|'|S1], Term, Precedence, Answer, S) :-
 
 exprtl0([Thing|S1], _, _, _, _) :-
 	cant_follow_expr(Thing, Culprit), !,
-	syntax_error([Culprit,follows,expression], [Thing|S1]).
+	read_syntax_error([Culprit,follows,expression], [Thing|S1]).
 
 exprtl0(S, Term, _, Term, S).
 
@@ -330,7 +330,7 @@ exprtl(S, _, Term, _, Term, S).
 %   that it is happy with the input after all.  Sorry about that.
 
 
-syntax_error(Message, List) :-
+read_syntax_error(Message, List) :-
 	telling(OLD), current_error_output(ERR), tell(ERR),
 	nl, display('**'),
 	display_list(Message),
@@ -346,7 +346,7 @@ display_list([Head|Tail]) :-
 display_list([]) :-
 	nl.
 
-syntax_error(List) :-
+read_syntax_error(List) :-
 	recorded(syntax_error, length(AfterError), Ref),
 	erase(Ref),
 	length(List, Length),
