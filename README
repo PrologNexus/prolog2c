@@ -1084,7 +1084,8 @@
 
   Arguments of type "char *" and "X" are only valid until the next
   garbage collection takes place, that is, whenever Prolog code
-  executes.
+  executes. The integer "0" represents a NULL pointer, both for
+  arguments and results of type "char *" and any other pointer type.
 
   Finally, C "output" arguments are supported by preceding the
   argument with a direction specifier, either "/* in */" or "/* out
