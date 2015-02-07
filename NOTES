@@ -12,7 +12,7 @@ NOTES											              -*- Org -*-
 ** Use perfect hashing for atom-tables
    - http://www.burtleburtle.net/bob/hash/perfect.html
 ** Special-case primitives that are known to always succeed?
-** Check: take advantage of timestamps when binding vars in unify() ?
+** DONE Take advantage of timestamps when binding vars in unify()
    - implemented in branch /bind-younger/ and seems to work, but trail
 ** writeq/1 could use foreign_call(basic_writeq(X)) for atoms
    - but the name needs to be classified anyway, because of the possibly
@@ -24,9 +24,8 @@ NOTES											              -*- Org -*-
    - track types, use unboxed math.
 ** With some sort of type/groundness analysis many primitives can be rewritten to simpler forms
    - functor, arg, name, univ, etc.
-** Matching term in db could be done in C
-*** Unify inside db_find/db_next (properly undwinding trail on failure)
-    - handling heap-full case on thawing still makes this ugly.
+   - atom_codes/2 could fail on full heap, force GC and retry,
+     would need to be moved into file:lib/misc.pl
 ** current_op/3 needs fast path when operator name is known
    - could use single-bucket db, with unififcation inside
      db_find/db_next (provided, we implement matching in file:pc.h)
@@ -40,13 +39,19 @@ NOTES											              -*- Org -*-
 * Missing features
 ** Unicode
    - arbitrary character codes in strings (UTF-8?)
-   - atom-length.
+   - atom-length (string_length())
+   - extend name/2, get/1, get0/1, put/1, skip/1 (and probably many
+     more)
 ** once/1
 ** Allow user-defined macros
    - directive: ":- macro OLD -> NEW" or something like this.
 ** Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
+** Add low-level predicates
+   - predicate_address(PRED, PTR) :: unify PTR with label address
+   - call_predicate(PTR, ARGS) :: call predicate at address, also
+        provide in interp.pl
 * Build options
 ** Allow static allocation of data-areas
    - statically allocated data for all areas.
@@ -132,8 +137,8 @@ NOTES											              -*- Org -*-
    - see file:broken-tests/
 ** Once trail-stack reserve is reached, GC will happen all the time if the trail can't be reduced
 ** If heap is insufficient deref_term/3 will loop endlessly
+   - also read_atom/2, recorded/X, retract/1 and clause/X
 ** TODO Test once more on WIN64
-** TODO Test once more on Mac
 ** TODO Does retract-loop work?
    - we know it works for the rdb, but should also test for cdb.
 ** TODO The output of TRACE_TAILCALL() is somewhat confusing
@@ -142,7 +147,7 @@ NOTES											              -*- Org -*-
 ** Reduce memory use in pc
    - seems to build up a lot of choice points.
 ** TODO 0085-boyer crashes in pi sometimes
-** TODO [#B] Implementation of if-then-else is broken
+** TODO [#B] Implementation of if-then-else seems to be broken
    - if-then stack gets out of balance, found here:
      call_primitive('->', 2, TERM) :-
 	!,
@@ -156,7 +161,7 @@ NOTES											              -*- Org -*-
    - note that 0069-cdb deletes twice: first the retract of hello(X)
      and then the abolish of hello/1.
 ** Handle freezing of db-refs
-   - disallow? delete from deleted-items list?
+   - delete from deleted-items list?
    - what can happen?
    - currently caught by assertion in freeze_term_recursive()
 ** Using multiple threads is currently not possible
@@ -166,22 +171,23 @@ NOTES											              -*- Org -*-
    - but user-defined literals can't be shared, or not?
 ** Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
-** Reader-error should throw syntax_error(MSG)
+** Reader-error should throw syntax_error with message argument
 ** Throw ISO-compliant exceptions everywhere
     - at least as much as possible and sensible.
 ** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Interpreter
 ** Add support for file:dcg.pl 
-   - term_expansion/2.
    - but I need a way to hook into consult/1 from file:pi.pl, because
      adding DCG-support to interp seems better.
+   - either load dcg.pl and execute it in interpreted mode or use
+     low-level ay of calling compiled predicates from interpreter.
+** term_expansion/2 + expand_term/2
 ** Additional predicates
    - listing/1
    - listing/0
      - needs some way to enumerate all predicates (current_predicate/1).
-     - can use foreign_call(db_find_bucket(...))
+     - could use foreign_call(db_find_bucket(...))
 * Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
 ** file:/archive/iclpgcbenches.tar.gz
-
