@@ -2963,6 +2963,17 @@ static X string_to_list(XCHAR *str, int len)
 }
 
 
+static void push_argument_list(X lst)
+{
+  lst = deref(lst);
+
+  while(!is_FIXNUM(lst) && is_PAIR(lst)) {
+    *(arg_top++) = slot_ref(lst, 0);
+    lst = deref(slot_ref(lst, 1));
+  }
+}
+
+
 /// VM operations
 
 #define CURRENT_NAME

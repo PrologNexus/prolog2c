@@ -185,6 +185,7 @@ pi_system_predicate(catch, 3).
 pi_system_predicate(repeat, 0).
 pi_system_predicate('->', 2).
 pi_system_predicate('\\+', 1).
+pi_system_predicate('$call_predicate', 2).
 
 call_system_predicate(TERM) :-
 	!,
@@ -225,6 +226,10 @@ pi_call_primitive('\\+', 1, TERM) :-
 pi_call_primitive(repeat, 0, _) :- pi_do_repeat.
 pi_call_primitive(bagof, 3, TERM) :- pi_bagof_setof(bagof, TERM).
 pi_call_primitive(setof, 3, TERM) :- pi_bagof_setof(setof, TERM).
+
+pi_call_primitive('$call_predicate', 2, TERM) :-
+	!, arg(1, TERM, PTR), arg(2, TERM, ARGS),
+	'$call_predicate'(PTR, ARGS).
 
 pi_bagof_setof(OP, TERM) :-
 	!,
