@@ -624,8 +624,8 @@ static inline int is_pointer(X x)
 #define CSYMBOL1(alloc, str)   intern(CSTRING1(alloc, str))
 
 #define POINTER1(alloc, ptr)  \
-  ({ ALLOCATE_BLOCK(alloc, SPECIALBLOCK *p_, POINTER_TYPE, 1);	\
-    SLOT_INIT((X)p_, 0, )ptr);					\
+  ({ ALLOCATE_BLOCK1(alloc, SPECIALBLOCK *p_, POINTER_TYPE, 1);	\
+    SLOT_INIT((X)p_, 0, ptr);					\
     (X)p_; })
 
 

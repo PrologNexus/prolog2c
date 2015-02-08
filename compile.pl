@@ -365,12 +365,14 @@ compile_body_expression(suspend(X, Y), _, D, D, B1, B2, S1, S2) :-
 	emit(unify(T1, T2)).
 
 % low-level call + address
-compile_body_expression('$predicate_address'(N/A), TAIL, D, D, B1, B2, S1, S2) :-
-	gensym('T', R, S1, S2),
-	emit(predicate_address(N, A, R)).
+compile_body_expression('$predicate_address'(N/A, PTR), _, D, D, B1, B2, S1, S2) :-
+	gensym('T', T1, S1, S3),
+	gensym('T', T2, S3, S4),
+	compile_term_for_unification(PTR, T2, B1, B2, S4, S2),
+	emit(predicate_address(N, A, T1), unify(T1, T2)).
 compile_body_expression('$call_predicate'(PTR, ARGS), TAIL, D, nondet, B1, B2, S1, S2) :-
 	gen_label(L, S1, S3),
-	compile_term_arguments([PTR, ARGS], [R1, R2], B1, B2, S3, S2),
+	compile_term_arguments([PTR, ARGS], [], [R1, R2], B1, B2, S3, S2),
 	(TAIL/D = tail/det -> emit(tail_call_address(R1, R2)); emit(call_address(R1, R2, L))).
 
 % type-, order- or ordinary predicate call

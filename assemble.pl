@@ -118,9 +118,9 @@ assemble(call(NAME, RLIST, LABEL), S, S) :-
 	mangle_name(NAME, MNAME),
 	gen('CALL(', MNAME, '$', ARITY, ',&&'),
 	gen(LABEL, ');}\n', LABEL, ':{\n').
-assemble(call_address(RADR, RARGS, LABEL)) :-
+assemble(call_address(RADR, RARGS, LABEL), S, S) :-
 	gen('A=arg_top;\npush_argument_list(', RARGS, ');\n'),
-	gen('CALL(*', RADR, ',&&', LABEL, ');\n'),
+	gen('CALL(*((void*)slot_ref(deref(', RADR, '),0)),&&', LABEL, ');\n'),
 	gen(LABEL, ':\n').
 
 assemble(tail_call(NAME, RLIST), S, S) :-
@@ -130,10 +130,9 @@ assemble(tail_call(NAME, RLIST), S, S) :-
 	assemble_arguments(RLIST, 0),
 	mangle_name(NAME, MNAME),
 	gen('TAIL_CALL(', MNAME, '$', ARITY, ');\n').
-assemble(tail_call_address(RADR, RARGS)) :-
+assemble(tail_call_address(RADR, RARGS), S, S) :-
 	gen('POP_ARGUMENTS;\nA=arg_top;\npush_argument_list(', RARGS, ');\n'),
-	gen('TAIL_CALL(*', RADR, ');\n'),
-	gen(LABEL, ':\n').
+	gen('TAIL_CALL(*((void*)slot_ref(deref(', RADR, '),0)));\n').
 
 assemble(foreign_call(NAME, 0), S, S) :- gen('if(!', NAME, '(C0)) FAIL;\n').
 assemble(foreign_call(NAME, RLIST), S, S) :-
@@ -141,10 +140,10 @@ assemble(foreign_call(NAME, RLIST), S, S) :-
 	generate_foreign_arguments(RLIST),
 	gen(')) FAIL;\n').	%XXX doesn't pop
 
-assemble(predicate_address(N, A, R)) :-
+assemble(predicate_address(N, A, R), S, S) :-
 	mangle_name(N, MNAME),
-	gen('X ', R, '=&&', MNAME, '$', A),
-	gen(';\n').
+	gen('X ', R, '=POINTER(&&', MNAME),
+	gen('$', A, ');\n').
 
 assemble(add(R1, R2, R3), S, S) :- gen('X ', R3, '=num_add(', R1, ','),	gen(R2, ');\n').
 assemble(subtract(R1, R2, R3), S, S) :-	gen('X ', R3, '=num_sub(', R1, ','), gen(R2, ');\n').
