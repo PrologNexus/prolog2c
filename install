@@ -1,0 +1,6 @@
+#!/bin/sh
+set -x -e
+mkdir -p ~/share/prolog/lib
+cp lib/*.pl ~/share/prolog/lib
+cp pc-autocompile pi pb ~/bin
+cp pc1 ~/bin/pc
