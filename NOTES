@@ -37,7 +37,9 @@ NOTES											              -*- Org -*-
 ** Analyze program before compiling to pseudo-instructions
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
-* Missing features
+** TODO pc: Use separate name + arity for auto_include
+   - allows indexing.
+* Features
 ** Some sort of condiguration-language (similar to SRFI-7) might be useful
    - basically needs sth like "cond-expand".
    - expands into compilable source code.
@@ -47,6 +49,12 @@ NOTES											              -*- Org -*-
    - extend name/2, get/1, get0/1, put/1, skip/1 (and probably many
      more)
 ** once/1
+** freeze/2
+   - possible implementation: push unified attributed var on global
+     list and insert call to hook (might be internal) after
+     head-unification.
+   - will not execute in inline-unificication or unification of
+     builtins and foreign-calls.
 ** Allow user-defined macros
    - directive: ":- macro OLD -> NEW" or something like this.
 ** Extend numerical operators
@@ -151,27 +159,13 @@ NOTES											              -*- Org -*-
 ** Report unused predicates
 * Once we have a suitable test, compare performance with other implementations
   - SWI, GNU-Prolog, BinProlog
-* Issues
-** TODO Use separate name + arity for auto_include
-   - allows indexing.
-** 32-bit version can't tokenize fractional part of real if it doesn't fit into an integer
-   - e.g.:
-     main :- f(0.463647609000806).
-** Everything is still rather slow and uses too much memory
-   - see file:broken-tests/
-** Once trail-stack reserve is reached, GC will happen all the time if the trail can't be reduced
-** If heap is insufficient deref_term/3 will loop endlessly
-   - also read_atom/2, recorded/X, retract/1 and clause/X
+* Tests
 ** TODO Test once more on WIN64
 ** TODO Does retract-loop work?
    - we know it works for the rdb, but should also test for cdb.
-** TODO The output of TRACE_TAILCALL() is somewhat confusing
-   - can we get rid of this?
-** name/2 and functor/3 (and others?) may exceed heap-reserve for large inputs
-** Reduce memory use in pc
-   - seems to build up a lot of choice points.
-** TODO 0085-boyer crashes in pi sometimes
-** TODO [#B] Implementation of if-then-else seems to be broken
+* Issues
+** Major
+*** TODO [#B] Implementation of if-then-else seems to be broken
    - if-then stack gets out of balance, found here:
      call_primitive('->', 2, TERM) :-
 	!,
@@ -179,26 +173,42 @@ NOTES											              -*- Org -*-
 	execute(X) -> execute(Y). % parsed as (!, ...) -> execute(Y)
    - adding parens around last goal repaired the problem, but still
      this shouldn't happen.
-** Erasing a db-entry that is already marked is currently ignored
+*** 32-bit version can't tokenize fractional part of real if it doesn't fit into an integer
+   - e.g.:
+     main :- f(0.463647609000806).
+*** Everything is still rather slow and uses too much memory
+   - see file:broken-tests/
+*** Once trail-stack reserve is reached, GC will happen all the time if the trail can't be reduced
+*** If heap is insufficient deref_term/3 will loop endlessly
+   - also read_atom/2, recorded/X, retract/1 and clause/X
+*** name/2 and functor/3 (and others?) may exceed heap-reserve for large inputs
+*** TODO 0085-boyer crashes in pi sometimes
+** Minor
+*** Failure in term_expansion/2 will simply be ignored
+*** The output of TRACE_TAILCALL() is somewhat confusing
+   - can we get rid of this?
+*** Reduce memory use in pc
+    - seems to build up a lot of choice points.
+*** Erasing a db-entry that is already marked is currently ignored
    - actual deletion will happen on next GC.
    - should we throw an error?
    - note that 0069-cdb deletes twice: first the retract of hello(X)
      and then the abolish of hello/1.
-** Handle freezing of db-refs
+*** Handle freezing of db-refs
    - delete from deleted-items list?
    - what can happen?
    - currently caught by assertion in freeze_term_recursive()
-** Using multiple threads is currently not possible
+*** Using multiple threads is currently not possible
    - all static vars would have to be declared TLS, but these may not
      be statically initialized with non-constants, and this applies to
      many data objects for literals.
    - but user-defined literals can't be shared, or not?
-** Unbound var in arithmetic expr doesn't show variable name
+*** Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
-** Reader-error should throw syntax_error with message argument
-** Throw ISO-compliant exceptions everywhere
+*** Reader-error should throw syntax_error with message argument
+*** Throw ISO-compliant exceptions everywhere
     - at least as much as possible and sensible.
-** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
+*** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Interpreter
 ** Add support for file:dcg.pl 
    - but I need a way to hook into consult/1 from file:pi.pl, because
@@ -206,7 +216,7 @@ NOTES											              -*- Org -*-
    - either load dcg.pl and execute it in interpreted mode or use
      low-level ay of calling compiled predicates from interpreter.
 ** term_expansion/2 + expand_term/2
-** Additional predicates
+** listing
    - listing/1
    - listing/0
      - needs some way to enumerate all predicates (current_predicate/1).
