@@ -186,6 +186,7 @@ pi_system_predicate(repeat, 0).
 pi_system_predicate('->', 2).
 pi_system_predicate('\\+', 1).
 pi_system_predicate('$call_predicate', 2).
+pi_system_predicate(expand_term, 2).
 
 call_system_predicate(TERM) :-
 	!,
@@ -226,6 +227,9 @@ pi_call_primitive('\\+', 1, TERM) :-
 pi_call_primitive(repeat, 0, _) :- pi_do_repeat.
 pi_call_primitive(bagof, 3, TERM) :- pi_bagof_setof(bagof, TERM).
 pi_call_primitive(setof, 3, TERM) :- pi_bagof_setof(setof, TERM).
+pi_call_primitive(expand_term, 2, TERM) :-
+	!, arg(1, TERM, X), arg(2, TERM, Y),
+	expand_term(X, Y).
 
 pi_call_primitive('$call_predicate', 2, TERM) :-
 	!, arg(1, TERM, PTR), arg(2, TERM, ARGS),
@@ -265,6 +269,15 @@ pi_evaluate_op(_, _, TERM, _) :-
 
 %%
 
+expand_term(TERM1, TERM2) :-
+	call(term_expansion(TERM1, TERM2)), !.
+expand_term(X, _) :-
+	clause(term_expansion(_, _), _),
+	throw(error('term-expansion failed', X)).
+expand_term(TERM, TERM).
+
+%%
+
 consult(FILE) :-
 	pi_find_file(FILE, FILE2),
 	seeing(OLD),
@@ -276,7 +289,8 @@ consult(FILE) :-
 pi_consult_terms(PNA) :-
 	read(TERM),
 	TERM \== end_of_file,
-	pi_insert_tem(PNA, TERM, CNA),
+	expand_term(TERM, TERM2),
+	pi_insert_tem(PNA, TERM2, CNA),
 	!,
 	pi_consult_terms(CNA).
 pi_consult_terms(PNA) :-

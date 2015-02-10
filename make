@@ -210,7 +210,7 @@
   (system-predicates)
   (fluid-let ((gcc-compile-options (append gcc-compile-options pc-compile-options)))
     (make-program "pi.pl" "pi" "lib/interp.pl" "pi_system_predicate.pl" "pi_call_primitive.pl" 
-		  "pi_evaluate_op.pl")))
+		  "pi_evaluate_op.pl" "dcg.pl")))
 
 (define (pb)
   (fluid-let ((gcc-compile-options (append gcc-compile-options pc-compile-options)))
