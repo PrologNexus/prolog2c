@@ -13,11 +13,8 @@ main :-
 	assertz((term_expansion((X --> Y), Z) :- '$call_predicate'(ADR, [(X --> Y), Z]))),
 	((recorded(initialization_goal, G); recorded(default_initialization_goal, G))
 	 -> call(G)
-	 ; banner, repl).
+	 ; repl).
 
-banner :-
-	display('?-Prolog - (c)MMXV Felix L. Winkelmann'), nl.
-	
 repl :-
 	display('?- '), flush,
 	seeing(IN), telling(OUT),
