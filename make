@@ -64,7 +64,8 @@
 
 (define (all) 
   (pc1)
-  (pi))
+  (pi)
+  (pb))
 
 (define (pc1.c)
   (make/proc (list (list "pc1.c" source-files
