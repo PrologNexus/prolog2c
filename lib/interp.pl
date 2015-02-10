@@ -271,9 +271,6 @@ pi_evaluate_op(_, _, TERM, _) :-
 
 expand_term(TERM1, TERM2) :-
 	call(term_expansion(TERM1, TERM2)), !.
-expand_term(X, _) :-
-	clause(term_expansion(_, _), _),
-	throw(error('term-expansion failed', X)).
 expand_term(TERM, TERM).
 
 %%
