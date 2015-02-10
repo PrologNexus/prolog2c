@@ -762,10 +762,10 @@
     trace      	    	     	  Enables "trace" mode that displays goals as	
     				  they are executed.
 
-    call(GOAL)			  Invokes GOAL, which may be directly callable
+    call(+GOAL)			  Invokes GOAL, which may be directly callable
     				  or a variable containing such a goal.
 
-    consult(FILE)		  Loads clauses in the given file into the
+    consult(+FILE)		  Loads clauses in the given file into the
     				  clause-database, erasing all previously
 				  stored clauses that have the same name and
 				  arity as clauses in the consulted file.
