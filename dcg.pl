@@ -38,15 +38,15 @@ dcg_rule(Rule, Clause) :-
 
 dcg_rule((RHead --> _), _, _, _) :-
 	var(RHead),
-	error(['invalid DCG rule head: ', RHead]).
+	throw(syntax_error('invalid DCG rule head', RHead)).
 
 dcg_rule((RHead, _ --> _), _, _, _) :-
 	var(RHead),
-	error(['invalid DCG rule head: ', RHead]).
+	throw(syntax_error('invalid DCG rule head', RHead)).
 
 dcg_rule((_, Terminals --> _), _, _, _) :-
 	var(Terminals),
-	error(['invalid DCG rule head terminals: ', Terminals]).
+	throw(syntax_error('invalid DCG rule head terminals', Terminals)).
 
 dcg_rule((NonTerminal,Terminals --> GRBody), S0, S, (Head :- Body)):-
 	!,
@@ -62,7 +62,7 @@ dcg_rule((NonTerminal --> GRBody), S0, S, (Head :- Body)) :-
 	dcg_body(GRBody, S0, S, Body).
 
 dcg_rule(Term, _, _, _) :-
-	error(['invalid DCG rule: ', Term]).
+	throw(syntax_error('invalid DCG rule', Term)).
 
 % translates a grammar goal non-terminal:
 
