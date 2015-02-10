@@ -8,6 +8,7 @@ NOTES											              -*- Org -*-
 ** TODO Add proper test
    - add to fullcheck.
 * Optimization opportunities
+** TODO Avoid allocating intermediate results if they are unified with ground values
 ** TODO Add "determinate" declarations and green cuts in library code
 ** Use perfect hashing for atom-tables
    - http://www.burtleburtle.net/bob/hash/perfect.html
@@ -37,6 +38,9 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Missing features
+** Some sort of condiguration-language (similar to SRFI-7) might be useful
+   - basically needs sth like "cond-expand".
+   - expands into compilable source code.
 ** Unicode
    - arbitrary character codes in strings (UTF-8?)
    - atom-length (string_length())
@@ -63,6 +67,26 @@ NOTES											              -*- Org -*-
 ** Make use of floating-point optional
    - see /intmath/ branch.
    - had funny behaviour with pi (use of flonum simple aborts.)
+* Bare-metal
+** Keep DB in heap
+   - Implement completely in Prolog, using different lib.
+** Absolutely positioned data areas
+** Reimplement as much as possible in Prolog
+** Asm core
+*** Basic I/O
+    - debugging output (serial line)
+    - console (to/from framebuffer)
+*** FP operation and transcendental functions
+    - probably needs to init FPU properly.
+** Reimplement string and ctype operations
+** Reimplement random numbers
+** No file system
+** More tricky
+   - clock
+   - longjmp/setjmp, but should be doable with simple
+     register-save/restore.
+** We need flonum<->string conversion
+   - http://krashan.ppa.pl/articles/stringtofloat/
 ** Currently imported symbols:
    | Name             | Class |
    |------------------+-------|
