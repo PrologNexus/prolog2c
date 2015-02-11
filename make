@@ -206,11 +206,23 @@
   (make (("pi_system_predicate.pl" ("g-s-p" "system-predicates")
 	  (run (./g-s-p <system-predicates))))))
 
-(define (pi)
+(define (pi.c)
   (system-predicates)
-  (fluid-let ((gcc-compile-options (append gcc-compile-options pc-compile-options)))
-    (make-program "pi.pl" "pi" "lib/interp.pl" "pi_system_predicate.pl" "pi_call_primitive.pl" 
-		  "pi_evaluate_op.pl" "dcg.pl")))
+  (make/proc (list (list "pi.c" 
+			 (list "lib/interp.pl" "pi_system_predicate.pl" "pi_call_primitive.pl" 
+			       "pi_evaluate_op.pl" "dcg.pl")
+			 (lambda ()
+			   (run (./pc -I "." pi.pl -o pi.c)))))))
+
+(define (pi)
+  (pi.c)
+  (make (("pi" ("pi.c" "pc.h")
+	  (run (gcc ,@gcc-compile-options pi.c -lm -lrt -o pi ,@pc-compile-options))))))
+
+(define (pio)
+  (pi.c)
+  (make (("pio" ("pi.c" "pc.h")
+	  (run (gcc ,@gcc-optimized-compile-options pi.c -lm -lrt -o pio ,@pc-compile-options))))))
 
 (define (pb)
   (fluid-let ((gcc-compile-options (append gcc-compile-options pc-compile-options)))
