@@ -4,10 +4,11 @@
 %% compile a set of clauses
 
 compile_clauses(NAME/ARITY, CLAUSES, S1, S2) :-
-	emit(enter(NAME, ARITY)),
+	gen_label(L1, S1, S3),
+	emit(enter(NAME, ARITY, L1)),
 	register_defined_predicate(NAME/ARITY),
 	build_index_to_type_map(CLAUSES, 1, MAP),
-	compile_clause_list(CLAUSES, NAME/ARITY, MAP, S1, S2).
+	compile_clause_list(CLAUSES, NAME/ARITY, MAP, S3, S2).
 
 compile_clause_list([CLAUSE], NAME/ARITY, [I/_], S1, S2) :-
 	clause_label(NAME, ARITY, I, L1),
@@ -37,8 +38,10 @@ compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, S1, S2) :-
 	index_variables([HEAD, BODY], VARS, NONSINGLETONS),
 	length(VARS, N),
 	emit(environment(N)),
-	compile_head(HEAD, NONSINGLETONS, BOUND, S1, S),
-	compile_body(BODY, LAST, BOUND, S, S2).
+	compile_head(HEAD, NONSINGLETONS, BOUND, S1, S3),
+	gen_label(L1, S3, S4),
+	emit(call_triggered(L1)),
+	compile_body(BODY, LAST, BOUND, S4, S2).
 % fact
 compile_clause(HEAD, NA, I, M, S1, S2) :-
 	compile_clause((HEAD :- true), NA, I, M, S1, S2).
@@ -374,6 +377,20 @@ compile_body_expression('$call_predicate'(PTR, ARGS), TAIL, LAST/D, LAST/nondet,
 	gen_label(L, S1, S3),
 	compile_term_arguments([PTR, ARGS], [], [R1, R2], B1, B2, S3, S2),
 	compile_pointer_call(TAIL, LAST, D, R1, R2, L).
+
+% freeze
+compile_body_expression(freeze(V, G), TAIL, D, D, B1, B2, S1, S2) :-
+	gensym('$freeze_', P, S1, S3),
+	gensym('$defrost_', P2, S3, S4),
+	goals_and_variables(G/V, VLIST, G2/V2, IARGS),
+	map_second(VLIST, VARGS),
+	HEAD =.. [P|VARGS],
+	DHEAD =.. [P2|VARGS],
+	length(VARGS, N),
+	add_boilerplate(P, (HEAD :- G2)),
+	add_boilerplate(P2, (DHEAD :- '$predicate_address'(P/N, PTR), '$freeze_var'(V2, PTR, VARGS))),
+	DHEAD2 =.. [P2|IARGS],
+	compile_body_expression(DHEAD2, TAIL, D, _, B1, B2, S4, S2).
 
 % type-, order- or ordinary predicate call
 compile_body_expression(TERM, TAIL, D1, D2, B1, B2, S1, S2) :-

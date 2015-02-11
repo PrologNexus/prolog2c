@@ -51,11 +51,12 @@ generate_trailer :-
 
 %% assemble pseudo ops
 
-assemble(enter(NAME, ARITY), S, S) :-
+assemble(enter(NAME, ARITY, LBL), S, S) :-
 	mangle_name(NAME, MNAME),
 	gen('}', MNAME, '$', ARITY, ':{\n'),
 	gen('#undef CURRENT_NAME\n#undef CURRENT_ARITY\n#define CURRENT_NAME "'),
-	gen(NAME, '"\n#define CURRENT_ARITY ', ARITY, '\nENTER;\n'),
+	gen(NAME, '"\n#define CURRENT_ARITY ', ARITY, '\nENTER('),
+	gen(LBL, ');\n'),
 	(ARITY =:= 0; gen('A[0]=deref(A[0]);\n')). % for indexing
 
 assemble(environment(SIZE), S, S) :-
@@ -240,6 +241,9 @@ assemble(dispatch_on_integer(TABLE), S, S) :-
 assemble(suspend(R1, L), S, S) :-
 	gen('saved_state.result=', R1, ';\nsaved_state.P=&&', L, ';\n'),
 	gen('goto suspend;\n', L, ':\n', R1, '=saved_state.result;\n').
+
+assemble(call_triggered(L), S, S) :-
+	gen('CALL_TRIGGERED(', L, ');\n').
 
 assemble(OP, _, _) :-
 	error(['invalid pseudo instruction: ', OP]).

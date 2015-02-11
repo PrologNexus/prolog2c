@@ -408,6 +408,7 @@ static X global_variables[ MAX_GLOBAL_VARIABLES ];
 static TRAIL_STACK_GAP *trail_stack_gap_buffer;
 static XWORD trail_stack_gap_buffer_size = TRAIL_STACK_GAP_BUFFER_SIZE;
 static int gc_caused_by_trailing = 0;
+static X triggered_frozen_goals;
 
 
 static XCHAR *type_names[] = { 
@@ -1160,10 +1161,11 @@ static X *lookup_shared_term(X x, int addnew)
 
 static inline X make_var()
 {
-  ALLOCATE_BLOCK(BLOCK *v, VAR_TYPE, 3);
+  ALLOCATE_BLOCK(BLOCK *v, VAR_TYPE, 4);
   v->d[ 0 ] = (X)v;
   v->d[ 1 ] = word_to_fixnum(variable_counter++);
   v->d[ 2 ] = word_to_fixnum(clock_ticks++);
+  v->d[ 3 ] = END_OF_LIST_VAL;
   return v;
 }
 
@@ -1221,10 +1223,14 @@ static X deref_recursive(X val, int limit, int *failed)
 	return val;
       }
 
-      ALLOCATE_BLOCK(BLOCK *newvar, VAR_TYPE, 3);
+      ALLOCATE_BLOCK(BLOCK *newvar, VAR_TYPE, 4);
       newvar->d[ 0 ] = (X)newvar;
       newvar->d[ 1 ] = word_to_fixnum(variable_counter++);
       newvar->d[ 2 ] = word_to_fixnum(clock_ticks++);
+      newvar->d[ 3 ] = deref_recursive(slot_ref(val, 3), limit, failed);
+
+      if(*failed) return val;
+
       return tp[ 1 ] = (X)newvar;
     }
   }
@@ -1729,6 +1735,9 @@ static void collect_garbage(CHOICE_POINT *C)
   for(int i = 0; i < global_variable_counter; ++i)
     mark1(&(global_variables[ i ]));
 
+  // mark triggered frozen goals list
+  mark(&triggered_frozen_goals);
+
   // mark special symbols
   mark1(&dot_atom);
   mark1(&system_error_atom);
@@ -2122,6 +2131,7 @@ static void initialize(int argc, char *argv[])
   clock_ticks = 0;
   shared_term_counter = 0;
   variable_counter = 0;
+  triggered_frozen_goals = END_OF_LIST_VAL;
 
 #ifdef DEBUG_GC
   memset(tospace, TAINTED_PTR_B & 0xff, (XWORD)tospace_end - (XWORD)tospace);
@@ -2241,8 +2251,46 @@ static void trace_write(char *title, char *name, int arity, X *A, CHOICE_POINT *
 
 /// unification
 
-#define unify(x, y)   ({ X _x = (x), _y = (y); _x == _y || unify1(C0, _x, _y); })
+// trigger frozen goal on freshly bound variable
+static inline void trigger_frozen_goal(X var)
+{
+  X frozen = slot_ref(var, 3);
+  ASSERT(frozen != END_OF_LIST_VAL, "no frozen goals in triggered variable");
+  X prev;
 
+  // find end of triggered attributes list
+  for(prev = triggered_frozen_goals; prev != END_OF_LIST_VAL; prev = slot_ref(prev, 1)) {
+    if(slot_ref(prev, 1) == END_OF_LIST_VAL) break;
+  }
+
+  // copy list of frozen goals
+  while(frozen != END_OF_LIST_VAL) {
+    X p = PAIR(slot_ref(frozen, 0), END_OF_LIST_VAL);
+
+    if(prev != END_OF_LIST_VAL) 
+      SLOT_SET(prev, 1, p);
+    else
+      triggered_frozen_goals = p;
+
+    frozen = slot_ref(frozen, 1);
+  }
+}
+
+
+static void *next_frozen_goal(X *arglist)
+{
+  ASSERT(triggered_frozen_goals != END_OF_LIST_VAL, "no triggered frozen_goals");
+  X frozen = triggered_frozen_goals;
+  triggered_frozen_goals = slot_ref(frozen, 1);
+  X a = slot_ref(frozen, 0);
+  *arglist = slot_ref(a, 1);
+  X ptr = slot_ref(a, 0);
+  ASSERT(!is_FIXNUM(ptr) && is_POINTER(ptr), "invalid frozen goal pointer");
+  return (void *)(slot_ref(ptr, 0));
+}
+
+
+#define unify(x, y)   ({ X _x = (x), _y = (y); _x == _y || unify1(C0, _x, _y); })
 
 static int unify1(CHOICE_POINT *C0, X x, X y)
 {
@@ -2264,6 +2312,9 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
     }
 #endif
 
+    if(slot_ref(x, 3) != END_OF_LIST_VAL)
+      trigger_frozen_goal(x);
+
     SLOT_SET(x, 0, y);
     push_trail(C0, x);
     return 1;
@@ -2277,6 +2328,9 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
       fputs("]\n", stderr);
     }
 #endif
+
+    if(slot_ref(y, 3) != END_OF_LIST_VAL)
+      trigger_frozen_goal(y);
 
     SLOT_SET(y, 0, x);
     push_trail(C0, y);
@@ -2982,9 +3036,10 @@ static void push_argument_list(X lst)
 #define CURRENT_ARITY
 #define CURRENT_ENVIRONMENT_SIZE
 
-#define ENTER								\
+#define ENTER(lbl)							\
   { CHECK_LIMIT;							\
     PUSH_CHOICE_POINT(NULL);						\
+    CALL_TRIGGERED(lbl);						\
     TRACE_ENTER(CURRENT_NAME, CURRENT_ARITY); }
 
 #define PUSH_CHOICE_POINT(lbl)					\
@@ -3072,6 +3127,10 @@ static void push_argument_list(X lst)
     goto *R; }
 
 #define CALL(lbl, ret)   { R = ret; goto lbl; }
+
+#define CALL_TRIGGERED(lbl)   \
+  { lbl: if(triggered_frozen_goals != END_OF_LIST_VAL) {	\
+      R = &&lbl; goto triggered; }}
 
 #define FAIL     { TRACE_FAIL(CURRENT_NAME, CURRENT_ARITY); goto fail; }
 #define REDO     TRACE_REDO(CURRENT_NAME, CURRENT_ARITY)
@@ -3204,6 +3263,12 @@ success_exit:								\
  ASSERT(ifthen_stack == ifthen_top, "unbalanced if-then stack");	\
  ASSERT(catch_stack == catch_top, "unbalanced catcher stack");		\
  TERMINATE(C, EXIT_SUCCESS);					       \
+triggered:							       \
+{ A = arg_top;							       \
+   X arglst;							       \
+   void *gp = next_frozen_goal(&arglst);				       \
+   push_argument_list(arglst);					       \
+   goto *gp; }							       \
 suspend:							       \
  saved_state.A = A;						       \
  saved_state.E = E;						       \
@@ -3781,6 +3846,14 @@ PRIMITIVE(re_intern, X atom) {
   X str = STRING(len);
   memcpy(objdata(str), string_buffer, len);
   return(unify(intern(str), atom));  
+}
+
+PRIMITIVE(freeze_goal, X var, X ptr, X args) {
+  ASSERT(is_variable(var), "put_attr: not a variable");
+  ASSERT(!is_FIXNUM(ptr) && is_POINTER(ptr), "put_attr: not a pointer");
+  X p = PAIR(ptr, args);
+  SLOT_SET(var, 3, PAIR(p, slot_ref(var, 3)));
+  return 1;
 }
 
 
