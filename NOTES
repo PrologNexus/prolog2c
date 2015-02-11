@@ -49,6 +49,8 @@ NOTES											              -*- Org -*-
    - extend name/2, get/1, get0/1, put/1, skip/1 (and probably many
      more)
 ** once/1
+** Allow "library(ATOM)" as file-spec
+   - consult/1, include/1
 ** freeze/2
    - possible implementation: push unified attributed var on global
      list and insert call to hook (might be internal) after
@@ -157,8 +159,6 @@ NOTES											              -*- Org -*-
 * Diagnostics
 ** Detect singleton variables
 ** Report unused predicates
-* Once we have a suitable test, compare performance with other implementations
-  - SWI, GNU-Prolog, BinProlog
 * Tests
 ** TODO Test once more on WIN64
 ** TODO Does retract-loop work?
@@ -210,13 +210,11 @@ NOTES											              -*- Org -*-
     - at least as much as possible and sensible.
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Interpreter
-** Add support for file:dcg.pl 
-   - but I need a way to hook into consult/1 from file:pi.pl, because
-     adding DCG-support to interp seems better.
-   - either load dcg.pl and execute it in interpreted mode or use
-     low-level ay of calling compiled predicates from interpreter.
-** term_expansion/2 + expand_term/2
-** listing
+** Add support for "[...]"
+   - try to avoid implementing goal_expansion, perhaps just check
+     entered term.
+** Add "ensure_loaded" directive
+** Add "listing"
    - listing/1
    - listing/0
      - needs some way to enumerate all predicates (current_predicate/1).
@@ -225,3 +223,6 @@ NOTES											              -*- Org -*-
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
 ** file:/archive/iclpgcbenches.tar.gz
+* Undocumented features
+** '$predicate_address'/2, '$call_predicate'/2
+** interp: expand_term/2 + term_expansion/2
