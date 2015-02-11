@@ -187,6 +187,7 @@ pi_system_predicate('->', 2).
 pi_system_predicate('\\+', 1).
 pi_system_predicate('$call_predicate', 2).
 pi_system_predicate(expand_term, 2).
+pi_system_predicate(freeze, 2).
 
 call_system_predicate(TERM) :-
 	!,
@@ -234,6 +235,10 @@ pi_call_primitive(expand_term, 2, TERM) :-
 pi_call_primitive('$call_predicate', 2, TERM) :-
 	!, arg(1, TERM, PTR), arg(2, TERM, ARGS),
 	'$call_predicate'(PTR, ARGS).
+
+pi_call_primitive(freeze, 2, TERM) :-
+	!, arg(1, TERM, VAR), arg(2, TERM, GOAL),
+	freeze(VAR, call(GOAL)).
 
 pi_bagof_setof(OP, TERM) :-
 	!,
