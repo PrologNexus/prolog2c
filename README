@@ -984,7 +984,7 @@
 
     - You can add your extensions permanently to the compiler by
       adding a macro/2 clause in the file "macros.pl" of the compiler
-      sources and adding a clause for auto_include/2 (in the same
+      sources and adding a clause for auto_include/3 (in the same
       file), which ensures that a file is included automatically and
       compiled with the original program. Finally copy your extension
       file into the "lib" directory (wherever you chose to install

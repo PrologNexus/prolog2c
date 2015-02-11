@@ -35,8 +35,6 @@ NOTES											              -*- Org -*-
 ** Analyze program before compiling to pseudo-instructions
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
-** TODO pc: Use separate name + arity for auto_include
-   - allows indexing.
 * Features
 ** Some sort of condiguration-language (similar to SRFI-7) might be useful
    - basically needs sth like "cond-expand".
