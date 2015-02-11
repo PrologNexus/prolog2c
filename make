@@ -267,6 +267,11 @@
 (define (upload)
   (run (upload -d prolog pc.tar.gz README)))
 
+(define (install)
+  (pc1o)
+  (pio)
+  (run (./install)))
+
 
 ;;
 
