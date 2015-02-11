@@ -5,8 +5,6 @@ NOTES											              -*- Org -*-
 ** Find a good example
 ** Add support for structs
    - struct X* <-> "X(...)"
-** TODO Add proper test
-   - add to fullcheck.
 * Optimization opportunities
 ** TODO Avoid allocating intermediate results if they are unified with ground values
 ** TODO Add "determinate" declarations and green cuts in library code
@@ -52,11 +50,8 @@ NOTES											              -*- Org -*-
 ** Allow "library(ATOM)" as file-spec
    - consult/1, include/1
 ** freeze/2
-   - possible implementation: push unified attributed var on global
-     list and insert call to hook (might be internal) after
-     head-unification.
-   - will not execute in inline-unificication or unification of
-     builtins and foreign-calls.
+   - see /coroutines/ branch, still not right (indirect variable binding)
+   - benchmark.
 ** Allow user-defined macros
    - directive: ":- macro OLD -> NEW" or something like this.
 ** Extend numerical operators
