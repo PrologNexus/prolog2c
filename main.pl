@@ -19,9 +19,9 @@ main :-
 	halt.
 
 compile(ARGS) :-
+	set_include_path,
 	parse_arguments(ARGS),
 	(recorded(source_file, FILE); usage(1)),
-	set_include_path,
 	compile_file(FILE).
 
 set_include_path :-
@@ -67,5 +67,5 @@ parse_arguments([INFILE|MORE]) :-
 parse_arguments(_) :- usage(1).
 
 usage(STATUS) :-
-	gen('usage: pc [-h] [-v] [-o FILENAME] [-i] [FILENAME]\n'),
+	gen('usage: pc [-h] [-v] [-o FILENAME] [-i] [-I DIRECTORY] [FILENAME]\n'),
 	halt(STATUS).
