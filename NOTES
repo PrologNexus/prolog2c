@@ -169,11 +169,15 @@ NOTES											              -*- Org -*-
 ** Detect singleton variables
 ** Report unused predicates
 * Tests
+** TODO Find some non-trivial test for coroutines
 ** TODO Test once more on WIN64
 ** TODO Does retract-loop work?
    - we know it works for the rdb, but should also test for cdb.
 * Issues
 ** Major
+*** TODO freeze/2: binding of var that is bound to frozen var will not trigger the goal
+    - could we copy the frozen-goal list of one var to the other?
+      - would have to be undone when detrailing.
 *** TODO [#B] Implementation of if-then-else seems to be broken
    - if-then stack gets out of balance, found here:
      call_primitive('->', 2, TERM) :-
