@@ -61,9 +61,10 @@ NOTES											              -*- Org -*-
 ** once/1
 ** Allow "library(ATOM)" as file-spec
    - consult/1, include/1
-** freeze/2
-   - see /coroutines/ branch, still not right (indirect variable binding)
-   - benchmark.
+** Coroutines
+   - see /coroutines/ branch.
+   - test dif/2
+   - test, benchmark.
 ** Allow user-defined macros
    - directive: ":- macro OLD -> NEW" or something like this.
 ** Extend numerical operators
@@ -176,9 +177,6 @@ NOTES											              -*- Org -*-
    - we know it works for the rdb, but should also test for cdb.
 * Issues
 ** Major
-*** TODO delay/2: binding of var that is bound to frozen var will not trigger the goal
-    - could we copy the frozen-goal list of one var to the other?
-      - would have to be undone when detrailing.
 *** TODO [#B] Implementation of if-then-else seems to be broken
    - if-then stack gets out of balance, found here:
      call_primitive('->', 2, TERM) :-
