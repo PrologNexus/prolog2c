@@ -138,6 +138,7 @@ auto_include(fwritef, 3, 'lib/writef.pl').
 
 auto_include('$delay_goal', 3, 'lib/co.pl').
 auto_include('$freeze_goal', 3, 'lib/co.pl').
+auto_include(dif, 2, 'lib/co.pl').
 
 auto_include(_, _, _) :- fail.
 
@@ -199,6 +200,7 @@ determinate_builtin(writef, 2).
 determinate_builtin(fwritef, 2).
 determinate_builtin(fwritef, 3).
 determinate_builtin(read_atom, 2).
+determinate_builtin(dif, 2).
 
 determinate_builtin(NAME, ARITY) :-
 	recorded(determinate, NAME/ARITY).

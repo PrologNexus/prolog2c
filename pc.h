@@ -409,6 +409,7 @@ static TRAIL_STACK_GAP *trail_stack_gap_buffer;
 static XWORD trail_stack_gap_buffer_size = TRAIL_STACK_GAP_BUFFER_SIZE;
 static int gc_caused_by_trailing = 0;
 static X triggered_frozen_goals;
+static X first_common_variable;
 
 
 static XCHAR *type_names[] = { 
@@ -2147,6 +2148,7 @@ static void initialize(int argc, char *argv[])
   shared_term_counter = 0;
   variable_counter = 0;
   triggered_frozen_goals = END_OF_LIST_VAL;
+  first_common_variable = NULL;
 
 #ifdef DEBUG_GC
   memset(tospace, TAINTED_PTR_B & 0xff, (XWORD)tospace_end - (XWORD)tospace);
@@ -2327,6 +2329,9 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
     }
 #endif
 
+    if(!first_common_variable)
+      first_common_variable = x;
+
     if(slot_ref(x, 3) != END_OF_LIST_VAL)
       trigger_frozen_goal(x);
 
@@ -2343,6 +2348,9 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
       fputs("]\n", stderr);
     }
 #endif
+
+    if(!first_common_variable)
+      first_common_variable = y;
 
     if(slot_ref(y, 3) != END_OF_LIST_VAL)
       trigger_frozen_goal(y);
@@ -3870,6 +3878,15 @@ PRIMITIVE(delay_goal, X var, X ptr, X args) {
   push_trail(C0, var);
   SLOT_SET(var, 3, PAIR(p, slot_ref(var, 3)));
   return 1;
+}
+
+// used for dif/2
+PRIMITIVE(special_id, X x, X y, X var) {
+  first_common_variable = NULL;
+
+  if(!unify(x, y)) return 0;
+
+  return unify(var, first_common_variable ? first_common_variable : ZERO);
 }
 
 

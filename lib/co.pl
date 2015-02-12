@@ -10,3 +10,9 @@
 	'$predicate_address'('$freeze_goal'/3, PTR2),
 	delay(VAR, '$call_predicate'(PTR2, [VAR, PTR, ARGS]))
 	; '$call_predicate'(PTR, ARGS).
+
+dif(X, Y) :-
+	foreign_call(special_id(X, Y, V)),
+	!,
+	(var(V) -> delay(V, dif(X, Y))).
+dif(_, _).
