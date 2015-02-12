@@ -219,7 +219,8 @@
 				  is already a non-variable term, GOAL is executed
 				  immediately. The goals triggered by bound variables 
 				  may not execute immediately until the next 
-				  predicate-entry or after a head-unification.
+				  predicate-entry, (determinate) predicate exit, cut, 
+				  or after a head-unification.
 
     freeze(-VAR, +GOAL)		  Delay execution of GOAL until VAR is bound to
     		 		  a non-variable term. This predicate uses delay/2
@@ -227,11 +228,11 @@
 
     dif(?X, ?Y)			  Fails if X and Y are identical, otherwise
     	    			  constrains both terms to be different: if any
-				  one contains an unbound variable, then a delayed
-				  goal (using delay/2) is stored that fails if
-				  X and Y should become identical.
+				  instantiation of variables inside the terms would
+				  make X and Y identical, then the operation that
+				  performed the instantiation will fail.
 
-    The GOALs must be complete, callable terms, merely passing
+    The "GOAL"s must be complete, callable terms, merely passing
     variables containing callable terms is not sufficient.
 
   - Equality and comparison predicates
@@ -893,6 +894,9 @@
 
   Asserting and retrieving terms in the record- or clause-database
   involves copying and thus should be avoided in time-critical code.
+
+  Any use of delay/2, freeze/2 or dif/2 will have a detrimental impact
+  on overall performance.
 
 
 * Calling code written in other languages
