@@ -1,11 +1,11 @@
 main :-
-	V = 99, freeze(V, (display(now), nl)),
-	freeze(X, (display(fail), nl, fail)),
+	V = 99, delay(V, (display(now), nl)),
+	delay(X, (display(fail), nl, fail)),
 	Y = 1,
 	X = 99,
 	done.
 main :-
-	freeze(Z, (display([Z]), nl)),
+	delay(Z, (display([Z]), nl)),
 	next(Z).
 
 done :- display(done), nl.
