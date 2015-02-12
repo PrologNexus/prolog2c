@@ -380,31 +380,11 @@ compile_body_expression('$call_predicate'(PTR, ARGS), TAIL, LAST/D, LAST/nondet,
 
 % delay
 compile_body_expression(delay(V, G), TAIL, D, D, B1, B2, S1, S2) :-
-	gensym('$delayed_', P, S1, S3),
-	gensym('$delay_', P2, S3, S4),
-	goals_and_variables(G/V, VLIST, G2/V2, IARGS),
-	map_second(VLIST, VARGS),
-	HEAD =.. [P|VARGS],
-	DHEAD =.. [P2|VARGS],
-	length(VARGS, N),
-	add_boilerplate(P, (HEAD :- G2)),
-	add_boilerplate(P2, (DHEAD :- '$predicate_address'(P/N, PTR), '$delay_goal'(V2, PTR, VARGS))),
-	DHEAD2 =.. [P2|IARGS],
-	compile_body_expression(DHEAD2, TAIL, D, _, B1, B2, S4, S2).
+	compile_delayed_goal('$delay_goal', V, G, TAIL, D, B1, B2, S1, S2).
 
 % freeze
 compile_body_expression(freeze(V, G), TAIL, D, D, B1, B2, S1, S2) :-
-	gensym('$delayed_', P, S1, S3),
-	gensym('$freeze_', P2, S3, S4),
-	goals_and_variables(G/V, VLIST, G2/V2, IARGS),
-	map_second(VLIST, VARGS),
-	HEAD =.. [P|VARGS],
-	DHEAD =.. [P2|VARGS],
-	length(VARGS, N),
-	add_boilerplate(P, (HEAD :- G2)),
-	add_boilerplate(P2, (DHEAD :- '$predicate_address'(P/N, PTR), '$defrost'(V2, PTR, VARGS))),
-	DHEAD2 =.. [P2|IARGS],
-	compile_body_expression(DHEAD2, TAIL, D, _, B1, B2, S4, S2).
+	compile_delayed_goal('$freeze_goal', V, G, TAIL, D, B1, B2, S1, S2).
 
 % type-, order- or ordinary predicate call
 compile_body_expression(TERM, TAIL, D1, D2, B1, B2, S1, S2) :-
@@ -418,6 +398,23 @@ compile_body_expression(TERM, TAIL, D1, D2, B1, B2, S1, S2) :-
 % otherwise: error
 compile_body_expression(TERM, _, _, _, _, _, _, _) :-
 	error(['can not compile: ', TERM]).
+
+
+%% compile delayed goal
+
+compile_delayed_goal(INSTALLER, V, G, TAIL, D, B1, B2, S1, S2) :-
+	gensym('$delayed_', P, S1, S3),
+	gensym('$delay_', P2, S3, S4),
+	goals_and_variables(G/V, VLIST, G2/V2, IARGS),
+	map_second(VLIST, VARGS),
+	HEAD =.. [P|VARGS],
+	DHEAD =.. [P2|VARGS],
+	length(VARGS, N),
+	add_boilerplate(P, (HEAD :- G2)),
+	INSTALL =.. [INSTALLER, V2, PTR, VARGS],
+	add_boilerplate(P2, (DHEAD :- '$predicate_address'(P/N, PTR), INSTALL)),
+	DHEAD2 =.. [P2|IARGS],
+	compile_body_expression(DHEAD2, TAIL, D, _, B1, B2, S4, S2).
 
 
 %% compile calls (ordinary or type-/order-predicate)

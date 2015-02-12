@@ -137,7 +137,7 @@ auto_include(fwritef, 2, 'lib/writef.pl').
 auto_include(fwritef, 3, 'lib/writef.pl').
 
 auto_include('$delay_goal', 3, 'lib/co.pl').
-auto_include('$defrost', 3, 'lib/co.pl').
+auto_include('$freeze_goal', 3, 'lib/co.pl').
 
 auto_include(_, _, _) :- fail.
 
