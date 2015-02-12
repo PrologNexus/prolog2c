@@ -18,10 +18,10 @@ wff(implies(and(implies(X,Y),
                     and(implies(Z,U),
                         implies(U,W)))),
             implies(X,W))) :-
-        X = f(plus(plus(a,b),plus(c,zero))),
-        Y = f(times(times(a,b),plus(c,d))),
+        X = f(xplus(xplus(a,b),xplus(c,zero))),
+        Y = f(xtimes(xtimes(a,b),xplus(c,d))),
         Z = f(reverse(append(append(a,b),[]))),
-        U = equal(plus(a,b),difference(x,y)),
+        U = equal(xplus(a,b),difference(x,y)),
         W = lessp(remainder(a,b),member(a,length(b))).
 
 tautology(Wff) :-
@@ -95,7 +95,7 @@ equal(  compile(Form),
         reverse(codegen(optimize(Form),[]))
         ).
 equal(  count_list(Z,sort_lp(X,Y)),
-        plus(count_list(Z,X),
+        xplus(count_list(Z,X),
              count_list(Z,Y))
         ).
 equal(  countps_(L,Pred),
@@ -204,9 +204,9 @@ equal(  numberp(greatest_factor(X,Y)),
 equal(  or(P,Q),
         if(P,t,if(Q,t,f),f)
         ).
-equal(  plus(A,B),
+equal(  xplus(A,B),
         C
-        ) :- plus(A,B,C).
+        ) :- xplus(A,B,C).
 equal(  power_eval(A,B),
         C
         ) :- power_eval(A,B,C).
@@ -237,7 +237,7 @@ equal(  samefringe(X,Y),
         equal(flatten(X),flatten(Y))
         ).
 equal(  sigma(zero,I),
-        quotient(times(I,add1(I)),2)
+        quotient(xtimes(I,add1(I)),2)
         ).
 equal(  sort2(delete(X,L)),
         delete(X,sort2(L))
@@ -245,11 +245,11 @@ equal(  sort2(delete(X,L)),
 equal(  tautology_checker(X),
         tautologyp(normalize(X),[])
         ).
-equal(  times(A,B),
+equal(  xtimes(A,B),
         C
-        ) :- times(A,B,C).
+        ) :- xtimes(A,B,C).
 equal(  times_list(append(X,Y)),
-        times(times_list(X),times_list(Y))
+        xtimes(times_list(X),times_list(Y))
         ).
 equal(  value(normalize(X),A),
         value(X,A)
@@ -259,31 +259,31 @@ equal(  zerop(X),
         ).
 
 difference(X, X, zero) :- !.
-difference(plus(X,Y), X, fix(Y)) :- !.
-difference(plus(Y,X), X, fix(Y)) :- !.
-difference(plus(X,Y), plus(X,Z), difference(Y,Z)) :- !.
-difference(plus(B,plus(A,C)), A, plus(B,C)) :- !.
-difference(add1(plus(Y,Z)), Z, add1(Y)) :- !.
+difference(xplus(X,Y), X, fix(Y)) :- !.
+difference(xplus(Y,X), X, fix(Y)) :- !.
+difference(xplus(X,Y), xplus(X,Z), difference(Y,Z)) :- !.
+difference(xplus(B,xplus(A,C)), A, xplus(B,C)) :- !.
+difference(add1(xplus(Y,Z)), Z, add1(Y)) :- !.
 difference(add1(add1(X)), 2, fix(X)).
 
-eq(plus(A,B), zero, and(zerop(A),zerop(B))) :- !.
-eq(plus(A,B), plus(A,C), equal(fix(B),fix(C))) :- !.
+eq(xplus(A,B), zero, and(zerop(A),zerop(B))) :- !.
+eq(xplus(A,B), xplus(A,C), equal(fix(B),fix(C))) :- !.
 eq(zero, difference(X,Y),not(lessp(Y,X))) :- !.
 eq(X, difference(X,Y),and(numberp(X),
                           and(or(equal(X,zero),
                                  zerop(Y))))) :- !.
-eq(times(X,Y), zero, or(zerop(X),zerop(Y))) :- !.
+eq(xtimes(X,Y), zero, or(zerop(X),zerop(Y))) :- !.
 eq(append(A,B), append(A,C), equal(B,C)) :- !.
 eq(flatten(X), cons(Y,[]), and(nlistp(X),equal(X,Y))) :- !.
 eq(greatest_factor(X,Y),zero, and(or(zerop(Y),equal(Y,1)),
                                      equal(X,zero))) :- !.
 eq(greatest_factor(X,_),1, equal(X,1)) :- !.
-eq(Z, times(W,Z), and(numberp(Z),
+eq(Z, xtimes(W,Z), and(numberp(Z),
                       or(equal(Z,zero),
                          equal(W,1)))) :- !.
-eq(X, times(X,Y), or(equal(X,zero),
+eq(X, xtimes(X,Y), or(equal(X,zero),
                      and(numberp(X),equal(Y,1)))) :- !.
-eq(times(A,B), 1, and(not(equal(A,zero)),
+eq(xtimes(A,B), 1, and(not(equal(A,zero)),
                       and(not(equal(B,zero)),
                           and(numberp(A),
                               and(numberp(B),
@@ -298,15 +298,15 @@ eq(lessp(X,Y), Z, if(lessp(X,Y),
                      equal(t,Z),
                      equal(f,Z))).
 
-exp(I, plus(J,K), times(exp(I,J),exp(I,K))) :- !.
-exp(I, times(J,K), exp(exp(I,J),K)).
+exp(I, xplus(J,K), xtimes(exp(I,J),exp(I,K))) :- !.
+exp(I, xtimes(J,K), exp(exp(I,J),K)).
 
 gcd(X, Y, gcd(Y,X)) :- !.
-gcd(times(X,Z), times(Y,Z), times(Z,gcd(X,Y))).
+gcd(xtimes(X,Z), xtimes(Y,Z), xtimes(Z,gcd(X,Y))).
 
 mylength(reverse(X),length(X)).
 mylength(cons(_,cons(_,cons(_,cons(_,cons(_,cons(_,X7)))))),
-         plus(6,length(X7))).
+         xplus(6,length(X7))).
 
 lessp(remainder(_,Y), Y, not(zerop(Y))) :- !.
 lessp(quotient(I,J), I, and(not(zerop(I)),
@@ -315,22 +315,22 @@ lessp(quotient(I,J), I, and(not(zerop(I)),
 lessp(remainder(X,Y), X, and(not(zerop(Y)),
                              and(not(zerop(X)),
                                  not(lessp(X,Y))))) :- !.
-lessp(plus(X,Y), plus(X,Z), lessp(Y,Z)) :- !.
-lessp(times(X,Z), times(Y,Z), and(not(zerop(Z)),
+lessp(xplus(X,Y), xplus(X,Z), lessp(Y,Z)) :- !.
+lessp(xtimes(X,Z), xtimes(Y,Z), and(not(zerop(Z)),
                                   lessp(X,Y))) :- !.
-lessp(Y, plus(X,Y), not(zerop(X))) :- !.
+lessp(Y, xplus(X,Y), not(zerop(X))) :- !.
 lessp(length(delete(X,L)), length(L), member(X,L)).
 
-meaning(plus_tree(append(X,Y)),A,
-        plus(meaning(plus_tree(X),A),
-             meaning(plus_tree(Y),A))) :- !.
-meaning(plus_tree(plus_fringe(X)),A,
+meaning(xplus_tree(append(X,Y)),A,
+        xplus(meaning(xplus_tree(X),A),
+             meaning(xplus_tree(Y),A))) :- !.
+meaning(xplus_tree(xplus_fringe(X)),A,
         fix(meaning(X,A))) :- !.
-meaning(plus_tree(delete(X,Y)),A,
+meaning(xplus_tree(delete(X,Y)),A,
         if(member(X,Y),
-           difference(meaning(plus_tree(Y),A),
+           difference(meaning(xplus_tree(Y),A),
                       meaning(X,A)),
-           meaning(plus_tree(Y),A))).
+           meaning(xplus_tree(Y),A))).
 
 mymember(X,append(A,B),or(member(X,A),member(X,B))) :- !.
 mymember(X,reverse(Y),member(X,Y)) :- !.
@@ -340,44 +340,44 @@ nth(zero,_,zero).
 nth([],I,if(zerop(I),[],zero)).
 nth(append(A,B),I,append(nth(A,I),nth(B,difference(I,length(A))))).
 
-plus(plus(X,Y),Z,
-     plus(X,plus(Y,Z))) :- !.
-plus(remainder(X,Y),
-     times(Y,quotient(X,Y)),
+xplus(xplus(X,Y),Z,
+     xplus(X,xplus(Y,Z))) :- !.
+xplus(remainder(X,Y),
+     xtimes(Y,quotient(X,Y)),
      fix(X)) :- !.
-plus(X,add1(Y),
+xplus(X,add1(Y),
      if(numberp(Y),
-        add1(plus(X,Y)),
+        add1(xplus(X,Y)),
         add1(X))).
 
-power_eval(big_plus1(L,I,Base),Base,
-           plus(power_eval(L,Base),I)) :- !.
+power_eval(big_xplus1(L,I,Base),Base,
+           xplus(power_eval(L,Base),I)) :- !.
 power_eval(power_rep(I,Base),Base,
            fix(I)) :- !.
-power_eval(big_plus(X,Y,I,Base),Base,
-           plus(I,plus(power_eval(X,Base),
+power_eval(big_xplus(X,Y,I,Base),Base,
+           xplus(I,xplus(power_eval(X,Base),
                        power_eval(Y,Base)))) :- !.
-power_eval(big_plus(power_rep(I,Base),
+power_eval(big_xplus(power_rep(I,Base),
                     power_rep(J,Base),
                     zero,
                     Base),
            Base,
-           plus(I,J)).
+           xplus(I,J)).
 
-quotient(plus(X,plus(X,Y)),2,plus(X,quotient(Y,2))).
-quotient(times(Y,X),Y,if(zerop(Y),zero,fix(X))).
+quotient(xplus(X,xplus(X,Y)),2,xplus(X,quotient(Y,2))).
+quotient(xtimes(Y,X),Y,if(zerop(Y),zero,fix(X))).
 
 remainder(_,         1,zero) :- !.
 remainder(X,         X,zero) :- !.
-remainder(times(_,Z),Z,zero) :- !.
-remainder(times(Y,_),Y,zero).
+remainder(xtimes(_,Z),Z,zero) :- !.
+remainder(xtimes(Y,_),Y,zero).
 
 reverse_loop(X,Y,  append(reverse(X),Y)) :- !.
 reverse_loop(X,[], reverse(X)          ).
 
-times(X,         plus(Y,Z),      plus(times(X,Y),times(X,Z))      ) :- !.
-times(times(X,Y),Z,              times(X,times(Y,Z))              ) :- !.
-times(X,         difference(C,W),difference(times(C,X),times(W,X))) :- !.
-times(X,         add1(Y),        if(numberp(Y),
-                                    plus(X,times(X,Y)),
+xtimes(X,         xplus(Y,Z),      xplus(xtimes(X,Y),xtimes(X,Z))      ) :- !.
+xtimes(xtimes(X,Y),Z,              xtimes(X,xtimes(Y,Z))              ) :- !.
+xtimes(X,         difference(C,W),difference(xtimes(C,X),xtimes(W,X))) :- !.
+xtimes(X,         add1(Y),        if(numberp(Y),
+                                    xplus(X,xtimes(X,Y)),
                                     fix(X))                       ).
