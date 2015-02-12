@@ -15,6 +15,7 @@ control_structure(repeat).
 control_structure(bagof(?T, +G, +L)).
 control_structure(setof(?T, +G, +L)).
 control_structure('$call_predicate'(+X, +Y)).
+control_structure(delay(+X, +Y)).
 				    
 system_predicate(#X < #Y).
 system_predicate(#X > #Y).

@@ -1174,10 +1174,12 @@ static void unwind_trail(X *tp)
 {
   while(trail_top != tp) {
     BLOCK *var = (BLOCK *)(*(--trail_top));
+    X al = *(--trail_top);
 #ifdef DEBUGGING
     DRIBBLE("[detrail: _" XWORD_OUTPUT_FORMAT "]\n", fixnum_to_word(slot_ref((X)var, 1)));
 #endif
     SLOT_SET(var, 0, var);
+    SLOT_SET(var, 3, al);
   }
 }
 
@@ -1187,7 +1189,7 @@ static inline void push_trail(CHOICE_POINT *C0, X var)
   // trail-check
   if(fixnum_to_word(slot_ref(var, 2)) < C0->timestamp) {
 #ifndef UNSAFE
-    if((XWORD)trail_top >= (XWORD)trail_stack + trail_stack_size)
+    if((XWORD)trail_top + sizeof(X) * 2 >= (XWORD)trail_stack + trail_stack_size)
       CRASH("trail-stack overflow");
 #endif
 
@@ -1196,6 +1198,7 @@ static inline void push_trail(CHOICE_POINT *C0, X var)
       alloc_top = fromspace_limit + 1; /* trigger GC */
     }
 
+    *(trail_top++) = slot_ref(var, 3); /* frozen goals */
     *(trail_top++) = var;
   }
 }
@@ -1291,10 +1294,11 @@ static X freeze_term_recursive(X x)
     *tp = x;
     BLOCK *newvar = (BLOCK *)malloc(sizeof(XWORD) * 4);
     ASSERT(newvar, "out of memory - can not freeze variable");
-    newvar->h = VAR_TAG | 3;
+    newvar->h = VAR_TAG | 4;
     newvar->d[ 0 ] = (X)newvar;
     newvar->d[ 1 ] = word_to_fixnum(variable_counter++);
     newvar->d[ 2 ] = word_to_fixnum(0); /* timestamp */
+    newvar->d[ 3 ] = freeze_term_recursive(slot_ref(x, 3));
     return tp[ 1 ] = (X)newvar;
   }
 
@@ -1371,6 +1375,11 @@ static int thaw_term_recursive(X *xp)
     if(alloc_top + objsize(x) + 1 >= fromspace_limit) return 0;
     
     tp[ 1 ] = *xp = make_var();
+    X al = slot_ref(x, 3);
+    
+    if(!thaw_term_recursive(&al)) return 0;
+
+    SLOT_SET(*xp, 3, al);
     return 1;
   }
 
@@ -1736,7 +1745,12 @@ static void collect_garbage(CHOICE_POINT *C)
     mark1(&(global_variables[ i ]));
 
   // mark triggered frozen goals list
-  mark(&triggered_frozen_goals);
+  mark1(&triggered_frozen_goals);
+
+  // mark frozen-goals slots in trail stack
+  for(X *tp = trail_stack; tp < trail_top; tp += 2) {
+    if(tp[ 1 ] != END_OF_LIST_VAL) mark1(&(tp[ 1 ]));
+  }
 
   // mark special symbols
   mark1(&dot_atom);
@@ -1784,7 +1798,7 @@ static void collect_garbage(CHOICE_POINT *C)
   X *tsp = trail_stack;
 
   // first collect "gaps" of unref'd variables in trail-stack
-  for(X *tp = trail_stack; tp < trail_top; ++tp) {
+  for(X *tp = trail_stack; tp < trail_top; tp += 2) {
     X var = *tp;
     int offset = gp - trail_stack_gap_buffer;
 
@@ -1803,13 +1817,14 @@ static void collect_garbage(CHOICE_POINT *C)
       }
 
       *(tsp++) = fptr_to_ptr(objbits(var));
+      *(tsp++) = tp[ 1 ];	/* frozen goals */
     }
     else if(gap_size) {		/* collected var? add to gap */
-      ++gap_size;
+      gap_size += 2;
     }
     else {			/* collected var, create new gap */
       gp->position = tp;
-      gap_size = 1;
+      gap_size = 2;
     }
   }
 
@@ -3266,7 +3281,7 @@ success_exit:								\
 triggered:							       \
 { A = arg_top;							       \
    X arglst;							       \
-   void *gp = next_frozen_goal(&arglst);				       \
+   void *gp = next_frozen_goal(&arglst);			       \
    push_argument_list(arglst);					       \
    goto *gp; }							       \
 suspend:							       \
@@ -3848,10 +3863,11 @@ PRIMITIVE(re_intern, X atom) {
   return(unify(intern(str), atom));  
 }
 
-PRIMITIVE(freeze_goal, X var, X ptr, X args) {
+PRIMITIVE(delay_goal, X var, X ptr, X args) {
   ASSERT(is_variable(var), "put_attr: not a variable");
   ASSERT(!is_FIXNUM(ptr) && is_POINTER(ptr), "put_attr: not a pointer");
   X p = PAIR(ptr, args);
+  push_trail(C0, var);
   SLOT_SET(var, 3, PAIR(p, slot_ref(var, 3)));
   return 1;
 }
