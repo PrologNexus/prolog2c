@@ -64,7 +64,7 @@ assemble(environment(SIZE), S, S) :-
 	gen('#undef CURRENT_ENVIRONMENT_SIZE\n#define CURRENT_ENVIRONMENT_SIZE ', SIZE, '\n'),
 	(SIZE =:= 0; gen('ENVIRONMENT(', SIZE, ');\n')).
 assemble(determinate_exit, S, S) :- gen('DETERMINATE_EXIT;\n').
-assemble(exit, S, S) :-	gen('EXIT;\n').
+assemble(exit(L), S, S) :- gen('EXIT(', L, ');\n').
 assemble(redo, S, S) :- gen('REDO;\n').
 
 assemble(set_redo(L), S, S) :- gen('SET_REDO(&&', L, ');\n').
@@ -76,7 +76,7 @@ assemble(save_choice_points, S, S) :- gen('SAVE_CHOICE_POINTS;\n').
 assemble(restore_choice_points, S, S) :- gen('RESTORE_CHOICE_POINTS;\n').
 assemble(adjust_choice_point(L), S, S) :- gen('ADJUST_CHOICE_POINT(&&', L, ');\n').
 
-assemble(cut, S, S) :- gen('CUT;\n').
+assemble(cut(L), S, S) :- gen('CUT(', L, ');\n').
 
 assemble(label(LABEL), S, S) :- gen('}', LABEL, ':{\n').
 assemble(local(N, R), S, S) :- gen('X ', R, '=E[', N, '];\n').

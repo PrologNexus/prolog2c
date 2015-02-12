@@ -135,8 +135,9 @@ compile_term_arguments([X|MORE], DL1, DL2, B1, B2, S1, S2) :-
 
 compile_body(BODY, LAST, BOUND, S1, S2) :-
 	(LAST == last -> DET = det; DET = nondet),
-	compile_body_expression(BODY, tail, LAST/DET, LD2, BOUND, _, S1, S2),
-	(LD2 = _/det -> emit(determinate_exit); emit(exit)).
+	compile_body_expression(BODY, tail, LAST/DET, LD2, BOUND, _, S1, S3),
+	gen_label(L, S3, S2),
+	(LD2 = _/det -> emit(determinate_exit); emit(exit(L))).
 
 
 %% compile expression occuring in clause body
@@ -187,8 +188,9 @@ compile_body_expression((X; Y), TAIL, D1, D2, B1, B2, S1, S2) :-
 	both_determinate(D3, D4, D2).
 
 % cut
-compile_body_expression(!, _, _, last/det, B, B, S, S) :-
-	emit(cut).
+compile_body_expression(!, _, _, last/det, B, B, S1, S2) :-
+	gen_label(L, S1, S2),
+	emit(cut(L)).
 
 % true
 compile_body_expression(true, _, D, D, B, B, S, S).

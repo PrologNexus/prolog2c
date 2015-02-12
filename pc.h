@@ -3170,13 +3170,23 @@ static void push_argument_list(X lst)
 #define POP_CHOICE_POINT  \
   { E = C0->E;		  \
     C0 = C0->C0; }
-  
-#define EXIT				     \
+
+#ifdef USE_DELAY  
+# define EXIT(lbl)			     \
+  { CALL_TRIGGERED(lbl);		     \
+    TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY); \
+    R = C0->R;				     \
+    E = C0->E;				     \
+    C0 = C0->C0;			     \
+    goto *R; }
+#else
+# define EXIT(lbl)			     \
   { TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY); \
     R = C0->R;				     \
     E = C0->E;				     \
     C0 = C0->C0;			     \
     goto *R; }
+#endif
 
 #define DETERMINATE_EXIT		     \
   { TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY); \
@@ -3235,8 +3245,9 @@ static void push_argument_list(X lst)
 
 #define SET_REDO(lbl)   C0->P = (lbl)
 
-#define CUT								\
-  { C = C0 + 1;								\
+#define CUT(lbl)							\
+  { CALL_TRIGGERED(lbl);						\
+    C = C0 + 1;								\
     arg_top = C0->arg_top;						\
     env_top = E + CURRENT_ENVIRONMENT_SIZE;				\
     SET_REDO(NULL); }
@@ -3309,7 +3320,7 @@ static void push_argument_list(X lst)
     C->P = &&fail_exit;					\
     C++; }						\
   int lj = setjmp(exception_handler);			\
-  if(lj == 1) {			\
+  if(lj == 1) {						\
     unwind_trail(catch_top->T);				\
     C0 = catch_top->C0;					\
     C = C0 + 1;						\
@@ -3326,6 +3337,7 @@ fail_exit:								\
  fprintf(stderr, "no.\n");						\
  TERMINATE(C, EXIT_FAILURE);						\
 success_exit:								\
+ CALL_TRIGGERED(exit_r);						\
  ASSERT(ifthen_stack == ifthen_top, "unbalanced if-then stack");	\
  ASSERT(catch_stack == catch_top, "unbalanced catcher stack");		\
  TERMINATE(C, EXIT_SUCCESS);					       \
