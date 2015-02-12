@@ -219,8 +219,8 @@
 				  is already a non-variable term, GOAL is executed
 				  immediately. The goals triggered by bound variables 
 				  may not execute immediately until the next 
-				  predicate-entry, (determinate) predicate exit, cut, 
-				  or after a head-unification.
+				  predicate-entry, (non-determinate) predicate exit, 
+				  cut, or after a head-unification.
 
     freeze(-VAR, +GOAL)		  Delay execution of GOAL until VAR is bound to
     		 		  a non-variable term. This predicate uses delay/2
