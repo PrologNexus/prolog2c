@@ -117,8 +117,8 @@
 	(not-ok 0))
     (for-each
      (lambda (fname)
-       (let ((hasb (file-exists? (replace-suffix "bind" fname)))
-	     (bok (if hasb (make-binding hasb) #t)))
+       (let* ((hasb (file-exists? (replace-suffix "bind" fname)))
+	      (bok (if hasb (make-binding hasb) #t)))
 	 (if (and bok (zero? (run* (,(string-append "CHECK_PC=" check-pc)
 				    ./check ,@check-options ,fname))))
 	     (inc! ok)
