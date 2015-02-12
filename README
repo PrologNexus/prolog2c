@@ -34,11 +34,9 @@
 
   The dialect of Prolog implemented should be sufficient for usual
   Prolog programming. Basic ISO and Edinburgh system predicates and
-  control structures are available, but no support for constraint
-  programming or coroutining. Neither does it offer modules, separate
-  compilation, dynamic loading of compiled code, and it doesn't
-  support multithreading. It's just a basic, yet usable Prolog system,
-  something that isn't easy to find, nowadays.
+  control structures are available. Modules, separate compilation or
+  dynamic loading of compiled code are not provided, and
+  multithreading is not supported.
 
   ?-Prolog has currently only been tested on Linux (x86, x86-64 and
   ARM), Mac OS X and Windows 7 (with the mingw32 and mingw64
@@ -215,6 +213,23 @@
 				  BALL, invokes GOAL2 and continues [ISO]
 
     throw(BALL)			  Throws exception BALL [ISO]
+
+    delay(-VAR, +GOAL)		  Delay execution of GOAL until VAR is bound
+    				  to a variable or a non-variable term. If VAR 
+				  is already a non-variable term, GOAL is executed
+				  immediately. The goals triggered by bound variables 
+				  may not execute immediately until the next 
+				  predicate-entry or after a head-unification.
+
+    freeze(-VAR, +GOAL)		  Delay execution of GOAL until VAR is bound to
+    		 		  a non-variable term. This predicate uses delay/2
+				  internally.
+
+    dif(?X, ?Y)			  Fails if X and Y are identical, otherwise
+    	    			  constrains both terms to be different: if any
+				  one contains an unbound variable, then a delayed
+				  goal (using delay/2) is stored that fails if
+				  X and Y should become identical.
 
     The GOALs must be complete, callable terms, merely passing
     variables containing callable terms is not sufficient.
