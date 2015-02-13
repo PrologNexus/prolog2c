@@ -10,6 +10,8 @@ NOTES											              -*- Org -*-
    - on last call in last clause, check whether C == C0 + 1 and do
      tailcall if this is the case.
    - !/0 can set LAST, as further clauses are not relevant anymore.
+   - number of tailcalls with baseline compiler (pc1): 204
+   - number of final calls (pc): 67
 ** Environment trimming
    - sort variables by lifetime (reversed) and trim env_top after last use.
    - may only be applicable when env_top didn't change.
