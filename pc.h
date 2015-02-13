@@ -3213,7 +3213,8 @@ static void push_argument_list(X lst)
 #ifdef USE_DELAY
 # define CALL_TRIGGERED(lbl)   \
   { lbl: if(triggered_frozen_goals != END_OF_LIST_VAL) {	\
-      R = &&lbl; goto triggered; }}
+    R = &&lbl; goto triggered; }				\
+    A = C0->A; }
 #else
 # define CALL_TRIGGERED(lbl)
 #endif
