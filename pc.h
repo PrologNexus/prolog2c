@@ -1185,7 +1185,14 @@ static void unwind_trail(X *tp)
     BLOCK *var = (BLOCK *)(*(--trail_top));
 #ifdef USE_DELAY
     X al = *(--trail_top);
+
+    // invalidate any delayed goals by destructively modifying the ptr/args pair
+    for(X old = slot_ref(var, 3); old != END_OF_LIST_VAL; old = slot_ref(old, 1)) {
+      X a = slot_ref(old, 0);
+      SLOT_SET(a, 0, ZERO);
+    }
 #endif
+
 #ifdef DEBUGGING
     DRIBBLE("[detrail: _" XWORD_OUTPUT_FORMAT "]\n", fixnum_to_word(slot_ref((X)var, 1)));
 #endif
