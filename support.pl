@@ -15,7 +15,7 @@ error(MSG) :-
 
 message(MSG) :-
 	(recorded(silent, yes)
-	; forall(member(X, MSG), display(X)), nl
+	; forall(member(X, MSG), write(X)), nl
 	).
 
 iota(N, L) :- iota(0, N, L).
