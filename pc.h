@@ -3356,8 +3356,10 @@ triggered:							       \
 { A = arg_top;							       \
    X arglst;							       \
    void *gp = next_frozen_goal(&arglst);			       \
-   push_argument_list(arglst);					       \
-   goto *gp; }							       \
+   if(gp) {							       \
+     push_argument_list(arglst);				       \
+     goto *gp; }						       \
+   goto *R; }							       \
 suspend:							       \
  saved_state.A = A;						       \
  saved_state.E = E;						       \
