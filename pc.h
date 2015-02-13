@@ -2317,7 +2317,7 @@ static inline void trigger_frozen_goal(X var)
   ASSERT(frozen != END_OF_LIST_VAL, "no frozen goals in triggered variable");
   X prev;
 
-  // find end of triggered attributes list
+  // find end of triggered goal list
   for(prev = triggered_frozen_goals; prev != END_OF_LIST_VAL; prev = slot_ref(prev, 1)) {
     if(slot_ref(prev, 1) == END_OF_LIST_VAL) break;
   }
@@ -2331,6 +2331,7 @@ static inline void trigger_frozen_goal(X var)
     else
       triggered_frozen_goals = p;
 
+    prev = p;
     frozen = slot_ref(frozen, 1);
   }
 }
