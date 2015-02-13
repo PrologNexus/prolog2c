@@ -3942,9 +3942,14 @@ PRIMITIVE(re_intern, X atom) {
 PRIMITIVE(delay_goal, X var, X ptr, X args) {
   ASSERT(is_variable(var), "put_attr: not a variable");
   ASSERT(!is_FIXNUM(ptr) && is_POINTER(ptr), "put_attr: not a pointer");
-  X p = PAIR(ptr, args);
+
+  // insert into front of list - if multiple delayed goals are triggered
+  // on a variable, the order will naturally reverse because entry into
+  // the delayed goal will invoke the next on the list (and so on)
   push_trail(C0, var);
-  SLOT_SET(var, 3, PAIR(p, slot_ref(var, 3)));
+  X a = PAIR(ptr, args);
+  X al = slot_ref(var, 3);
+  SLOT_SET(var, 3, PAIR(a, al));
   return 1;
 }
 
