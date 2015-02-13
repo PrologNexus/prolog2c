@@ -3076,8 +3076,8 @@ static void push_argument_list(X lst)
 
 #define POP_ARGUMENTS   arg_top = C0->arg_top - CURRENT_ARITY
 
-#define TAIL_CALL(lbl)				 \
-  { TRACE_TAIL_CALL(CURRENT_NAME, CURRENT_ARITY); \
+#define TAIL_CALL(lbl)					 \
+  { TRACE_TAIL_CALL(CURRENT_NAME, CURRENT_ARITY);	 \
     R = C0->R;						 \
     E = C0->E;						 \
     env_top = C0->env_top;				 \
@@ -3085,7 +3085,19 @@ static void push_argument_list(X lst)
     C0 = C0->C0;					 \
     goto lbl; }
 
-#define CHECK_LIMIT				\
+#define FINAL_CALL(lbl, ret)				 \
+  { if(C == C0 + 1) {					 \
+      TRACE_TAIL_CALL(CURRENT_NAME, CURRENT_ARITY);	 \
+    R = C0->R;						 \
+    E = C0->E;						 \
+    env_top = C0->env_top;				 \
+    C = C0;						 \
+    C0 = C0->C0; }					 \
+    else {						 \
+    R = ret;						 \
+    goto lbl; } }
+
+#define CHECK_LIMIT					\
   { if(alloc_top > fromspace_limit)			\
       collect_garbage(C);				\
     ASSERT((char *)arg_top < (char *)argument_stack + argument_stack_size, "argument-stack overflow"); } 
