@@ -13,6 +13,11 @@ error(MSG) :-
 	forall(member(X, MSG), write(X)), nl, nl,
 	halt(1).
 
+message(MSG) :-
+	(recorded(silent, yes)
+	; forall(member(X, MSG), display(X)), nl
+	).
+
 iota(N, L) :- iota(0, N, L).
 iota(N, N, []) :- !.
 iota(N, M, [N|R]) :-
