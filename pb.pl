@@ -128,10 +128,14 @@ type_qualifiers(TYPE, TYPE) --> [].
 %% maintain stored definition info
 
 store_definition(NAME, REALNAME, RESULTTYPE, none) :-
-	display('% '), write(variable(REALNAME, RESULTTYPE)), nl,
+	(recorded(silent, _)
+	; display('% '), write(variable(REALNAME, RESULTTYPE)), nl
+	),
 	recordz(definitions, variable(NAME, REALNAME, RESULTTYPE)).
 store_definition(NAME, REALNAME, RESULTTYPE, ARGTYPES) :-
-	display('% '), write(function(REALNAME, RESULTTYPE, ARGTYPES)), nl,
+	(recorded(silent, _)
+	; display('% '), write(function(REALNAME, RESULTTYPE, ARGTYPES)), nl
+	),
 	recordz(definitions, function(NAME, REALNAME, RESULTTYPE, ARGTYPES)).
 
 add_verbatim_block(LST) :-
@@ -379,6 +383,9 @@ parse_arguments([]).
 parse_arguments(['-h'|_]) :- usage(0).
 parse_arguments(['-help'|_]) :- usage(0).
 parse_arguments(['--help'|_]) :- usage(0).
+parse_arguments(['-q'|MORE]) :-
+	recordz(silent, yes),
+	parse_arguments(MORE).
 parse_arguments(['-o', OUTNAME|MORE]) :-
 	name(OUTNAME, OUTL),
 	recordz(output_filename, OUTL),
@@ -389,7 +396,7 @@ parse_arguments([FILENAME|MORE]) :-
 	parse_arguments(MORE).
 
 usage(CODE) :-
-	display('usage: pb [-h] [-o OUTPUTNAME] [FILENAME]\n'),
+	display('usage: pb [-h] [-q] [-o OUTPUTNAME] [FILENAME]\n'),
 	halt(CODE).
 
 process_input_file(user) :-
