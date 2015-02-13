@@ -6,7 +6,15 @@ NOTES											              -*- Org -*-
 ** Add support for structs
    - struct X* <-> "X(...)"
 * Optimization opportunities
+** TODO Dynamic tail-calls
+   - on last call in last clause, check whether C == C0 + 1 and do
+     tailcall if this is the case.
+   - !/0 can set LAST, as further clauses are not relevant anymore.
+** Environment trimming
+   - sort variables by lifetime (reversed) and trim env_top after last use.
+   - may only be applicable when env_top didn't change.
 ** TODO Avoid allocating intermediate results if they are unified with ground values
+   - when unifying recursively, check result for being identical.
 ** TODO Add "determinate" declarations and green cuts in library code
 ** Use perfect hashing for atom-tables
    - http://www.burtleburtle.net/bob/hash/perfect.html
@@ -36,7 +44,11 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
-** Some sort of condiguration-language (similar to SRFI-7) might be useful
+** Allow access to delay goals
+   - frozen(VAR, PTRARGS) :: return ptr/args pairs,
+        non-deterministically
+   - document '$call_predicate' + '$predicate_address'
+** Some sort of configuration-language (similar to SRFI-7)
    - basically needs sth like "cond-expand".
    - expands into compilable source code.
 ** Unicode
