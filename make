@@ -104,12 +104,13 @@
   (let* ((file (basename (strip-suffix fname)))
 	 (bname (string-append "tmp/" file))
 	 (ok #f))
-    (make/proc (list (list (string-append fname ".pl")
-			   (list "pb" fname)
-			   (lambda () 
-			     (set! ok
-			       (zero? (run* (./pb -o ,fname ,fname))))))))
-    ok))
+    (parameterize ((make-verbose #f))
+      (make/proc (list (list (string-append fname ".pl")
+			     (list "pb" fname)
+			     (lambda () 
+			       (set! ok
+				 (zero? (run* (./pb -q -o ,fname ,fname))))))))
+      ok)))
 
 (define (check)
   (let ((tests (string-split (capture (ls tests/*.pl)) "\n"))
