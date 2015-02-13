@@ -3093,9 +3093,8 @@ static void push_argument_list(X lst)
     env_top = C0->env_top;				 \
     C = C0;						 \
     C0 = C0->C0; }					 \
-    else {						 \
-    R = ret;						 \
-    goto lbl; } }
+    else R = ret;					 \
+    goto lbl; }
 
 #define CHECK_LIMIT					\
   { if(alloc_top > fromspace_limit)			\
