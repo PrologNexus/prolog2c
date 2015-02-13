@@ -173,11 +173,12 @@ NOTES											              -*- Org -*-
 ** TODO Test self-compile
 ** TODO Test freezing/thawing of delayed vars
 ** TODO Test multiple triggered delayed goals
-   - by binding several vars at once.
-   - by storing multiple delayed goals on one variable.
    - what happens if a triggered goal is still pending, even though a
      previous failure of another delayed goal detrailed the variable
      on which the former goal was stored?
+     - current solution invalidates old delayed-goals list.
+     - but what if variable was younger than choice-point and thus not
+       trailed?
 ** TODO Find some non-trivial test for coroutines
    - see Prolog-impl. book
 ** TODO Test once more on WIN64
