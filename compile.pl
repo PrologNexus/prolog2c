@@ -405,7 +405,9 @@ compile_body_expression(TERM, _, _, _, _, _, _, _) :-
 %% compile delayed goal
 
 compile_delayed_goal(INSTALLER, V, G, TAIL, D, B1, B2, S1, S2) :-
-	recordz(uses_delay, yes),
+	(recorded(uses_delay, _)
+	; recordz(uses_delay, yes),
+	 display('% delayed goals are used\n')),
 	gensym('$delayed_', P, S1, S3),
 	gensym('$delay_', P2, S3, S4),
 	goals_and_variables(G/V, VLIST, G2/V2, IARGS),
