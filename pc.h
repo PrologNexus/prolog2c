@@ -2343,9 +2343,11 @@ static void *next_frozen_goal(X *arglist)
   X frozen = triggered_frozen_goals;
   triggered_frozen_goals = slot_ref(frozen, 1);
   X a = slot_ref(frozen, 0);
-  *arglist = slot_ref(a, 1);
   X ptr = slot_ref(a, 0);
-  ASSERT(!is_FIXNUM(ptr) && is_POINTER(ptr), "invalid frozen goal pointer");
+
+  if(ptr == ZERO) return NULL;	/* invalidated by detrailing */
+
+  *arglist = slot_ref(a, 1);
   return (void *)(slot_ref(ptr, 0));
 }
 
