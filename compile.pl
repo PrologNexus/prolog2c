@@ -132,8 +132,8 @@ compile_term_arguments([X|MORE], DL1, DL2, B1, B2, S1, S2) :-
 
 compile_body(BODY, LAST, BOUND, S1, S2) :-
 	(LAST == last -> DET = det; DET = nondet),
-	compile_body_expression(BODY, tail, DET, DET2, BOUND, _, S1, S2),
-	(DET2 = det -> emit(determinate_exit); emit(exit)).
+	compile_body_expression(BODY, tail, LAST/DET, LD2, BOUND, _, S1, S2),
+	(LD2 = _/det -> emit(determinate_exit); emit(exit)).
 
 
 %% compile expression occuring in clause body
@@ -184,8 +184,8 @@ compile_body_expression((X; Y), TAIL, D1, D2, B1, B2, S1, S2) :-
 	both_determinate(D3, D4, D2).
 
 % cut
-compile_body_expression(!, _, _, det, B, B, S, S) :-
-	emit(cut).
+compile_body_expression(!, _, LAST/_, LAST/det, B, B, S, S) :-
+	emit(cut).		%XXX set LAST to last?
 
 % true
 compile_body_expression(true, _, D, D, B, B, S, S).
@@ -370,10 +370,10 @@ compile_body_expression('$predicate_address'(N/A, PTR), _, D, D, B1, B2, S1, S2)
 	gensym('T', T2, S3, S4),
 	compile_term_for_unification(PTR, T2, B1, B2, S4, S2),
 	emit(predicate_address(N, A, T1), unify(T1, T2)).
-compile_body_expression('$call_predicate'(PTR, ARGS), TAIL, D, nondet, B1, B2, S1, S2) :-
+compile_body_expression('$call_predicate'(PTR, ARGS), TAIL, LAST/D, LAST/nondet, B1, B2, S1, S2) :-
 	gen_label(L, S1, S3),
 	compile_term_arguments([PTR, ARGS], [], [R1, R2], B1, B2, S3, S2),
-	(TAIL/D = tail/det -> emit(tail_call_address(R1, R2)); emit(call_address(R1, R2, L))).
+	compile_pointer_call(TAIL, LAST, D, R1, R2, L).
 
 % type-, order- or ordinary predicate call
 compile_body_expression(TERM, TAIL, D1, D2, B1, B2, S1, S2) :-
@@ -391,12 +391,20 @@ compile_body_expression(TERM, _, _, _, _, _, _, _) :-
 
 %% compile calls (ordinary or type-/order-predicate)
 
-compile_ordinary_call(NAME, TAIL, DLIST, D1, D2, S1, S2) :-
+compile_ordinary_call(NAME, TAIL, DLIST, LAST/D1, D2, S1, S2) :-
 	length(DLIST, ARITY),
 	register_unresolved_call(NAME/ARITY),
-	(determinate_builtin(NAME, ARITY) -> D2 = D1; D2 = nondet),
+	(determinate_builtin(NAME, ARITY) -> D2 = LAST/D1; D2 = LAST/nondet),
 	gen_label(L, S1, S2),
-	(TAIL/D1 = tail/det -> emit(tail_call(NAME, DLIST)); emit(call(NAME, DLIST, L))).
+	compile_call(TAIL, LAST, D1, NAME, DLIST, L).
+
+compile_call(tail, _, det, NAME, DLIST, _) :- emit(tail_call(NAME, DLIST)).
+compile_call(tail, last, _, NAME, DLIST, L) :- emit(final_call(NAME, DLIST, L)).
+compile_call(_, _, _, NAME, DLIST, L) :- emit(call(NAME, DLIST, L)).
+
+compile_pointer_call(tail, _, det, R1, R2, _) :- emit(tail_call_address(R1, R2)).
+compile_pointer_call(tail, last, _, R1, R2, L) :- emit(final_call_address(R1, R2, L)).
+compile_pointer_call(_, _, _, R1, R2, L) :- emit(call_address(R1, R2, L)).
 
 compile_type_predicate(NAME, [VAL]) :-
 	type_predicate(NAME),
@@ -510,8 +518,8 @@ emit(T1, T2, T3, T4, T5) :- emit(T1, T2, T3, T4), emit(T5).
 
 %% check if both determinate-flags are set
 
-both_determinate(det, det, det).
-both_determinate(_, _, nondet).
+both_determinate(LAST/det, _/det, LAST/det).
+both_determinate(LAST/_, _, LAST/nondet).
 
 
 %% register literal data

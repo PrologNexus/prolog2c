@@ -113,20 +113,33 @@ assemble(numerically_less_or_equal(R1, R2), S, S) :- gen('if(is_num_gt(', R1, ',
 
 assemble(call(NAME, RLIST, LABEL), S, S) :-
 	length(RLIST, ARITY),
-	(ARITY > 0 -> gen('A=arg_top;\n'); true),
+	(ARITY == 0; gen('A=arg_top;\n')),
 	assemble_arguments(RLIST, 0),
 	mangle_name(NAME, MNAME),
 	gen('CALL(', MNAME, '$', ARITY, ',&&'),
+	gen(LABEL, ');}\n', LABEL, ':{\n').
+assemble(final_call(NAME, RLIST, LABEL), S, S) :-
+	length(RLIST, ARITY),
+	gen('if(C==C0+1) POP_ARGUMENTS;\n'),
+	(ARITY == 0; gen('A=arg_top;\n')),
+	assemble_arguments(RLIST, 0),
+	mangle_name(NAME, MNAME),
+	gen('FINAL_CALL(', MNAME, '$', ARITY, ',&&'),
 	gen(LABEL, ');}\n', LABEL, ':{\n').
 assemble(call_address(RADR, RARGS, LABEL), S, S) :-
 	gen('A=arg_top;\npush_argument_list(', RARGS, ');\n'),
 	gen('CALL(*((void*)slot_ref(deref(', RADR, '),0)),&&', LABEL, ');\n'),
 	gen(LABEL, ':\n').
+assemble(final_call_address(RADR, RARGS, LABEL), S, S) :-
+	gen('if(C==C0+1) POP_ARGUMENTS;\n'),
+	gen('A=arg_top;\npush_argument_list(', RARGS, ');\n'),
+	gen('FINAL_CALL(*((void*)slot_ref(deref(', RADR, '),0)),&&', LABEL, ');\n'),
+	gen(LABEL, ':\n').
 
 assemble(tail_call(NAME, RLIST), S, S) :-
 	length(RLIST, ARITY),
 	gen('POP_ARGUMENTS;\n'),
-	(ARITY > 0 -> gen('A=arg_top;\n'); true),
+	(ARITY == 0; gen('A=arg_top;\n')),
 	assemble_arguments(RLIST, 0),
 	mangle_name(NAME, MNAME),
 	gen('TAIL_CALL(', MNAME, '$', ARITY, ');\n').
