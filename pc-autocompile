@@ -11,6 +11,12 @@ case "$1" in
 	exit;;
 esac
 
+tmpdir=$TMPDIR;
+
+if test -z "$tmpdir"; then
+    tmpdir=/tmp
+fi
+
 filename=$1
 shift
 cachedir="$PC_AUTOCOMPILE_CACHE"
@@ -35,6 +41,7 @@ if test -x "${cachedir}/${hash}"; then
 fi
 
 filename2=`basename "$filename"`
-pc -q "$filename" -o "/tmp/${filename2}.c"
-gcc -std=gnu99 -O2 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -DTRACE -I. "/tmp/${filename2}.c" -o "${cachedir}/${hash}" -lm
+pc -q "$filename" -o "/${tmpdir}/${filename2}.c"
+gcc -std=gnu99 -O2 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -DTRACE -NDEBUG \
+    -I. "/tmp/${filename2}.c" -o "${cachedir}/${hash}" -lm
 exec "${cachedir}/${hash}" "$@"
