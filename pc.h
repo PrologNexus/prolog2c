@@ -1841,7 +1841,11 @@ static void collect_garbage(CHOICE_POINT *C)
 
   // first collect "gaps" of unref'd variables in trail-stack
   for(X *tp = trail_stack; tp < trail_top; tp += slots) {
+#ifdef USE_DELAY
     X var = tp[ 1 ];
+#else
+    X var = *tp;
+#endif
     int offset = gp - trail_stack_gap_buffer;
 
     if(offset >= trail_stack_gap_buffer_size) {
