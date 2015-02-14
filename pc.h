@@ -2555,6 +2555,8 @@ static inline X num_pow(X x, X y)
 
 static inline X num_float(X x)
 {
+  x = deref(x);
+
   if(is_FIXNUM(x)) return FLONUM(fixnum_to_word(x));
 
   check_type_FLONUM(x);
