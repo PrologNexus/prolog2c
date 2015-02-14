@@ -184,8 +184,8 @@ compile_body_expression((X; Y), TAIL, D1, D2, B1, B2, S1, S2) :-
 	both_determinate(D3, D4, D2).
 
 % cut
-compile_body_expression(!, _, LAST/_, LAST/det, B, B, S, S) :-
-	emit(cut).		%XXX set LAST to last?
+compile_body_expression(!, _, _, last/det, B, B, S, S) :-
+	emit(cut).
 
 % true
 compile_body_expression(true, _, D, D, B, B, S, S).
