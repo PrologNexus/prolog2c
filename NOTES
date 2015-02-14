@@ -46,6 +46,10 @@ NOTES											              -*- Org -*-
    - "-version" option.
    - file:version.pl, included everywhere.
    - prolog_version(V) :: unify V with version number.
+** DONE Coroutines
+   - needs more tests (see below)
+   - benchmark once more.
+   - don't forget to disable USE_DELAY in file:pc.h
 ** Allow access to delay goals
    - frozen(VAR, PTRARGS) :: return ptr/args pairs,
         non-deterministically
@@ -170,15 +174,8 @@ NOTES											              -*- Org -*-
 ** Detect singleton variables
 ** Report unused predicates
 * Tests
-** TODO Test self-compile
-** TODO Test freezing/thawing of delayed vars
-** TODO Test multiple triggered delayed goals
-   - what happens if a triggered goal is still pending, even though a
-     previous failure of another delayed goal detrailed the variable
-     on which the former goal was stored?
-     - current solution invalidates old delayed-goals list.
-     - but what if variable was younger than choice-point and thus not
-       trailed?
+** TODO [#A] Run all tests with USE_DELAY
+** TODO [#B] Test freezing/thawing of delayed vars
 ** TODO Find some non-trivial test for coroutines
    - see Prolog-impl. book
 ** TODO Test once more on WIN64
