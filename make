@@ -211,7 +211,10 @@
 (define (pi.c)
   (system-predicates)
   (make/proc (list (list "pi.c" 
-			 (list "lib/interp.pl" "pi_system_predicate.pl" "pi_call_primitive.pl" 
+			 (list "pi.pl"
+			       "lib/interp.pl"
+			       "pi_system_predicate.pl"
+			       "pi_call_primitive.pl" 
 			       "pi_evaluate_op.pl" "dcg.pl")
 			 (lambda ()
 			   (run (./pc "-I" "." pi.pl -o pi.c)))))))
