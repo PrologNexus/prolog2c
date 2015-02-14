@@ -144,7 +144,7 @@
   (fluid-let ((check-options '("-m32")))
     (check)))
 
-(define (check-pc32)
+(define (check-pc32)			; implies check-m32
   (pc32)
   (fluid-let ((check-pc "./pc32")
 	      (check-options '("-m32")))
