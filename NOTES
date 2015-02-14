@@ -161,8 +161,6 @@ NOTES											              -*- Org -*-
 ** Detect singleton variables
 ** Report unused predicates
 * Tests
-** TODO [#A] Run all tests with USE_DELAY
-** TODO [#B] Test freezing/thawing of delayed vars
 ** TODO Find some non-trivial test for coroutines
    - see Prolog-impl. book
 ** TODO Test once more on WIN64
@@ -170,6 +168,7 @@ NOTES											              -*- Org -*-
    - we know it works for the rdb, but should also test for cdb.
 * Issues
 ** Major
+*** TODO 0028-endless-tailcall crashes in pi
 *** TODO [#B] Implementation of if-then-else seems to be broken
    - if-then stack gets out of balance, found here:
      call_primitive('->', 2, TERM) :-
