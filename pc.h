@@ -1329,10 +1329,11 @@ static X freeze_term_recursive(X x)
     newvar->d[ 0 ] = (X)newvar;
     newvar->d[ 1 ] = word_to_fixnum(variable_counter++);
     newvar->d[ 2 ] = word_to_fixnum(0); /* timestamp */
+    tp[ 1 ] = (X)newvar;
 #ifdef USE_DELAY
     newvar->d[ 3 ] = freeze_term_recursive(slot_ref(x, 3));
 #endif
-    return tp[ 1 ] = (X)newvar;
+    return tp[ 1 ];
   }
 
   ASSERT(!is_DBREFERENCE(x), "db-references can not be frozen");
