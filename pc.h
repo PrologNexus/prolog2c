@@ -4,7 +4,6 @@
 #ifndef PC_H
 #define PC_H
 
-#define USE_DELAY
 
 // as if superficial warnings would make C any safer...
 #if defined(_FORTIFY_SOURCE)
