@@ -6,6 +6,8 @@ NOTES											              -*- Org -*-
 ** Add support for structs
    - struct X* <-> "X(...)"
 * Optimization opportunities
+** TODO Dispatch also on structure terms
+   - modify hash by arity, store name + arity + label in table.
 ** Environment trimming
    - sort variables by lifetime (reversed) and trim env_top after last use.
    - may only be applicable when env_top didn't change.
@@ -40,6 +42,10 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
+** TODO Version pc, pi, pb
+   - "-version" option.
+   - file:version.pl, included everywhere.
+   - prolog_version(V) :: unify V with version number.
 ** Allow access to delay goals
    - frozen(VAR, PTRARGS) :: return ptr/args pairs,
         non-deterministically
@@ -67,6 +73,8 @@ NOTES											              -*- Org -*-
    - predicate_address(PRED, PTR) :: unify PTR with label address
    - call_predicate(PTR, ARGS) :: call predicate at address, also
         provide in interp.pl
+* Documentation
+** TODO Add version number and history.
 * Build options
 ** Allow static allocation of data-areas
    - statically allocated data for all areas.
@@ -185,9 +193,14 @@ NOTES											              -*- Org -*-
 *** name/2 and functor/3 (and others?) may exceed heap-reserve for large inputs
 *** TODO 0085-boyer crashes in pi sometimes
 ** Minor
+*** Undefined clauses in interp fail instead of throwing error
+    - error would be better, but combined clause-retrieval and
+      unification with goal means that we would have to check after
+      failure whether the predicate is defined at all.
 *** Failure in term_expansion/2 will simply be ignored
 *** The output of TRACE_TAILCALL() is somewhat confusing
-   - can we get rid of this?
+    - Not sure if arguments output reflects the correct state.
+    - can we get rid of this?
 *** Reduce memory use in pc
     - seems to build up a lot of choice points.
 *** Erasing a db-entry that is already marked is currently ignored
@@ -211,9 +224,6 @@ NOTES											              -*- Org -*-
     - at least as much as possible and sensible.
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Interpreter
-** Add support for "[...]"
-   - try to avoid implementing goal_expansion, perhaps just check
-     entered term.
 ** Add "ensure_loaded" directive
 ** Add "listing"
    - listing/1
