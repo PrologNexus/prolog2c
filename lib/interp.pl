@@ -273,6 +273,7 @@ expand_term(TERM1, TERM2) :-
 	call(term_expansion(TERM1, TERM2)), !.
 expand_term(TERM, TERM).
 
+
 %%
 
 consult(FILE) :-

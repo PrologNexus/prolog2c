@@ -66,5 +66,5 @@ parse_arguments([FILENAME|MORE]) :-
 	parse_arguments(MORE).
 
 usage(CODE) :-
-	display('usage: pi [-h] [-t] FILENAME ...\n'),
+	display('usage: pi [-h] [-t] [-i NAME] FILENAME ...\n'),
 	halt(CODE).
