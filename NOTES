@@ -47,16 +47,13 @@ NOTES											              -*- Org -*-
    - file:version.pl, included everywhere.
    - prolog_version(V) :: unify V with version number.
 ** DONE Coroutines
-   - needs more tests (see below)
+   - needs more tests (see below, under "Tests")
    - benchmark once more.
    - don't forget to disable USE_DELAY in file:pc.h
 ** Allow access to delay goals
    - frozen(VAR, PTRARGS) :: return ptr/args pairs,
         non-deterministically
    - document '$call_predicate' + '$predicate_address'
-** Some sort of configuration-language (similar to SRFI-7)
-   - basically needs sth like "cond-expand".
-   - expands into compilable source code.
 ** Unicode
    - arbitrary character codes in strings (UTF-8?)
    - atom-length (string_length())
@@ -65,19 +62,9 @@ NOTES											              -*- Org -*-
 ** once/1
 ** Allow "library(ATOM)" as file-spec
    - consult/1, include/1
-** Coroutines
-   - see /coroutines/ branch.
-   - test dif/2
-   - test, benchmark.
-** Allow user-defined macros
-   - directive: ":- macro OLD -> NEW" or something like this.
 ** Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
-** Add low-level predicates
-   - predicate_address(PRED, PTR) :: unify PTR with label address
-   - call_predicate(PTR, ARGS) :: call predicate at address, also
-        provide in interp.pl
 * Documentation
 ** TODO Add version number and history.
 * Build options
@@ -200,8 +187,8 @@ NOTES											              -*- Org -*-
 *** If heap is insufficient deref_term/3 will loop endlessly
    - also read_atom/2, recorded/X, retract/1 and clause/X
 *** name/2 and functor/3 (and others?) may exceed heap-reserve for large inputs
-*** TODO 0085-boyer crashes in pi sometimes
 ** Minor
+*** file:0085-boyer.pl takes longer than timeout when run with file:check
 *** Undefined clauses in interp fail instead of throwing error
     - error would be better, but combined clause-retrieval and
       unification with goal means that we would have to check after
