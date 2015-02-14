@@ -173,3 +173,28 @@ benchmarks/0010-int-index.pl
 0.683333333333333
 benchmarks/0011-atom-index.pl
 1.79
+----------------------------------------
+Sat Feb 14 01:31:52 CET 2015
+e567b49 (final calls)
+benchmarks/0001-ecrc-call.pl
+0.7
+benchmarks/0002-ecrc-cp+backtrack.pl
+1.73333333333333
+benchmarks/0003-ecrc-index.pl
+3.39333333333333
+benchmarks/0004-ecrc-deref.pl
+0.183333333333333
+benchmarks/0005-ecrc-cut.pl
+4.78
+benchmarks/0006-self-compile.pl
+4.89
+benchmarks/0007-pi.pl
+0.0233333333333333
+benchmarks/0008-ecrc-envs.pl
+3.39333333333333
+benchmarks/0009-ecrc-unify.pl
+0.04
+benchmarks/0010-int-index.pl
+0.686666666666667
+benchmarks/0011-atom-index.pl
+1.79333333333333
