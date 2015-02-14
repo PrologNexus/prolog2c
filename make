@@ -249,7 +249,8 @@
 	 (run (cat ,out >> benchmarks.txt)))))))
 
 (define (clean)
-  (run (rm -f pi_system_predicate.pl pi_call_primitive.pl pi_evaluate_op.pl pi pc1 pc2.c pc1.c pc1o)))
+  (run (rm -f pi_system_predicate.pl pi_call_primitive.pl pi_evaluate_op.pl pi pc1 pc2.c pc1.c pc1o
+	   g-s-p.c)))
 
 (define (dist)
   (pc2.c)
