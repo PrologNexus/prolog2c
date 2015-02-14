@@ -7,10 +7,10 @@
 main :-
 	global_set(pi_trace_depth, none),
 	command_line_arguments(ARGS),
+	'$predicate_address'(dcg_rule/2, ADR),
+	asserta((term_expansion((X --> Y), Z) :- '$call_predicate'(ADR, [(X --> Y), Z]))),
 	parse_arguments(ARGS),
 	!,
-	'$predicate_address'(dcg_rule/2, ADR),
-	assertz((term_expansion((X --> Y), Z) :- '$call_predicate'(ADR, [(X --> Y), Z]))),
 	((recorded(initialization_goal, G); recorded(default_initialization_goal, G))
 	 -> call(G)
 	 ; repl).
