@@ -20,6 +20,7 @@ repl :-
 	seeing(IN), telling(OUT),
 	read(TERM, VARS), 
 	(TERM == end_of_file, halt
+	; TERM = [_|_], consult_files(TERM)
 	; catch(run_goal(TERM, VARS), EXN, (report_exception(EXN), see(IN), tell(OUT)))
 	),
 	!,			% force tailcall
@@ -27,6 +28,9 @@ repl :-
 repl :-
 	display('\nno.\n'),
 	repl.
+
+consult_files([]).
+consult_files([F|R]) :- consult(F), consult_files(R).
 
 run_goal(G, VARS) :-
 	call(G),
