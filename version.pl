@@ -1,10 +1,11 @@
 %%%% version number and copyright
 
 
-prolog_version(1).
-prolog_copyright('?-Prolog (c)MMXV Felix L. Winkelmann').
+prolog_version(2).
+prolog_title('?-Prolog').
+prolog_copyright('(c)MMXV Felix L. Winkelmann').
 
 show_version_and_exit :-
-	prolog_copyright(C), prolog_version(V),
-	display(C), display(', version '), display(V), nl,
-	halt.
+	prolog_title(T), prolog_copyright(C), prolog_version(V),
+	display(T), display(' version '), display(V), display(' - '),
+	display(C), nl, halt.
