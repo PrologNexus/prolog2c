@@ -46,10 +46,6 @@ NOTES											              -*- Org -*-
    - "-version" option.
    - file:version.pl, included everywhere.
    - prolog_version(V) :: unify V with version number.
-** DONE Coroutines
-   - needs more tests (see below, under "Tests")
-   - benchmark once more.
-   - don't forget to disable USE_DELAY in file:pc.h
 ** Allow access to delay goals
    - frozen(VAR, PTRARGS) :: return ptr/args pairs,
         non-deterministically
@@ -66,7 +62,7 @@ NOTES											              -*- Org -*-
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
 * Documentation
-** TODO Add version number and history.
+** TODO Replace README on web-page with html and update link
 * Build options
 ** Allow static allocation of data-areas
    - statically allocated data for all areas.
