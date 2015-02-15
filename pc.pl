@@ -1,6 +1,7 @@
 %%% Wrapper for compiling compiler with itself
 
 
+:- include('version.pl').
 :- include('settings.pl').
 :- include('support.pl').
 :- include('state.pl').

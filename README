@@ -98,6 +98,7 @@ Usage
 
   The compiler understands the following command-line options:
 
+    -version                show version and exit.
     -h                      show some usage information.
     -v                      show clauses as they are compiled.
     -i                      show intermediate code produced instead 
@@ -118,10 +119,8 @@ Usage
 
   - Platform-specific issues
 
-    Linux:
-
-      On Linux the "librt" library must be linked by adding "-lrt" to
-      the C compiler invocation given above.
+    On Linux the "librt" library must be linked by adding "-lrt" to
+    the C compiler invocation given above.
 
   It is advisable to add some optimization options to improve the
   performance of the compiled executables, recommended are typically

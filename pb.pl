@@ -13,6 +13,9 @@
 % BASETYPE = ["unsigned"] ("int" | "char" | "short" | "long" | "float" | "double" | "void") 
 
 
+:- include('version.pl').
+
+
 %% parsing of definitions
 
 parse_definition(none, _, _, _) -->
@@ -383,6 +386,7 @@ parse_arguments([]).
 parse_arguments(['-h'|_]) :- usage(0).
 parse_arguments(['-help'|_]) :- usage(0).
 parse_arguments(['--help'|_]) :- usage(0).
+parse_arguments(['-version'|_]) :- show_version_and_exit.
 parse_arguments(['-q'|MORE]) :-
 	recordz(silent, yes),
 	parse_arguments(MORE).
@@ -396,7 +400,7 @@ parse_arguments([FILENAME|MORE]) :-
 	parse_arguments(MORE).
 
 usage(CODE) :-
-	display('usage: pb [-h] [-q] [-o OUTPUTNAME] [FILENAME]\n'),
+	display('usage: pb [-version] [-h] [-q] [-o OUTPUTNAME] [FILENAME]\n'),
 	halt(CODE).
 
 process_input_file(user) :-

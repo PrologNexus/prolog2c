@@ -1,6 +1,7 @@
 %%%% interpreter toplevel
 
 
+:- include('version.pl').
 :- include('lib/interp.pl').
 :- include('dcg.pl').
 
@@ -57,6 +58,7 @@ parse_arguments([]).
 parse_arguments(['-h'|_]) :- usage(0).
 parse_arguments(['-help'|_]) :- usage(0).
 parse_arguments(['--help'|_]) :- usage(0).
+parse_arguments(['-version'|_]) :- show_version_and_exit.
 parse_arguments(['-t'|MORE]) :-
 	global_set(pi_trace_depth, 0),
 	parse_arguments(MORE).
@@ -70,5 +72,5 @@ parse_arguments([FILENAME|MORE]) :-
 	parse_arguments(MORE).
 
 usage(CODE) :-
-	display('usage: pi [-h] [-t] [-i NAME] FILENAME ...\n'),
+	display('usage: pi [-version] [-h] [-t] [-i NAME] FILENAME ...\n'),
 	halt(CODE).

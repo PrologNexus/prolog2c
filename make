@@ -18,6 +18,7 @@
     "compile.pl"
     "assemble.pl"
     "main.pl"
+    "version.pl"
     "lib/lists.pl"
     "lib/misc.pl"
     "lib/write.pl"
@@ -212,6 +213,7 @@
   (system-predicates)
   (make/proc (list (list "pi.c" 
 			 (list "pi.pl"
+			       "version.pl"
 			       "lib/interp.pl"
 			       "pi_system_predicate.pl"
 			       "pi_call_primitive.pl" 
@@ -231,7 +233,7 @@
 
 (define (pb)
   (fluid-let ((gcc-compile-options (append gcc-compile-options pc-compile-options)))
-    (make-program "pb.pl" "pb")))
+    (make-program "pb.pl" "pb" "version.pl")))
 
 (define (bench)
   (let ((tests (string-split (capture (ls benchmarks/*.pl)) "\n")))
@@ -271,7 +273,9 @@
     (run (rm -fr ,ddir))))
 
 (define (upload)
-  (run (upload -d prolog pc.tar.gz README)))
+  (make (("README.html" ("README")
+	  (run (markdown README >README.html)))))
+  (run (upload -d prolog pc.tar.gz README.html)))
 
 (define (install)
   (pc1o)

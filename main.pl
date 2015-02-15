@@ -55,6 +55,7 @@ parse_arguments(['-I', DIR|MORE]) :-
 parse_arguments(['-h'|_]) :- usage(0).
 parse_arguments(['-help'|_]) :- usage(0).
 parse_arguments(['--help'|_]) :- usage(0).
+parse_arguments(['-version'|_]) :- show_version_and_exit.
 parse_arguments([INFILE|MORE]) :-
 	name(INFILE, IFL),
 	IFL \= [45|_],		% 0'-
@@ -67,5 +68,5 @@ parse_arguments([INFILE|MORE]) :-
 parse_arguments(_) :- usage(1).
 
 usage(STATUS) :-
-	gen('usage: pc [-h] [-v] [-o FILENAME] [-i] [-I DIRECTORY] [FILENAME]\n'),
+	gen('usage: pc [-version] [-h] [-v] [-o FILENAME] [-i] [-I DIRECTORY] [FILENAME]\n'),
 	halt(STATUS).

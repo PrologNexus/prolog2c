@@ -2,6 +2,7 @@
 
 
 :- include('swi.pl').
+:- include('version.pl').
 :- include('settings.pl').
 :- include('lib/rdtok.pl').
 :- include('lib/read.pl').
