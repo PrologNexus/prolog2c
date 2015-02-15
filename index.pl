@@ -18,7 +18,7 @@ get_argument_type([_|_], pair).
 get_argument_type(X, integer(X)) :- integer(X), !.
 get_argument_type(X, float) :- number(X), !.
 get_argument_type(X, atom(X)) :- atom(X), !.
-get_argument_type(X, structure) :- compound(X), !.
+get_argument_type(X, structure(N/A)) :- compound(X), !, functor(X, N, A).
 
 
 %% compile indexing instructions
@@ -57,7 +57,7 @@ compile_dispatch(DMAP, N, A, S1, S2) :-
 	secondary_clause_label(N, A, I2, L2),
 	%% test for fixnum first, otherwise run first clause if arg is var
 	gen_label(L1, S1, S3),	% no integer case matches
-	gen_label(L3, S3, S4),	% no integer case matches
+	gen_label(L3, S3, S4),
 	emit(switch_on_integer(L1), switch_on_var(L2), jump(L3), label(L1)),
 	findall(NUM/LABEL, (member(I/integer(NUM), ICASES),
 			    secondary_clause_label(N, A, I, LABEL)),
@@ -117,7 +117,7 @@ compile_dispatch_sequence([I1/atom(ATM1)|DMAP], N, A, XS, S1, S2) :-
 		TABLE),
 	gen_label(LX, S1, S3),
 	length(TABLE, LEN),
-	default_setting(atom_table_size_factor, F),
+	default_setting(dispatch_table_size_factor, F),
 	TLEN is F * (LEN + 1),
 	findall(KEY-(ATOM/LABEL),
 		(member(ATOM/LABEL, [ATM1/L1|TABLE]),
@@ -125,11 +125,14 @@ compile_dispatch_sequence([I1/atom(ATM1)|DMAP], N, A, XS, S1, S2) :-
 		 KEY is HASH rem TLEN),
 		ENTRIES),
 	keysort(ENTRIES, ENTRIES2),
-	adjust_atom_dispatch_table(ENTRIES2, TLEN, ENTRIES3, DUPS),
-	message(['% collisions in dispatch-table for ', N/A, ': ', DUPS/TLEN]),
+	adjust_dispatch_table(ENTRIES2, TLEN, ENTRIES3, DUPS),
+	message(['% collisions in atom-dispatch table for ', N/A, ': ', DUPS/TLEN]),
 	emit(switch_and_dispatch_on_atom(ENTRIES3, TLEN, LX)),
 	subtract(DMAP, ACASES, DMAP2),
 	compile_dispatch_sequence(DMAP2, N, A, XS, S3, S2).
+compile_dispatch_sequence([I1/structure(NA1)|DMAP], N, A, XS, S1, S2) :-
+	findall(X, (member(X, DMAP), X = _/structure(_)), SCASES),
+	compile_structure_dispatch_sequence(I1, NA1, DMAP, SCASES, N, A, XS, S1, S2).
 compile_dispatch_sequence([I/T|DMAP], N, A, XS, S1, S2) :-
 	dispatch_instruction(T, INSTNAME),
 	secondary_clause_label(N, A, I, L),
@@ -137,18 +140,50 @@ compile_dispatch_sequence([I/T|DMAP], N, A, XS, S1, S2) :-
 	emit(INST),
  	compile_dispatch_sequence(DMAP, N, A, XS, S1, S2).
 
+compile_structure_dispatch_sequence(I1, NA1, DMAP, SCASES, N, A, XS, S1, S2) :-
+	length(SCASES, TL),
+	default_setting(structure_table_index_threshold, T),
+	TL >= T - 1,		% including first element
+	secondary_clause_label(N, A, I1, L1),
+	findall(NA/LABEL, (member(I/structure(NA), SCASES),
+			   secondary_clause_label(N, A, I, LABEL)),
+		TABLE),
+	gen_label(LX, S1, S3),
+	length(TABLE, LEN),
+	default_setting(dispatch_table_size_factor, F),
+	TLEN is F * (LEN + 1),
+	findall(KEY-(NA/LABEL),
+		(member(NA/LABEL, [NA1/L1|TABLE]),
+		 NA = NAME/ARITY,
+		 atom_hash(NAME, HASH1), HASH is HASH1 + ARITY, 
+		 KEY is HASH rem TLEN),
+		ENTRIES),
+	keysort(ENTRIES, ENTRIES2),
+	adjust_dispatch_table(ENTRIES2, TLEN, ENTRIES3, DUPS),
+	message(['% collisions in structure-dispatch table for ', N/A, ': ', DUPS/TLEN]),
+	emit(switch_and_dispatch_on_structure(ENTRIES3, TLEN, LX)),
+	subtract(DMAP, SCASES, DMAP2),
+	compile_dispatch_sequence(DMAP2, N, A, XS, S3, S2).
+compile_structure_dispatch_sequence(I1, _, DMAP, SCASES, N, A, XS, S1, S2) :-
+	% theshold not reached, eliminate remaining structure cases
+	subtract(DMAP, SCASES, DMAP2),
+	secondary_clause_label(N, A, I1, L),
+	emit(switch_on_structure(L)),
+ 	compile_dispatch_sequence(DMAP2, N, A, XS, S1, S2).
+	
+
 %% integer already handled
 dispatch_instruction(var, switch_on_var).
 dispatch_instruction(null, switch_on_null).
 dispatch_instruction(pair, switch_on_pair).
 dispatch_instruction(float, switch_on_float).
 dispatch_instruction(atom(_), switch_on_atom).
-dispatch_instruction(structure, switch_on_structure).
+dispatch_instruction(structure(_), switch_on_structure).
 
 
 %% adjust atom dispatch-table by moving colliding entries
 
-adjust_atom_dispatch_table(E1, LEN, E, COUNT) :-
+adjust_dispatch_table(E1, LEN, E, COUNT) :-
 	duplicate_dispatch_table_entries(E1, ED, E2),
 	insert_dispatch_table_entries(ED, LEN, E2, E3),
 	length(ED, COUNT),

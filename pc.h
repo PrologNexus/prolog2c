@@ -246,6 +246,13 @@ typedef struct SYMBOL_DISPATCH
   void *label;
 } SYMBOL_DISPATCH;
 
+typedef struct STRUCTURE_DISPATCH
+{
+  X name;
+  int arity;
+  void *label;
+} STRUCTURE_DISPATCH;
+
 
 /// tags and type-codes
 
@@ -908,6 +915,8 @@ static void intern_static_symbols(X sym1)
 }
 
 
+/// Hash-table lookup used for clause-indexing
+
 static void *lookup_symbol_in_table(X sym, SYMBOL_DISPATCH *table, void *deflabel, int len)
 {
   XWORD key = fixnum_to_word(slot_ref(sym, 2)) % len;
@@ -916,6 +925,25 @@ static void *lookup_symbol_in_table(X sym, SYMBOL_DISPATCH *table, void *deflabe
     X tsym = table[ key ].symbol;
 
     if(tsym == sym) return table[ key ].label;
+    
+    if(tsym == NULL) return deflabel;
+
+    key = (key + 1) % len;
+  }
+}
+
+
+static void *lookup_structure_in_table(X s, STRUCTURE_DISPATCH *table, void *deflabel, int len)
+{
+  X sym = slot_ref(s, 0);
+  int arity = objsize(s) - 1;
+  XWORD key = (fixnum_to_word(slot_ref(sym, 2)) + arity) % len;
+
+  for(;;) {
+    X tsym = table[ key ].name;
+
+    if(tsym == sym && table[ key ].arity == arity)
+      return table[ key ].label;
     
     if(tsym == NULL) return deflabel;
 
@@ -3393,6 +3421,8 @@ suspend:							       \
 
 
 #define DISPATCH_ON_SYMBOL(table, lbl, len)  goto *(lookup_symbol_in_table(A[0], table, &&lbl, len))
+
+#define DISPATCH_ON_STRUCTURE(table, lbl, len)  goto *(lookup_structure_in_table(A[0], table, &&lbl, len))
 
 
 /// Entry-points for embedding

@@ -234,6 +234,13 @@ assemble(switch_and_dispatch_on_atom(ENTRIES, TLEN, LX), S, S) :-
 	gen('};\nDISPATCH_ON_SYMBOL(dt_', LX, ','),
 	gen(LX, ',', TLEN),
 	gen(');\n', LX, ':\n').
+assemble(switch_and_dispatch_on_structure(ENTRIES, TLEN, LX), S, S) :-
+	gen('if(!is_STRUCTURE(A[0])) goto ', LX, ';\n'),
+	gen('static STRUCTURE_DISPATCH dt_', LX, '[]={'),
+	assemble_structure_dispatch(0, TLEN, ENTRIES),
+	gen('};\nDISPATCH_ON_STRUCTURE(dt_', LX, ','),
+	gen(LX, ',', TLEN),
+	gen(');\n', LX, ':\n').
 assemble(dispatch_on_integer(TABLE), S, S) :-
 	gen('switch(fixnum_to_word(A[0])){\n'),
 	forall(member(N/L, TABLE), gen('case ', N, ':goto ', L, ';\n')),
@@ -272,6 +279,18 @@ assemble_atom_dispatch(I, LEN, ENTRIES) :-
 	gen('{NULL,NULL},'),
 	I2 is I + 1,
 	assemble_atom_dispatch(I2, LEN, ENTRIES).
+
+assemble_structure_dispatch(I, I, _).
+assemble_structure_dispatch(I, LEN, [I-((N/A)/LABEL)|MORE]) :-
+	!,
+	mangle_name(N, NAME),
+	gen('{(X)SYMBOL', NAME, ',', A), gen(',&&', LABEL, '},'),
+	I2 is I + 1,
+	assemble_structure_dispatch(I2, LEN, MORE).
+assemble_structure_dispatch(I, LEN, ENTRIES) :-
+	gen('{NULL,0,NULL},'),
+	I2 is I + 1,
+	assemble_structure_dispatch(I2, LEN, ENTRIES).
 
 
 %% generate literal data
