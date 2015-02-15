@@ -185,8 +185,8 @@
     (cond ((check-self-compile)
 	   (unless (check-pc1) (set! ok #f))
 	   (unless (check-pc1-optimized) (set! ok #f))
-	   (unless (check-embedded) (set! ok #f))
-	   (unless (check-pc32) (set! ok #f)))
+	   (unless (check-pc32) (set! ok #f))
+	   (unless (check-embedded) (set! ok #f)))
 	  (else (set! ok #f)))
     (print "\n----------------------------------------------------------------------")
     (print (if ok
