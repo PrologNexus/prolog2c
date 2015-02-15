@@ -54,7 +54,7 @@ Building and installation
   Assuming you obtained the sources from the distribution archive,
   which can be found at [here][7], just unpack the tarball and follow
   the instructions given below. There is also a source-code repository
-  on [bitbucket][8], but this uses a custom build-environment and
+  on [Bitbucket][8], but this uses a custom build-environment and
   contains mostly tests and supporting code.
 
   The compiler itself is written in ?-Prolog and must be pre-compiled
@@ -117,10 +117,10 @@ Usage
 
     gcc -std=gnu99 -I. <program>.c -o <program> -lm
 
-  - Platform-specific issues
+  Platform-specific issues
 
-    On Linux the "librt" library must be linked by adding "-lrt" to
-    the C compiler invocation given above.
+    - On Linux the "librt" library must be linked by adding "-lrt" to
+      the C compiler invocation given above.
 
   It is advisable to add some optimization options to improve the
   performance of the compiled executables, recommended are typically
@@ -1332,9 +1332,9 @@ Automatic generation of wrapper-code
 
   Definitions may be followed by an option semicolon (";").
 
-  STORAGECLASS is optional any may be either "static" or "extern".
+  STORAGECLASS is optional and may be either "static" or "extern".
   SIZE should be an integer, if given. IDENTIFIER should be a legal C
-  name and may be followed by "/* => REALNAME */", which will result
+  name and may be followed by `/* => REALNAME */`, which will result
   in REALNAME being chosen for the Prolog wrapper.
 
   TYPE is a basic type, optionally decorated with one or more "const",
@@ -1390,8 +1390,8 @@ Automatic generation of wrapper-code
   arguments and results of type "char *" and any other pointer type.
 
   Finally, C "output" arguments are supported by preceding the
-  argument with a direction specifier, either "/* in */" or "/* out
-  */", so
+  argument with a direction specifier, either `/* in */` or `/* out */`,
+  so
 
     double modf /* => int_and_frac */ (double x, /* out */ double *intpart);
 
