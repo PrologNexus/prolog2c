@@ -246,19 +246,24 @@ Builtin predicates
     executed immediately. The goals triggered by bound variables may
     not execute immediately until the next predicate-entry,
     (non-determinate) predicate exit, cut, or after a
-    head-unification.
+    head-unification. Note that the triggering of GOAL depends on the
+    binding order, in case VAR is bound to another unbound variable.
+    delay/2 is used as the basic for freeze/2 and dif/2, described
+    below.
 
         freeze(-VAR, +GOAL)
 
     Delay execution of GOAL until VAR is bound to a non-variable
-    term. This predicate uses delay/2 internally.
+    term.
 
         dif(?X, ?Y)
 
     Fails if X and Y are identical, otherwise constrains both terms to
     be different: if any instantiation of variables inside the terms
     would make X and Y identical, then the operation that performed
-    the instantiation will fail.
+    the instantiation will fail. Inequality-constraints on variables
+    are implemented using delay/2 but always take precedence before
+    other delayed goals.
 
     The "GOAL"s must be complete, callable terms, merely passing
     variables containing callable terms is not sufficient.
