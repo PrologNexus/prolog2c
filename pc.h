@@ -2327,9 +2327,12 @@ static inline void trigger_frozen_goal(X var)
     if(slot_ref(prev, 1) == END_OF_LIST_VAL) break;
   }
 
+  int count = 0;
+
   // copy list of frozen goals
   while(frozen != END_OF_LIST_VAL) {
     X p = PAIR(slot_ref(frozen, 0), END_OF_LIST_VAL);
+    ++count;
 
     if(prev != END_OF_LIST_VAL) 
       SLOT_SET(prev, 1, p);
@@ -2339,6 +2342,12 @@ static inline void trigger_frozen_goal(X var)
     prev = p;
     frozen = slot_ref(frozen, 1);
   }
+
+  SLOT_SET(var, 3, END_OF_LIST_VAL);
+
+  if(debugging)
+    DRIBBLE("[%d frozen goal(s) triggered on _" XWORD_OUTPUT_FORMAT "]\n", 
+	    count, fixnum_to_word(slot_ref(var, 1)));
 }
 
 
