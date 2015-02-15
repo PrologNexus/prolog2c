@@ -2347,13 +2347,14 @@ static void *next_frozen_goal(X *arglist)
   ASSERT(triggered_frozen_goals != END_OF_LIST_VAL, "no triggered frozen_goals");
   X frozen = triggered_frozen_goals;
   triggered_frozen_goals = slot_ref(frozen, 1);
-  X a = slot_ref(frozen, 0);
-  X ptr = slot_ref(a, 0);
+  X a1 = slot_ref(frozen, 0);
+  X prio = slot_ref(a1, 0);
+  X a2 = slot_ref(a1, 1);
 
-  if(ptr == ZERO) return NULL;	/* invalidated by detrailing */
+  if(prio == ZERO) return NULL;	/* was invalidated by detrailing */
 
-  *arglist = slot_ref(a, 1);
-  return (void *)(slot_ref(ptr, 0));
+  *arglist = slot_ref(a2, 1);
+  return (void *)(slot_ref(slot_ref(a2, 0), 0));
 }
 
 
@@ -3944,17 +3945,35 @@ PRIMITIVE(re_intern, X atom) {
   return(unify(intern(str), atom));  
 }
 
-PRIMITIVE(delay_goal, X var, X ptr, X args) {
+PRIMITIVE(delay_goal, X var, X prio, X ptr, X args) {
   ASSERT(is_variable(var), "put_attr: not a variable");
+  check_fixnum(prio);
   ASSERT(!is_FIXNUM(ptr) && is_POINTER(ptr), "put_attr: not a pointer");
-
   // insert into front of list - if multiple delayed goals are triggered
-  // on a variable, the order will naturally reverse because entry into
-  // the delayed goal will invoke the next on the list (and so on)
-  push_trail(C0, var);
-  X a = PAIR(ptr, args);
+  // on a variable, the order will automatically be reversed because
+  // the entry of a delayed goal will invoke the next on the list (and so on)
+  // ...
+  push_trail(C0, var);		/* to restore delayed-goals slot */
+  X a2 = PAIR(ptr, args);
+  X a1 = PAIR(prio, a2);
   X al = slot_ref(var, 3);
-  SLOT_SET(var, 3, PAIR(a, al));
+  X prev = NULL;
+
+  // ... but: take priority into account
+  while(al != END_OF_LIST_VAL) {
+    X a = slot_ref(al, 0);
+    
+    if(slot_ref(a, 0) >= prio) {
+      if(prev) SLOT_SET(prev, 1, PAIR(a1, al));
+      else SLOT_SET(var, 3, PAIR(a1, al));
+
+      break;
+    }
+
+    al = slot_ref(al, 1);
+  }
+
+  SLOT_SET(var, 3, PAIR(a1, al));
   return 1;
 }
 

@@ -381,12 +381,14 @@ compile_body_expression('$call_predicate'(PTR, ARGS), TAIL, LAST/D, LAST/nondet,
 	compile_pointer_call(TAIL, LAST, D, R1, R2, L).
 
 % delay
+compile_body_expression(delay(V, G, P), TAIL, D, D, B1, B2, S1, S2) :-
+	compile_delayed_goal('$delay_goal', V, G, P, TAIL, D, B1, B2, S1, S2).
 compile_body_expression(delay(V, G), TAIL, D, D, B1, B2, S1, S2) :-
-	compile_delayed_goal('$delay_goal', V, G, TAIL, D, B1, B2, S1, S2).
+	compile_delayed_goal('$delay_goal', V, G, 1, TAIL, D, B1, B2, S1, S2).
 
 % freeze
 compile_body_expression(freeze(V, G), TAIL, D, D, B1, B2, S1, S2) :-
-	compile_delayed_goal('$freeze_goal', V, G, TAIL, D, B1, B2, S1, S2).
+	compile_delayed_goal('$freeze_goal', V, G, 1, TAIL, D, B1, B2, S1, S2).
 
 % type-, order- or ordinary predicate call
 compile_body_expression(TERM, TAIL, D1, D2, B1, B2, S1, S2) :-
@@ -404,10 +406,10 @@ compile_body_expression(TERM, _, _, _, _, _, _, _) :-
 
 %% compile delayed goal
 
-compile_delayed_goal(INSTALLER, V, G, TAIL, D, B1, B2, S1, S2) :-
+compile_delayed_goal(INSTALLER, V, G, PRIO, TAIL, D, B1, B2, S1, S2) :-
 	(recorded(uses_delay, _)
 	; recordz(uses_delay, yes),
-	 message(['% delayed goals are used'])
+	 message(['% delayed goals checks are enabled'])
 	),
 	gensym('$delayed_', P, S1, S3),
 	gensym('$delay_', P2, S3, S4),
@@ -417,7 +419,7 @@ compile_delayed_goal(INSTALLER, V, G, TAIL, D, B1, B2, S1, S2) :-
 	DHEAD =.. [P2|VARGS],
 	length(VARGS, N),
 	add_boilerplate(P, (HEAD :- G2)),
-	INSTALL =.. [INSTALLER, V2, PTR, VARGS],
+	INSTALL =.. [INSTALLER, V2, PRIO, PTR, VARGS],
 	add_boilerplate(P2, (DHEAD :- '$predicate_address'(P/N, PTR), INSTALL)),
 	DHEAD2 =.. [P2|IARGS],
 	compile_body_expression(DHEAD2, TAIL, D, _, B1, B2, S4, S2).
