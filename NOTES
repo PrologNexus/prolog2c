@@ -54,8 +54,9 @@ NOTES											              -*- Org -*-
     - at least as much as possible and sensible.
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
-** TODO Dispatch also on structure terms
-   - modify hash by arity, store name + arity + label in table.
+** DONE Dispatch also on structure terms
+   - see branch /structure-dispatch/
+   - needs testing
 ** Environment trimming
    - sort variables by lifetime (reversed) and trim env_top after last use.
    - may only be applicable when env_top didn't change.
@@ -107,12 +108,6 @@ NOTES											              -*- Org -*-
 ** Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
-** Installation of multiple versions
-   - pc-autocompile accepts optional version number.
-   - "<PREFIX>/.bky/<VERSION>" refers to installed bin and lib
-     directories.
-   - keep local bky repo, put compiled files in there and push to
-     <PREFIX> on install.
 * Documentation
 ** TODO Replace README on web-page with html and update link
 * Build options
@@ -209,8 +204,6 @@ NOTES											              -*- Org -*-
 ** Detect singleton variables
 ** Report unused predicates
 * Tests
-** TODO Add make-target for "master" check
-   - does full-check + full-check with USE_DELAY and pc32
 ** TODO Find some non-trivial test for coroutines
    - see Prolog-impl. book
 ** TODO Does retract-loop work?
@@ -234,8 +227,7 @@ NOTES											              -*- Org -*-
 ** TODO make fullcheck
 ** TODO Test on WIN64
 ** TODO Test on Mac
-** TODO Test 32-bit build
-** TODO Test on pi
+** TODO Test on pi, call-cc
 ** TODO Test dist
 ** TODO Tag, push, upload
 ** TODO Bump version
