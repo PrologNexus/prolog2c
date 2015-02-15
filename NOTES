@@ -1,10 +1,58 @@
 NOTES											              -*- Org -*-
 
 
-* Wrapper generator
-** Find a good example
-** Add support for structs
-   - struct X* <-> "X(...)"
+* Issues
+** Major
+*** TODO 0028-endless-tailcall crashes in pi
+*** TODO [#B] Implementation of if-then-else seems to be broken
+   - if-then stack gets out of balance, found here:
+     call_primitive('->', 2, TERM) :-
+	!,
+	arg(1, TERM, X), arg(2, TERM, Y),
+	execute(X) -> execute(Y). % parsed as (!, ...) -> execute(Y)
+   - adding parens around last goal repaired the problem, but still
+     this shouldn't happen.
+*** 32-bit version can't tokenize fractional part of real if it doesn't fit into an integer
+   - e.g.:
+     main :- f(0.463647609000806).
+*** Everything is still rather slow and uses too much memory
+   - see file:broken-tests/
+*** Once trail-stack reserve is reached, GC will happen all the time if the trail can't be reduced
+*** If heap is insufficient deref_term/3 will loop endlessly
+   - also read_atom/2, recorded/X, retract/1 and clause/X
+*** name/2 and functor/3 (and others?) may exceed heap-reserve for large inputs
+** Minor
+*** file:0085-boyer.pl takes longer than timeout when run with file:check
+*** Undefined clauses in interp fail instead of throwing error
+    - error would be better, but combined clause-retrieval and
+      unification with goal means that we would have to check after
+      failure whether the predicate is defined at all.
+*** Failure in term_expansion/2 will simply be ignored
+*** The output of TRACE_TAILCALL() is somewhat confusing
+    - Not sure if arguments output reflects the correct state.
+    - can we get rid of this?
+*** Reduce memory use in pc
+    - seems to build up a lot of choice points.
+*** Erasing a db-entry that is already marked is currently ignored
+   - actual deletion will happen on next GC.
+   - should we throw an error?
+   - note that 0069-cdb deletes twice: first the retract of hello(X)
+     and then the abolish of hello/1.
+*** Handle freezing of db-refs
+   - delete from deleted-items list?
+   - what can happen?
+   - currently caught by assertion in freeze_term_recursive()
+*** Using multiple threads is currently not possible
+   - all static vars would have to be declared TLS, but these may not
+     be statically initialized with non-constants, and this applies to
+     many data objects for literals.
+   - but user-defined literals can't be shared, or not?
+*** Unbound var in arithmetic expr doesn't show variable name
+   - extend var-rep to hold name, in addition to index.
+*** Reader-error should throw syntax_error with message argument
+*** Throw ISO-compliant exceptions everywhere
+    - at least as much as possible and sensible.
+*** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
 ** TODO Dispatch also on structure terms
    - modify hash by arity, store name + arity + label in table.
@@ -42,10 +90,8 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
-** TODO Version pc, pi, pb
-   - "-version" option.
-   - file:version.pl, included everywhere.
-   - prolog_version(V) :: unify V with version number.
+** Show warning for untriggered delayed goals in verbose mode
+   - check trail-entries when unwinding trail and before exit.
 ** Allow access to delay goals
    - frozen(VAR, PTRARGS) :: return ptr/args pairs,
         non-deterministically
@@ -61,6 +107,12 @@ NOTES											              -*- Org -*-
 ** Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
+** Installation of multiple versions
+   - pc-autocompile accepts optional version number.
+   - "<PREFIX>/.bky/<VERSION>" refers to installed bin and lib
+     directories.
+   - keep local bky repo, put compiled files in there and push to
+     <PREFIX> on install.
 * Documentation
 ** TODO Replace README on web-page with html and update link
 * Build options
@@ -157,63 +209,12 @@ NOTES											              -*- Org -*-
 ** Detect singleton variables
 ** Report unused predicates
 * Tests
+** TODO Add make-target for "master" check
+   - does full-check + full-check with USE_DELAY and pc32
 ** TODO Find some non-trivial test for coroutines
    - see Prolog-impl. book
-** TODO Test once more on WIN64
 ** TODO Does retract-loop work?
    - we know it works for the rdb, but should also test for cdb.
-* Issues
-** Major
-*** TODO 0028-endless-tailcall crashes in pi
-*** TODO [#B] Implementation of if-then-else seems to be broken
-   - if-then stack gets out of balance, found here:
-     call_primitive('->', 2, TERM) :-
-	!,
-	arg(1, TERM, X), arg(2, TERM, Y),
-	execute(X) -> execute(Y). % parsed as (!, ...) -> execute(Y)
-   - adding parens around last goal repaired the problem, but still
-     this shouldn't happen.
-*** 32-bit version can't tokenize fractional part of real if it doesn't fit into an integer
-   - e.g.:
-     main :- f(0.463647609000806).
-*** Everything is still rather slow and uses too much memory
-   - see file:broken-tests/
-*** Once trail-stack reserve is reached, GC will happen all the time if the trail can't be reduced
-*** If heap is insufficient deref_term/3 will loop endlessly
-   - also read_atom/2, recorded/X, retract/1 and clause/X
-*** name/2 and functor/3 (and others?) may exceed heap-reserve for large inputs
-** Minor
-*** file:0085-boyer.pl takes longer than timeout when run with file:check
-*** Undefined clauses in interp fail instead of throwing error
-    - error would be better, but combined clause-retrieval and
-      unification with goal means that we would have to check after
-      failure whether the predicate is defined at all.
-*** Failure in term_expansion/2 will simply be ignored
-*** The output of TRACE_TAILCALL() is somewhat confusing
-    - Not sure if arguments output reflects the correct state.
-    - can we get rid of this?
-*** Reduce memory use in pc
-    - seems to build up a lot of choice points.
-*** Erasing a db-entry that is already marked is currently ignored
-   - actual deletion will happen on next GC.
-   - should we throw an error?
-   - note that 0069-cdb deletes twice: first the retract of hello(X)
-     and then the abolish of hello/1.
-*** Handle freezing of db-refs
-   - delete from deleted-items list?
-   - what can happen?
-   - currently caught by assertion in freeze_term_recursive()
-*** Using multiple threads is currently not possible
-   - all static vars would have to be declared TLS, but these may not
-     be statically initialized with non-constants, and this applies to
-     many data objects for literals.
-   - but user-defined literals can't be shared, or not?
-*** Unbound var in arithmetic expr doesn't show variable name
-   - extend var-rep to hold name, in addition to index.
-*** Reader-error should throw syntax_error with message argument
-*** Throw ISO-compliant exceptions everywhere
-    - at least as much as possible and sensible.
-*** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Interpreter
 ** Add "ensure_loaded" directive
 ** Add "listing"
@@ -228,3 +229,13 @@ NOTES											              -*- Org -*-
 * Undocumented features
 ** '$predicate_address'/2, '$call_predicate'/2
 ** interp: expand_term/2 + term_expansion/2
+* Release steps
+** TODO Document changes
+** TODO make fullcheck
+** TODO Test on WIN64
+** TODO Test on Mac
+** TODO Test 32-bit build
+** TODO Test on pi
+** TODO Test dist
+** TODO Tag, push, upload
+** TODO Bump version
