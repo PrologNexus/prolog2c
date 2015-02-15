@@ -415,7 +415,7 @@ static TRAIL_STACK_GAP *trail_stack_gap_buffer;
 static XWORD trail_stack_gap_buffer_size = TRAIL_STACK_GAP_BUFFER_SIZE;
 static int gc_caused_by_trailing = 0;
 static X triggered_frozen_goals;
-static X first_common_variable;
+static X first_distinct_variable;
 
 
 static XCHAR *type_names[] = { 
@@ -2195,7 +2195,7 @@ static void initialize(int argc, char *argv[])
   shared_term_counter = 0;
   variable_counter = 0;
   triggered_frozen_goals = END_OF_LIST_VAL;
-  first_common_variable = NULL;
+  first_distinct_variable = NULL;
 
 #ifdef DEBUG_GC
   memset(tospace, TAINTED_PTR_B & 0xff, (XWORD)tospace_end - (XWORD)tospace);
@@ -2381,8 +2381,8 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
 #endif
 
 #ifdef USE_DELAY
-    if(!first_common_variable)
-      first_common_variable = x;
+    if(!first_distinct_variable)
+      first_distinct_variable = x;
 
     if(slot_ref(x, 3) != END_OF_LIST_VAL)
       trigger_frozen_goal(x);
@@ -2403,8 +2403,8 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
 #endif
 
 #ifdef USE_DELAY
-    if(!first_common_variable)
-      first_common_variable = y;
+    if(!first_distinct_variable)
+      first_distinct_variable = y;
 
     if(slot_ref(y, 3) != END_OF_LIST_VAL)
       trigger_frozen_goal(y);
@@ -3979,11 +3979,13 @@ PRIMITIVE(delay_goal, X var, X prio, X ptr, X args) {
 
 // used for dif/2
 PRIMITIVE(special_id, X x, X y, X var) {
-  first_common_variable = NULL;
+  first_distinct_variable = NULL;
+  X *tt = trail_top;
 
   if(!unify(x, y)) return 0;
 
-  return unify(var, first_common_variable ? first_common_variable : ZERO);
+  unwind_trail(tt); /* detrail or unification will be with bound val */
+  return unify(var, first_distinct_variable ? first_distinct_variable : ZERO);
 }
 
 
