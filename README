@@ -1,11 +1,12 @@
 
 
-	?-Prolog - A small and simple Prolog system
-	===========================================
+?-Prolog - A small and simple Prolog system
+===========================================
 
 
 
-* Introduction
+Introduction
+------------
 
   This is "?-Prolog", a compiler for the Prolog[1] programming
   language. ?-Prolog compiles a single Prolog source file into C,
@@ -47,7 +48,8 @@
   don't hesitate to contact me[9].
 
 
-* Building and installation
+Building and installation
+-------------------------
 
   Assuming you obtained the sources from the distribution archive,
   which can be found at [7], just unpack the tarball and follow the
@@ -87,7 +89,8 @@
   location in which the "lib" directory resides.)
 
 
-* Usage
+Usage
+-----
 
   Simply invoke the compiler with the source file to be compiled:
 
@@ -98,12 +101,12 @@
     -h                      show some usage information.
     -v                      show clauses as they are compiled.
     -i                      show intermediate code produced instead 
-    			    of generating a C file.
+                            of generating a C file.
     -o FILENAME             specify output-file name (defaults to
-       			    the name of the source file, with the
-			    file-extension replaced by ".c")
+                            the name of the source file, with the
+                            file-extension replaced by ".c")
     -I DIRECTORY            add DIRECTORY to the current include-
-       			    path.
+                            path.
     -q                      do not show any output while compiling.
 
   Any output preceeded with "%" is purely for informational purposes
@@ -132,7 +135,8 @@
   optimization options, as this reduces compilation time.
 
 
-* Interpreter
+Interpreter
+-----------
 
   The interpreter can be run interactively by simply starting it, or
   can run and execute a Prolog source file, given on the command-line:
@@ -163,7 +167,8 @@
   thus rather slow.
 
 
-* Debugging and error messages
+Debugging and error messages
+----------------------------
 
   There are no debugging-facilities besides a "trace" mode, which
   writes information about predicate-calls, -exits, -fails and redo's
@@ -179,286 +184,390 @@
   caught by user code using catch/3. 
 
 
-* Builtin predicates
+Builtin predicates
+------------------
 
   DCG rules, including semicontext notation, are supported.
 
   - Control structures
 
-    GOAL, GOAL                    Conjunction [ISO]
+        GOAL, GOAL                    
+    
+    Conjunction [ISO]
 
-    GOAL; GOAL                    Disjunction [ISO]
+        GOAL; GOAL
 
-    GOAL1 -> GOAL2	          "If-then" [ISO]
+    Disjunction [ISO]
 
-    !	    		          "Cut" [ISO]
+        GOAL1 -> GOAL2
 
-    \+ GOAL	            	  "Not" [ISO]
+    "If-then" [ISO]
 
-    repeat    			  Always succeeds [ISO]
+        !
 
-    findall(?T, +GOAL, -R)        Unify R with the list of all T for goal GOAL 
-    		       		  [ISO]
+    "Cut" [ISO]
 
-    bagof(?T, +GOAL, -R)	  All solutions [ISO]
+        \+ GOAL                   
 
-    setof(?T, +GOAL, -R)	  All solutions without duplicates, and sorted 
-    	      	     		  [ISO]
+    "Not" [ISO]
 
-    forall(+GOAL1, +GOAL2)        True if GOAL2 unifies for all solutions of 
-    		   		  GOAL1.
+        repeat                            
 
-    catch(+GOAL1, ?BALL, +GOAL2)  Invoke GOAL1 and, if an exception occurs
-    		  	 	  during its execution that unifies with
-				  BALL, invokes GOAL2 and continues [ISO]
+    Always succeeds [ISO]
 
-    throw(BALL)			  Throws exception BALL [ISO]
+        findall(?T, +GOAL, -R)
 
-    delay(-VAR, +GOAL)		  Delay execution of GOAL until VAR is bound
-    				  to a variable or a non-variable term. If VAR 
-				  is already a non-variable term, GOAL is executed
-				  immediately. The goals triggered by bound variables 
-				  may not execute immediately until the next 
-				  predicate-entry, (non-determinate) predicate exit, 
-				  cut, or after a head-unification.
+    Unify R with the list of all T for goal GOAL [ISO]
 
-    freeze(-VAR, +GOAL)		  Delay execution of GOAL until VAR is bound to
-    		 		  a non-variable term. This predicate uses delay/2
-				  internally.
+        bagof(?T, +GOAL, -R)
 
-    dif(?X, ?Y)			  Fails if X and Y are identical, otherwise
-    	    			  constrains both terms to be different: if any
-				  instantiation of variables inside the terms would
-				  make X and Y identical, then the operation that
-				  performed the instantiation will fail.
+    All solutions [ISO]
+
+        setof(?T, +GOAL, -R)
+
+    All solutions without duplicates, and sorted [ISO]
+
+        forall(+GOAL1, +GOAL2)
+
+    True if GOAL2 unifies for all solutions of GOAL1.
+
+        catch(+GOAL1, ?BALL, +GOAL2)
+
+    Invoke GOAL1 and, if an exception occurs during its execution that
+    unifies with BALL, invokes GOAL2 and continues [ISO]
+
+        throw(BALL)
+
+    Throws exception BALL [ISO]
+
+        delay(-VAR, +GOAL)
+
+    Delay execution of GOAL until VAR is bound to a variable or a
+    non-variable term. If VAR is already a non-variable term, GOAL is
+    executed immediately. The goals triggered by bound variables may
+    not execute immediately until the next predicate-entry,
+    (non-determinate) predicate exit, cut, or after a
+    head-unification.
+
+        freeze(-VAR, +GOAL)
+
+    Delay execution of GOAL until VAR is bound to a non-variable
+    term. This predicate uses delay/2 internally.
+
+        dif(?X, ?Y)
+
+    Fails if X and Y are identical, otherwise constrains both terms to
+    be different: if any instantiation of variables inside the terms
+    would make X and Y identical, then the operation that performed
+    the instantiation will fail.
 
     The "GOAL"s must be complete, callable terms, merely passing
     variables containing callable terms is not sufficient.
 
   - Equality and comparison predicates
 
-    X = Y			  Unifies X with Y [ISO]
+        X = Y
 
-    X \= Y                        Succeeds if X does not unify with Y [ISO]
+    Unifies X with Y [ISO]
 
-    X == Y			  Succeeds if X is identical to Y [ISO]
+        X \= Y
 
-    X \== Y			  Succeeds if X is not identical to Y [ISO]
+    Succeeds if X does not unify with Y [ISO]
 
-    X @< Y			  X is ordered below Y [ISO]
+        X == Y
 
-    X @> Y			  X is ordered above Y [ISO]
+    Succeeds if X is identical to Y [ISO]
 
-    X @=< Y			  X is ordered below Y or is identical [ISO]
+        X \== Y 
 
-    X @>= Y			  X is ordered above Y or is identical [ISO]
+    Succeeds if X is not identical to Y [ISO]
+
+        X @< Y  
+
+    X is ordered below Y [ISO]
+
+        X @> Y
+
+    X is ordered above Y [ISO]
+
+        X @=< Y
+
+    X is ordered below Y or is identical [ISO]
+
+        X @>= Y
+
+    X is ordered above Y or is identical [ISO]
 
   - Conversion-predicates
 
-    atom_codes(?X, ?Y)		  Unifies X with the atom constructed from the
-    		   		  character-codes in the list Y or vice versa
-				  [ISO]
+        atom_codes(?X, ?Y)
 
-    number_codes(?X, ?Y)	  Unifies X with the number constructed from the
-    		   		  character-codes in the list Y or vice versa
-				  [ISO]
+    Unifies X with the atom constructed from the character-codes in
+    the list Y or vice versa [ISO]
 
-    name(?X, ?Y)		  Unifies X with the atom or number constructed
-    	     			  from the character codes in the list Y or 
-				  vice versa.
+        number_codes(?X, ?Y)
 
-    atom_hash(+ATOM, -X)	  Unifies X with the hash-code of ATOM.
+    Unifies X with the number constructed from the character-codes in
+    the list Y or vice versa [ISO]
+
+        name(?X, ?Y)
+
+    Unifies X with the atom or number constructed from the character
+    codes in the list Y or vice versa.
+
+        atom_hash(+ATOM, -X)
+
+    Unifies X with the hash-code of ATOM.
 
   - Term-construction and deconstruction predicates
 
-    arg(+INDEX, +TERM, ?ARG) 	  ARG is the INDEXth argument of TERM [ISO]
+    arg(+INDEX, +TERM, ?ARG)      ARG is the INDEXth argument of TERM [ISO]
 
-    functor(?X, ?Y, ?Z)		  Unifies Y with the name and Z with the arity
-    		    		  of the term X. If X is a variable, constructs
-				  a term of arity Z with the name Y where the
-				  terms arguments are all fresh unbound variables
-				  [ISO]
+    functor(?X, ?Y, ?Z)           Unifies Y with the name and Z with the arity
+                                  of the term X. If X is a variable, constructs
+                                  a term of arity Z with the name Y where the
+                                  terms arguments are all fresh unbound variables
+                                  [ISO]
 
-    copy_term(?X, ?Y)		  Unifies X with a copy of the term Y or vice
-    		  		  versa [ISO]
+    copy_term(?X, ?Y)             Unifies X with a copy of the term Y or vice
+                                  versa [ISO]
 
-    ?X =.. ?Y			  Deconstructs term X into a list of its name
-       	   			  and arguments, or constructs a term from
-				  a list ("univ") [ISO]
+    ?X =.. ?Y                     Deconstructs term X into a list of its name
+                                  and arguments, or constructs a term from
+                                  a list ("univ") [ISO]
 
   - Type-testing predicates
 
-    atom(+X)			  True if X is an atom [ISO]
+        atom(+X)
 
-    atomic(+X)			  True if X is an atom or a number [ISO]
+    True if X is an atom [ISO]
 
-    compound(+X)		  True if X is a non-atomic structure [ISO]
+        atomic(+X)
 
-    db_reference(+X)		  True if X is a database-reference.
+    True if X is an atom or a number [ISO]
 
-    float(+X)			  True if X is a floating-point number [ISO]
+        compound(+X)
 
-    integer(+X)			  True if X is an integral number [ISO]
+    True if X is a non-atomic structure [ISO]
 
-    nonvar(+X)			  True if X is not an unbound variable [ISO]
+        db_reference(+X)
 
-    number(+X)			  True if X is an integer or floating-point 
-    				  number [ISO]
+    True if X is a database-reference.
 
-    foreign_pointer(+X)           True if X is a foreign-pointer object.
+        float(+X)
 
-    stream(+X)			  True if X is an input/output stream.
+    True if X is a floating-point number [ISO]
 
-    var(+X)			  True if X is an unbound variable [ISO]
+        integer(+X)
+
+    True if X is an integral number [ISO]
+
+        nonvar(+X)
+
+    True if X is not an unbound variable [ISO]
+
+        number(+X)
+
+    True if X is an integer or floating-point number [ISO]
+
+        foreign_pointer(+X)
+
+    True if X is a foreign-pointer object.
+
+        stream(+X)
+
+    True if X is an input/output stream.
+
+        var(+X)
+
+    True if X is an unbound variable [ISO]
 
   - Input/Output predicates
   
-    current_error_output(-X)	  Unifies X with the current error output
-    				  stream.
+        current_error_output(-X)
 
-    display(+X)			  Display X on the current output stream,
-    				  note that lists are printed in list-
-				  notation.
+    Unifies X with the current error output stream.
 
-    nl				  Writes the newline character on the current
-    				  output stream [ISO]
+        display(+X)
 
-    open(+NAME, +MODE, -STREAM)   Equivalent to open(NAME, MODE, STREAM, [])
-    		       		  [ISO]
+    Display X on the current output stream, note that lists are
+    printed in list- notation.
 
-    open(+NAME, +MODE, -STREAM, +OPTIONS)
-    		       		  Opens a file stream. MODE may be one of the 
-				  atoms "read", "write" or "append". OPTIONS
-				  should be a list of open-options, currently
-				  supported are only the following:
+        nl
 
-				    type(text)        the default
-				    type(binary)
+    Writes the newline character on the current output stream [ISO]
 
-				  To make the stream the current input or output
-				  port use see/1 or tell/1, respectively [ISO]
+        open(+NAME, +MODE, -STREAM)
 
-    peek(+X)			  Reads the next character from the current
-    				  input-stream and unifies the character code
-				  with X (-1 if end of file is reached). The
-				  character is not removed from the input 
-				  stream.
+    Equivalent to open(NAME, MODE, STREAM, []) [ISO]
 
-    put(+X)			  Writes the character with the code X to the
-    				  current output-stream. X may be an integer
-				  or an atom.
+        open(+NAME, +MODE, -STREAM, +OPTIONS)
 
-    flush			  Flushes pending but unwritten output in the
-    				  current output-stream.
+    Opens a file stream. MODE may be one of the atoms "read", "write"
+    or "append". OPTIONS should be a list of open-options, currently
+    supported are only the following:
 
-    append(+FILE)		  Opens FILE in "append" mode and makes it 
-    				  the current output-stream. FILE may be an
-				  atom or a list of character codes (a string).
+        type(text)  -  the default
+        type(binary)
 
-    get(-X)			  Unifies X with the code of the next non-
-    				  whitespace character in the current input-
-				  stream.
+    To make the stream the current input or output port use see/1 or
+    tell/1, respectively [ISO]
 
-    get0(-X)			  Unifies X with the code of the next character
-    				  in the current input-stream.
+        peek(+X)
 
-    read(-X)			  Reads the next term from the current input-
-    				  stream and unifies it with X [ISO]
+    Reads the next character from the current input-stream and unifies
+    the character code with X (-1 if end of file is reached). The
+    character is not removed from the input stream.
 
-    read(-X, -Y)		  Similar to read/1, but unifies Y with a list
-    	     			  of "ATOM=VARIABLE" terms, with an element for
-				  each variable (different from "_") in the
-				  read term.
+        put(+X)
 
-    read_atom(+LEN, -X)           Read up to LEN characters from the current input
-    		    		  port and unify X with an atom composed of those
-				  characters. If LEN is not an integer, all remaining
-				  input will be read.
+    Writes the character with the code X to the current
+    output-stream. X may be an integer or an atom.
 
-    see(+X)			  Sets the current input-stream to X, which may
-    				  be a stream or a filename (an atom or a list
-				  of character codes.)
+        flush
 
-    seeing(-X)			  Unifies X with the current input-stream.
+    Flushes pending but unwritten output in the current output-stream.
 
-    seen			  Closes the current input-stream (if it is not
-    				  the default input-stream) and sets the current
-				  input-stream to the default one.
+        append(+FILE)
 
-    skip(+X)			  Reads characters from the current input-stream
-    				  until a character that unifies with X is read.
+    Opens FILE in "append" mode and makes it the current
+    output-stream. FILE may be an atom or a list of character codes (a
+    string).
 
-    tab(+N)                       Writes N spaces to the current output stream.
+        get(-X)
 
-    tell(+X)			  Sets the current output-stream to X, which may
-    				  be a stream or a filename.
+    Unifies X with the code of the next non- whitespace character in
+    the current input- stream.
 
-    telling(-X)			  Unifies X with the current output-stream.
+        get0(-X)
 
-    told			  Closes the current output-stream (if it is not
-    				  the default output-stream) and sets the current
-				  output-stream to the default one.
+    Unifies X with the code of the next character in the current
+    input-stream.
 
-    write(+X)			  Writes X to the current-output stream, using
-    				  operator notation, if possible.
+        read(-X)
 
-    writeq(+X)			  Writes X to the current-output stream, using
-    				  operator-notation, if possible and quotes
-				  atoms that would need to be quoted on reading.
+    Reads the next term from the current input- stream and unifies it
+    with X [ISO]
+
+        read(-X, -Y)
+
+    Similar to read/1, but unifies Y with a list of "ATOM=VARIABLE"
+    terms, with an element for each variable (different from "_") in
+    the read term.
+
+        read_atom(+LEN, -X)
+
+    Read up to LEN characters from the current input port and unify X
+    with an atom composed of those characters. If LEN is not an
+    integer, all remaining input will be read.
+
+        see(+X)
+
+    Sets the current input-stream to X, which may be a stream or a
+    filename (an atom or a list of character codes.)
+
+        seeing(-X)
+
+    Unifies X with the current input-stream.
+
+        seen
+
+    Closes the current input-stream (if it is not the default
+    input-stream) and sets the current input-stream to the default
+    one.
+
+        skip(+X)
+
+    Reads characters from the current input-stream until a character
+    that unifies with X is read.
+
+        tab(+N)
+
+    Writes N spaces to the current output stream.
+
+        tell(+X)
+
+    Sets the current output-stream to X, which may be a stream or a
+    filename.
+
+        telling(-X)
+
+    Unifies X with the current output-stream.
+ 
+        told
+
+    Closes the current output-stream (if it is not the default
+    output-stream) and sets the current output-stream to the default
+    one.
+
+        write(+X)
+
+    Writes X to the current-output stream, using operator notation, if
+    possible.
+
+        writeq(+X)
+
+    Writes X to the current-output stream, using operator-notation, if
+    possible and quotes atoms that would need to be quoted on reading.
 
     Note that all streams opened via see/1 and tell/1 are opened in binary 
     mode.
 
   - Formatted output
 
-    writef(FORMAT)                Writes a format-string. This is the same as
-    				  "writef(FORMAT, [])".
+        writef(FORMAT)
 
-    writef(FORMAT, ARGS)          Writes output according to the format-string
-    		   		  FORMAT and a list of arguments.
+    Writes a format-string. This is the same as "writef(FORMAT, [])".
 
-    fwritef(OUT, FORMAT)	  Writes a format-string to OUT, which must be
-    		 		  a filename (atom) or an output stream. This
-				  is the same as "fwritef(OUT, FORMAT, [])".
+        writef(FORMAT, ARGS)
 
-    fwritef(OUT, FORMAT, ARGS)    Writes output to the file or stream OUT, 
-    		 	 	  according to the format-string FORMAT and a 
-				  list of arguments.
+    Writes output according to the format-string FORMAT and a list of
+    arguments.
+
+        fwritef(OUT, FORMAT)
+
+    Writes a format-string to OUT, which must be a filename (atom) or
+    an output stream. This is the same as "fwritef(OUT, FORMAT, [])".
+
+        fwritef(OUT, FORMAT, ARGS)
+
+    Writes output to the file or stream OUT, according to the
+    format-string FORMAT and a list of arguments.
 
     The format-string (an atom or a string) may contain the following special 
     character sequences:
 
-      \n		newline
-      \l		linefeed
-      \r		carriage return
-      \t		tab
-      \e		escape
-      \\		\
-      \%		%
-      \nnn		character with ASCII code nnn (decimal)
+        \n              newline
+        \l              linefeed
+        \r              carriage return
+        \t              tab
+        \e              escape
+        \\              \
+        \%              %
+        \nnn            character with ASCII code nnn (decimal)
 
-      %t		output the next argument (same as %w)
-      %w		write the next argument
-      %q		writeq the next argument
-      %d		display the next argument
-      %p		same as %t
-      %l		outputs the next argument as a list, with each element on
-      			a new line, indented by 4 characters
-      %c		output a conjunction (terms combined by &/2 or ,/2),
-      			with each element on a new line, indented by 4 characters
-      %n		put the next argument as a character (integer code)
-      %r		repeat the next argument N times, where N is the second
-      			next argument
-      %s		write the next argument as a string
-      %i		the next arguments are a format-string and a list
-      			(indirect writef)
-      %f                perform flush/0
-      %g                writes a compound of the form NAME(ARG, ...) as 
-      			ARG1 NAME ARG2 NAME ...
-      %x		skips the next argument
-      %Nc               write the next argument centered in N columns
-      %Nl		write the next argument left justified in N columns
-      %Nr		write the next argument right justified in N columns
+        %t              output the next argument (same as %w)
+        %w              write the next argument
+        %q              writeq the next argument
+        %d              display the next argument
+        %p              same as %t
+        %l              outputs the next argument as a list, with each element on
+                        a new line, indented by 4 characters
+        %c              output a conjunction (terms combined by &/2 or ,/2),
+                        with each element on a new line, indented by 4 characters
+        %n              put the next argument as a character (integer code)
+        %r              repeat the next argument N times, where N is the second
+                        next argument
+        %s              write the next argument as a string
+        %i              the next arguments are a format-string and a list
+                        (indirect writef)
+        %f              perform flush/0
+        %g              writes a compound of the form NAME(ARG, ...) as 
+                        ARG1 NAME ARG2 NAME ...
+        %x              skips the next argument
+        %Nc             write the next argument centered in N columns
+        %Nl             write the next argument left justified in N columns
+        %Nr             write the next argument right justified in N columns
 
     If the argument list is neither [] or the empty list, it is turned into
     a one-element list.
@@ -466,92 +575,117 @@
 
   - Database access predicates
 
-    abolish(+PI)		  Removes all clauses in the clause-database
-    				  under the given predicate-indicator, which
-				  may be an atom, a term of the form NAME/ARITY
-				  or a list of predicate-indicators [ISO]
+        abolish(+PI)
 
-    asserta(+CLAUSE)
-    asserta(+CLAUSE, -REF)	  Inserts clause X into the clause-database,
-    		     		  before any existing clauses with the same
-				  name and arity, optionally unifiying REF 
-				  with a DB-reference to the inserted clause 
-				  [ISO]
+    Removes all clauses in the clause-database under the given
+    predicate-indicator, which may be an atom, a term of the form
+    NAME/ARITY or a list of predicate-indicators [ISO]
 
-    assertz(+CLAUSE)
-    assertz(+CLAUSE, -REF)	  Inserts clause X into the clause-database,
-    		     		  after existing clauses with the same name
-				  and arity, optionally unifiying REF with a 
-				  DB-reference to the inserted clause [ISO]
+        asserta(+CLAUSE)
+        asserta(+CLAUSE, -REF)
 
-    clause(+X, ?Y)		  
-    clause(+X, ?Y, -REF)	  Unifies X and Y with the head and body of
-    	       	   		  matching clauses in the clause-database, 
-				  optionally unifying REF with a database-
-				  reference to the matched clause [ISO].
+    Inserts clause X into the clause-database, before any existing
+    clauses with the same name and arity, optionally unifiying REF
+    with a DB-reference to the inserted clause [ISO]
 
-    erase(+X)			  Erases the entry with the database-reference
-    				  X in the clause- or record-database.
+        assertz(+CLAUSE)
+        assertz(+CLAUSE, -REF)
 
-    recorda(+X, -Y)
-    recorda(+X, -Y, -REF)	  Inserts term Y under key X in the record
-    		    		  database, before any existing terms for
-				  the same key, optionally unifying REF with
-				  a database-reference to the added term.
+    Inserts clause X into the clause-database, after existing clauses
+    with the same name and arity, optionally unifiying REF with a
+    DB-reference to the inserted clause [ISO]
 
-    recordz(+X, -Y)
-    recordz(+X, -Y, -REF)	  Inserts term Y under key X in the record
-    		    		  database, after any existing terms for
-				  the same key, optionally unifying REF with
-				  a database-reference to the added term.
+        clause(+X, ?Y)            
+        clause(+X, ?Y, -REF)
 
-    recorded(+X, -Y)
-    recorded(+X, -Y, -REF)	  Unifies Y with the terms found in the 
-    		     		  record-database under the key X, optionally
-				  unifying REF with a database-reference to
-				  the found term.
+    Unifies X and Y with the head and body of matching clauses in the
+    clause-database, optionally unifying REF with a database-
+    reference to the matched clause [ISO].
 
-    retract(+X)			  Removes matching clauses in the clause-database
-    				  and unifies X with the matgched clause [ISO]
+        erase(+X)
+
+    Erases the entry with the database-reference X in the clause- or
+    record-database.
+
+        recorda(+X, -Y)
+        recorda(+X, -Y, -REF)
+
+    Inserts term Y under key X in the record database, before any
+    existing terms for the same key, optionally unifying REF with a
+    database-reference to the added term.
+
+        recordz(+X, -Y)
+        recordz(+X, -Y, -REF)
+
+    Inserts term Y under key X in the record database, after any
+    existing terms for the same key, optionally unifying REF with a
+    database-reference to the added term.
+
+        recorded(+X, -Y)
+        recorded(+X, -Y, -REF)
+
+    Unifies Y with the terms found in the record-database under the
+    key X, optionally unifying REF with a database-reference to the
+    found term.
+
+        retract(+X)
+
+    Removes matching clauses in the clause-database and unifies X with
+    the matgched clause [ISO]
 
     Note that clauses in the clause-database have no effect on compiled 
     programs.
 
   - Arithmetic predicates
 
-    X < Y			  True if X is numerically less than Y [ISO]
+        X < Y
 
-    X > Y			  True if X is numerically greater than Y [ISO]
+    True if X is numerically less than Y [ISO]
 
-    X =< Y			  True if X is numerically less than or equal to
-      	 			  Y [ISO]
+        X > Y
 
-    X >= Y			  True if X is numerically greater than or equal
-      	 			  to Y [ISO]
+    True if X is numerically greater than Y [ISO]
 
-    X =:= Y			  True if X is numerically equal to Y [ISO]
+        X =< Y
 
-    X =\= Y			  True if X is not numerically equal to Y [ISO]
+    True if X is numerically less than or equal to Y [ISO]
 
-    -X is Y			  Unifies X with the result of evaluating 
-       	  			  expression Y [ISO]
+        X >= Y
 
-    divide(X, Y, Q, R)		  True if X divided by Y is Q * R. Either and A
-    	      	    		  and B must be ground, or on of A and B and both
-				  Q and R must be ground. All arguments must be
-				  integers or unbound.
+    True if X is numerically greater than or equal to Y [ISO]
 
-    plus(X, Y, Z)		  True if Y plus Z is X, at least two arguments must
-    	       			  be ground. All arguments must be integers or
-				  unbound.
+        X =:= Y
 
-    succ(X, Y)			  True if Y is the next integer after X, at least
-    	    			  one argument must be ground. X and Y must be
-				  integers or unbound
+    True if X is numerically equal to Y [ISO]
 
-    times(X, Y, Z)		  True if X times Y is Z, at least 2 arguments
-    	     			  must be ground. All arguments must be integers
-				  or unbound.
+        X =\= Y
+
+    True if X is not numerically equal to Y [ISO]
+
+        -X is Y
+
+    Unifies X with the result of evaluating expression Y [ISO]
+
+        divide(X, Y, Q, R)
+
+    True if X divided by Y is Q * R. Either and A and B must be
+    ground, or on of A and B and both Q and R must be ground. All
+    arguments must be integers or unbound.
+
+        plus(X, Y, Z)
+
+    True if Y plus Z is X, at least two arguments must be ground. All
+    arguments must be integers or unbound.
+
+        succ(X, Y)
+
+    True if Y is the next integer after X, at least one argument must
+    be ground. X and Y must be integers or unbound
+
+        times(X, Y, Z)
+
+    True if X times Y is Z, at least 2 arguments must be ground. All
+    arguments must be integers or unbound.
 
     Note that variables in expressions must contain numerical values.
     Expressions in variables are not evaluated (as is normally
@@ -559,332 +693,472 @@
 
   - Arithmetic operators
 
-    - X				  Negation [ISO]
+        \- X
 
-    \ X				  Bitwise complement [ISO]
+    Negation [ISO]
 
-    X + Y			  Addition [ISO]
+        \ X
 
-    X - Y			  Subtraction [ISO]
+    Bitwise complement [ISO]
 
-    X * Y			  Multiplication [ISO]
+        X + Y
 
-    X / Y			  Division (always returns float) [ISO]
+    Addition [ISO]
 
-    X // Y			  Integer division [ISO]
+        X - Y
 
-    X \\ Y
-    X rem Y			  Integer remainder [ISO]
+    Subtraction [ISO]
 
-    X /\ Y			  Bitwise and [ISO]
+        X * Y
 
-    X \/ Y			  Bitwise or [ISO]
+    Multiplication [ISO]
 
-    X >> Y			  Bit-shift right [ISO]
+        X / Y
 
-    X << Y			  Bit-shift left [ISO]
+    Division (always returns float) [ISO]
 
-    X ** Y			  Exponentation [ISO]
+        X // Y
 
-    abs(X)			  Absolute value [ISO]
+    Integer division [ISO]
 
-    atan(X)			  Arcustangens [ISO]
+        X \\ Y
+        X rem Y
 
-    ceiling(X)			  Next larger integer [ISO]
+    Integer remainder ["rem" is ISO]
 
-    clock			  Current time in seconds, starting from
-    				  some unspecified point in time.
+        X /\ Y
 
-    cos(X)			  Cosine [ISO]
+    Bitwise and [ISO]
 
-    exp(X)			  Exponential function [ISO]
+        X \/ Y
 
-    float(X)			  Convert to float [ISO]
+    Bitwise or [ISO]
 
-    float_fractional_part(X)	  Fractional component [ISO]
+        X >> Y
 
-    float_integer_part(X)	  Integer component [ISO]
+    Bit-shift right [ISO]
 
-    floor(X)			  Next smaller integer [ISO] 
+        X << Y
 
-    log(X)			  Natural logarithm [ISO]
+    Bit-shift left [ISO]
 
-    random(X)			  Random integer between  0 and X (exclusive).
+        X ** Y
 
-    round(X)			  Round to nearest integer [ISO]
+    Exponentation [ISO]
 
-    sign(X)			  Sign of value [ISO]
+        abs(X)
 
-    sin(X)			  Sine [ISO]	
+    Absolute value [ISO]
 
-    sqrt(X)			  Square-root [ISO]
+        atan(X)
 
-    tan(X)                        Tangent [ISO]
+    Arcustangens [ISO]
 
-    truncate(X)			  Truncate to integer [ISO]
+        ceiling(X)
 
-    X xor Y			  Bitwise xor
+    Next larger integer [ISO]
+
+        clock
+
+    Current time in seconds, starting from some unspecified point in
+    time.
+
+        cos(X)
+
+    Cosine [ISO]
+
+        exp(X)
+
+    Exponential function [ISO]
+
+        float(X)
+
+    Convert to float [ISO]
+
+        float_fractional_part(X)
+
+    Fractional component [ISO]
+
+        float_integer_part(X)
+
+    Integer component [ISO]
+
+        floor(X)
+
+    Next smaller integer [ISO] 
+
+        log(X)
+
+     Natural logarithm [ISO]
+
+        random(X)
+
+     Random integer between  0 and X (exclusive).
+
+        round(X)
+
+     Round to nearest integer [ISO]
+
+        sign(X)
+
+     Sign of value [ISO]
+
+        sin(X)
+
+     Sine [ISO] 
+
+        sqrt(X)
+
+     Square-root [ISO]
+
+        tan(X)
+
+     Tangent [ISO]
+
+        truncate(X)
+
+     Truncate to integer [ISO]
+
+        X xor Y
+
+     Bitwise xor
 
   - Operating-system interaction
 
-    command_line_arguments(-X)	  Unifies X with a list of the command-line
-    				  arguments passed to the currently running
-				  program. The list does not include the
-				  program name.
+        command_line_arguments(-X)
 
-    exists_file(+X)		  True, if the file with the name X (an atom
-    				  or string) exists.
+    Unifies X with a list of the command-line arguments passed to the
+    currently running program. The list does not include the program
+    name.
 
-    getenv(+X, -Y)		  Unifies Y with the value of the environment
-    	       			  variable named by X, which may be an atom
-				  or a string.
+        exists_file(+X)
 
-    getpid(-X)			  Unifies X with the process-id of the currently
-    				  running process.
+    True, if the file with the name X (an atom or string) exists.
 
-    halt			  
-    halt(+CODE)			  Terminates the currently running program
-    				  and returns to the operating system with exit
-				  code X (defaults to 0).
+        getenv(+X, -Y)
 
-    sleep(+X)			  Waits X seconds.
+    Unifies Y with the value of the environment variable named by X,
+    which may be an atom or a string.
 
-    shell(+CMD)			  
-    shell(+CMD, -STATUS)	  Executes the shell-command CMD (which should
-    				  be an atom or a string) and unifies STATUS
-				  with the return status (exit code) of the
-				  shell after running the command. If STATUS
-				  is not given, shell/1 fails when the command
-				  returns with an exit-status that is not 0.
+        getpid(-X)                        
+
+    Unifies X with the process-id of the currently running process.
+
+        halt                      
+        halt(+CODE)
+
+    Terminates the currently running program and returns to the
+    operating system with exit code X (defaults to 0).
+
+        sleep(+X)
+
+    Waits X seconds.
+
+        shell(+CMD)                       
+        shell(+CMD, -STATUS)
+
+    Executes the shell-command CMD (which should be an atom or a
+    string) and unifies STATUS with the return status (exit code) of
+    the shell after running the command. If STATUS is not given,
+    shell/1 fails when the command returns with an exit-status that is
+    not 0.
 
   - Set operations
 
-    intersection(+SET1, +SET2, -SET3)
-    			          SET3 is the intersection of the sets SET1 and
-				  SET2.
+        intersection(+SET1, +SET2, -SET3)
 
-    select(?X, ?SET1, ?SET2)      SET2 is SET1 with element X removed.
+    SET3 is the intersection of the sets SET1 and SET2.
 
-    subtract(+SET1, +SET2, -SET3)
-    		    	          SET3 is SET1 with the elements of SET2 removed.
+        select(?X, ?SET1, ?SET2)
 
-    symdiff(+SET1, +SET2, -SET3)  SET3 is the the "symmetric difference" of SET1
-    		   	  	  and SET2 (i.e. it is the union without the
-				  intersection.) 
+    SET2 is SET1 with element X removed.
 
-    union(+SET1, +SET2, -SET3)    SET3 is the union of the sets SET1 and SET2.
+        subtract(+SET1, +SET2, -SET3)
 
+    SET3 is SET1 with the elements of SET2 removed.
+
+        symdiff(+SET1, +SET2, -SET3)  
+
+    SET3 is the the "symmetric difference" of SET1 and SET2 (i.e. it
+    is the union without the intersection.)
+
+        union(+SET1, +SET2, -SET3)    
+
+    
   - Predicates on ordered sets
 
-    list_to_ord_set(+LIST, -SET)  SET is LIST converted to an ordered set.
+        list_to_ord_set(+LIST, -SET)  
 
-    ord_disjoint(+SET1, +SET2)    True if X and Y have no common elements.
+    SET is LIST converted to an ordered set.
 
-    ord_insert(+SET1, +X, -SET2	  True if X inserted into SET1 gives SET2.
+        ord_disjoint(+SET1, +SET2)
 
-    ord_intersect(+SET1, +SET2)   True if sets have some elements in common.
+    True if X and Y have no common elements.
 
-    ord_intersect(+SET1, +SET2, -SET3) 
-    			 	  SET3 is the intersection of SET1 and SET2.
+        ord_insert(+SET1, +X, -SET2)
 
-    ord_memberchk(+X, +SET)	  Unifies X with the first element of SET -
-    		      		  this predicate only produces one solution.
+    True if X inserted into SET1 gives SET2.
 
-    ord_seteq(+SET1, +SET2)	  True if sets are equal.
+        ord_intersect(+SET1, +SET2)
 
-    ord_subset(+SET1, +SET2)	  True if SET1 is a subset of SET2.
+    True if sets have some elements in common.
 
-    ord_subtract(+SET1, +SET2, -SET3)
-    			          Subtract SET2 from SET1, giving SET3.
+        ord_intersect(+SET1, +SET2, -SET3) 
 
-    ord_symdiff(+SET1, +SET2, -SET3)
-    		       	          SET3 is the symmetric difference of SET1
-				  and SET2.
+    SET3 is the intersection of SET1 and SET2.
 
-    ord_union(+SET1, +SET2, -SET3)
-    		     	          SET3 is the union of SET1 and SET2.
+        ord_memberchk(+X, +SET)
+
+    Unifies X with the first element of SET - this predicate only
+    produces one solution.
+
+        ord_seteq(+SET1, +SET2)
+
+    True if sets are equal.
+
+        ord_subset(+SET1, +SET2)
+
+    True if SET1 is a subset of SET2.
+
+        ord_subtract(+SET1, +SET2, -SET3)
+
+    Subtract SET2 from SET1, giving SET3.
+
+        ord_symdiff(+SET1, +SET2, -SET3)
+                                      
+    SET3 is the symmetric difference of SET1 and SET2.
+
+        ord_union(+SET1, +SET2, -SET3)
+
+    SET3 is the union of SET1 and SET2.
 
   - List operations
 
-    length(?X, ?N)		  N is the length of list X.
+        length(?X, ?N)  
 
-    keysort(+SET, -SORTED)	  SORTED is SET, ordered by the first argument
-    		  		  of each element (usually -/2).
+    N is the length of list X.
 
-    merge(+SET1, +SET2, -SET3)    SET3 is the combination of the ordered sets SET1
-    		 		  and SET2.
+        keysort(+SET, -SORTED)
 
-    reverse(?X, ?Y)		  Y is the list X in reverse order.
+    SORTED is SET, ordered by the first argument of each element
+    (usually -/2).
 
-    sort(+X, -Y)		  Y is the list X in sorted order.
+        merge(+SET1, +SET2, -SET3)    
 
-    append(?X, ?Y, ?Z)		  Z is the list Y appended to the list X.
+    SET3 is the combination of the ordered sets SET1 and SET2.
 
-    member(?X, ?Y),		  Unifies X with the members of the list Y.
+        reverse(?X, ?Y)
 
-    memberchk(?X, +Y)		  Like member/2, but produces only one solution.
+    Y is the list X in reverse order.
+
+        sort(+X, -Y)
+
+    Y is the list X in sorted order.
+
+        append(?X, ?Y, ?Z)
+
+    Z is the list Y appended to the list X.
+
+        member(?X, ?Y)
+
+    Unifies X with the members of the list Y.
+
+        memberchk(?X, +Y)
+
+    Like member/2, but produces only one solution.
 
   - Calling code written in other languages
 
-    foreign_call(CALL)	    	  Invokes a foreign procedure (see below for more
-    				  information.)
+        foreign_call(CALL)
+
+    Invokes a foreign procedure (see below for more information.)
 
   - Other predicates
 
-    true			  Always succeeds [ISO]
+        true
 
-    fail			  Always fails [ISO]
+    Always succeeds [ISO]
+
+        fail                      
+
+    Always fails [ISO]
 
 
-    garbage_collect		  Triggers a garbage collection on the next
-    				  predicate-invocation.
+        garbage_collect
 
+    Triggers a garbage collection on the next predicate-invocation.
 
-    suspend(?X, ?Y)               Suspends execution in embedded code (see
-    				  below for more information about embedding).
+        suspend(?X, ?Y)
 
-    enable_trace(+X)		  Enables "trace" mode in compiled code, starting
-    				  at the next call, exit or fail. For this to
-				  be effective, the program must be compiled with
-				  the "-DTRACE" option.
+     Suspends execution in embedded code (see below for more
+     information about embedding).
 
-    compare(-X, ?X, ?Z)		  Compares X and Z and unifies X with one of the
-    		    		  atoms '=', '<' or '>', depending on whether
-				  Y is identical, ordered below or ordered above
-				  Z.
+        enable_trace(+X)                  
 
-    between(+LOW, +HIGH, ?X)      X is between LOW and HIGH, inclusive.
+     Enables "trace" mode in compiled code, starting at the next call,
+     exit or fail. For this to be effective, the program must be
+     compiled with the "-DTRACE" option.
 
-    current_op(?P, ?A, ?N)        Unifies N with the name of any currently defined
-    		       		  operators with precedence P and associativity A.
+        compare(-X, ?X, ?Z)               
 
-    op(+P, +A, +N)		  Defines a new operator with name N (an atom),
-    	       			  precedence P (an integer between 0 and 1200) and
-				  associativity A (one of the atoms 'fx', 'fy', 'xf',
-				  'yf', 'xfx', 'xfy' or 'yfx'). N may also be a
-				  list of atoms.
+     Compares X and Z and unifies X with one of the atoms '=', '<' or
+     '>', depending on whether Y is identical, ordered below or
+     ordered above Z.
 
-    global_ref(NAME, -X)          Unifies X with the current value of the global
-    		     		  variable NAME, which must have been previously
-				  declared with the "global_variable" directive
-				  (see below.)
+        between(+LOW, +HIGH, ?X)
 
-    global_set(NAME, +X)          Sets the global variable with the name NAME to
-    		     		  X. Note that this does not take care of backtracking,
-				  use copy_term/2 to preserve X in that case.
+     X is between LOW and HIGH, inclusive. If X is unbound, produces
+     all solutions between LOW and HIGH.
+
+        current_op(?P, ?A, ?N)
+
+     Unifies N with the name of any currently defined operators with
+     precedence P and associativity A.
+
+        op(+P, +A, +N)            
+
+     Defines a new operator with name N (an atom), precedence P (an
+     integer between 0 and 1200) and associativity A (one of the atoms
+     'fx', 'fy', 'xf', 'yf', 'xfx', 'xfy' or 'yfx'). N may also be a
+     list of atoms.
+
+        global_ref(NAME, -X)          
+    
+     Unifies X with the current value of the global variable NAME,
+     which must have been previously declared with the
+     "global_variable" directive (see below.)
+
+        global_set(NAME, +X)          
+
+     Sets the global variable with the name NAME to X. Note that this
+     does not take care of backtracking, use copy_term/2 to preserve X
+     in that case.
 
   - Predicates that are only available in the interpreter
 
-    trace      	    	     	  Enables "trace" mode that displays goals as	
-    				  they are executed.
+        trace                             
 
-    call(+GOAL)			  Invokes GOAL, which may be directly callable
-    				  or a variable containing such a goal.
+    Enables "trace" mode that displays goals as they are executed.
 
-    consult(+FILE)		  Loads clauses in the given file into the
-    				  clause-database, erasing all previously
-				  stored clauses that have the same name and
-				  arity as clauses in the consulted file.
-				  If the file has the extension ".pl", then
-				  this extension may be omitted.
+        call(+GOAL)
 
+    Invokes GOAL, which may be directly callable or a variable
+    containing such a goal.
 
-* Precedence of builtin operators
+        consult(+FILE)            
 
-  | Name             | Associativity | Precedence |
-  |------------------+---------------+------------|
-  | *                | yfx           |        400 |
-  | **               | xfx           |        200 |
-  | +                | fy            |        200 |
-  | +                | yfx           |        500 |
-  | ,                | xfy           |       1000 |
-  | -                | fy            |        200 |
-  | -                | yfx           |        500 |
-  | -->              | xfx           |       1200 |
-  | ->               | xfy           |       1050 |
-  | /                | yfx           |        400 |
-  | //               | yfx           |        400 |
-  | /\               | yfx           |        500 |
-  | :-               | fx            |       1200 |
-  | :-               | xfx           |       1200 |
-  | ;                | xfy           |       1100 |
-  | <                | xfx           |        700 |
-  | <<               | yfx           |        400 |
-  | =                | xfx           |        700 |
-  | =..              | xfx           |        700 |
-  | =:=              | xfx           |        700 |
-  | =<               | xfx           |        700 |
-  | ==               | xfx           |        700 |
-  | =\=              | xfx           |        700 |
-  | >                | xfx           |        700 |
-  | >=               | xfx           |        700 |
-  | >>               | yfx           |        400 |
-  | @<               | xfx           |        700 |
-  | @=<              | xfx           |        700 |
-  | @>               | xfx           |        700 |
-  | @>=              | xfx           |        700 |
-  | \                | fy            |        200 |
-  | \+               | fy            |        900 |
-  | \/               | yfx           |        500 |
-  | \=               | xfx           |        700 |
-  | \==              | xfx           |        700 |
-  | \\               | xfy           |        400 |
-  | ^                | xfy           |        200 |
-  | initialization   | fx            |       1150 |
-  | is               | xfx           |        700 |
-  | xor              | yfx           |        400 |
-  | |                | xfy           |       1105 |
+    Loads clauses in the given file into the clause-database, erasing
+    all previously stored clauses that have the same name and arity as
+    clauses in the consulted file.  If the file has the extension
+    ".pl", then this extension may be omitted. In "pi", this may also
+    be abbreviated as "[FILE, ...]", if given at the prompt.
 
 
-* Directives
+Precedence of builtin operators
+-------------------------------
+
+    | Name             | Associativity | Precedence |
+    |------------------+---------------+------------|
+    | *                | yfx           |        400 |
+    | **               | xfx           |        200 |
+    | +                | fy            |        200 |
+    | +                | yfx           |        500 |
+    | ,                | xfy           |       1000 |
+    | -                | fy            |        200 |
+    | -                | yfx           |        500 |
+    | -->              | xfx           |       1200 |
+    | ->               | xfy           |       1050 |
+    | /                | yfx           |        400 |
+    | //               | yfx           |        400 |
+    | /\               | yfx           |        500 |
+    | :-               | fx            |       1200 |
+    | :-               | xfx           |       1200 |
+    | ;                | xfy           |       1100 |
+    | <                | xfx           |        700 |
+    | <<               | yfx           |        400 |
+    | =                | xfx           |        700 |
+    | =..              | xfx           |        700 |
+    | =:=              | xfx           |        700 |
+    | =<               | xfx           |        700 |
+    | ==               | xfx           |        700 |
+    | =\=              | xfx           |        700 |
+    | >                | xfx           |        700 |
+    | >=               | xfx           |        700 |
+    | >>               | yfx           |        400 |
+    | @<               | xfx           |        700 |
+    | @=<              | xfx           |        700 |
+    | @>               | xfx           |        700 |
+    | @>=              | xfx           |        700 |
+    | \                | fy            |        200 |
+    | \+               | fy            |        900 |
+    | \/               | yfx           |        500 |
+    | \=               | xfx           |        700 |
+    | \==              | xfx           |        700 |
+    | \\               | xfy           |        400 |
+    | ^                | xfy           |        200 |
+    | initialization   | fx            |       1150 |
+    | is               | xfx           |        700 |
+    | xor              | yfx           |        400 |
+    | |                | xfy           |       1105 |
+
+
+Directives
+----------
 
   The following directives are available in compiled code and can be
   declared using the usual ":- DIRECTIVE, ... ." syntax:
 
-  global_variable(NAME)      Declares NAME as a global variable, accessible
-  			     with global_set/2 and global_ref/2.
+       global_variable(NAME)
 
-  verbatim(CODE)             Include CODE directly in the produced C file.
-  			     All code declared in "verbatim" directives
-			     will be concatenated and emitted at the start
-			     of the generated code, directly after the
-			     inclusion of "pc.h".
+  Declares NAME as a global variable, accessible with global_set/2 and
+  global_ref/2.
+ 
+       verbatim(CODE)
 
-  pre_initialization(GOAL)   Declares GAOL to be a pre-initialization goal.
-  			     This is similar to the "initialization"
-			     directive, but pre-initialization goals are
-			     run before all normal initialization goals.
+  Include CODE directly in the produced C file.  All code declared in
+  "verbatim" directives will be concatenated and emitted at the start
+  of the generated code, directly after the inclusion of "pc.h".
 
-  determinate(PI)	     Declares the predicates specified in PI as
-  			     being determinate, which gives more opportunities
-			     for tail-call optimization. PI should be of the
-			     form "<predicate-name>/<arity>", "<predicate-name>"
-			     or a list of such indicators.
+       pre_initialization(GOAL)  
+
+  Declares GAOL to be a pre-initialization goal.  This is similar to
+  the "initialization" directive, but pre-initialization goals are run
+  before all normal initialization goals.
+
+       determinate(PI)
+
+  Declares the predicates specified in PI as being determinate, which
+  gives more opportunities for tail-call optimization. PI should be of
+  the form "<predicate-name>/<arity>", "<predicate-name>" or a list of
+  such indicators.
 
   The following directives are available in the compiler and interpreter:
 
-  include(FILENAME)          Include the contents of FILENAME at the current
-  			     position in the source-code that contains this
-			     clause. If the file exists and has the extension
-			     ".pl", then the extension may be omitted in the
-			     directive.
+       include(FILENAME)          
 
-  initialization GOAL        Declares GOAL to be an initialization goal that
-  		 	     will be invoked when a compiled program is
-			     started or when a file given to the interpreter
-			     on the command-line has been consulted.
-			     Several initialization goals may be declared
-			     and are invoked in the order in which they appear
-			     in the source code.
+  Include the contents of FILENAME at the current position in the
+  source-code that contains this clause. If the file exists and has
+  the extension ".pl", then the extension may be omitted in the
+  directive.
+ 
+       initialization GOAL
 
-			     In compiler code, the default initialization goal
-			     is main/0.
-			     
-  op(P, A, N)                Declares an operator - identical to op/3,
-  	   		     but done before reading any further clauses.
+  Declares GOAL to be an initialization goal that will be invoked when
+  a compiled program is started or when a file given to the
+  interpreter on the command-line has been consulted.  Several
+  initialization goals may be declared and are invoked in the order in
+  which they appear in the source code.
+
+  In compiler code, the default initialization goal is main/0.
+                             
+      op(P, A, N)
+
+  Declares an operator - identical to op/3, but done before reading
+  any further clauses.
 
 
-* Performance tips
+Performance tips
+----------------
 
   Compiling the generated C code with "-DNDEBUG" will disable various
   internal sanity checks and assertions.
@@ -899,7 +1173,8 @@
   on overall performance.
 
 
-* Calling code written in other languages
+Calling code written in other languages
+---------------------------------------
 
   To call foreign functions, a single form named "foreign_call" is
   provided. foreign_call/1 takes a structure that names the function
@@ -938,84 +1213,85 @@
 
   ---
 
-  % gethostname.pl - implements Prolog-side 
+    % gethostname.pl - implements Prolog-side 
 
-  :- verbatim('#include "mystuff.c").   % include header
+    :- verbatim('#include "mystuff.c").   % include header
 
-  % wrapper predicate
-  gethostname(N) :- foreign_call(my_gethostname(N1)).
+    % wrapper predicate
+    gethostname(N) :- foreign_call(my_gethostname(N1)).
 
   --- 
 
-  /* mystuff.c - implements C-side */
+    /* mystuff.c - implements C-side */
 
-  #include <unistd.h>
-  #include <errno.h>
- 
-  PRIMITIVE(my_gethostname, X name) {
-    char buffer[ 257 ];
-    
-    if(gethostname(buffer, 256) < 0)
-      system_error(strerror(errno));  % throws exception
+    #include <unistd.h>
+    #include <errno.h>
 
-    /* unifies value with output argument */
-    return unify(CSYMBOL(buffer), name);
-  }
+    PRIMITIVE(my_gethostname, X name) {
+      char buffer[ 257 ];
+
+      if(gethostname(buffer, 256) < 0)
+        system_error(strerror(errno));  % throws exception
+
+      /* unifies value with output argument */
+      return unify(CSYMBOL(buffer), name);
+    }
 
   ---
 
-  % test-hostname.pl
+    % test-hostname.pl
 
-  :- include('gethostname.pl').   % include interface
+    :- include('gethostname.pl').   % include interface
 
-  main :- gethostname(S), display(S), nl.  % and use it
+    main :- gethostname(S), display(S), nl.  % and use it
 
   ---
 
   Notes:
 
-    - "PRIMITIVE()", "unify()", "CSTRING()" and "system_error()" are
-      only visible in compiled Prolog code. If you want to implement
-      the C part of your extension in a separate source-file, you can
-      include "pc.h", but will have to do without some of the macros
-      and functions provided in "pc.h" (look for definitions guarded
-      with "COMPILED_PROLOG_PROGRAM".)
+  - "PRIMITIVE()", "unify()", "CSTRING()" and "system_error()" are
+    only visible in compiled Prolog code. If you want to implement
+    the C part of your extension in a separate source-file, you can
+    include "pc.h", but will have to do without some of the macros
+    and functions provided in "pc.h" (look for definitions guarded
+    with "COMPILED_PROLOG_PROGRAM".)
 
-    - "PRIMITIVE()" is not strictly necessary. It only ensures the
-      result type is "int" and an implicit first argument of type
-      "CHOICE_POINT *" is passed. This argument _must_ be named "C0",
-      as "unify()" actually is a macro that uses it.
+  - "PRIMITIVE()" is not strictly necessary. It only ensures the
+    result type is "int" and an implicit first argument of type
+    "CHOICE_POINT *" is passed. This argument _must_ be named "C0",
+    as "unify()" actually is a macro that uses it.
 
-    - "CSYMBOL()" allocates a Prolog atom, from a zero-terminated C
-      string, in the garbage collected heap. There are variants
-      to allocate using an arbitrary allocation pointer, called
-      "CSYMBOL1()", etc.
+  - "CSYMBOL()" allocates a Prolog atom, from a zero-terminated C
+    string, in the garbage collected heap. There are variants
+    to allocate using an arbitrary allocation pointer, called
+    "CSYMBOL1()", etc.
 
-    - "system_error()" throws an exception of type system_error/1.
-      You can also use "throw_exception()" to trigger an arbitrary
-      exception object, or "type_error()" to trigger an exception of
-      type type_error/2.
+  - "system_error()" throws an exception of type system_error/1.
+    You can also use "throw_exception()" to trigger an arbitrary
+    exception object, or "type_error()" to trigger an exception of
+    type type_error/2.
 
-    - "unify" is a macro, expanding into an inline test and a call to
-      a general unification routine. It is also only usable in
-      compiled prolog code. The result is an integer (1 on success or
-      0 on failure.)
+  - "unify" is a macro, expanding into an inline test and a call to
+    a general unification routine. It is also only usable in
+    compiled prolog code. The result is an integer (1 on success or
+    0 on failure.)
 
-    - You can add your extensions permanently to the compiler by
-      adding a macro/2 clause in the file "macros.pl" of the compiler
-      sources and adding a clause for auto_include/3 (in the same
-      file), which ensures that a file is included automatically and
-      compiled with the original program. Finally copy your extension
-      file into the "lib" directory (wherever you chose to install
-      it.)
+  - You can add your extensions permanently to the compiler by
+    adding a macro/2 clause in the file "macros.pl" of the compiler
+    sources and adding a clause for auto_include/3 (in the same
+    file), which ensures that a file is included automatically and
+    compiled with the original program. Finally copy your extension
+    file into the "lib" directory (wherever you chose to install
+    it.)
 
-    - This isn't much information here - you really should study
-      "pc.h" if you want to interface to C code in earnest.
+  - There isn't much information here - you really should study "pc.h"
+    if you want to interface to C code in earnest.
 
   This is the low-level way of calling C code. The other is
 
 
-* Automatic generation of wrapper-code
+Automatic generation of wrapper-code
+------------------------------------
 
   Also included in this Prolog implementation is "pb", a generator for
   C and Prolog files intended to simplify the process of interfacing
@@ -1099,7 +1375,7 @@
     C type                  <->     Prolog type
     --------------------------------------------------------------
     int, short, char, long          integer
-    float, double     		    float
+    float, double                   float
     char *                          atom (zero-terminated)
     <any> *                         foreign-pointer
     X                               <any>
@@ -1123,7 +1399,8 @@
   "modf"'s function result.
 
 
-* Embedding
+Embedding
+---------
 
   If you compile the C code with the "-DEMBEDDED" option, then the
   program will not contain a "main()" function and can be called as a
@@ -1149,13 +1426,13 @@
   exit status of the program, depending on how the program
   terminated execution:
 
-    Reason					Exit code
+    Reason                                      Exit code
     -----------------------------------------------------------
-    halt/0					0
-    halt/1					<code>
+    halt/0                                      0
+    halt/1                                      <code>
     Runtime-error / uncaught exception          EXIT_EXCEPTION
-    Normal termination	     			EXIT_SUCCESS
-    Initialization goal(s) failed		EXIT_FAILURE
+    Normal termination                          EXIT_SUCCESS
+    Initialization goal(s) failed               EXIT_FAILURE
 
   A second entry-point called "prolog_variable" is also available
   to allow access to entries in the "global variable vector" 
@@ -1177,7 +1454,8 @@
   The compiled Prolog code is not reentrant or thread-safe.
 
 
-* Limitations
+Limitations
+-----------
 
   call/1 and its variants are not available in the compiler, as are
   setof/3 and bagof/3. Goals passed to catch/2, findall/3, forall/2
@@ -1217,14 +1495,14 @@
   when compiling generated C code or by passing the appropriate
   run-time command-line option to the final compiled executable.
 
-  Meaning             Macro                     R/T option      Default
-  ----------------------------------------------------------------------
-  Heap size           HEAP_SIZE                 -:h<SIZE>    100,000,000
-  Heap reserve        HEAP_RESERVE                                    20
-  Trail stack         TRAIL_STACK_SIZE          -:T<SIZE>      1,000,000
-  Choice-point stack  CHOICE_POINT_STACK_SIZE   -:C<SIZE>     10,000,000
-  Environment-stack   ENVIRONMENT_STACK_SIZE    -:E<SIZE>     10,000,000
-  Argument-stack      ARGUMENT_STACK_SIZE       -:A<SIZE>     10,000,000
+    Meaning             Macro                     R/T option      Default
+    ----------------------------------------------------------------------
+    Heap size           HEAP_SIZE                 -:h<SIZE>    100,000,000
+    Heap reserve        HEAP_RESERVE                                    20
+    Trail stack         TRAIL_STACK_SIZE          -:T<SIZE>      1,000,000
+    Choice-point stack  CHOICE_POINT_STACK_SIZE   -:C<SIZE>     10,000,000
+    Environment-stack   ENVIRONMENT_STACK_SIZE    -:E<SIZE>     10,000,000
+    Argument-stack      ARGUMENT_STACK_SIZE       -:A<SIZE>     10,000,000
 
   All sizes are in bytes, with the exception of "heap reserve", which
   is a percentage of the total heap-size, which is kept free to
@@ -1242,7 +1520,14 @@
   hasn't been tested much.
 
 
-* License
+Version history
+---------------
+
+  - Version 1 - Initial version.
+
+
+License
+-------
 
   Copyright (c) 2015, Felix L. Winkelmann
   All rights reserved.
@@ -1283,7 +1568,8 @@
     these bodies when you use or re-distribute any of these files.
 
 
-* References
+References
+----------
 
   [1] http://en.wikipedia.org/wiki/Prolog
   [2] http://www.swi-prolog.org
