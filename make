@@ -273,9 +273,12 @@
     (run (tar cfz ,dname ,ddir))
     (run (rm -fr ,ddir))))
 
-(define (upload)
+(define (html)
   (make (("README.html" ("README")
-	  (run (markdown README >README.html)))))
+	  (run (markdown README >README.html))))))
+
+(define (upload)
+  (html)
   (run (upload -d prolog pc.tar.gz README.html)))
 
 (define (install)
