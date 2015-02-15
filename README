@@ -8,7 +8,7 @@
 Introduction
 ------------
 
-  This is "?-Prolog", a compiler for the Prolog[1] programming
+  This is "?-Prolog", a compiler for the [Prolog][1] programming
   language. ?-Prolog compiles a single Prolog source file into C,
   which can be subsequently compiled with a C compiler to an
   executable. The generated code is platform-independent and should be
@@ -26,7 +26,7 @@ Introduction
   assert/retract will have no effect on a compiled program.
 
   Performance is reasonable, in micro-benchmarks it is roughly
-  comparable to systems like SWI-Prolog[2], but will not be able to
+  comparable to systems like [SWI-Prolog][2], but will not be able to
   compete with such mature Prolog implementations for larger,
   real-world programs. Basic clause-indexing on the first argument of
   a predicates is performed and tail-calls are optimized in many
@@ -45,17 +45,17 @@ Introduction
 
   The system is still under development and contains many known and
   unknown bugs. If you experience problems or want to help, please
-  don't hesitate to contact me[9].
+  don't hesitate to contact [me][9].
 
 
 Building and installation
 -------------------------
 
   Assuming you obtained the sources from the distribution archive,
-  which can be found at [7], just unpack the tarball and follow the
-  instructions given below. There is also a source-code repository on
-  bitbucket[8], but this uses a custom build-environment and contains
-  mostly tests and supporting code.
+  which can be found at [here][7], just unpack the tarball and follow
+  the instructions given below. There is also a source-code repository
+  on [bitbucket][8], but this uses a custom build-environment and
+  contains mostly tests and supporting code.
 
   The compiler itself is written in ?-Prolog and must be pre-compiled
   to C before it can be used. In the distribution archive that
@@ -66,7 +66,7 @@ Building and installation
     make
 
   A C compiler with support for C99, including some GNU extensions is
-  required, both gcc[4] and clang[5] have been successfully tested.
+  required, both [gcc][4] and [clang][5] have been successfully tested.
   You can edit the variables at the top of the makefile to choose a
   different compiler or different compilation options. If you don't
   have GNU make, then compile the files manually, see Makefile for the
@@ -1556,26 +1556,31 @@ License
   This code uses a certain amount of code from the freely available DEC10
   Prolog library[3]:
 
-    These files are all in the "public domain" so you can use them
-    freely, copy them, incorporate them into programs of your own and
-    so forth without payment.  The work of producing them in the first
-    place and of organising them as detailed here has been funded over
-    the years at Edinburgh University mainly by the Science and
-    Engineering Research Council.  Their dissemination has been
-    encouraged by the Alvey Special Interest Group: Artificial
-    Intelligence.  We would appreciate it if you were to acknowledge
-    these bodies when you use or re-distribute any of these files.
+  These files are all in the "public domain" so you can use them
+  freely, copy them, incorporate them into programs of your own and so
+  forth without payment.  The work of producing them in the first
+  place and of organising them as detailed here has been funded over
+  the years at Edinburgh University mainly by the Science and
+  Engineering Research Council.  Their dissemination has been
+  encouraged by the Alvey Special Interest Group: Artificial
+  Intelligence.  We would appreciate it if you were to acknowledge
+  these bodies when you use or re-distribute any of these files.
 
 
-References
-----------
+[1]: http://en.wikipedia.org/wiki/Prolog
 
-  [1] http://en.wikipedia.org/wiki/Prolog
-  [2] http://www.swi-prolog.org
-  [3] http://www.cs.cmu.edu/afs/cs/project/ai-repository/ai/lang/prolog/code/tools/edinbrgh/0.html
-  [4] http://gcc.gnu.org
-  [5] http://clang.llvm.org
-  [6] http://en.wikipedia.org/wiki/Cheney%27s_algorithm
-  [7] http://www.call-with-current-continuation.org/prolog/
-  [8] http://bitbucket.org/bunny351/prolog/
-  [9] felix <at> call-with-current-continuation <dot> org
+[2]: http://www.swi-prolog.org
+
+[3]: http://www.cs.cmu.edu/afs/cs/project/ai-repository/ai/lang/prolog/code/tools/edinbrgh/0.html
+
+[4]: http://gcc.gnu.org
+
+[5]: http://clang.llvm.org
+
+[6]: http://en.wikipedia.org/wiki/Cheney%27s_algorithm
+
+[7]: http://www.call-with-current-continuation.org/prolog/
+
+[8]: http://bitbucket.org/bunny351/prolog/
+
+[9]: mailto:felix@call-with-current-continuation.org
