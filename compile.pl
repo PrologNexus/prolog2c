@@ -409,7 +409,7 @@ compile_body_expression(TERM, _, _, _, _, _, _, _) :-
 compile_delayed_goal(INSTALLER, V, G, PRIO, TAIL, D, B1, B2, S1, S2) :-
 	(recorded(uses_delay, _)
 	; recordz(uses_delay, yes),
-	 message(['% delayed goals checks are enabled'])
+	 message(['% delayed goal checks are enabled'])
 	),
 	gensym('$delayed_', P, S1, S3),
 	gensym('$delay_', P2, S3, S4),
