@@ -107,10 +107,10 @@
 	 (ok #f))
     (parameterize ((make-verbose #f))
       (make/proc (list (list (string-append fname ".pl")
-			     (list "pb" fname)
+			     (list fname)
 			     (lambda () 
 			       (set! ok
-				 (zero? (run* (./pb -q -o ,fname ,fname))))))))
+				 (zero? (run* (./pb -q -o ,bname ,fname))))))))
       ok)))
 
 (define (check)
