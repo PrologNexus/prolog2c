@@ -54,9 +54,6 @@ NOTES											              -*- Org -*-
     - at least as much as possible and sensible.
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
-** DONE Dispatch also on structure terms
-   - see branch /structure-dispatch/
-   - needs testing
 ** Environment trimming
    - sort variables by lifetime (reversed) and trim env_top after last use.
    - may only be applicable when env_top didn't change.
@@ -115,85 +112,6 @@ NOTES											              -*- Org -*-
 ** Make use of floating-point optional
    - see /intmath/ branch.
    - had funny behaviour with pi (use of flonum simple aborts.)
-* Bare-metal
-** Keep DB in heap
-   - Implement completely in Prolog, using different lib.
-** Absolutely positioned data areas
-** Reimplement as much as possible in Prolog
-** Asm core
-*** Basic I/O
-    - debugging output (serial line)
-    - console (to/from framebuffer)
-*** FP operation and transcendental functions
-    - probably needs to init FPU properly.
-** Reimplement string and ctype operations
-** Reimplement random numbers
-** No file system
-** More tricky
-   - clock
-   - longjmp/setjmp, but should be doable with simple
-     register-save/restore.
-** We need flonum<->string conversion
-   - http://krashan.ppa.pl/articles/stringtofloat/
-** Currently imported symbols:
-   | Name             | Class |
-   |------------------+-------|
-   | __ctype_b_loc    | R     |
-   | __errno_location | D     |
-   | _setjmp          | A     |
-   | atan             | O     |
-   | atol             | R/O   |
-   | ceil             | R/O   |
-   | clock_gettime    | D     |
-   | close            | D     |
-   | cos              | O     |
-   | exit             | D     |
-   | exp              | O     |
-   | fclose           | D     |
-   | fflush           | D     |
-   | fgetc            | R/A   |
-   | floor            | R/O   |
-   | fopen            | D     |
-   | fprintf          |       |
-   | fputc            | R/A   |
-   | fputs            |       |
-   | free             | -     |
-   | ftruncate        |       |
-   | fwrite           | R/A   |
-   | getenv           | D     |
-   | getpid           | D     |
-   | log              | O     |
-   | longjmp          | A     |
-   | malloc           | -     |
-   | memcmp           | R     |
-   | memcpy           | R     |
-   | memset           | R     |
-   | mmap             | D     |
-   | modf             | O     |
-   | munmap           | D     |
-   | open             |       |
-   | pow              |       |
-   | rand             | D     |
-   | realloc          | -     |
-   | round            | R/O   |
-   | sin              | O     |
-   | sleep            | D     |
-   | sprintf          |       |
-   | sqrt             | O     |
-   | srand            | D     |
-   | stat             | D     |
-   | stderr           | R/A   |
-   | stdin            | R/A   |
-   | stdout           | R/A   |
-   | strerror         | D     |
-   | strncmp          | R     |
-   | strtod           |       |
-   | strtol           |       |
-   | system           | D     |
-   | toupper          | R     |
-   | trunc            | R/O   |
-   | ungetc           | R     |
-   Class: R = reimplement, D = drop, O = optional, A = asm impl.
 * Diagnostics
 ** Detect singleton variables
 ** Report unused predicates
@@ -214,8 +132,12 @@ NOTES											              -*- Org -*-
 ** file:/archive/inriasuite.tar.gz
 ** file:/archive/iclpgcbenches.tar.gz
 * Undocumented features
-** '$predicate_address'/2, '$call_predicate'/2
-** interp: expand_term/2 + term_expansion/2
+** Compiler
+*** '$predicate_address'/2
+** Builtins
+*** '$call_predicate'/2
+** Interpreter
+*** expand_term/2 + term_expansion/2
 * Release steps
 ** TODO Document changes
 ** TODO make fullcheck
