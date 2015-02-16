@@ -1,4 +1,4 @@
-#!/bin/scheme /grass/19/boot
+#!/bin/scheme /grass/17/boot
 ;;;; compile + run program with timeout, then check exit status and output -*- Scheme -*-
 
 

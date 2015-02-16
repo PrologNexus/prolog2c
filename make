@@ -1,4 +1,4 @@
-#!/bin/scheme /grass/19/boot
+#!/bin/scheme /grass/17/boot
 ;;;; makefile for pc -*- Scheme -*-
 
 
