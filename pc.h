@@ -2393,8 +2393,12 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
     if(!first_distinct_variable)
       first_distinct_variable = x;
 
-    if(slot_ref(x, 3) != END_OF_LIST_VAL)
+    if(slot_ref(x, 3) != END_OF_LIST_VAL) {
+      SLOT_SET(x, 0, y);
+      push_trail(C0, x);
       trigger_frozen_goal(x);
+      return 1;
+    }
 #endif
 
     SLOT_SET(x, 0, y);
@@ -2415,8 +2419,12 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
     if(!first_distinct_variable)
       first_distinct_variable = y;
 
-    if(slot_ref(y, 3) != END_OF_LIST_VAL)
+    if(slot_ref(y, 3) != END_OF_LIST_VAL) {
+      SLOT_SET(y, 0, x);
+      push_trail(C0, y);
       trigger_frozen_goal(y);
+      return 1;
+    }
 #endif
 
     SLOT_SET(y, 0, x);
