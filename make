@@ -117,6 +117,7 @@
   (let ((tests (string-split (capture (ls tests/*.pl)) "\n"))
 	(ok 0)
 	(not-ok 0))
+    (pb)
     (for-each
      (lambda (fname)
        (let* ((hasb (file-exists? (replace-suffix "bind" fname)))
