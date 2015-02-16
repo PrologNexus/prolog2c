@@ -60,19 +60,13 @@ NOTES											              -*- Org -*-
 ** Environment trimming
    - sort variables by lifetime (reversed) and trim env_top after last use.
    - may only be applicable when env_top didn't change.
-** TODO Avoid allocating intermediate results if they are unified with ground values
-   - when unifying recursively, check result for being identical.
 ** TODO Add "determinate" declarations and green cuts in library code
-** Use perfect hashing for atom-tables
-   - http://www.burtleburtle.net/bob/hash/perfect.html
-** Special-case primitives that are known to always succeed?
+** Special-case calls of primitives that are known to always succeed
 ** DONE Take advantage of timestamps when binding vars in unify()
    - implemented in branch /bind-younger/ and seems to work, but trail
 ** writeq/1 could use foreign_call(basic_writeq(X)) for atoms
    - but the name needs to be classified anyway, because of the possibly
      required space in front of it.
-** Mode-declarations
-   - can probably be used in many ways, but needs more thought.
 ** Arithmetic
    - deref all vars just once at start.
    - track types, use unboxed math.
@@ -91,7 +85,7 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
-** Show warning for untriggered delayed goals in verbose mode
+** Show warning for untriggered delayed goals with "-:d"
    - check trail-entries when unwinding trail and before exit.
 ** Allow access to delay goals
    - frozen(VAR, PTRARGS) :: return ptr/args pairs,
@@ -227,7 +221,7 @@ NOTES											              -*- Org -*-
 ** TODO make fullcheck
 ** TODO Test on WIN64
 ** TODO Test on Mac
-** TODO Test on pi, call-cc
+** TODO Test on [pi], [call-cc]
 ** TODO Test dist
 ** TODO Tag, push, upload
 ** TODO Bump version
