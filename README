@@ -4,6 +4,8 @@
 ===========================================
 
 
+Version 2
+
 
 Introduction
 ------------
@@ -83,7 +85,7 @@ Building and installation
     -I <library-directory>
 
   as additional command-line options when compiling a source file, or
-  by setting the environment variable "PC_INCLUDE_PATH" to a list of
+  by setting the environment variable `PC_INCLUDE_PATH` to a list of
   directories to be searched, separated by ":" (which should not
   include the "lib/" part - i.e. the path(s) should point to the
   location in which the "lib" directory resides.)
@@ -117,10 +119,10 @@ Usage
 
     gcc -std=gnu99 -I. <program>.c -o <program> -lm
 
-  Platform-specific issues
+  Platform-specific issues:
 
-    - On Linux the "librt" library must be linked by adding "-lrt" to
-      the C compiler invocation given above.
+  - On Linux the "librt" library must be linked by adding "-lrt" to
+    the C compiler invocation given above.
 
   It is advisable to add some optimization options to improve the
   performance of the compiled executables, recommended are typically
@@ -325,20 +327,24 @@ Builtin predicates
 
   - Term-construction and deconstruction predicates
 
-    arg(+INDEX, +TERM, ?ARG)      ARG is the INDEXth argument of TERM [ISO]
+        arg(+INDEX, +TERM, ?ARG)
 
-    functor(?X, ?Y, ?Z)           Unifies Y with the name and Z with the arity
-                                  of the term X. If X is a variable, constructs
-                                  a term of arity Z with the name Y where the
-                                  terms arguments are all fresh unbound variables
-                                  [ISO]
+    ARG is the INDEXth argument of TERM [ISO]
 
-    copy_term(?X, ?Y)             Unifies X with a copy of the term Y or vice
-                                  versa [ISO]
+        functor(?X, ?Y, ?Z)
+ 
+    Unifies Y with the name and Z with the arity of the term X. If X
+    is a variable, constructs a term of arity Z with the name Y where
+    the terms arguments are all fresh unbound variables [ISO]
 
-    ?X =.. ?Y                     Deconstructs term X into a list of its name
-                                  and arguments, or constructs a term from
-                                  a list ("univ") [ISO]
+        copy_term(?X, ?Y)
+
+    Unifies X with a copy of the term Y or vice versa [ISO]
+
+        ?X =.. ?Y
+
+    Deconstructs term X into a list of its name and arguments, or
+    constructs a term from a list ("univ") [ISO]
 
   - Type-testing predicates
 
@@ -1527,7 +1533,21 @@ Limitations
 Version history
 ---------------
 
-  - Version 1 - Initial version.
+  - Version 2:
+
+    - Many bugfixes, everywhere.
+    - Added "writef.pl" and "arith.pl" to library.
+    - Added primitive read_atom/2.
+    - The interpreter handles DCG rules now.
+    - Added "foreign pointer" type.
+    - Added support for coroutines (freeze + dif)
+    - The compiler does now Second-level clause-indexing on structure 
+      terms.
+    - A few more tail-call opporunities are now detected.
+
+  - Version 1:
+
+    - Initial release.
 
 
 License
@@ -1558,8 +1578,8 @@ License
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-  This code uses a certain amount of code from the freely available DEC10
-  Prolog library[3]:
+  This code uses a certain amount of code from the freely available
+  [DEC10 Prolog library][3]:
 
   These files are all in the "public domain" so you can use them
   freely, copy them, incorporate them into programs of your own and so
