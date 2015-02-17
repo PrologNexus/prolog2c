@@ -2,7 +2,8 @@
 
 
 :- global_variable(clause_db).
-:- pre_initialization((foreign_call(db_create(clause_db, 3001, DB)), global_set(clause_db, DB))).
+:- pre_initialization((foreign_call(db_create(clause_db, 3001, DB)),
+		       global_set(clause_db, DB))).
 
 
 asserta(TERM) :- asserta(TERM, _).
@@ -47,8 +48,11 @@ abolish(PI) :-
 
 abolish([], DB) :- !.
 abolish(NAME/ARITY, DB) :-
+	(atom(NAME), integer(ARITY)
+	; throw(type_error(predicate_indicator, NAME/ARITY))
+	),
 	!,
-	'$clause_db_key'(NAME, ARITY, KEY),
+	foreign_call(cdb_key2(NAME, ARITY, KEY)),
 	foreign_call(db_find(DB, KEY, REF)),
 	foreign_call(db_erase_all(REF)).
 abolish([PI|MORE], DB) :-
@@ -57,8 +61,11 @@ abolish([PI|MORE], DB) :-
 	abolish(MORE, DB).
 abolish(NAME, DB) :-
 	atom(NAME),
+	!,
 	foreign_call(db_find(DB, NAME, REF)),
 	foreign_call(db_erase_all(REF)).
+abolish(NAME, _) :-
+	throw(type_error(predicate_indicator, NAME)).
 
 clause(HEAD, BODY) :- clause(HEAD, BODY, _).
 
@@ -81,15 +88,12 @@ clause(HEAD, BODY, REF) :-
 	!,
 	'$clause_match'(REF2, TERM, REF).
 
+'$fast_clause_lookup'(HEAD, REF) :-
+	!,
+	global_ref(clause_db, DB),
+	'$clause_db_key'(HEAD, KEY),
+	foreign_call(db_find(DB, KEY, REF)).
+
 '$clause_db_key'(HEAD, KEY) :-
-	functor(HEAD, NAME, ARITY),
-	'$clause_db_key'(NAME, ARITY, KEY).
-	
-'$clause_db_key'(NAME, 0, NAME) :-
-        atom(NAME).
-'$clause_db_key'(NAME, ARITY, K2) :-
-	atom(NAME), integer(ARITY),
-	atom_codes(NAME, SNAME),
-	number_codes(ARITY, SARITY),
-	append(SNAME, [47|SARITY], SK),
-	atom_codes(K2, SK).
+	(atom(HEAD); compound(HEAD)),
+	!, foreign_call(cdb_key(HEAD, KEY)).

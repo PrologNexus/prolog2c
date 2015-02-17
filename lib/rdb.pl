@@ -2,7 +2,8 @@
 
 
 :- global_variable(record_db).
-:- pre_initialization((foreign_call(db_create(record_db, 3001, DB)), global_set(record_db, DB))).
+:- pre_initialization((foreign_call(db_create(record_db, 3001, DB)),
+		       global_set(record_db, DB))).
 
 
 recorda(KEY, TERM) :- recorda(KEY, TERM, _).
@@ -38,9 +39,5 @@ recorded(KEY, TERM, REF) :-
 '$record_db_key'(K1, K2) :-
 	compound(K1),
 	!,
-	functor(K1, NAME, ARITY),
-	atom_codes(NAME, SNAME),
-	number_codes(ARITY, SARITY),
-	append(SNAME, [47|SARITY], SK),
-	atom_codes(K2, SK).
+	foreign_call(cdb_key(K1, K2)).
 '$record_db_key'(K, K).
