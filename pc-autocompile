@@ -41,7 +41,7 @@ if test -x "${cachedir}/${hash}"; then
 fi
 
 filename2=`basename "$filename"`
-pc -q "$filename" -o "/${tmpdir}/${filename2}.c"
-gcc -std=gnu99 -O2 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -DTRACE -NDEBUG \
-    -I. "/tmp/${filename2}.c" -o "${cachedir}/${hash}" -lm
+pc -q "$filename" -o "${tmpdir}/${filename2}.c"
+gcc -std=gnu99 -O2 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -DTRACE -DNDEBUG \
+    -I. "${tmpdir}/${filename2}.c" -o "${cachedir}/${hash}" -lm
 exec "${cachedir}/${hash}" "$@"
