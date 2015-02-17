@@ -21,12 +21,15 @@
 :- pre_initialization(global_set(pi_trace_depth, none)).
 
 
+pi_init :-
+	assertz(term_expansion(X, X)).
+
 pi_do_goal(Goal) :-
 	system(Goal),		% <--- check for a built in predicate
 	!,
 	call_system_predicate(Goal).
 pi_do_goal(Goal) :-
-	clause(Goal, Body),	% <--- assume anything else is interpreted
+	pi_clause(Goal, Body),	% <--- assume anything else is interpreted
 	pi_do_body(Body, AfterCut, HadCut),
 	(   HadCut = yes,
 		!,
@@ -96,7 +99,7 @@ pi_tr_call(Goal, Depth) :-
 	global_set(pi_trace_depth, Depth),
 	call_system_predicate(Goal).
 pi_tr_call(Goal, Depth) :-
-	clause(Goal, Body),
+	pi_clause(Goal, Body),
 	pi_tr_body(Body, Depth, AfterCut, HadCut),
 	(   HadCut = yes,
 		!,
@@ -361,6 +364,17 @@ pi_close_all_files :-
 	erase(REF),
 	member(FILE, STACK), see(FILE), seen, fail.
 pi_close_all_files.
+
+
+%% clause lookup + assert
+
+pi_clause(HEAD, BODY) :-
+	'$fast_clause_lookup'(HEAD, REF1),
+	!,
+	'$clause_match'(REF1, (HEAD :- BODY), REF).
+pi_clause(HEAD, _) :-
+	functor(HEAD, N, A),
+	throw(unknown(N/A)).
 
 pi_add_clause(N/A, N, A, HEAD, BODY) :-
 	((atom(HEAD); compound(HEAD))
