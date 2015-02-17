@@ -4035,6 +4035,44 @@ PRIMITIVE(special_id, X x, X y, X var) {
   return unify(var, first_distinct_variable ? first_distinct_variable : ZERO);
 }
 
+// compute cdb-key from term or name/arity - for assert/clause/abolish
+PRIMITIVE(cdb_key2, X name, X arity, X key) {
+  ASSERT(is_atom(name) && is_FIXNUM(arity), "cdb_key2: bad PI");
+  X str = slot_ref(name, 0);
+  XWORD len = string_length(str);
+  memcpy(string_buffer, objdata(str), len);
+  sprintf(string_buffer + len, "\001" XWORD_OUTPUT_FORMAT, fixnum_to_word(arity));
+  len += strlen(string_buffer + len);
+  X str2 = STRING(len);
+  memcpy(objdata(str2), string_buffer, len);
+  return unify(intern(str2), key);
+}
+
+PRIMITIVE(cdb_key, X term, X key) {
+  X str2;
+
+  if(is_atom(term)) {
+    X str = slot_ref(term, 0);
+    XWORD len = string_length(str);
+    memcpy(string_buffer, objdata(str), len);
+    memcpy(string_buffer + len, "\0010", 3); /* + terminator */
+    str2 = STRING(len + 2);
+    memcpy(objdata(str2), string_buffer, len + 4); /* s.a. */
+  }
+  else {
+    ASSERT(is_compound(term), "cdb_key: bad term");
+    X str = slot_ref(slot_ref(term, 0), 0);
+    XWORD len = string_length(str);
+    memcpy(string_buffer, objdata(str), len);
+    sprintf(string_buffer + len, "\001" XWORD_OUTPUT_FORMAT, objsize(term) - 1);
+    len += strlen(string_buffer + len);
+    str2 = STRING(len);
+    memcpy(objdata(str2), string_buffer, len);
+  }
+
+  return unify(intern(str2), key);
+}
+
 
 #endif
 
