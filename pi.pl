@@ -6,6 +6,7 @@
 :- include('dcg.pl').
 
 main :-
+	pi_init,
 	global_set(pi_trace_depth, none),
 	command_line_arguments(ARGS),
 	'$predicate_address'(dcg_rule/2, ADR),
