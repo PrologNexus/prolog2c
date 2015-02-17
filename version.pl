@@ -1,7 +1,7 @@
 %%%% version number and copyright
 
 
-prolog_version(2).
+prolog_version(3).
 prolog_title('?-Prolog').
 prolog_copyright('(c)MMXV Felix L. Winkelmann').
 
