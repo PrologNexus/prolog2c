@@ -1541,9 +1541,9 @@ Version history
     - The interpreter handles DCG rules now.
     - Added "foreign pointer" type.
     - Added support for coroutines (freeze + dif)
-    - The compiler does now Second-level clause-indexing on structure 
+    - The compiler does now second-level clause-indexing on structure 
       terms.
-    - A few more tail-call opporunities are now detected.
+    - A few more tail-call opportunities are now detected.
 
   - Version 1:
 
