@@ -212,6 +212,15 @@ compile_body_expression(\+X, _, D, D, B1, B2, S1, S2) :-
 	compile_body_expression(X, nontail, D, _, B1, B2, S3, S2),
 	emit(restore_choice_points, fail, label(L1), restore_choice_points).
 
+% once
+compile_body_expression(once(X), _, D, D, B1, B2, S1, S2) :-
+	gen_label(L1, S1, S3),
+	gen_label(L2, S3, S4),
+	emit(save_choice_points, push_choice_point(L1)),
+	compile_body_expression(X, nontail, D, _, B1, B2, S4, S2),
+	emit(restore_choice_points, jump(L2)),
+	emit(label(L1), restore_choice_points, fail, label(L2)).
+
 % findall
 compile_body_expression(findall(T, G, L), TAIL, D, D, B1, B2, S1, S2) :-
 	compile_body_expression('$findall_start', nontail, D, _, B1, _, S1, S4),
