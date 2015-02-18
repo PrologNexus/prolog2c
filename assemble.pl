@@ -93,9 +93,10 @@ assemble(unify_throw(R), S, S) :- gen('if(!unify(catch_top->ball,', R, ')) RETHR
 assemble(make_term(RLIST, R), S, S) :-
 	length(RLIST, N),
 	N1 is N - 1,
-	gen('X ', R, '=make_term(', N1, ','),
-	generate_data_list(RLIST),
-	gen(');\n').
+	RLIST = [F|ARGS],
+	gen('X ', R, '=STRUCTURE(', F, ','),
+	gen(N1, ');\n'),
+	generate_slot_inits(R, 1, ARGS).
 
 assemble(make_pair(CAR, CDR, R), S, S) :-
 	gen('X ', R, '=make_pair('),
@@ -367,3 +368,10 @@ generate_foreign_arguments([X]) :- gen(',deref(', X, ')').
 generate_foreign_arguments([X|MORE]) :-
 	gen(',deref(', X, ')'),
 	generate_foreign_arguments(MORE).
+
+generate_slot_inits(_, _, []).
+generate_slot_inits(R, I, [X|M]) :-
+	gen('SLOT_INIT(', R, ',', I, ','),
+	gen(X, ');\n'),
+	I2 is I + 1,
+	generate_slot_inits(R, I2, M).
