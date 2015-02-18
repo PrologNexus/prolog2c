@@ -145,8 +145,7 @@ respond_to(Board, From, To, OutBoard) :-
 % statistics,
 	select_move(NewBoard, ComputerFrom, ComputerTo, Rating),
 % statistics,
-finish_move(NewBoard, ComputerFrom, ComputerTo, Rating, OutBoard),
-	write('XXXX'), nl,
+	finish_move(NewBoard, ComputerFrom, ComputerTo, Rating, OutBoard),
 	% true, !.
 	garbage_collect, !.	% gc
 
@@ -169,8 +168,7 @@ select_move(Board, From, To, book) :-		% Use book
 select_move(Board, From, To, Rating) :-		% time for ALPHA-BETA
 	computer(ComputerColor),
 	ply_depth(Depth),
-	alpha_beta(Board, ComputerColor, Depth, -32000, 32000, 
-		   move(From, To), Rating).
+	alpha_beta(Board, ComputerColor, Depth, -32000, 32000, move(From, To), Rating).
 
 alpha_beta(Board, Color, 0, Alpha, Beta, BestMove, MoveVal) :-
 	computer(ComputerColor),
@@ -179,8 +177,7 @@ alpha_beta(Board, Color, 0, Alpha, Beta, BestMove, MoveVal) :-
 	% write(' val: '), write(MoveVal), nl.
 alpha_beta(Board, Color, Depth, Alpha, Beta, BestMove, MoveVal) :-
 	collect_moves(Board, Color, MoveList), !,
-	find_best(Board, Color, MoveList, Depth, Alpha, Beta, 
-		  BestMove, MoveVal).
+	find_best(Board, Color, MoveList, Depth, Alpha, Beta, BestMove, MoveVal).
 
 find_best(Board, Color, [move(From, To)|Moves], Depth, Alpha, Beta, 
 	  BestMove, BestVal) :-
@@ -191,8 +188,7 @@ find_best(Board, Color, [move(From, To)|Moves], Depth, Alpha, Beta,
 	NextDepth is Depth - 1,
 	opposite(Color, OppositeColor),
 	alpha_beta(NewBoard, OppositeColor, NextDepth, Alpha, Beta, _, Val),
-	sufficient(Board, Color, Moves, Depth, Alpha, Beta, 
-		   move(From,To), Val, BestMove, BestVal).
+	sufficient(Board, Color, Moves, Depth, Alpha, Beta, move(From,To), Val, BestMove, BestVal).
 
 sufficient(Board, Color, [], Depth, Alpha, Beta, Move, Val, Move, Val).	
 sufficient(Board, Color, Moves, Depth, Alpha, Beta, Move, Val, Move, Val) :-
