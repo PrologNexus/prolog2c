@@ -51,6 +51,14 @@ NOTES											              -*- Org -*-
     - at least as much as possible and sensible.
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
+** Remove unused predicates
+   - could be done in assembly-stage
+     - register called predicates (and caller), compute unused
+       predicates and predicates used by other unused predicates and
+       drop sections of pseudo-instructions.
+     - add pseudo-instructions for marking start + end of predicate
+       definition.
+** Peeophole optimization of pseudo-instructions
 ** Environment trimming
    - sort variables by lifetime (reversed) and trim env_top after last use.
    - may only be applicable when env_top didn't change.
@@ -72,7 +80,7 @@ NOTES											              -*- Org -*-
    - could use single-bucket db, with unififcation inside
      db_find/db_next (provided, we implement matching in file:pc.h)
 ** Deterministic goal in condition of if-then-else can drop some of the CP dance
-   - same for '\\+'/2
+   - same for '\\+'/2, once/1
    - fail could actually just perform a jump, perhaps redefine FAIL
      temporarily (or use intermediate macro).
 ** Analyze program before compiling to pseudo-instructions
@@ -96,7 +104,7 @@ NOTES											              -*- Org -*-
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
 * Documentation
-** News
+** DONE News
    - once/1
    - undefined goals in interpreter throw error.
    - slightly faster db-key computation.
@@ -120,6 +128,7 @@ NOTES											              -*- Org -*-
 * Interpreter
 ** TODO Allow detecting interpreter from running program
    - or find some trick.
+   - could simply record some entry in RDB.
 ** Add "listing"
    - listing/1
    - listing/0
