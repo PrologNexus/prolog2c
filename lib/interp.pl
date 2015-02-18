@@ -194,6 +194,7 @@ pi_system_predicate(expand_term, 2).
 pi_system_predicate(delay, 2).
 pi_system_predicate(freeze, 2).
 pi_system_predicate(dif, 2).
+pi_system_predicate(once, 1).
 
 call_system_predicate(TERM) :-
 	!,
@@ -253,6 +254,10 @@ pi_call_primitive(freeze, 2, TERM) :-
 pi_call_primitive(dif, 2, TERM) :-
 	!, arg(1, TERM, X), arg(2, TERM, Y),
 	dif(X, Y).
+
+pi_call_primitive(once, 1, TERM) :-
+	!, arg(1, TERM, X), 
+	once(call(X)).
 
 pi_bagof_setof(OP, TERM) :-
 	!,
