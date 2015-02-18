@@ -23,10 +23,6 @@ NOTES											              -*- Org -*-
 *** name/2 and functor/3 (and others?) may exceed heap-reserve for large inputs
 ** Minor
 *** file:0085-boyer.pl takes longer than timeout when run with file:check
-*** Undefined clauses in interp fail instead of throwing error
-    - error would be better, but combined clause-retrieval and
-      unification with goal means that we would have to check after
-      failure whether the predicate is defined at all.
 *** Failure in term_expansion/2 will simply be ignored
 *** The output of TRACE_TAILCALL() is somewhat confusing
     - Not sure if arguments output reflects the correct state.
@@ -121,6 +117,8 @@ NOTES											              -*- Org -*-
 ** TODO Does retract-loop work?
    - we know it works for the rdb, but should also test for cdb.
 * Interpreter
+** TODO Allow detecting interpreter from running program
+** TODO Expose prolog_version/1
 ** Add "ensure_loaded" directive
 ** Add "listing"
    - listing/1
@@ -139,11 +137,11 @@ NOTES											              -*- Org -*-
 ** Interpreter
 *** expand_term/2 + term_expansion/2
 * Release steps
-** TODO Document changes
-** TODO make fullcheck
-** TODO Test on WIN64
-** TODO Test on Mac
-** TODO Test on [pi], [call-cc]
-** TODO Test dist
-** TODO Tag, push, upload
-** TODO Bump version
+** Document changes
+** make fullcheck
+** Test on WIN64
+** Test on Mac
+** Test on [pi], [call-cc]
+** Test dist
+** Tag, push, upload
+** Bump version (file:README + file:version.pl)
