@@ -22,7 +22,8 @@
 
 
 pi_init :-
-	assertz(term_expansion(X, X)).
+	assertz(term_expansion(X, X)),
+	recordz(pi_silent, yes).
 
 pi_do_goal(Goal) :-
 	system(Goal),		% <--- check for a built in predicate

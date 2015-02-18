@@ -7,7 +7,6 @@
 
 main :-
 	pi_init,
-	recordz(pi_silent, yes, REF),
 	global_set(pi_trace_depth, none),
 	command_line_arguments(ARGS),
 	'$predicate_address'(dcg_rule/2, ADR),
@@ -16,7 +15,7 @@ main :-
 	!,
 	((recorded(pi_initialization_goal, G); recorded(pi_default_initialization_goal, G))
 	 -> call(G)
-	 ; erase(REF), repl).
+	 ; recorded(pi_silent, _, REF), erase(REF), repl).
 
 repl :-
 	display('?- '), flush,
