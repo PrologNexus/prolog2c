@@ -4,6 +4,8 @@ NOTES											              -*- Org -*-
 * Issues
 ** Major
 *** TODO 0028-endless-tailcall crashes in pi
+    - hits some limit, not sure which.
+    - is in any case not keeping the memory-use constant.
 *** TODO [#B] Implementation of if-then-else seems to be broken
    - if-then stack gets out of balance, found here:
      call_primitive('->', 2, TERM) :-
@@ -22,7 +24,6 @@ NOTES											              -*- Org -*-
    - also read_atom/2, recorded/X, retract/1 and clause/X
 *** name/2 and functor/3 (and others?) may exceed heap-reserve for large inputs
 ** Minor
-*** file:0085-boyer.pl takes longer than timeout when run with file:check
 *** Failure in term_expansion/2 will simply be ignored
 *** The output of TRACE_TAILCALL() is somewhat confusing
     - Not sure if arguments output reflects the correct state.
@@ -89,14 +90,18 @@ NOTES											              -*- Org -*-
    - atom-length (string_length())
    - extend name/2, get/1, get0/1, put/1, skip/1 (and probably many
      more)
-** once/1
 ** Allow "library(ATOM)" as file-spec
    - consult/1, include/1
 ** Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
 * Documentation
-** TODO Replace README on web-page with html and update link
+** News
+   - once/1
+   - undefined goals in interpreter throw error.
+   - slightly faster db-key computation.
+   - pi: ensure_loaded/1 directive.
+   - added -q option to pi, also added some verbose output when including/consulting.
 * Build options
 ** Allow static allocation of data-areas
    - statically allocated data for all areas.
@@ -112,14 +117,9 @@ NOTES											              -*- Org -*-
 ** Detect singleton variables
 ** Report unused predicates
 * Tests
-** TODO Find some non-trivial test for coroutines
-   - see Prolog-impl. book
-** TODO Does retract-loop work?
-   - we know it works for the rdb, but should also test for cdb.
 * Interpreter
 ** TODO Allow detecting interpreter from running program
-** TODO Expose prolog_version/1
-** Add "ensure_loaded" directive
+   - or find some trick.
 ** Add "listing"
    - listing/1
    - listing/0
