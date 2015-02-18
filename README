@@ -1115,43 +1115,43 @@ Precedence of builtin operators
 Directives
 ----------
 
-  The following directives are available in compiled code and can be
-  declared using the usual ":- DIRECTIVE, ... ." syntax:
+  The following directives are available and can be declared using the
+  usual ":- DIRECTIVE, ... ." syntax. Note that some of these are
+  available only in compiled code, some only in interpreted code and
+  some in both:
 
-       global_variable(NAME)
+       global_variable(NAME)                    [compiler]
 
   Declares NAME as a global variable, accessible with global_set/2 and
   global_ref/2.
  
-       verbatim(CODE)
+       verbatim(CODE)                           [compiler]
 
   Include CODE directly in the produced C file.  All code declared in
   "verbatim" directives will be concatenated and emitted at the start
   of the generated code, directly after the inclusion of "pc.h".
 
-       pre_initialization(GOAL)  
+       pre_initialization(GOAL)                 [compiler]
 
   Declares GAOL to be a pre-initialization goal.  This is similar to
   the "initialization" directive, but pre-initialization goals are run
   before all normal initialization goals.
 
-       determinate(PI)
+       determinate(PI)                          [compiler]
 
   Declares the predicates specified in PI as being determinate, which
   gives more opportunities for tail-call optimization. PI should be of
   the form "<predicate-name>/<arity>", "<predicate-name>" or a list of
   such indicators.
 
-  The following directives are available in the compiler and interpreter:
-
-       include(FILENAME)          
+       include(FILENAME)                        [compiler, interpreter]
 
   Include the contents of FILENAME at the current position in the
   source-code that contains this clause. If the file exists and has
   the extension ".pl", then the extension may be omitted in the
   directive.
  
-       initialization GOAL
+       initialization GOAL                      [compiler, interpreter]
 
   Declares GOAL to be an initialization goal that will be invoked when
   a compiled program is started or when a file given to the
@@ -1159,12 +1159,17 @@ Directives
   initialization goals may be declared and are invoked in the order in
   which they appear in the source code.
 
-  In compiler code, the default initialization goal is main/0.
+  In compiled code, the default initialization goal is main/0.
                              
-      op(P, A, N)
+      op(P, A, N)                               [compiler, interpreter]
 
   Declares an operator - identical to op/3, but done before reading
   any further clauses.
+
+      ensure_loaded(FILENAME)                   [interpreter]
+
+  Similar to "include", but only includes FILENAME if it has not been
+  earlier included using "ensure_loaded", "include" or "consult".
 
 
 Performance tips

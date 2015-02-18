@@ -298,6 +298,8 @@ consult(FILE) :-
 	pi_find_file(FILE, FILE2),
 	seeing(OLD),
 	see(FILE2),
+	recordz(pi_loaded, FILE2),
+	pi_msg('% consulting %q ...\n', FILE2),
 	pi_consult_terms(0/0),
 	seen,
 	see(OLD).
@@ -310,15 +312,17 @@ pi_consult_terms(PNA) :-
 	!,
 	pi_consult_terms(CNA).
 pi_consult_terms(PNA) :-
-	recorded(include_file_stack, [NEXT|MORE], REF),
+	recorded(pi_include_file_stack, [NEXT|MORE], REF),
 	erase(REF),
-	recordz(include_file_stack, MORE),
+	recordz(pi_include_file_stack, MORE),
 	seen,
 	see(NEXT),
 	!,
 	pi_consult_terms(PNA).
 pi_consult_terms(_).
 
+pi_find_file(FILE, FILE2) :-
+	\+atom(FILE), atom_codes(FILE, F2), pi_find_file(F2, FILE2).
 pi_find_file(FILE, FILE) :-
 	exists_file(FILE), !.
 pi_find_file(FILE, FILE2) :-
@@ -345,22 +349,26 @@ pi_process_directive((X, Y)) :-
 	pi_process_directive(X),
 	pi_process_directive(Y).
 pi_process_directive(initialization(G)) :-
-	(recorded(initialization_goal, G1, REF)
-	-> erase(REF), recordz(initialization_goal, (G1, G))
-	; recordz(initialization_goal, G)
+	(recorded(pi_initialization_goal, G1, REF)
+	-> erase(REF), recordz(pi_initialization_goal, (G1, G))
+	; recordz(pi_initialization_goal, G)
 	).
+pi_process_directive(ensure_loaded(FILE)) :-
+	pi_find_file(FILE, FILE2),
+	(recorded(pi_loaded, FILE2); pi_process_directive(include(FILE2))).
 pi_process_directive(include(FILE)) :-
 	pi_find_file(FILE, FILE2),
 	seeing(CURRENT),
-	(recorded(include_file_stack, OLD, REF)	-> erase(REF); OLD = []),
-	recordz(include_file_stack, [CURRENT|OLD]),
-	see(FILE2).
+	(recorded(pi_include_file_stack, OLD, REF)	-> erase(REF); OLD = []),
+	recordz(pi_include_file_stack, [CURRENT|OLD]),
+	see(FILE2),
+	recordz(pi_loaded, FILE2),
+	pi_msg('% including %q ...\n', FILE2).
 pi_process_directive(X) :-
-	(call(X)
-	; seen, pi_close_all_files, throw(error('latent goal failed', X))).
+	(call(X); seen, pi_close_all_files, throw(error('latent goal failed', X))).
 
 pi_close_all_files :-
-	recorded(include_file_stack, STACK, REF),
+	recorded(pi_include_file_stack, STACK, REF),
 	erase(REF),
 	member(FILE, STACK), see(FILE), seen, fail.
 pi_close_all_files.
@@ -460,3 +468,10 @@ pi_list_is_free_of([Head|Tail], Var) :-
 	!,
 	pi_list_is_free_of(Tail, Var).
 pi_list_is_free_of([], _).
+
+
+%% messages
+
+pi_msg(FMT) :- pi_msg(FMT, ARGS).
+pi_msg(FMT, ARGS) :-
+	(recorded(pi_silent, _); writef(FMT, ARGS)), !.

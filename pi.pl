@@ -7,15 +7,16 @@
 
 main :-
 	pi_init,
+	recordz(pi_silent, yes, REF),
 	global_set(pi_trace_depth, none),
 	command_line_arguments(ARGS),
 	'$predicate_address'(dcg_rule/2, ADR),
 	asserta((term_expansion((X --> Y), Z) :- '$call_predicate'(ADR, [(X --> Y), Z]))),
 	parse_arguments(ARGS),
 	!,
-	((recorded(initialization_goal, G); recorded(default_initialization_goal, G))
+	((recorded(pi_initialization_goal, G); recorded(pi_default_initialization_goal, G))
 	 -> call(G)
-	 ; repl).
+	 ; erase(REF), repl).
 
 repl :-
 	display('?- '), flush,
@@ -63,8 +64,11 @@ parse_arguments(['-version'|_]) :- show_version_and_exit.
 parse_arguments(['-t'|MORE]) :-
 	global_set(pi_trace_depth, 0),
 	parse_arguments(MORE).
+parse_arguments(['-q'|MORE]) :-
+	recordz(pi_silent, yes),
+	parse_arguments(MORE).
 parse_arguments(['-i', G|MORE]) :-
-	recordz(default_initialization_goal, G),
+	recordz(pi_default_initialization_goal, G),
 	parse_arguments(MORE).
 parse_arguments([FILENAME|_]) :-
 	name(FILENAME, [45|_]), usage(1).
@@ -73,5 +77,5 @@ parse_arguments([FILENAME|MORE]) :-
 	parse_arguments(MORE).
 
 usage(CODE) :-
-	display('usage: pi [-version] [-h] [-t] [-i NAME] FILENAME ...\n'),
+	display('usage: pi [-version] [-q] [-h] [-t] [-i NAME] FILENAME ...\n'),
 	halt(CODE).
