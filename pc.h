@@ -672,9 +672,9 @@ static void crash_hook()
 
 /// Custom variants of some libc functions
 
-static char *xstrndup(char *str, int len)
+static char *xstrndup(XCHAR *str, int len)
 {
-  char *buf = malloc(len + 1);
+  XCHAR *buf = malloc(len + 1);
   ASSERT(buf, "can not duplicate string");
   strncpy(buf, str, len);
   return buf;
@@ -789,8 +789,7 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
 
 	fputc('\'', fp);
       }
-      else 
-	fprintf(fp, "%s", name);
+      else fputs(name, fp);
 
       break;
     }
@@ -2954,7 +2953,7 @@ static int compare_terms(X x, X y)
 	return compare_strings((XCHAR *)objdata(str), string_length(str), "[]", 2); }
       
     case PORT_TYPE:
-      { char *buf = port_name(y);
+      { XCHAR *buf = port_name(y);
 	X str = slot_ref(x, 0);
 	return compare_strings((XCHAR *)objdata(str), string_length(str), buf, strlen(buf)); }
     }
@@ -2962,26 +2961,22 @@ static int compare_terms(X x, X y)
   case PORT_TYPE:
     switch(yt) {
     case END_OF_LIST_TYPE:
-      { char *buf = port_name(x);
+      { XCHAR *buf = port_name(x);
 	return compare_strings(buf, strlen(buf), "[]", 2); }
       
     case SYMBOL_TYPE:
-      { char *buf = port_name(x);
+      { XCHAR *buf = port_name(x);
 	X str = slot_ref(y, 0);
 	return compare_strings(buf, strlen(buf), (XCHAR *)objdata(str), string_length(str)); }
       
     case PORT_TYPE:
-      { char *buf1 = port_name(x);
-	char *buf2 = port_name(y);
-	return compare_strings(buf1, strlen(buf1), buf2, strlen(buf2)); }
+      return (XWORD)(((PORT_BLOCK *)y)->fp - ((PORT_BLOCK *)x)->fp);
     }
 
   case FLONUM_TYPE: 
-    if(flonum_to_float(x) < flonum_to_float(y)) return 1;
-      
-    if(flonum_to_float(x) > flonum_to_float(y)) return -1;
-      
-    return 0;
+    { XFLOAT n = flonum_to_float(y) - flonum_to_float(x);
+      return n > 0 ? 1 : (n < 0 ? -1 : 0);
+    }
     
   case VAR_TYPE:
     return (XWORD)slot_ref(y, 1) - (XWORD)slot_ref(x, 1);
@@ -3373,7 +3368,7 @@ static void push_argument_list(X lst)
   else goto INIT_GOAL;					\
 fail: INVOKE_CHOICE_POINT;						\
 fail_exit:								\
- fprintf(stderr, "no.\n");						\
+ fputs("no.\n", stderr);						\
  TERMINATE(C, EXIT_FAILURE);						\
 success_exit:								\
  CALL_TRIGGERED(exit_r);						\
