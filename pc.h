@@ -2263,6 +2263,13 @@ static void cleanup()
 
 static void terminate(CHOICE_POINT *C, int code)
 {
+  if(active_finalizers) {
+    DRIBBLE("[running finalizers ...]\n");
+    
+    for(FINALIZER *fp = active_finalizers; fp != NULL; fp = fp->next)
+      fp->finalizers(fp->object);
+  }
+
   DRIBBLE("[terminating - T: " XWORD_OUTPUT_FORMAT ", C: " XWORD_OUTPUT_FORMAT
 	  ", A: " XWORD_OUTPUT_FORMAT ", E: " XWORD_OUTPUT_FORMAT "]\n",
 	  (XWORD)trail_top - (XWORD)trail_stack,
