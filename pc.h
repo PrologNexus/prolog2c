@@ -1988,7 +1988,6 @@ static void collect_garbage(CHOICE_POINT *C)
   if(alloc_top >= fromspace_limit) 
     CRASH("heap exhausted");				
 
-  //XXX currently not used
   // check finalizers
   FINALIZER *prev = NULL;
   FINALIZER *fp = active_finalizers; 
@@ -1997,11 +1996,13 @@ static void collect_garbage(CHOICE_POINT *C)
     XWORD h = objbits(fp->object);
 
     if((h & GC_MARK_BIT) != 0) {
+      // was marked, update object ptr
       fp->object = fptr_to_ptr(h);
       prev = fp;
       fp = fp->next;
     }
     else {
+      // was reclaimed, remove from list, run and add to free_finalizers
       DRIBBLE("[running finalizer on %s %p]\n", type_name(TAG_TO_TYPE(h)), fp->object);
 
       if(prev != NULL)
@@ -2052,7 +2053,11 @@ static void collect_garbage(CHOICE_POINT *C)
 
 static void set_finalizer(X x, void (*fn)(X))
 {
-  FINALIZER *fp = malloc(sizeof(FINALIZER));
+  FINALIZER *fp = free_finalizers;
+
+  if(!fp) fp = malloc(sizeof(FINALIZER));
+  else free_finalizers = fp->next;
+
   fp->next = active_finalizers;
   fp->finalizer = fn;
   fp->object = x;
