@@ -216,6 +216,10 @@ Builtin predicates
 
     Always succeeds [ISO]
 
+        once(+GOAL)
+
+    Execute GOAL, but only for the first solution [ISO]
+
         findall(?T, +GOAL, -R)
 
     Unify R with the list of all T for goal GOAL [ISO]
