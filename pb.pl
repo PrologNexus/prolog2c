@@ -340,7 +340,7 @@ c_value(const(T), REF) :- c_value(T, REF).
 c_value(unsigned(T), REF) :- c_value(T, REF).
 c_value(pointer(const(T)), REF) :- c_value(pointer(T), REF).
 c_value(pointer(char), REF) :-
-	gen('(', REF, '==ZERO?NULL:((const char *)objdata(slot_ref(check_type_SYMBOL(', REF, '),0))))').
+	gen('(', REF, '==ZERO?NULL:((char *)objdata(slot_ref(check_type_SYMBOL(', REF, '),0))))').
 c_value(pointer(_), REF) :-
 	gen('(', REF, '==ZERO?NULL:(void *)slot_ref(check_type_POINTER(', REF, '),0))').
 c_value('X', REF) :- gen(REF).
