@@ -3071,6 +3071,11 @@ static XCHAR *to_string(X x, int *size)
   if(is_FIXNUM(x))
     type_error("atom_or_string", x);
 
+  if(x == END_OF_LIST_VAL) {
+    *size = 0;
+    return "";
+  }
+
   switch(objtype(x)) {
   case SYMBOL_TYPE:
     { X str = slot_ref(x, 0);
