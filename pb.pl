@@ -262,6 +262,10 @@ gen_out_results(I, [_|R]) :-
 generate_wrapper_file(FNAME, HNAME) :-
 	tell(FNAME),
 	name(HFILE, HNAME),
+	(\+recorded(include_source, yes)
+	; recorded(source_file, FN),
+	 gen(':- verbatim(\'#include \"', FN, '\"\').\n')
+	),
 	gen(':- verbatim(\'#include "', HFILE, '"\').\n'),
 	generate_wrappers,
 	told.
@@ -390,6 +394,9 @@ parse_arguments(['-h'|_]) :- usage(0).
 parse_arguments(['-help'|_]) :- usage(0).
 parse_arguments(['--help'|_]) :- usage(0).
 parse_arguments(['-version'|_]) :- show_version_and_exit.
+parse_arguments(['-i'|MORE]) :-
+	recordz(include_source, yes),
+	parse_arguments(MORE).
 parse_arguments(['-q'|MORE]) :-
 	recordz(silent, yes),
 	parse_arguments(MORE).
@@ -403,7 +410,7 @@ parse_arguments([FILENAME|MORE]) :-
 	parse_arguments(MORE).
 
 usage(CODE) :-
-	display('usage: pb [-version] [-h] [-q] [-o OUTPUTNAME] [FILENAME]\n'),
+	display('usage: pb [-version] [-h] [-q] [-i] [-o OUTPUTNAME] [FILENAME]\n'),
 	halt(CODE).
 
 process_input_file(user) :-
