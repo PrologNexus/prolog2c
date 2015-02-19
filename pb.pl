@@ -34,7 +34,7 @@ next_definition(RTYPE1) -->
 	!, ws, next_definition(RTYPE).
 next_definition(_) --> (";"; "").
 
-verbatim_block([92,10|R]) --> "\\", skip_line, verbatim_block(R).
+verbatim_block([92,10|R]) --> "\\", ws0, [10], skip_line, verbatim_block(R).
 verbatim_block([10]) --> [10].
 verbatim_block([C|R]) --> [C], verbatim_block(R).
 
@@ -44,6 +44,9 @@ parse_suffix(RTYPE, RTYPE, none) --> [].
 
 storage --> ("extern"; "static"; "").
 	     
+ws0([C|R], OUT) :- memberchk(C, [32, 13, 9]), !, ws0(R, OUT).
+ws0 --> "".
+
 ws1([C|R], OUT) :- memberchk(C, [32, 10, 13, 9]), !, ws1(R, OUT).
 ws1 --> "//", skip_line, !, ws1.
 ws1 --> [].
