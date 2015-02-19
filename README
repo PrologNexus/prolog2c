@@ -1329,7 +1329,10 @@ Automatic generation of wrapper-code
   C++/C99 style ("// ..."). Lines starting with "#" will be copied
   unchanged into the ".h" file (including "... \" continuation lines).
   All other text should be hold valid variable- or
-  function-definitions.
+  function-definitions. You can re-use the binding-definitions file
+  for declaring function prototypes by passing the "-i" option to
+  "pb", which will add code to include "<FILENAME>" to the generated
+  ".h" file.
 
   Variable definitions may be of the form
 
