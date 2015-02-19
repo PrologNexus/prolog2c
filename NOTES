@@ -3,6 +3,7 @@ NOTES											              -*- Org -*-
 
 * Issues
 ** Major
+*** TODO Why is so much space accumulating on arg- and env-stacks?
 *** TODO 0028-endless-tailcall crashes in pi
     - hits some limit, not sure which.
     - is in any case not keeping the memory-use constant.
@@ -105,6 +106,10 @@ NOTES											              -*- Org -*-
    - "max", "min", "asin", "acos"
 * Documentation
 ** DONE News
+   - string-canonicalization didn't handle empty strings.
+   - pb: "-i" option.
+   - pb: handling "\" inside text (not followed by WS + NL)
+   - pb: fixed handling zero-argument function with result.
    - once/1
    - undefined goals in interpreter throw error.
    - slightly faster db-key computation.
