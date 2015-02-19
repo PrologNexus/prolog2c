@@ -312,9 +312,11 @@ function_wrapper(NAME, RTYPE, ARGTYPES) :-
 	gen(':- determinate(', NAME, '/', N2, ').\n'),
 	gen(NAME, '('),
 	gen_list(VARS),
-	gen(',R) :- foreign_call(f_', NAME, '('),
+	(VARS == []; gen(',')),
+	gen('R) :- foreign_call(f_', NAME, '('),
 	gen_list(VARS),
-	gen(',R)).\n'), !.
+	(VARS == []; gen(',')),
+	gen('R)).\n'), !.
 
 
 %% value conversion from and to C
