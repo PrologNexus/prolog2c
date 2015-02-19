@@ -2267,7 +2267,7 @@ static void terminate(CHOICE_POINT *C, int code)
     DRIBBLE("[running finalizers ...]\n");
     
     for(FINALIZER *fp = active_finalizers; fp != NULL; fp = fp->next)
-      fp->finalizers(fp->object);
+      fp->finalizer(fp->object);
   }
 
   DRIBBLE("[terminating - T: " XWORD_OUTPUT_FORMAT ", C: " XWORD_OUTPUT_FORMAT
@@ -3271,11 +3271,11 @@ static void push_argument_list(X lst)
 #define FINAL_CALL(lbl, ret)				 \
   { if(C == C0 + 1) {					 \
       TRACE_TAIL_CALL(CURRENT_NAME, CURRENT_ARITY);	 \
-    R = C0->R;						 \
-    E = C0->E;						 \
-    env_top = C0->env_top;				 \
-    C = C0;						 \
-    C0 = C0->C0; }					 \
+      R = C0->R;					 \
+      E = C0->E;					 \
+      env_top = C0->env_top;				 \
+      C = C0;						 \
+      C0 = C0->C0; }					 \
     else R = ret;					 \
     goto lbl; }
 
