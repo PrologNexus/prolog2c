@@ -5,11 +5,12 @@
 %
 % "#" ... ["\" \n ...]
 % [STORAGE] TYPE IDENTIFIER [("[" [INTEGER] "]") ...] "," ... [";"]
-% [STORAGE] TYPE IDENTIFIER "(" ([DIRECTION] TYPE [IDENTIFIER [("[" [INTEGER] "]") ...]]) "," ... ")" [";"]
+% [STORAGE] [MODE] TYPE IDENTIFIER "(" ([DIRECTION] TYPE [IDENTIFIER [("[" [INTEGER] "]") ...]]) "," ... ")" [";"]
 %
 % TYPE = ["const"] BASETYPE ("const" | "*") ...
 % STORAGE = "extern" | "static"
 % DIRECTION = "/*" ("in" | "out") "*/"
+% MODE = "/*" "success" "*/"
 % BASETYPE = ["unsigned"] ("int" | "char" | "short" | "long" | "float" | "double" | "void") 
 
 
@@ -22,10 +23,13 @@ parse_definition(none, _, _, _) -->
 	ws, "#", verbatim_block(BLOCK),
 	{add_verbatim_block([35|BLOCK])}.
 parse_definition(NAME, REALNAME, RTYPE, ARGTYPES) -->
-	ws, storage, result_type(RTYPE1), ws, entity_name(NAME, REALNAME),
+	definition_prefix(RTYPE1), ws, entity_name(NAME, REALNAME),
 	ws, parse_suffix(RTYPE1, RTYPE, ARGTYPES),
 	{store_definition(NAME, REALNAME, RTYPE, ARGTYPES)},
 	ws, next_definition(RTYPE).
+
+definition_prefix(RTYPE) --> ws, storage, ws1, result_type(RTYPE).
+definition_prefix(RTYPE) --> ws, result_type(RTYPE).
 
 next_definition(RTYPE1) -->
 	",", ws, entity_name(NAME, REALNAME), ws,
@@ -42,7 +46,7 @@ parse_suffix(RTYPE, FINALRTYPE, ARGTYPES) --> indices(RTYPE, FINALRTYPE).
 parse_suffix(RTYPE, RTYPE, ARGTYPES) --> arguments(ARGTYPES).
 parse_suffix(RTYPE, RTYPE, none) --> [].
 
-storage --> ("extern"; "static"; "").
+storage --> ("extern"; "static").
 	     
 ws0([C|R], OUT) :- memberchk(C, [32, 13, 9]), !, ws0(R, OUT).
 ws0 --> "".
@@ -63,6 +67,7 @@ skip_comment --> [_], !, skip_comment.
 
 eof(IN) :- ws(IN, []).
 
+result_type(success(RTYPE)) --> "/*", ws1, "success", ws1, "*/", ws, type(RTYPE).
 result_type(TYPE) --> type(TYPE).
 
 identifier(ID, [C|IN], OUT) :-
@@ -192,22 +197,29 @@ function_primitive(NAME, REALNAME, void, []) :-
 	gen('\nstatic inline int f_', REALNAME, '(CHOICE_POINT *C0){\n'),
 	gen(NAME, '();\nreturn 1;}\n'), !.
 function_primitive(NAME, REALNAME, RTYPE, ARGTYPES) :-
-	gen('\nPRIMITIVE(f_', REALNAME),
+	gen('\static inline int f_', REALNAME, '(CHOICE_POINT *C0'),
 	length(ARGTYPES, ARGC),
 	forall(between(1, ARGC, I), gen(',X x', I)),
-	(RTYPE == void; gen(',X r')),
+	gen_result_arg(RTYPE),
 	gen('){\n'),
 	gen_out_vars(1, ARGTYPES),
 	gen_call(RTYPE, NAME, ARGTYPES, 'x'),
+	(RTYPE \= success(_); gen('if(!x) return 0;\n')),
 	gen_out_results(1, ARGTYPES),
-	(RTYPE \== void 
-	-> gen('return unify('), p_value(RTYPE, 'x'), gen(',r);}\n')
-	; gen('return 1;}\n')
-	), !.
+	gen_return(RTYPE), gen('}\n'), !.
 
+gen_return(void) :- gen('return 1;\n').
+gen_return(success(_)) :- gen('return 1;\n').
+gen_return(RTYPE) :- gen('return unify('), p_value(RTYPE, 'x'), gen(',r);\n').
+
+gen_result_arg(success(_)).
+gen_result_arg(void).
+gen_result_arg(_) :- gen(',X r').
+	       
 gen_type(pointer(T)) :- !, gen_type(T), gen('*').
 gen_type(const(T)) :- !, gen('const '), gen_type(T).
 gen_type(unsigned(T)) :- !, gen('unsigned '), gen_type(T).
+gen_type(success(T)) :- !, gen_type(T).
 gen_type(T) :- gen(T).
 
 gen_call(RTYPE, NAME, ARGTYPES, RESULT) :-
@@ -297,6 +309,18 @@ function_wrapper(NAME, void, []) :-
 	gen(':- determinate(', NAME, '/0).\n'),
 	gen(NAME, ' :- foreign_call(f_', NAME, ').\n'), !.
 function_wrapper(NAME, void, ARGTYPES) :-
+	findall(_, member(_, ARGTYPES), VARS),
+	length(VARS, N),
+	gen(':- determinate(', NAME, '/', N, ').\n'),
+	gen(NAME, '('),
+	gen_list(VARS),
+	gen(') :- foreign_call(f_', NAME, '('),
+	gen_list(VARS),
+	gen(')).\n'), !.
+function_wrapper(NAME, success(RTYPE), []) :-
+	gen(':- determinate(', NAME, '/0).\n'),
+	gen(NAME, ' :- foreign_call(f_', NAME, ').\n'), !.
+function_wrapper(NAME, success(RTYPE), ARGTYPES) :-
 	findall(_, member(_, ARGTYPES), VARS),
 	length(VARS, N),
 	gen(':- determinate(', NAME, '/', N, ').\n'),

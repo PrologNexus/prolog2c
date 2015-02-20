@@ -1342,7 +1342,7 @@ Automatic generation of wrapper-code
 
   Function definitions should look like this:
 
-    [STORAGECLASS] TYPE IDENTIFIER "(" [ARGUMENT "," ...] ")"
+    [STORAGECLASS] [MODE] TYPE IDENTIFIER "(" [ARGUMENT "," ...] ")"
 
   where ARGUMENT is
 
@@ -1354,6 +1354,10 @@ Automatic generation of wrapper-code
   SIZE should be an integer, if given. IDENTIFIER should be a legal C
   name and may be followed by `/* => REALNAME */`, which will result
   in REALNAME being chosen for the Prolog wrapper.
+
+  If MODE is given and of the form "/* success */", then the result
+  of the C function will be interpreted as a boolean indicating success
+  or failure (and not as an additional "output" argument).
 
   TYPE is a basic type, optionally decorated with one or more "const",
   "unsigned" or "*" qualifiers. Basic types are
