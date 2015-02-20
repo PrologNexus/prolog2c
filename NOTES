@@ -59,7 +59,7 @@ NOTES											              -*- Org -*-
        drop sections of pseudo-instructions.
      - add pseudo-instructions for marking start + end of predicate
        definition.
-** Peeophole optimization of pseudo-instructions
+** Peephole optimization of pseudo-instructions
 ** Environment trimming
    - sort variables by lifetime (reversed) and trim env_top after last use.
    - may only be applicable when env_top didn't change.
@@ -67,6 +67,7 @@ NOTES											              -*- Org -*-
 ** Special-case calls of primitives that are known to always succeed
 ** DONE Take advantage of timestamps when binding vars in unify()
    - implemented in branch /bind-younger/ and seems to work, but trail
+     is not slightly smaller.
 ** writeq/1 could use foreign_call(basic_writeq(X)) for atoms
    - but the name needs to be classified anyway, because of the possibly
      required space in front of it.
@@ -93,14 +94,14 @@ NOTES											              -*- Org -*-
 ** Allow access to delay goals
    - frozen(VAR, PTRARGS) :: return ptr/args pairs,
         non-deterministically
-   - document '$call_predicate' + '$predicate_address'
 ** Unicode
    - arbitrary character codes in strings (UTF-8?)
    - atom-length (string_length())
    - extend name/2, get/1, get0/1, put/1, skip/1 (and probably many
      more)
 ** Allow "library(ATOM)" as file-spec
-   - consult/1, include/1
+   - consult/1, include/1, ensure_loaded/1
+   - would this simply prepend "lib/"?
 ** Extend numerical operators
    - constants "pi", perhaps "e"
    - "max", "min", "asin", "acos"
@@ -110,6 +111,7 @@ NOTES											              -*- Org -*-
    - pb: "-i" option.
    - pb: handling "\" inside text (not followed by WS + NL)
    - pb: fixed handling zero-argument function with result.
+   - pb: "/* success */" result modifier.
    - once/1
    - undefined goals in interpreter throw error.
    - slightly faster db-key computation.
@@ -130,6 +132,7 @@ NOTES											              -*- Org -*-
 ** Detect singleton variables
 ** Report unused predicates
 * Tests
+** TODO profile with gprof
 * Interpreter
 ** TODO Allow detecting interpreter from running program
    - or find some trick.
