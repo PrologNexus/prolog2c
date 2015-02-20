@@ -84,7 +84,7 @@ compile_unification([ARG|MORE], NS, INDEX, BOUND1, BOUND2, S1, S2) :-
 %% distinguish cases: singleton or bound/unbound variable or term (either constant or containing variable)
 compile_unification1(X, NS, _, B, B, S, S) :-
 	indexed_variable(X, N),
-	\+memberchk(N, NS).	% singleton?
+	\+memberchk(N, NS).	% singleton? then do nothing
 compile_unification1(X, _, INDEX, BOUND, BOUND2, S1, S2) :-
 	indexed_variable(X, N),
 	gensym('T', T1, S1, S3),
