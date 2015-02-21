@@ -2355,19 +2355,21 @@ static void profile_emit_data()
   
   //XXX move pinfos into table and sort
   for(PINFO *pinfo = pinfo_list; pinfo != NULL; pinfo = pinfo->next) {
-    XCHAR *name = pinfo->name;
-    int len = strlen(name);
-    fputs(name, fp);
+    if(pinfo->count > 0) {
+      XCHAR *name = pinfo->name;
+      int len = strlen(name);
+      fputs(name, fp);
 
-    while(len < 50) {
-      fputc(' ', fp);
-      ++len;
-    }
+      while(len < 40) {
+	fputc(' ', fp);
+	++len;
+      }
     
-    XFLOAT tm = (XFLOAT)pinfo->count / total_counts * total_time;
-    fprintf(fp, " %5d  %6.2g  %%%d\n", (int)pinfo->count, 
-	    tm < 0.009 ? 0 : tm,
-	    (int)((XFLOAT)pinfo->count / total_counts * 100));
+      XFLOAT tm = (XFLOAT)pinfo->count / total_counts * total_time;
+      fprintf(fp, " %5d  %6.2g  %%%d\n", (int)pinfo->count, 
+	      tm < 0.009 ? 0 : tm,
+	      (int)((XFLOAT)pinfo->count / total_counts * 100));
+    }
   }
 
   fclose(fp);
