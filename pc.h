@@ -40,6 +40,10 @@
 # include <mach/mach_time.h>
 #endif
 
+#ifdef PROFILE
+# include <pthread.h>
+#endif
+
 
 /// limits - all sizes are in bytes
 
@@ -181,6 +185,9 @@ typedef struct CHOICE_POINT {
   void *P;
   struct CATCHER *catch_top;
   XWORD timestamp;
+#ifdef PROFILE
+  struct PINFO *where;
+#endif
 } CHOICE_POINT;
 
 typedef struct FINALIZER
@@ -252,6 +259,13 @@ typedef struct STRUCTURE_DISPATCH
   int arity;
   void *label;
 } STRUCTURE_DISPATCH;
+
+typedef struct PINFO
+{
+  XCHAR *name;
+  int count;
+  struct PINFO *next;
+} PINFO;
 
 
 /// tags and type-codes
@@ -423,6 +437,20 @@ static XWORD trail_stack_gap_buffer_size = TRAIL_STACK_GAP_BUFFER_SIZE;
 static int gc_caused_by_trailing = 0;
 static X triggered_frozen_goals;
 static X first_distinct_variable;
+
+#ifdef PROFILE
+static PINFO system_pinfo = { "<system>", 0, NULL };
+static volatile PINFO *where;
+static volatile XWORD total_counts;
+static volatile int finish_profiling;
+static PINFO *pinfo_list;
+static XFLOAT start_time;
+static pthread_t profile_thread;
+#endif
+
+#ifdef _WIN32
+static LARGE_INTEGER win32_perf_freq;
+#endif
 
 
 static XCHAR *type_names[] = { 
@@ -2065,6 +2093,34 @@ static void set_finalizer(X x, void (*fn)(X))
 }
 
 
+/// Time
+
+static inline XFLOAT get_time()
+{
+#if defined(__linux__)
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return (XFLOAT)ts.tv_sec + (XFLOAT)ts.tv_nsec / 1000000000.0;
+#elif defined(__OpenBSD__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
+  struct timespec ts;
+  clock_gettime(CLOCK_REALTIME, &ts);
+  return (XFLOAT)ts.tv_sec + (XFLOAT)ts.tv_nsec / 1000000000.0;
+#elif defined(_WIN32)
+  LARGE_INTEGER ts;
+  QueryPerformanceCounter(&ts);
+  return (XFLOAT)ts.QuadPart / (XFLOAT)win32_perf_freq.QuadPart;
+#elif defined(__APPLE__) && defined(__MACH__)
+  XWORD tm = mach_absolute_time();
+  mach_timebase_info_data_t tr;
+  mach_timebase_info(&tr);
+  return (XFLOAT)tm * (XFLOAT)tr.numer / (XFLOAT)tr.denom / 1000000000.0;
+#else
+  system_error("clock not available for this platform");
+  return 0;
+#endif
+}
+
+
 /// runtime initialization and abnormal exit
 
 
@@ -2090,6 +2146,10 @@ static XWORD numeric_arg(char *arg)
 
 static void initialize(int argc, char *argv[])
 {
+#ifdef _WIN32
+  QueryPerformanceFrequency(&win32_p_freq);
+#endif
+
   heap_size = HEAP_SIZE;
   environment_stack_size = ENVIRONMENT_STACK_SIZE;
   ifthen_stack_size = IFTHEN_STACK_SIZE;
@@ -2236,8 +2296,84 @@ static void initialize(int argc, char *argv[])
 }
 
 
+#ifdef PROFILE
+static void *profile_thread_start(void *arg)
+{
+  struct timespec wt = { 0, 1000000 }; /* XXX ??? */
+  struct timespec rt, rt2;
+
+  while(!finish_profiling) {
+    //XXX needs windows variant
+    //XXX does mac os have nanosleep(2)? probably not...
+    if(nanosleep(&wt, &rt) != 0) {
+      while(nanosleep(&rt, &rt2) != 0) {
+	rt = rt2;
+      } 
+    }
+
+    ++where->count;
+    ++total_counts;
+  }
+
+  return NULL;
+}
+
+
+static void profile_init(PINFO *list)
+{
+  pinfo_list = list;
+  where = &system_pinfo;
+  start_time = get_time();
+  total_counts = 0;
+  finish_profiling = 0;
+  
+  if(pthread_create(&profile_thread, NULL, profile_thread_start, NULL) != 0)
+    CRASH("can not create profiling thread");
+}
+
+
+static void profile_emit_data()
+{
+  finish_profiling = 1;
+
+  if(pthread_join(profile_thread, NULL) != 0)
+    CRASH("waiting for profiling thread failed");
+
+  XFLOAT total_time = get_time() - start_time;
+  int pid = getpid();
+  sprintf(string_buffer, "PROFILE.%d", pid);
+  DRIBBLE("[generating %s]\n", string_buffer);
+  FILE *fp = fopen(string_buffer, "w");
+
+  if(fp == NULL)
+    CRASH("can not open file with profile data");
+  
+  //XXX move pinfos into table and sort
+  for(PINFO *pinfo = pinfo_list; pinfo != NULL; pinfo = pinfo->next) {
+    XCHAR *name = pinfo->name;
+    int len = strlen(name);
+    fputs(name, fp);
+
+    while(len < 50) {
+      fputc(' ', fp);
+      ++len;
+    }
+    
+    fprintf(fp, " %5d  %6.2g  %%%d\n", (int)pinfo->count, 
+	    pinfo->count ? pinfo->count / total_counts * total_time : 0,
+	    pinfo->count ? (int)(pinfo->count / total_counts * 100) : 0);
+  }
+
+  fclose(fp);
+}
+#endif
+
+
 static void cleanup()
 {
+#ifdef PROFILE
+  profile_emit_data();
+#endif
 #ifndef _WIN32
   if(mmapped_heap) {
     munmap(mmapped_buffer, heap_size);
@@ -2833,31 +2969,7 @@ static inline X num_random(X x)
 }
 
 
-static inline X num_clock()
-{
-#if defined(__linux__)
-  struct timespec ts;
-  clock_gettime(CLOCK_MONOTONIC, &ts);
-  return FLONUM((XFLOAT)ts.tv_sec + (XFLOAT)ts.tv_nsec / 1000000000.0);
-#elif defined(__OpenBSD__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
-  struct timespec ts;
-  clock_gettime(CLOCK_REALTIME, &ts);
-  return FLONUM((XFLOAT)ts.tv_sec + (XFLOAT)ts.tv_nsec / 1000000000.0);
-#elif defined(_WIN32)
-  LARGE_INTEGER ts, tr;
-  QueryPerformanceCounter(&ts);
-  QueryPerformanceFrequency(&tr);
-  return FLONUM((XFLOAT)ts.QuadPart / (XFLOAT)tr.QuadPart);
-#elif defined(__APPLE__) && defined(__MACH__)
-  XWORD tm = mach_absolute_time();
-  mach_timebase_info_data_t tr;
-  mach_timebase_info(&tr);
-  return FLONUM((XFLOAT)tm * (XFLOAT)tr.numer / (XFLOAT)tr.denom / 1000000000.0);
-#else
-  system_error("clock not available for this platform");
-  return ZERO;
-#endif
-}
+static inline X num_clock() { return FLONUM(get_time()); }
 
 
 /// Term comparison
@@ -3151,6 +3263,7 @@ static void push_argument_list(X lst)
 #define ENTER(lbl)							\
   { CHECK_LIMIT;							\
     PUSH_CHOICE_POINT(NULL);						\
+    SET_WHERE(PREVIOUS_PINFO);						\
     CALL_TRIGGERED(lbl);						\
     TRACE_ENTER(CURRENT_NAME, CURRENT_ARITY); }
 
@@ -3165,6 +3278,7 @@ static void push_argument_list(X lst)
     C->catch_top = catch_top;					\
     C->C0 = C0;							\
     C->P = lbl;							\
+    SET_PINFO(C, PREVIOUS_PINFO);				\
     C0 = C++;							\
     ASSERT((XWORD)C < (XWORD)choice_point_stack + choice_point_stack_size, "choice-point stack overflow"); }
 
@@ -3179,10 +3293,11 @@ static void push_argument_list(X lst)
     C->catch_top = catch_top;						\
     C->C0 = C0;								\
     C->P = lbl;								\
+    SET_PINFO(C, PREVIOUS_PINFO);					\
     ++C;								\
     ASSERT((XWORD)C < (XWORD)choice_point_stack + choice_point_stack_size, "choice-point stack overflow"); }
 
-#define ADJUST_CHOICE_POINT(lbl)						\
+#define ADJUST_CHOICE_POINT(lbl)					\
   { C0->T = trail_top;							\
     C0->arg_top = arg_top;						\
     C0->env_top = env_top;						\
@@ -3215,6 +3330,7 @@ static void push_argument_list(X lst)
     A = C0->A;					\
     arg_top = C0->arg_top;			\
     catch_top = C0->catch_top;			\
+    SET_WHERE(C0->where);			\
     goto *(C0->P); }
 
 #define POP_CHOICE_POINT  \
@@ -3254,6 +3370,7 @@ static void push_argument_list(X lst)
 # define CALL_TRIGGERED(lbl)   \
   { lbl: if(triggered_frozen_goals != END_OF_LIST_VAL) {	\
     R = &&lbl; goto triggered; }				\
+    SET_WHERE(PREVIOUS_PINFO);					\
     A = C0->A; }
 #else
 # define CALL_TRIGGERED(lbl)
@@ -3321,6 +3438,25 @@ static void push_argument_list(X lst)
 #define RETHROW       throw_exception(catch_top->ball)
 
 
+/// Profiling 
+
+#define PREVIOUS_PINFO  &system_pinfo
+
+#ifdef PROFILE
+# define DECLARE_PINFO(name, arity, lbl)				\
+  static PINFO lbl = { name "/" #arity, 0, PREVIOUS_PINFO }
+
+# define STARTUP               start: profile_init(PREVIOUS_PINFO); goto INIT_GOAL
+# define SET_WHERE(pinfo)      where = pinfo
+# define SET_PINFO(cp, pinfo)  cp->where = pinfo
+#else
+# define DECLARE_PINFO(lbl)
+# define STARTUP    start: goto INIT_GOAL
+# define SET_WHERE(pinfo)
+# define SET_PINFO(cp, pinfo)
+#endif
+
+
 /// Boilerplate code
 
 #ifdef EMBEDDED
@@ -3369,6 +3505,7 @@ static void push_argument_list(X lst)
     C->R = NULL;					\
     C->C0 = NULL;					\
     C->P = &&fail_exit;					\
+    SET_PINFO(C, &system_pinfo);			\
     C++; }						\
   int lj = setjmp(exception_handler);			\
   if(lj == 1) {						\
@@ -3382,7 +3519,7 @@ static void push_argument_list(X lst)
     goto *(catch_top->P); }				\
   else if(lj == 2) { RETURN_EXCEPTION };		\
   if(argc == 0) goto *saved_state.P;			\
-  else goto INIT_GOAL;					\
+  else goto start;							\
 fail: INVOKE_CHOICE_POINT;						\
 fail_exit:								\
  fputs("no.\n", stderr);						\
