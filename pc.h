@@ -192,7 +192,7 @@ typedef struct FINALIZER
 
 typedef struct DB
 {
-  char *name;
+  XCHAR *name;
   XWORD tablesize;
   struct DB_BUCKET **table;
 } DB;
@@ -201,7 +201,7 @@ typedef struct DB_BUCKET
 {
   DB *db;
   XWORD index;
-  char *key;
+  XCHAR *key;
   XWORD keylen;
   struct DB_ITEM *firstitem, *lastitem;
   struct DB_BUCKET *previous, *next;
