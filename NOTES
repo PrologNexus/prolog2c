@@ -74,6 +74,8 @@ NOTES											              -*- Org -*-
 ** Arithmetic
    - deref all vars just once at start.
    - track types, use unboxed math.
+** 2-stream unification
+   - very complicated and possibly not overly effective.
 ** With some sort of type/groundness analysis many primitives can be rewritten to simpler forms
    - functor, arg, name, univ, etc.
    - atom_codes/2 could fail on full heap, force GC and retry,
@@ -89,6 +91,9 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
+** Predicates
+   - read_line(-X) :: read line as atom.
+   - simple atom-concatenation, at least as determinate primitive.
 ** Show warning for untriggered delayed goals with "-:d"
    - check trail-entries when unwinding trail and before exit.
 ** Allow access to delay goals
