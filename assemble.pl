@@ -15,7 +15,7 @@ assemble_file(FILE, STATE) :-
 	gen('global_variable_counter=', N, ';\n'),
 	gen('BOILERPLATE;{\n'),
 	assemble_instructions(S1),
-	gen('}}\n'),
+	gen('}STARTUP;}\n'),
 	generate_trailer,
 	told.
 
@@ -52,12 +52,15 @@ generate_trailer :-
 
 %% assemble pseudo ops
 
-assemble(enter(NAME, ARITY, LBL), S, S) :-
+assemble(enter(NAME, ARITY, LBL), S1, S) :-
 	mangle_name(NAME, MNAME),
-	gen('}', MNAME, '$', ARITY, ':{\n'),
-	gen('#undef CURRENT_NAME\n#undef CURRENT_ARITY\n#define CURRENT_NAME "'),
-	gen(NAME, '"\n#define CURRENT_ARITY ', ARITY, '\nENTER('),
-	gen(LBL, ');\n'),
+	gen_label(L, S1, S),
+	gen('}\n\n#undef CURRENT_NAME\n#undef CURRENT_ARITY\n#define CURRENT_NAME "'),
+	gen(NAME, '"\n#define CURRENT_ARITY ', ARITY, '\nDECLARE_PINFO("', NAME),
+	gen('",', ARITY,',', L),
+	gen(');\n#undef PREVIOUS_PINFO\n#define PREVIOUS_PINFO &', L),
+	gen('\n', MNAME, '$', ARITY, ':\n'),
+	gen('{ENTER(', LBL, ');\n'),
 	(ARITY =:= 0; gen('A[0]=deref(A[0]);\n')). % for indexing
 
 assemble(environment(SIZE), S, S) :-
@@ -120,7 +123,7 @@ assemble(call(NAME, RLIST, LABEL), S, S) :-
 	assemble_arguments(RLIST, 0),
 	mangle_name(NAME, MNAME),
 	gen('CALL(', MNAME, '$', ARITY, ',&&'),
-	gen(LABEL, ');}\n', LABEL, ':{\n').
+	gen(LABEL, ');}\n', LABEL, ':{\nSET_WHERE(PREVIOUS_PINFO);\n').
 assemble(final_call(NAME, RLIST, LABEL), S, S) :-
 	length(RLIST, ARITY),
 	gen('if(C==C0+1) POP_ARGUMENTS;\n'),
@@ -128,7 +131,7 @@ assemble(final_call(NAME, RLIST, LABEL), S, S) :-
 	assemble_arguments(RLIST, 0),
 	mangle_name(NAME, MNAME),
 	gen('FINAL_CALL(', MNAME, '$', ARITY, ',&&'),
-	gen(LABEL, ');}\n', LABEL, ':{\n').
+	gen(LABEL, ');}\n', LABEL, ':{\nSET_WHERE(PREVIOUS_PINFO);\n').
 assemble(call_address(RADR, RARGS, LABEL), S, S) :-
 	gen('A=arg_top;\npush_argument_list(', RARGS, ');\n'),
 	gen('CALL(*((void*)slot_ref(deref(', RADR, '),0)),&&', LABEL, ');\n'),
