@@ -42,6 +42,10 @@
 
 #ifdef PROFILE
 # include <pthread.h>
+# ifndef PROFILE_PERIOD
+// nanoseconds
+#  define PROFILE_PERIOD    10000
+# endif
 #endif
 
 
@@ -2299,7 +2303,7 @@ static void initialize(int argc, char *argv[])
 #ifdef PROFILE
 static void *profile_thread_start(void *arg)
 {
-  struct timespec wt = { 0, 1000000 }; /* XXX ??? */
+  struct timespec wt = { 0, PROFILE_PERIOD }; /* XXX ??? */
   struct timespec rt, rt2;
 
   while(!finish_profiling) {
@@ -2342,7 +2346,8 @@ static void profile_emit_data()
   XFLOAT total_time = get_time() - start_time;
   int pid = getpid();
   sprintf(string_buffer, "PROFILE.%d", pid);
-  DRIBBLE("[generating %s]\n", string_buffer);
+  DRIBBLE("[generating %s - total time: %.2g seconds, " XWORD_OUTPUT_FORMAT " counts]\n", 
+	  string_buffer, total_time, total_counts);
   FILE *fp = fopen(string_buffer, "w");
 
   if(fp == NULL)
@@ -2359,9 +2364,10 @@ static void profile_emit_data()
       ++len;
     }
     
+    XFLOAT tm = (XFLOAT)pinfo->count / total_counts * total_time;
     fprintf(fp, " %5d  %6.2g  %%%d\n", (int)pinfo->count, 
-	    pinfo->count ? pinfo->count / total_counts * total_time : 0,
-	    pinfo->count ? (int)(pinfo->count / total_counts * 100) : 0);
+	    tm < 0.009 ? 0 : tm,
+	    (int)((XFLOAT)pinfo->count / total_counts * 100));
   }
 
   fclose(fp);
