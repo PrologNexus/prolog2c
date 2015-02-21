@@ -2309,11 +2309,20 @@ static void *profile_thread_start(void *arg)
   while(!finish_profiling) {
     //XXX needs windows variant
     //XXX does mac os have nanosleep(2)? probably not...
+#ifdef __linux__
+    clock_gettime(CLOCK_MONOTONIC, &rt);
+    rt.tv_nsec += wt.tv_nsec;
+
+    while(clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &rt, NULL) != 0) {
+      if(errno != EINTR) break;
+    }
+#else
     if(nanosleep(&wt, &rt) != 0) {
       while(nanosleep(&rt, &rt2) != 0) {
 	rt = rt2;
       } 
     }
+#endif
 
     ++where->count;
     ++total_counts;
