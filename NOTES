@@ -112,6 +112,7 @@ NOTES											              -*- Org -*-
    - "max", "min", "asin", "acos"
 * Documentation
 ** DONE News
+   - profiling.
    - string-canonicalization didn't handle empty strings.
    - pb: "-i" option.
    - pb: handling "\" inside text (not followed by WS + NL)

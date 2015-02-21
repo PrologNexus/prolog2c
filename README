@@ -1191,6 +1191,26 @@ Performance tips
   Any use of delay/2, freeze/2 or dif/2 will have a detrimental impact
   on overall performance.
 
+  You can use the built-in statistical profiler to examine the time
+  spent in the predicates of a program by compiling the generated C
+  code with the "-DPROFILE" C compiler option. On successful
+  termination, a file named "PROFILE.<pid>" is generated in the
+  current working directory and holds a list of predicates, with a
+  count-number, the number of seconds spent in the predicate and the
+  percentage of the total run-time.
+
+  The profiler works by running a separate thread that probes in
+  regular intervals which predicate is currently executing and
+  increases a predicate-specific counter. Before the program
+  terminates, the total running time is divided by the total number of
+  counts and the predicate-specific counts are then correlated with
+  the overall time. This is not completely accurate but should be good
+  enough to get an idea of the relative distribution of run-time
+  required by specific parts of your program.
+
+  To use profiling, the executable must be linked with the "pthread"
+  library (pass "-lpthread" when compiling the generated C code.)
+
 
 Calling code written in other languages
 ---------------------------------------
