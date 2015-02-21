@@ -19,7 +19,9 @@
 
 (run (gcc -std=gnu99 -I. ,@opts ,@moreopts ,cfile -o ,xfile -lm -lrt))
 
-(let ((status (run* (,(string-append "./" xfile) ,@(cdr args)))))
+(let* ((status (run* (,(string-append "./" xfile) ,@(cdr args))))
+       (pfile (capture (ls -t PROFILE.* "|" head -n1))))
   (when (zero? status)
-    (run (cat "`ls -t PROFILE.* | head -n1`")))
+    (run (cat ,pfile))
+    (delete-file pfile))
   (exit status))
