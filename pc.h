@@ -4094,10 +4094,12 @@ PRIMITIVE(read_atom, X len, X atom) {
   FILE *fp = port_file(standard_input_port);
   XCHAR *ptr = string_buffer;
   int c, f = 1;
+  int count;
 
   if(!is_FIXNUM(len)) f = 0;
+  else count = fixnum_to_word(len);
 
-  while(!f || len) {
+  while(!f || count) {
     if((c = fgetc(fp)) == EOF) break;
 
     if(ptr >= string_buffer + string_buffer_length + 1) {
@@ -4108,7 +4110,7 @@ PRIMITIVE(read_atom, X len, X atom) {
     }
 
     *(ptr++) = c;
-    --len;
+    --count;
   }
 
   string_buffer_top = ptr;
