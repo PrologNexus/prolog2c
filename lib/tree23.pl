@@ -338,7 +338,3 @@ update_3(>, Key, Tree0, Key1, Tree1, Key2, OldTree2,
 	update_23(OldTree2, Key, Mode, NewTree2, EKey, ETree),
 	put_3_r(ETree, Tree0, Key1, Tree1, Key2, NewTree2, EKey,
 		New, NEKey, NETree).
-
-
-
-
