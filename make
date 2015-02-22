@@ -42,6 +42,9 @@
 (define gcc-compile-options
   '("-std=gnu99" "-g" "-I." "-fno-strict-aliasing" "-fwrapv" "-DTRACE" "-DDEBUG_GC"))
 
+(define gcc-profile-compile-options
+  '("-std=gnu99" "-I." "-fno-strict-aliasing" "-fwrapv" "-DPROFILE"))
+
 (define gcc-optimized-compile-options
   '("-std=gnu99" "-I." "-fno-strict-aliasing" "-fwrapv" "-O2" "-fomit-frame-pointer" "-DNDEBUG"))
 
