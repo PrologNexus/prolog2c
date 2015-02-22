@@ -3467,7 +3467,7 @@ static void push_argument_list(X lst)
 # define SET_WHERE(pinfo)      where = pinfo
 # define SET_PINFO(cp, pinfo)  cp->where = pinfo
 #else
-# define DECLARE_PINFO(lbl)
+# define DECLARE_PINFO(n, a, l)
 # define STARTUP    start: goto INIT_GOAL
 # define SET_WHERE(pinfo)
 # define SET_PINFO(cp, pinfo)
