@@ -25,6 +25,7 @@ NOTES											              -*- Org -*-
    - also read_atom/2, recorded/X, retract/1 and clause/X
 *** name/2 and functor/3 (and others?) may exceed heap-reserve for large inputs
 ** Minor
+*** pb should understand "volatile"
 *** Failure in term_expansion/2 will simply be ignored
 *** The output of TRACE_TAILCALL() is somewhat confusing
     - Not sure if arguments output reflects the correct state.
@@ -92,7 +93,6 @@ NOTES											              -*- Org -*-
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
 ** Predicates
-   - read_line(-X) :: read line as atom.
    - simple atom-concatenation, at least as determinate primitive.
 ** Show warning for untriggered delayed goals with "-:d"
    - check trail-entries when unwinding trail and before exit.
@@ -112,6 +112,7 @@ NOTES											              -*- Org -*-
    - "max", "min", "asin", "acos"
 * Documentation
 ** DONE News
+   - read_line/1
    - profiling.
    - string-canonicalization didn't handle empty strings.
    - pb: "-i" option.
@@ -131,6 +132,7 @@ NOTES											              -*- Org -*-
 ** Allow keeping db-data in GC'd heap
    - freeze/thaw would be just a deep copy.
    - needs to check heap and possibly GC before asserting/recording.
+   - simpler would be to use pure prolog for implementing DB.
 ** Make use of floating-point optional
    - see /intmath/ branch.
    - had funny behaviour with pi (use of flonum simple aborts.)
