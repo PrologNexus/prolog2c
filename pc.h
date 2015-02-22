@@ -4126,6 +4126,48 @@ PRIMITIVE(read_atom, X len, X atom) {
   return(unify(intern(str), atom));
 }
 
+PRIMITIVE(read_line, X result) {
+  FILE *fp = port_file(standard_input_port);
+  XCHAR *ptr = string_buffer;
+  int p = 0;
+  int space = string_buffer_length;
+
+  while(space > 0) {
+    if(fgets(string_buffer + p, space, fp) == NULL) {
+      if(p > 0) break;
+      else return unify(result, ZERO);
+    }
+
+    int n = strlen(string_buffer + p);
+
+    if(string_buffer[ n - 1 ] == '\n') break;
+
+    p += n;
+    space -= n;
+
+    if(space <= 1) {
+      string_buffer = realloc(string_buffer, string_buffer_length *= 2);
+      ASSERT(string_buffer, 
+	     "out of memory - can not increase size of string-buffer to " XWORD_OUTPUT_FORMAT, 
+	     (XWORD)string_buffer_length);
+      space = string_buffer_length - p;
+    }
+  }
+
+  string_buffer_top = string_buffer + p;
+
+  if(((XWORD)alloc_top + p + sizeof(XWORD) + 1) >= (XWORD)fromspace_limit) {
+    alloc_top = fromspace_limit; /* force GC */
+    return 0;			
+  }
+
+  if(string_buffer[ strlen(string_buffer) - 1 ] == '\n') --p;
+
+  X str = STRING(p);
+  memcpy(objdata(str), string_buffer, p);
+  return(unify(intern(str), result));
+}
+
 PRIMITIVE(re_intern, X atom) {
   XWORD len = string_buffer_top - string_buffer;
 
@@ -4217,7 +4259,6 @@ PRIMITIVE(cdb_key, X term, X key) {
 
   return unify(intern(str2), key);
 }
-
 
 #endif
 

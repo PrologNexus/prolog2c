@@ -475,6 +475,13 @@ Builtin predicates
     with an atom composed of those characters. If LEN is not an
     integer, all remaining input will be read.
 
+        read_line(-X)
+
+    Read one line from the current input port as an atom and unify it
+    with X. If the end of file is reached, then X is unified with the
+    atom `end_of_file`. Any end-of-line character terminating the line
+    is not included in the returned atom.
+
         see(+X)
 
     Sets the current input-stream to X, which may be a stream or a
