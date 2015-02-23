@@ -8,6 +8,13 @@
 (define opts '("-DPROFILE"))
 (define moreopts '())
 (define args (command-line-arguments))
+
+(match args
+  (("-M" . more)
+   (set! opts '("-DPROFILE_MEMORY"))
+   (pop! args))
+  (_ #f))
+
 (define file (car args))
 (define bfile (basename file))
 (define xfile (strip-suffix bfile))

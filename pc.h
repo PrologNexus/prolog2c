@@ -189,7 +189,7 @@ typedef struct CHOICE_POINT {
   void *P;
   struct CATCHER *catch_top;
   XWORD timestamp;
-#ifdef PROFILE
+#if defined(PROFILE) || defined(PROFILE_MEMORY)
   struct PINFO *where;
 #endif
 } CHOICE_POINT;
@@ -267,10 +267,29 @@ typedef struct STRUCTURE_DISPATCH
   void *label;
 } STRUCTURE_DISPATCH;
 
+#ifdef PROFILE_MEMORY
+typedef struct PINFO_MAX_COUNT
+{
+  XWORD max;
+} PINFO_MAX_COUNT;
+
+typedef struct PINFO_TOTAL_COUNT
+{
+  XWORD total;
+} PINFO_TOTAL_COUNT;
+#endif
+
 typedef struct PINFO
 {
   XCHAR *name;
   int count;
+#ifdef PROFILE_MEMORY
+  PINFO_TOTAL_COUNT heap;
+  PINFO_MAX_COUNT cp;
+  PINFO_MAX_COUNT ap;
+  PINFO_MAX_COUNT tp;
+  PINFO_MAX_COUNT ep;
+#endif
   struct PINFO *next;
 } PINFO;
 
@@ -445,14 +464,17 @@ static int gc_caused_by_trailing = 0;
 static X triggered_frozen_goals;
 static X first_distinct_variable;
 
-#ifdef PROFILE
-static PINFO system_pinfo = { "<system>", 0, NULL };
+#if defined(PROFILE) || defined(PROFILE_MEMORY)
+static PINFO system_pinfo = { .name = "<system>", .next = NULL };
 static volatile PINFO *where;
-static volatile XWORD total_counts;
-static volatile int finish_profiling;
 static PINFO *pinfo_list;
+#endif
+
+#ifdef PROFILE
+static volatile XWORD total_counts;
 static XFLOAT start_time;
 static pthread_t profile_thread;
+static volatile int finish_profiling;
 #endif
 
 #ifdef _WIN32
@@ -613,16 +635,31 @@ static inline int is_pointer(X x)
 }
 
 
+/// Memory-profiling counters
+
+#ifdef PROFILE_MEMORY
+# define COUNT_MINMAX(var, val)  \
+  { XWORD _val = (val);		 \
+    if(_val > where->var.max) where->var.max = _val; }
+# define COUNT_TOTAL(var, val)   where->var.total += (val)
+#else
+# define COUNT_MINMAX(var, val)
+# define COUNT_TOTAL(var, val)
+#endif
+
+
 /// General allocators (externally visible9
 
-#define ALLOCATE_BLOCK1(alloc, dest, type, size)				\
-  dest = (void *)alloc;						\
+#define ALLOCATE_BLOCK1(alloc, dest, type, size)			\
+  dest = (void *)alloc;							\
   ((BLOCK *)alloc)->h = ((XWORD)(type) << TYPE_SHIFT) | (size);		\
+  COUNT_TOTAL(heap, ((size) + 1) * sizeof(XWORD));			\
   alloc += (size) + 1
 
 #define ALLOCATE_BYTEBLOCK1(alloc, dest, type, size)			\
   dest = (void *)alloc;							\
   ((BLOCK *)alloc)->h = ((XWORD)(type) << TYPE_SHIFT) | (size);		\
+  COUNT_TOTAL(heap, (size) * sizeof(XWORD));				\
   alloc = (X)ALIGN((XWORD)alloc + (size) + sizeof(XWORD))
 
 #define FLONUM1(alloc, m)  \
@@ -2180,6 +2217,10 @@ static void initialize(int argc, char *argv[])
   debugging = 0;
   verbose = 0;
 
+#if defined(PROFILE) || defined(PROFILE_MEMORY)
+  where = &system_pinfo;
+#endif
+
   // scan argv for runtime-parameters
   for(int i = argc - 1; i > 0; --i) {
     char *arg = argv[ i ];
@@ -2345,33 +2386,58 @@ static void *profile_thread_start(void *arg)
 
   return NULL;
 }
+#endif
 
 
+#if defined(PROFILE) || defined(PROFILE_MEMORY)
 static void profile_init(PINFO *list)
 {
   pinfo_list = list;
-  where = &system_pinfo;
+
+#ifdef PROFILE  
   start_time = get_time();
   total_counts = 0;
   finish_profiling = 0;
-  
+
   if(pthread_create(&profile_thread, NULL, profile_thread_start, NULL) != 0)
     CRASH("can not create profiling thread");
+#endif
 }
+
+
+#ifdef PROFILE_MEMORY
+static XCHAR *poutput_polish(XWORD val)
+{
+  static XCHAR buf[ 32 ];
+  
+  if(val < 1000) sprintf(buf, "%6" XWORD_OUTPUT_FORMAT_LENGTH "d", val);
+  else if(val < 100000) sprintf(buf, "%6" XWORD_OUTPUT_FORMAT_LENGTH "dK", val / 1024);
+  else sprintf(buf, "%6.2gM", (XFLOAT)val / 1024 * 1024);
+
+  return buf;
+}
+#endif
 
 
 static void profile_emit_data()
 {
+#ifdef PROFILE
   finish_profiling = 1;
 
   if(pthread_join(profile_thread, NULL) != 0)
     CRASH("waiting for profiling thread failed");
 
   XFLOAT total_time = get_time() - start_time;
+#endif
   int pid = getpid();
   sprintf(string_buffer, "PROFILE.%d", pid);
+
+#ifdef PROFILE
   DRIBBLE("[generating %s - total time: %.2g seconds, " XWORD_OUTPUT_FORMAT " counts]\n", 
 	  string_buffer, total_time, total_counts);
+#elif defined(PROFILE_MEMORY)
+  DRIBBLE("[generating memory profile %s]\n", string_buffer);
+#endif
   FILE *fp = fopen(string_buffer, "w");
 
   if(fp == NULL)
@@ -2379,7 +2445,12 @@ static void profile_emit_data()
   
   //XXX move pinfos into table and sort
   for(PINFO *pinfo = pinfo_list; pinfo != NULL; pinfo = pinfo->next) {
+#ifdef PROFILE
     if(pinfo->count > 0) {
+#else
+    if(pinfo->heap.total > 0 || pinfo->cp.max > 0 || pinfo->ap.max > 0 ||
+       pinfo->tp.max > 0 || pinfo->ep.max > 0) {
+#endif
       XCHAR *name = pinfo->name;
       int len = strlen(name);
       fputs(name, fp);
@@ -2388,11 +2459,19 @@ static void profile_emit_data()
 	fputc(' ', fp);
 	++len;
       }
-    
+
+#ifdef PROFILE    
       XFLOAT tm = (XFLOAT)pinfo->count / total_counts * total_time;
       fprintf(fp, " %5d  %6.2g  %%%d\n", (int)pinfo->count, 
 	      tm < 0.009 ? 0 : tm,
 	      (int)((XFLOAT)pinfo->count / total_counts * 100));
+#else
+      fprintf(fp, " C:%s", poutput_polish(pinfo->cp.max));
+      fprintf(fp, "  T:%s", poutput_polish(pinfo->tp.max));
+      fprintf(fp, "  E:%s", poutput_polish(pinfo->ep.max));
+      fprintf(fp, "  A:%s", poutput_polish(pinfo->ap.max));
+      fprintf(fp, "  H:%s\n", poutput_polish(pinfo->heap.total));
+#endif
     }
   }
 
@@ -2403,7 +2482,7 @@ static void profile_emit_data()
 
 static void cleanup()
 {
-#ifdef PROFILE
+#if defined(PROFILE) || defined(PROFILE_MEMORY)
   profile_emit_data();
 #endif
 #ifndef _WIN32
@@ -3369,6 +3448,16 @@ static void push_argument_list(X lst)
   { E = C0->E;		  \
     C0 = C0->C0; }
 
+#ifdef PROFILE_MEMORY
+# define PROFILE_COUNTS \
+  COUNT_MINMAX(cp, (XWORD)(C - C0) * sizeof(CHOICE_POINT));		\
+  COUNT_MINMAX(tp, (XWORD)(trail_top - C0->T) * sizeof(XWORD) * 2);	\
+  COUNT_MINMAX(ep, (XWORD)(env_top - C0->env_top) * sizeof(XWORD));	\
+  COUNT_MINMAX(ap, (XWORD)(arg_top - C0->arg_top) * sizeof(XWORD));
+#else
+# define PROFILE_COUNTS
+#endif
+
 #ifdef USE_DELAY  
 # define EXIT(lbl)			     \
   { CALL_TRIGGERED(lbl);		     \
@@ -3378,16 +3467,18 @@ static void push_argument_list(X lst)
     C0 = C0->C0;			     \
     goto *R; }
 #else
-# define EXIT(lbl)			     \
-  { TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY); \
-    R = C0->R;				     \
-    E = C0->E;				     \
-    C0 = C0->C0;			     \
+# define EXIT(lbl)						\
+  { TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY);			\
+    PROFILE_COUNTS;						\
+    R = C0->R;							\
+    E = C0->E;							\
+    C0 = C0->C0;						\
     goto *R; }
 #endif
 
 #define DETERMINATE_EXIT		     \
   { TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY); \
+    PROFILE_COUNTS;			     \
     R = C0->R;				     \
     E = C0->E;				     \
     env_top = C0->env_top;		     \
@@ -3415,6 +3506,7 @@ static void push_argument_list(X lst)
 
 #define TAIL_CALL(lbl)					 \
   { TRACE_TAIL_CALL(CURRENT_NAME, CURRENT_ARITY);	 \
+    PROFILE_COUNTS;					 \
     R = C0->R;						 \
     E = C0->E;						 \
     env_top = C0->env_top;				 \
@@ -3436,12 +3528,14 @@ static void push_argument_list(X lst)
 #define CHECK_LIMIT					\
   { if(alloc_top > fromspace_limit)			\
       collect_garbage(C);				\
-    ASSERT((char *)arg_top < (char *)argument_stack + argument_stack_size, "argument-stack overflow"); } 
+    ASSERT((char *)arg_top < (char *)argument_stack + argument_stack_size, \
+	   "argument-stack overflow"); } 
 
 #define ENVIRONMENT(len)  \
   { E = env_top;							\
     for(int _i = 0; _i < (len); ++_i) *(env_top++) = ZERO;		\
-    ASSERT((XWORD)env_top < (XWORD)environment_stack + environment_stack_size, "environment-stack overflow"); } 
+    ASSERT((XWORD)env_top < (XWORD)environment_stack + environment_stack_size, \
+	   "environment-stack overflow"); } 
 
 #define SET_REDO(lbl)   C0->P = (lbl)
 
@@ -3472,11 +3566,11 @@ static void push_argument_list(X lst)
 
 /// Profiling 
 
-#define PREVIOUS_PINFO  &system_pinfo
+#if defined(PROFILE) || defined(PROFILE_MEMORY)
+# define PREVIOUS_PINFO  &system_pinfo
 
-#ifdef PROFILE
-# define DECLARE_PINFO(name, arity, lbl)				\
-  static PINFO lbl = { name "/" #arity, 0, PREVIOUS_PINFO }
+# define DECLARE_PINFO(n, a, lbl)				\
+  static PINFO lbl = { .name = n "/" #a, .next = PREVIOUS_PINFO }
 
 # define STARTUP               start: profile_init(PREVIOUS_PINFO); goto INIT_GOAL
 # define SET_WHERE(pinfo)      where = pinfo
