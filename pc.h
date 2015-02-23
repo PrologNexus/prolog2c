@@ -235,6 +235,9 @@ typedef struct CATCHER
   X *E, *T, *env_top, *arg_top;
   void *P;
   void **ifthen_top;
+#ifdef PROFILE
+  struct PINFO *where;
+#endif
 } CATCHER;
 
 typedef struct SAVED_STATE
@@ -3295,7 +3298,7 @@ static void push_argument_list(X lst)
     C->catch_top = catch_top;					\
     C->C0 = C0;							\
     C->P = lbl;							\
-    SET_PINFO(C, PREVIOUS_PINFO);				\
+    SET_PINFO(C->where, PREVIOUS_PINFO);			\
     C0 = C++;							\
     ASSERT((XWORD)C < (XWORD)choice_point_stack + choice_point_stack_size, "choice-point stack overflow"); }
 
@@ -3310,7 +3313,7 @@ static void push_argument_list(X lst)
     C->catch_top = catch_top;						\
     C->C0 = C0;								\
     C->P = lbl;								\
-    SET_PINFO(C, PREVIOUS_PINFO);					\
+    SET_PINFO(C->where, PREVIOUS_PINFO);				\
     ++C;								\
     ASSERT((XWORD)C < (XWORD)choice_point_stack + choice_point_stack_size, "choice-point stack overflow"); }
 
@@ -3465,12 +3468,12 @@ static void push_argument_list(X lst)
 
 # define STARTUP               start: profile_init(PREVIOUS_PINFO); goto INIT_GOAL
 # define SET_WHERE(pinfo)      where = pinfo
-# define SET_PINFO(cp, pinfo)  cp->where = pinfo
+# define SET_PINFO(dest, pinfo)  dest = pinfo
 #else
 # define DECLARE_PINFO(n, a, l)
 # define STARTUP    start: goto INIT_GOAL
 # define SET_WHERE(pinfo)
-# define SET_PINFO(cp, pinfo)
+# define SET_PINFO(dest, pinfo)
 #endif
 
 
@@ -3522,7 +3525,7 @@ static void push_argument_list(X lst)
     C->R = NULL;					\
     C->C0 = NULL;					\
     C->P = &&fail_exit;					\
-    SET_PINFO(C, &system_pinfo);			\
+    SET_PINFO(C->where, &system_pinfo);			\
     C++; }						\
   int lj = setjmp(exception_handler);			\
   if(lj == 1) {						\
@@ -3533,6 +3536,7 @@ static void push_argument_list(X lst)
     env_top = catch_top->env_top;			\
     ifthen_top = catch_top->ifthen_top;			\
     E = catch_top->E;					\
+    SET_WHERE(catch_top->where);			\
     goto *(catch_top->P); }				\
   else if(lj == 2) { RETURN_EXCEPTION };		\
   if(argc == 0) goto *saved_state.P;			\
