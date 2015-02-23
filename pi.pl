@@ -22,7 +22,7 @@ repl :-
 	seeing(IN), telling(OUT),
 	read(TERM, VARS), 
 	(TERM == end_of_file, halt
-	; TERM = [_|_], consult_files(TERM)
+	; compound(TERM), TERM = [_|_], consult_files(TERM)
 	; catch(run_goal(TERM, VARS), EXN, (report_exception(EXN), see(IN), tell(OUT)))
 	),
 	!,			% force tailcall
