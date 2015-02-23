@@ -82,7 +82,7 @@ clause(HEAD, BODY, REF) :-
 
 '$clause_match'(REF, TERM, REF) :-
 	(foreign_call(db_ref(REF, X)) -> X = TERM
-	; garbage_collect, '$clause_match'(REF, TERM, REF)).
+	; garbage_collect, !, '$clause_match'(REF, TERM, REF)).
 '$clause_match'(REF1, TERM, REF) :-
 	foreign_call(db_next(REF1, REF2)),
 	!,
