@@ -268,10 +268,11 @@ typedef struct STRUCTURE_DISPATCH
 } STRUCTURE_DISPATCH;
 
 #ifdef PROFILE_MEMORY
-typedef struct PINFO_MAX_COUNT
+typedef struct PINFO_AVG_COUNT
 {
-  XWORD max;
-} PINFO_MAX_COUNT;
+  XWORD total;
+  XWORD count;
+} PINFO_AVG_COUNT;
 
 typedef struct PINFO_TOTAL_COUNT
 {
@@ -285,10 +286,10 @@ typedef struct PINFO
   int count;
 #ifdef PROFILE_MEMORY
   PINFO_TOTAL_COUNT heap;
-  PINFO_MAX_COUNT cp;
-  PINFO_MAX_COUNT ap;
-  PINFO_MAX_COUNT tp;
-  PINFO_MAX_COUNT ep;
+  PINFO_AVG_COUNT cp;
+  PINFO_AVG_COUNT ap;
+  PINFO_AVG_COUNT tp;
+  PINFO_AVG_COUNT ep;
 #endif
   struct PINFO *next;
 } PINFO;
@@ -638,12 +639,10 @@ static inline int is_pointer(X x)
 /// Memory-profiling counters
 
 #ifdef PROFILE_MEMORY
-# define COUNT_MINMAX(var, val)  \
-  { XWORD _val = (val);		 \
-    if(_val > where->var.max) where->var.max = _val; }
-# define COUNT_TOTAL(var, val)   where->var.total += (val)
+# define COUNT_AVG(var, val)    { where->var.total += (val); ++where->var.count; }
+# define COUNT_TOTAL(var, val)  where->var.total += (val)
 #else
-# define COUNT_MINMAX(var, val)
+# define COUNT_AVG(var, val)
 # define COUNT_TOTAL(var, val)
 #endif
 
@@ -2416,6 +2415,14 @@ static XCHAR *poutput_polish(XWORD val)
 
   return buf;
 }
+
+
+static XCHAR *poutput_avg_polish(volatile PINFO_AVG_COUNT *c)
+{
+  if(c->count == 0) return "     0";
+
+  return poutput_polish(c->total / c->count);
+}
 #endif
 
 
@@ -2448,8 +2455,8 @@ static void profile_emit_data()
 #ifdef PROFILE
     if(pinfo->count > 0) {
 #else
-    if(pinfo->heap.total > 0 || pinfo->cp.max > 0 || pinfo->ap.max > 0 ||
-       pinfo->tp.max > 0 || pinfo->ep.max > 0) {
+    if(pinfo->heap.total > 0 || pinfo->cp.total > 0 || pinfo->ap.total > 0 ||
+       pinfo->tp.total > 0 || pinfo->ep.total > 0) {
 #endif
       XCHAR *name = pinfo->name;
       int len = strlen(name);
@@ -2466,10 +2473,10 @@ static void profile_emit_data()
 	      tm < 0.009 ? 0 : tm,
 	      (int)((XFLOAT)pinfo->count / total_counts * 100));
 #else
-      fprintf(fp, " C:%s", poutput_polish(pinfo->cp.max));
-      fprintf(fp, "  T:%s", poutput_polish(pinfo->tp.max));
-      fprintf(fp, "  E:%s", poutput_polish(pinfo->ep.max));
-      fprintf(fp, "  A:%s", poutput_polish(pinfo->ap.max));
+      fprintf(fp, " C:%s", poutput_avg_polish(&pinfo->cp));
+      fprintf(fp, "  T:%s", poutput_avg_polish(&pinfo->tp));
+      fprintf(fp, "  E:%s", poutput_avg_polish(&pinfo->ep));
+      fprintf(fp, "  A:%s", poutput_avg_polish(&pinfo->ap));
       fprintf(fp, "  H:%s\n", poutput_polish(pinfo->heap.total));
 #endif
     }
@@ -3449,13 +3456,13 @@ static void push_argument_list(X lst)
     C0 = C0->C0; }
 
 #ifdef PROFILE_MEMORY
-# define PROFILE_COUNTS \
-  COUNT_MINMAX(cp, (XWORD)(C - C0) * sizeof(CHOICE_POINT));		\
-  COUNT_MINMAX(tp, (XWORD)(trail_top - C0->T) * sizeof(XWORD) * 2);	\
-  COUNT_MINMAX(ep, (XWORD)(env_top - C0->env_top) * sizeof(XWORD));	\
-  COUNT_MINMAX(ap, (XWORD)(arg_top - C0->arg_top) * sizeof(XWORD));
+# define PROFILE_COUNTS(doap)						\
+  { COUNT_AVG(cp, (XWORD)(C - C0) * sizeof(CHOICE_POINT));		\
+    COUNT_AVG(tp, (XWORD)(trail_top - C0->T) * sizeof(XWORD) * 2);	\
+    COUNT_AVG(ep, (XWORD)(env_top - C0->env_top) * sizeof(XWORD));	\
+    if(doap) COUNT_AVG(ap, (XWORD)(arg_top - C0->arg_top) * sizeof(XWORD)); }
 #else
-# define PROFILE_COUNTS
+# define PROFILE_COUNTS(doap)
 #endif
 
 #ifdef USE_DELAY  
@@ -3469,7 +3476,7 @@ static void push_argument_list(X lst)
 #else
 # define EXIT(lbl)						\
   { TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY);			\
-    PROFILE_COUNTS;						\
+    PROFILE_COUNTS(1);						\
     R = C0->R;							\
     E = C0->E;							\
     C0 = C0->C0;						\
@@ -3478,7 +3485,7 @@ static void push_argument_list(X lst)
 
 #define DETERMINATE_EXIT		     \
   { TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY); \
-    PROFILE_COUNTS;			     \
+    PROFILE_COUNTS(0);			     \
     R = C0->R;				     \
     E = C0->E;				     \
     env_top = C0->env_top;		     \
@@ -3506,7 +3513,7 @@ static void push_argument_list(X lst)
 
 #define TAIL_CALL(lbl)					 \
   { TRACE_TAIL_CALL(CURRENT_NAME, CURRENT_ARITY);	 \
-    PROFILE_COUNTS;					 \
+    PROFILE_COUNTS(0);					 \
     R = C0->R;						 \
     E = C0->E;						 \
     env_top = C0->env_top;				 \
