@@ -4158,6 +4158,8 @@ PRIMITIVE(read_line, X result) {
     }
   }
 
+  if(p == 0) p = strlen(string_buffer);
+
   string_buffer_top = string_buffer + p;
 
   if(((XWORD)alloc_top + p + sizeof(XWORD) + 1) >= (XWORD)fromspace_limit) {
