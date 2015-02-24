@@ -271,7 +271,6 @@ typedef struct STRUCTURE_DISPATCH
 typedef struct PINFO_AVG_COUNT
 {
   XWORD total;
-  XWORD count;
 } PINFO_AVG_COUNT;
 
 typedef struct PINFO_TOTAL_COUNT
@@ -639,10 +638,10 @@ static inline int is_pointer(X x)
 /// Memory-profiling counters
 
 #ifdef PROFILE_MEMORY
-# define COUNT_AVG(var, val)    { where->var.total += (val); ++where->var.count; }
+# define COUNT_INC              ++where->count
 # define COUNT_TOTAL(var, val)  where->var.total += (val)
 #else
-# define COUNT_AVG(var, val)
+# define COUNT_INC
 # define COUNT_TOTAL(var, val)
 #endif
 
@@ -2410,18 +2409,18 @@ static XCHAR *poutput_polish(XWORD val)
   static XCHAR buf[ 32 ];
   
   if(val < 1000) sprintf(buf, "%6" XWORD_OUTPUT_FORMAT_LENGTH "d", val);
-  else if(val < 100000) sprintf(buf, "%6" XWORD_OUTPUT_FORMAT_LENGTH "dK", val / 1024);
-  else sprintf(buf, "%6.2gM", (XFLOAT)val / 1024 * 1024);
+  else if(val < 1000000) sprintf(buf, "%6" XWORD_OUTPUT_FORMAT_LENGTH "dK", val / 1024);
+  else sprintf(buf, "%6.2gM", (XFLOAT)val / (1024 * 1024));
 
   return buf;
 }
 
 
-static XCHAR *poutput_avg_polish(volatile PINFO_AVG_COUNT *c)
+static XCHAR *poutput_avg_polish(volatile PINFO_AVG_COUNT *c, int count)
 {
-  if(c->count == 0) return "     0";
+  if(count == 0) return "     0";
 
-  return poutput_polish(c->total / c->count);
+  return poutput_polish(c->total / count);
 }
 #endif
 
@@ -2452,12 +2451,7 @@ static void profile_emit_data()
   
   //XXX move pinfos into table and sort
   for(PINFO *pinfo = pinfo_list; pinfo != NULL; pinfo = pinfo->next) {
-#ifdef PROFILE
     if(pinfo->count > 0) {
-#else
-    if(pinfo->heap.total > 0 || pinfo->cp.total > 0 || pinfo->ap.total > 0 ||
-       pinfo->tp.total > 0 || pinfo->ep.total > 0) {
-#endif
       XCHAR *name = pinfo->name;
       int len = strlen(name);
       fputs(name, fp);
@@ -2473,10 +2467,10 @@ static void profile_emit_data()
 	      tm < 0.009 ? 0 : tm,
 	      (int)((XFLOAT)pinfo->count / total_counts * 100));
 #else
-      fprintf(fp, " C:%s", poutput_avg_polish(&pinfo->cp));
-      fprintf(fp, "  T:%s", poutput_avg_polish(&pinfo->tp));
-      fprintf(fp, "  E:%s", poutput_avg_polish(&pinfo->ep));
-      fprintf(fp, "  A:%s", poutput_avg_polish(&pinfo->ap));
+      fprintf(fp, " C:%s", poutput_avg_polish(&pinfo->cp, pinfo->count));
+      fprintf(fp, "  T:%s", poutput_avg_polish(&pinfo->tp, pinfo->count));
+      fprintf(fp, "  E:%s", poutput_avg_polish(&pinfo->ep, pinfo->count));
+      fprintf(fp, "  A:%s", poutput_avg_polish(&pinfo->ap, pinfo->count));
       fprintf(fp, "  H:%s\n", poutput_polish(pinfo->heap.total));
 #endif
     }
@@ -3457,10 +3451,11 @@ static void push_argument_list(X lst)
 
 #ifdef PROFILE_MEMORY
 # define PROFILE_COUNTS(doap)						\
-  { COUNT_AVG(cp, (XWORD)(C - C0) * sizeof(CHOICE_POINT));		\
-    COUNT_AVG(tp, (XWORD)(trail_top - C0->T) * sizeof(XWORD) * 2);	\
-    COUNT_AVG(ep, (XWORD)(env_top - C0->env_top) * sizeof(XWORD));	\
-    if(doap) COUNT_AVG(ap, (XWORD)(arg_top - C0->arg_top) * sizeof(XWORD)); }
+  { COUNT_TOTAL(cp, (XWORD)(C - C0) * sizeof(CHOICE_POINT));		\
+    COUNT_TOTAL(tp, (XWORD)(trail_top - C0->T) * sizeof(XWORD) * 2);	\
+    COUNT_TOTAL(ep, (XWORD)(env_top - C0->env_top) * sizeof(XWORD));	\
+    if(doap) COUNT_TOTAL(ap, (XWORD)(arg_top - C0->arg_top) * sizeof(XWORD)); \
+    COUNT_INC; }								
 #else
 # define PROFILE_COUNTS(doap)
 #endif
@@ -3524,6 +3519,7 @@ static void push_argument_list(X lst)
 #define FINAL_CALL(lbl, ret)				 \
   { if(C == C0 + 1) {					 \
       TRACE_TAIL_CALL(CURRENT_NAME, CURRENT_ARITY);	 \
+      PROFILE_COUNTS(0);				 \
       R = C0->R;					 \
       E = C0->E;					 \
       env_top = C0->env_top;				 \
