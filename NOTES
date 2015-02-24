@@ -53,6 +53,8 @@ NOTES											              -*- Org -*-
     - at least as much as possible and sensible.
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
+** If clause contains a single tail-call, CP-creation could be avoided
+   - saves little, though.
 ** Remove unused predicates
    - could be done in assembly-stage
      - register called predicates (and caller), compute unused
@@ -139,7 +141,10 @@ NOTES											              -*- Org -*-
 * Diagnostics
 ** Detect singleton variables
 ** Report unused predicates
+* Runtime
+** TODO Use macro to check for exceeded heap-limit
 * Tests
+** TODO Evaluate /memprofiling/
 ** TODO profile with gprof
 * Interpreter
 ** TODO Allow detecting interpreter from running program
