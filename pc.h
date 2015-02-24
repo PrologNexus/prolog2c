@@ -2408,7 +2408,7 @@ static XCHAR *poutput_polish(XWORD val)
 {
   static XCHAR buf[ 32 ];
   
-  if(val < 1000) sprintf(buf, "%6" XWORD_OUTPUT_FORMAT_LENGTH "d", val);
+  if(val < 1000) sprintf(buf, "%6" XWORD_OUTPUT_FORMAT_LENGTH "d ", val);
   else if(val < 1000000) sprintf(buf, "%6" XWORD_OUTPUT_FORMAT_LENGTH "dK", val / 1024);
   else sprintf(buf, "%6.2gM", (XFLOAT)val / (1024 * 1024));
 
