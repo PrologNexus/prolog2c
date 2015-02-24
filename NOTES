@@ -66,7 +66,8 @@ NOTES											              -*- Org -*-
 ** Environment trimming
    - sort variables by lifetime (reversed) and trim env_top after last use.
    - may only be applicable when env_top didn't change.
-** TODO Add "determinate" declarations and green cuts in library code
+** Add "determinate" declarations and green cuts in library code
+   - profile to find suitable points of improvement.
 ** Special-case calls of primitives that are known to always succeed
 ** DONE Take advantage of timestamps when binding vars in unify()
    - implemented in branch /bind-younger/ and seems to work, but trail
@@ -131,20 +132,24 @@ NOTES											              -*- Org -*-
    - statically allocated data for all areas.
    - fixed sizes for gap-buffer and string-buffer.
    - would need to put DBs, buckets and items into heap, using bytevectors.
-** Allow keeping db-data in GC'd heap
-   - freeze/thaw would be just a deep copy.
-   - needs to check heap and possibly GC before asserting/recording.
-   - simpler would be to use pure prolog for implementing DB.
 ** Make use of floating-point optional
    - see /intmath/ branch.
    - had funny behaviour with pi (use of flonum simple aborts.)
 * Diagnostics
 ** Detect singleton variables
 ** Report unused predicates
+* Experimental
+** TODO /memprofile/ (memory-profiling)
+   - not sure if this is truly correct or useful.
+** TODO /pi-in-pc/ (make interpreter available in compiler)
+   - use of term_expansion/2 is awkward, but handy.
+   - allows arbitrary latent goals.
+   - compare file-size + compile overhead in optimized mode.
+** TODO prolog-implementation of CDB
+   - needs tree-based DB, perhaps using file:lib/tree23.pl
 * Runtime
 ** TODO Use macro to check for exceeded heap-limit
 * Tests
-** TODO Evaluate /memprofiling/
 ** TODO profile with gprof
 * Interpreter
 ** TODO Allow detecting interpreter from running program
