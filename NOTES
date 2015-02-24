@@ -132,9 +132,6 @@ NOTES											              -*- Org -*-
    - statically allocated data for all areas.
    - fixed sizes for gap-buffer and string-buffer.
    - would need to put DBs, buckets and items into heap, using bytevectors.
-** Make use of floating-point optional
-   - see /intmath/ branch.
-   - had funny behaviour with pi (use of flonum simple aborts.)
 * Diagnostics
 ** Detect singleton variables
 ** Report unused predicates
@@ -146,7 +143,12 @@ NOTES											              -*- Org -*-
    - allows arbitrary latent goals.
    - compare file-size + compile overhead in optimized mode.
 ** TODO prolog-implementation of CDB
-   - needs tree-based DB, perhaps using file:lib/tree23.pl
+   - needs tree-based DB, perhaps using lib/tree23.
+** TODO /intmath/ (integer-only math)
+   - lib/rdtok returns end_of_file when reading flonum, which makes pi
+     terminate, for example.
+   - would have to disable flonum-parsing in rdtok, which needs
+     conditional, depending on variant (with flonums or without)
 * Runtime
 ** TODO Use macro to check for exceeded heap-limit
 * Tests
