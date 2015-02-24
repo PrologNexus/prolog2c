@@ -286,7 +286,6 @@ typedef struct PINFO
 #ifdef PROFILE_MEMORY
   PINFO_TOTAL_COUNT heap;
   PINFO_AVG_COUNT cp;
-  PINFO_AVG_COUNT ap;
   PINFO_AVG_COUNT tp;
   PINFO_AVG_COUNT ep;
 #endif
@@ -2470,7 +2469,6 @@ static void profile_emit_data()
       fprintf(fp, " C:%s", poutput_avg_polish(&pinfo->cp, pinfo->count));
       fprintf(fp, "  T:%s", poutput_avg_polish(&pinfo->tp, pinfo->count));
       fprintf(fp, "  E:%s", poutput_avg_polish(&pinfo->ep, pinfo->count));
-      fprintf(fp, "  A:%s", poutput_avg_polish(&pinfo->ap, pinfo->count));
       fprintf(fp, "  H:%s\n", poutput_polish(pinfo->heap.total));
 #endif
     }
@@ -3435,8 +3433,10 @@ static void push_argument_list(X lst)
 
 #define INVOKE_CHOICE_POINT			\
   { for(C0 = C - 1; C0->P == NULL; --C0) {	\
-    E = C0->E;					\
-    env_top = C0->env_top; }			\
+      SET_WHERE(C0->where);			\
+      PROFILE_COUNTS;				\
+      E = C0->E;				\
+      env_top = C0->env_top; }			\
     C = C0 + 1;					\
     unwind_trail(C0->T);			\
     A = C0->A;					\
@@ -3450,14 +3450,13 @@ static void push_argument_list(X lst)
     C0 = C0->C0; }
 
 #ifdef PROFILE_MEMORY
-# define PROFILE_COUNTS(doap)						\
+# define PROFILE_COUNTS							\
   { COUNT_TOTAL(cp, (XWORD)(C - C0) * sizeof(CHOICE_POINT));		\
     COUNT_TOTAL(tp, (XWORD)(trail_top - C0->T) * sizeof(XWORD) * 2);	\
     COUNT_TOTAL(ep, (XWORD)(env_top - C0->env_top) * sizeof(XWORD));	\
-    if(doap) COUNT_TOTAL(ap, (XWORD)(arg_top - C0->arg_top) * sizeof(XWORD)); \
     COUNT_INC; }								
 #else
-# define PROFILE_COUNTS(doap)
+# define PROFILE_COUNTS
 #endif
 
 #ifdef USE_DELAY  
@@ -3471,7 +3470,7 @@ static void push_argument_list(X lst)
 #else
 # define EXIT(lbl)						\
   { TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY);			\
-    PROFILE_COUNTS(1);						\
+    PROFILE_COUNTS;						\
     R = C0->R;							\
     E = C0->E;							\
     C0 = C0->C0;						\
@@ -3480,7 +3479,7 @@ static void push_argument_list(X lst)
 
 #define DETERMINATE_EXIT		     \
   { TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY); \
-    PROFILE_COUNTS(0);			     \
+    PROFILE_COUNTS;			     \
     R = C0->R;				     \
     E = C0->E;				     \
     env_top = C0->env_top;		     \
@@ -3508,7 +3507,7 @@ static void push_argument_list(X lst)
 
 #define TAIL_CALL(lbl)					 \
   { TRACE_TAIL_CALL(CURRENT_NAME, CURRENT_ARITY);	 \
-    PROFILE_COUNTS(0);					 \
+    PROFILE_COUNTS;					 \
     R = C0->R;						 \
     E = C0->E;						 \
     env_top = C0->env_top;				 \
@@ -3519,7 +3518,7 @@ static void push_argument_list(X lst)
 #define FINAL_CALL(lbl, ret)				 \
   { if(C == C0 + 1) {					 \
       TRACE_TAIL_CALL(CURRENT_NAME, CURRENT_ARITY);	 \
-      PROFILE_COUNTS(0);				 \
+      PROFILE_COUNTS;					 \
       R = C0->R;					 \
       E = C0->E;					 \
       env_top = C0->env_top;				 \
