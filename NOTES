@@ -185,6 +185,8 @@ NOTES											              -*- Org -*-
 * Runtime
 ** TODO Use macro to check for exceeded heap-limit
 * Tests
+** TODO Evaluate memprofiling
+   - do we need to update counts on fail or (re-)throw?
 ** TODO profile with gprof
 * Interpreter
 ** TODO Allow detecting interpreter from running program
