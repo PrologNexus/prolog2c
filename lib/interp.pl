@@ -166,7 +166,8 @@ pi_trace_out(T, M, G) :-
 %%
 
 call(GOAL) :-
-	(nonvar(GOAL); throw(instantiation_error)),
+	var(GOAL), throw(instantiation_error).
+call(GOAL) :-
 	global_ref(pi_trace_depth, N),
 	integer(N),
 	!,
