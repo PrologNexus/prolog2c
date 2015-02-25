@@ -235,7 +235,7 @@ typedef struct CATCHER
   X *E, *T, *env_top, *arg_top;
   void *P;
   void **ifthen_top;
-#ifdef PROFILE
+#if defined(PROFILE) || defined(PROFILE_MEMORY)
   struct PINFO *where;
 #endif
 } CATCHER;
