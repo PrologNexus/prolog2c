@@ -81,6 +81,7 @@ system_predicate(suspend(?X, ?Y)).
 system_predicate(append(+X), 'io.pl').
 system_predicate(compare(-X, ?X, ?Z), 'misc.pl').
 system_predicate(copy_term(?X, ?Y), 'misc.pl').
+system_predicate(duplicate_term(?X, ?Y), 'misc.pl').
 system_predicate(between(+X, +Y, ?Z), 'misc.pl').
 system_predicate(current_op(?X, ?Y, ?Z), 'op.pl').
 system_predicate(get(-X), 'io.pl').

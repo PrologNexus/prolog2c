@@ -74,8 +74,9 @@ auto_include(current_op, 3, 'lib/op.pl').
 auto_include(throw, 1, 'lib/misc.pl').
 auto_include(name, 2, 'lib/misc.pl').
 auto_include('=..', 2, 'lib/misc.pl').
-auto_include(deref_term, 3, 'lib/misc.pl').
+auto_include(deref_term, 4, 'lib/misc.pl').
 auto_include(copy_term, 2, 'lib/misc.pl').
+auto_include(duplicate_term, 2, 'lib/misc.pl').
 
 auto_include(union, 3, 'lib/sets.pl').
 auto_include(intersection, 3, 'lib/sets.pl').
@@ -173,6 +174,7 @@ determinate_builtin(name, 2).
 determinate_builtin('=..', 2).
 determinate_builtin(deref_term, 3).
 determinate_builtin(copy_term, 2).
+determinate_builtin(duplicate_term, 2).
 determinate_builtin(write, 1).
 determinate_builtin(writeq, 1).
 determinate_builtin(recorda, 2).

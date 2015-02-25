@@ -37,15 +37,17 @@ X =.. [N|ARGS] :-
 	I2 is I + 1,
 	'$univ_args'(TERM, I2, N, MORE).
 
-deref_term(X, L, Y) :-
-	(foreign_call(deref_term(X, L, Y1))
-	; garbage_collect, deref_term(X, L, Y1)),
+deref_term(X, L, D, Y) :-
+	(foreign_call(deref_term(X, L, D, Y1))
+	; garbage_collect, deref_term(X, L, D, Y1)),
 	!, Y = Y1.
 
-copy_term(X, Y) :-
-	var(X), !, deref_term(Y, 999999, X).
-copy_term(X, Y) :-
-	deref_term(X, 999999, Y).
+%%XXX these will loop if heap remains insufficient
+copy_term(X, Y) :- var(X), !, deref_term(Y, 999999, 0, X).
+copy_term(X, Y) :- deref_term(X, 999999, 0, Y). % failed: forces GC
+
+duplicate_term(X, Y) :- var(X), !, deref_term(Y, 999999, 1, X).
+duplicate_term(X, Y) :- deref_term(X, 999999, 1, Y).
 
 %% once again, from R. O'Keefe
 between(L, U, X) :-

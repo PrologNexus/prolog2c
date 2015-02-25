@@ -1295,11 +1295,11 @@ static inline void push_trail(CHOICE_POINT *C0, X var)
 
 
 // deref recursively, effectively copying term
-static X deref_recursive(X val, int limit, int *failed)
+static X deref_recursive(X val, int limit, int dup, int *failed)
 {
   *failed = 0;
 
-  if(limit <= 0 || is_FIXNUM(val)) return val;
+  if((!dup && limit <= 0) || is_FIXNUM(val)) return val;
 
   if(is_VAR(val)) {
     val = deref1(val);
@@ -1321,7 +1321,7 @@ static X deref_recursive(X val, int limit, int *failed)
       newvar->d[ 1 ] = word_to_fixnum(variable_counter++);
       newvar->d[ 2 ] = word_to_fixnum(clock_ticks++);
 #ifdef USE_DELAY
-      newvar->d[ 3 ] = deref_recursive(slot_ref(val, 3), limit, failed);
+      newvar->d[ 3 ] = deref_recursive(slot_ref(val, 3), limit, dup, failed);
 #endif
 
       if(*failed) return val;
@@ -1340,6 +1340,7 @@ static X deref_recursive(X val, int limit, int *failed)
     return val;
   }
 
+  X *oldtop = alloc_top;	/* for restoration in case term is ground */
   ALLOCATE_BLOCK(BLOCK *p, objtype(val), s);
   --limit;
   int i = 0;
@@ -1349,21 +1350,32 @@ static X deref_recursive(X val, int limit, int *failed)
     i = 1;
   }
 
+  int anynew = 0;
+
   while(i < s) {
-    p->d[ i ] = deref_recursive(slot_ref(val, i), limit, failed);
+    X old = slot_ref(val, i);
+    p->d[ i ] = deref_recursive(old, limit, dup, failed);
 
     if(*failed) return val;
 
+    if(p->d[ i ] != old) anynew = 1;
+
     ++i;
+  }
+
+  if(!dup && !anynew) {
+    // keep old value, as it is ground
+    alloc_top = oldtop;
+    return val;
   }
 
   return (X)p;
 }
 
 
-static X deref_all(X val, int limit, int *failed)
+static X deref_all(X val, int limit, int dup, int *failed)
 {
-  X y = deref_recursive(val, limit, failed);
+  X y = deref_recursive(val, limit, dup, failed);
   clear_shared_term_table();
   return y;
 }
@@ -4046,11 +4058,11 @@ PRIMITIVE(term_arg, X index, X term, X arg)
   return i > 0 && i < objsize(term) && unify(arg, slot_ref(term, i));
 }
 
-PRIMITIVE(deref_term, X in, X limit, X out)
+PRIMITIVE(deref_term, X in, X limit, X dup, X out)
 {
   check_fixnum(limit);
   int failed;
-  X x = deref_all(in, fixnum_to_word(limit), &failed);
+  X x = deref_all(in, fixnum_to_word(limit), fixnum_to_word(dup), &failed);
   return !failed && unify(x, out);
 }
 

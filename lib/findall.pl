@@ -15,7 +15,7 @@
 	!,
 	global_ref(findall_solutions, L),
 	copy_term(X, X2),
-	deref_term([X2|L], 2, X3),
+	deref_term([X2|L], 2, 0, X3),
 	global_set(findall_solutions, X3).
 
 '$findall_collect'(L) :-
@@ -39,7 +39,7 @@
 '$bagof_start_unbound'(UVARS, TEMPLATE, KEY-TEMPLATE) :-
 	global_ref(bagof_info, OLD),
 	KEY =.. ['.'|UVARS],
-	deref_term([KEY|OLD], 2, BI),
+	deref_term([KEY|OLD], 2, 0, BI),
 	global_set(bagof_info, BI),
 	'$findall_push'('$<mark>'),
 	!.
