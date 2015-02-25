@@ -343,7 +343,13 @@ Builtin predicates
 
         copy_term(?X, ?Y)
 
-    Unifies X with a copy of the term Y or vice versa [ISO]
+    Unifies X with a copy of the term Y or vice versa. Note that only
+    non-ground terms are copied, renaming contained variables [ISO]
+
+        duplicate_term(?X, ?Y)
+
+    Completely duplicates the term X and unifies it with Y, even
+    ground terms.
 
         ?X =.. ?Y
 
@@ -1250,9 +1256,9 @@ Calling code written in other languages
   Note that the garbage collector ignores data that is not located in
   the garbage-collected heap, so you can create Prolog data structures
   in native code and pass them to Prolog without problems. You can use
-  copy_term/2 to copy static data from native code into dynamically
-  allocated data located in the heap (but you must of course free the
-  old static data manually).
+  duplicate_term/2 to copy static data from native code into
+  dynamically allocated data located in the heap (but you must of
+  course free the old static data manually).
 
   To get you started, here is a very simple example: let's add
   an interface to the gethostname(2) UNIX API function.
