@@ -15,6 +15,9 @@ NOTES											              -*- Org -*-
 	execute(X) -> execute(Y). % parsed as (!, ...) -> execute(Y)
    - adding parens around last goal repaired the problem, but still
      this shouldn't happen.
+*** 0007-pi benchmark needs high memory/trail settings
+    - crashes with defaults, which is to be expected, but it would be
+      nice to catch this properly.
 *** 32-bit version can't tokenize fractional part of real if it doesn't fit into an integer
    - e.g.:
      main :- f(0.463647609000806).
@@ -25,6 +28,8 @@ NOTES											              -*- Org -*-
    - also read_atom/2, recorded/X, retract/1 and clause/X
 *** name/2 and functor/3 (and others?) may exceed heap-reserve for large inputs
 ** Minor
+*** TODO Fresh checkout often leaves file:g-s-p.pl uncompiled
+    - only rebuilds g-s-p.c, but that might not be sufficient.
 *** pb should understand "volatile"
 *** Failure in term_expansion/2 will simply be ignored
 *** The output of TRACE_TAILCALL() is somewhat confusing
@@ -66,6 +71,12 @@ NOTES											              -*- Org -*-
 ** Environment trimming
    - sort variables by lifetime (reversed) and trim env_top after last use.
    - may only be applicable when env_top didn't change.
+** DONE deref_term(): avoid copying whole tree
+   - if elements don't change, return original value.
+   - should heavily reduce memory usage and make full copy_term
+     feasible (instead of using custom deref-"depth", as used in
+     file:lib/findall.pl)
+   - add duplicate_term/2
 ** Add "determinate" declarations and green cuts in library code
    - profile to find suitable points of improvement.
 ** Special-case calls of primitives that are known to always succeed
@@ -95,6 +106,18 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
+** TODO if term_expansion/2 returns list, treat as separate (or no) terms
+** TODO current_prolog_flag/2, set_prolog_flag/2
+   | Name                      | Default   | Changable |
+   |---------------------------+-----------+-----------|
+   | bounded                   | false     | -         |
+   | max_arity                 | ?         | -         |
+   | integer_rounding_function | ?         | -         |
+   | max_integer               | ?         | -         |
+   | min_integer               | ?         | -         |
+   | unknown                   | error     | -         |
+   | version                   | <VERSION> | -         | 
+** TODO Add support for ensure_loaded/1 in compiler  
 ** Predicates
    - simple atom-concatenation, at least as determinate primitive.
 ** Show warning for untriggered delayed goals with "-:d"
@@ -138,12 +161,24 @@ NOTES											              -*- Org -*-
 * Experimental
 ** TODO /memprofile/ (memory-profiling)
    - not sure if this is truly correct or useful.
+*** TODO Primitives that may fail due to heap-limit excess must restore pinfo
+    - deref_all()
+    - thaw_term()
 ** TODO /pi-in-pc/ (make interpreter available in compiler)
    - use of term_expansion/2 is awkward, but handy.
    - allows arbitrary latent goals.
    - compare file-size + compile overhead in optimized mode.
-** TODO prolog-implementation of CDB
+** prolog-implementation of CDB
    - needs tree-based DB, perhaps using lib/tree23.
+   - problematic, as it depends on GC'd trailed vars and needs 2 tree
+     lookups for recording (to add a new element to an existing list of
+     old vals: first to get old, second to put old with new added)
+     - update_23 allows this, by adding a variable and unifying it
+       with the result-"mode".
+   - term-copying needed for storing new DB in global copies whole
+     DB, which is too inefficient.
+     - might be addressed by more efficient deref_all()
+   - dbreference type changes.
 ** TODO /intmath/ (integer-only math)
    - lib/rdtok returns end_of_file when reading flonum, which makes pi
      terminate, for example.
