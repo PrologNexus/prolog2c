@@ -2417,7 +2417,7 @@ static XCHAR *poutput_polish(XWORD val)
 
 static XCHAR *poutput_avg_polish(volatile PINFO_AVG_COUNT *c, int count)
 {
-  if(count == 0) return "     0";
+  if(count == 0) return "     0 ";
 
   return poutput_polish(c->total / count);
 }
