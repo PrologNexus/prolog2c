@@ -1409,8 +1409,16 @@ static X deref_recursive(X val, int limit, int dup, int *failed)
 
 static X deref_all(X val, int limit, int dup, int *failed)
 {
+#ifdef PROFILE_MEMORY
+  XWORD oldheap = where->heap.total;
+#endif
   X y = deref_recursive(val, limit, dup, failed);
   clear_shared_term_table();
+
+#ifdef PROFILE_MEMORY
+  if(*failed) where->heap.total = oldheap;
+#endif
+
   return y;
 }
 
@@ -1589,9 +1597,17 @@ static int thaw_term_recursive(X *xp)
 
 static X thaw_term(X x, int *failed)
 {
+#ifdef PROFILE_MEMORY
+  XWORD oldheap = where->heap.total;
+#endif
   X y = x;
   *failed = !thaw_term_recursive(&y);
   clear_shared_term_table();
+
+#ifdef PROFILE_MEMORY
+  if(*failed) where->heap.total = oldheap;
+#endif
+
   return y;
 }
 
