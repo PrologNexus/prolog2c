@@ -2450,7 +2450,11 @@ static void profile_emit_data()
   
   //XXX move pinfos into table and sort
   for(PINFO *pinfo = pinfo_list; pinfo != NULL; pinfo = pinfo->next) {
+#ifdef PROFILE_MEMORY
+    if(pinfo->count > 0 || pinfo->heap.total > 0) {
+#else
     if(pinfo->count > 0) {
+#endif
       XCHAR *name = pinfo->name;
       int len = strlen(name);
       fputs(name, fp);
