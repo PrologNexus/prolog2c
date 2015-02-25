@@ -358,7 +358,7 @@ typedef struct PINFO
 #define DBREFERENCE_TAG TYPE_TO_TAG(DBREFERENCE_TYPE)
 
 #ifdef USE_DELAY
-# define VAR_SIZE  4
+# define VAR_SIZE 4
 #else
 # define VAR_SIZE 3
 #endif
@@ -1384,7 +1384,7 @@ static X freeze_term_recursive(X x)
     if(*tp != NULL) return tp[ 1 ];
 
     *tp = x;
-    BLOCK *newvar = (BLOCK *)malloc(sizeof(XWORD) * 4);
+    BLOCK *newvar = (BLOCK *)malloc(sizeof(XWORD) * (VAR_SIZE + 1));
     ASSERT(newvar, "out of memory - can not freeze variable");
     newvar->h = VAR_TAG | VAR_SIZE;
     newvar->d[ 0 ] = (X)newvar;
