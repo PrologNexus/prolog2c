@@ -270,7 +270,7 @@ compile_body_expression(catch(G, B, R), TAIL, D1, D2, B1, B2, S1, S2) :-
 	compile_body_expression(G, nontail, D1, _, BB2, B3, S5, S6),
 	emit(pop_catcher, jump(L2)), % G succeeds, no throw
 	gensym('T', T, S6, S7),
-	emit(label(L1)),  % throw occurred
+	emit(label(L1), enter_catcher),  % throw occurred
 	compile_term_for_unification(B, T, B3, B4, S7, S8),
 	emit(unify_throw(T)), % ball unifies
 	compile_body_expression(R, TAIL, D1, D2, B4, B2, S8, S2), % recovery goal
