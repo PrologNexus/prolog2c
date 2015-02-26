@@ -27,6 +27,8 @@ NOTES											              -*- Org -*-
 *** If heap is insufficient deref_term/3 will loop endlessly
    - also read_atom/2, recorded/X, retract/1 and clause/X
 *** name/2 and functor/3 (and others?) may exceed heap-reserve for large inputs
+   - atom_codes/2 could fail on full heap, force GC and retry,
+     would need to be moved into file:lib/misc.pl
 ** Minor
 *** TODO Fresh checkout often leaves file:g-s-p.pl uncompiled
     - only rebuilds g-s-p.c, but that might not be sufficient.
@@ -71,12 +73,6 @@ NOTES											              -*- Org -*-
 ** Environment trimming
    - sort variables by lifetime (reversed) and trim env_top after last use.
    - may only be applicable when env_top didn't change.
-** DONE deref_term(): avoid copying whole tree
-   - if elements don't change, return original value.
-   - should heavily reduce memory usage and make full copy_term
-     feasible (instead of using custom deref-"depth", as used in
-     file:lib/findall.pl)
-   - add duplicate_term/2
 ** Add "determinate" declarations and green cuts in library code
    - profile to find suitable points of improvement.
 ** Special-case calls of primitives that are known to always succeed
@@ -90,11 +86,11 @@ NOTES											              -*- Org -*-
    - deref all vars just once at start.
    - track types, use unboxed math.
 ** 2-stream unification
-   - very complicated and possibly not overly effective.
-** With some sort of type/groundness analysis many primitives can be rewritten to simpler forms
+   - rather complicated, first attempt at implementation ended in
+     quite a mess and was abandoned.
+** With some sort of type/groundness analysis many primitives could be optimized
    - functor, arg, name, univ, etc.
-   - atom_codes/2 could fail on full heap, force GC and retry,
-     would need to be moved into file:lib/misc.pl
+   - rewrite to simpler forms.
 ** current_op/3 needs fast path when operator name is known
    - could use single-bucket db, with unififcation inside
      db_find/db_next (provided, we implement matching in file:pc.h)
@@ -117,6 +113,8 @@ NOTES											              -*- Org -*-
    | min_integer               | ?         | -         |
    | unknown                   | error     | -         |
    | version                   | <VERSION> | -         | 
+   - put into lib/misc, includes lib/version (replaces current
+     file:version.pl)
 ** TODO Add support for ensure_loaded/1 in compiler  
 ** Predicates
    - simple atom-concatenation, at least as determinate primitive.
@@ -138,6 +136,7 @@ NOTES											              -*- Org -*-
    - "max", "min", "asin", "acos"
 * Documentation
 ** DONE News
+   - more lightweight copy_term/2, added duplicate_term/2
    - read_line/1
    - profiling.
    - string-canonicalization didn't handle empty strings.
@@ -159,15 +158,13 @@ NOTES											              -*- Org -*-
 ** Detect singleton variables
 ** Report unused predicates
 * Experimental
-** TODO /memprofile/ (memory-profiling)
+** DONE /memprofile/ (memory-profiling)
    - not sure if this is truly correct or useful.
-*** TODO Primitives that may fail due to heap-limit excess must restore pinfo
-    - deref_all()
-    - thaw_term()
-** TODO /pi-in-pc/ (make interpreter available in compiler)
+** DONE /pi-in-pc/ (make interpreter available in compiler)
    - use of term_expansion/2 is awkward, but handy.
    - allows arbitrary latent goals.
    - compare file-size + compile overhead in optimized mode.
+   - would allow conditional compilation.
 ** prolog-implementation of CDB
    - needs tree-based DB, perhaps using lib/tree23.
    - problematic, as it depends on GC'd trailed vars and needs 2 tree
@@ -179,9 +176,9 @@ NOTES											              -*- Org -*-
      DB, which is too inefficient.
      - might be addressed by more efficient deref_all()
    - dbreference type changes.
-** TODO /intmath/ (integer-only math)
-   - lib/rdtok returns end_of_file when reading flonum, which makes pi
-     terminate, for example.
+** DONE /intmath/ (integer-only math)
+   - lib/rdtok returns end_of_file when reading flonum (which makes pi
+     terminate, for example)
    - would have to disable flonum-parsing in rdtok, which needs
      conditional, depending on variant (with flonums or without)
 * Runtime
