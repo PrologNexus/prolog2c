@@ -1183,10 +1183,11 @@ Directives
   Declares an operator - identical to op/3, but done before reading
   any further clauses.
 
-      ensure_loaded(FILENAME)                   [interpreter]
+      ensure_loaded(FILENAME)                   [compiler, interpreter]
 
   Similar to "include", but only includes FILENAME if it has not been
-  earlier included using "ensure_loaded", "include" or "consult".
+  earlier included using "ensure_loaded" or "include" (or "consult" in
+  the interpreter.)
 
 
 Performance tips
