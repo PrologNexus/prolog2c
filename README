@@ -1206,24 +1206,52 @@ Performance tips
   on overall performance.
 
   You can use the built-in statistical profiler to examine the time
-  spent in the predicates of a program by compiling the generated C
+  spent in the predicates of your program by compiling the generated C
   code with the "-DPROFILE" C compiler option. On successful
   termination, a file named "PROFILE.<pid>" is generated in the
   current working directory and holds a list of predicates, with a
   count-number, the number of seconds spent in the predicate and the
   percentage of the total run-time.
 
-  The profiler works by running a separate thread that probes in
+  The profiler works by running a separate thread that probes at
   regular intervals which predicate is currently executing and
   increases a predicate-specific counter. Before the program
   terminates, the total running time is divided by the total number of
   counts and the predicate-specific counts are then correlated with
   the overall time. This is not completely accurate but should be good
   enough to get an idea of the relative distribution of run-time
-  required by specific parts of your program.
+  required by specific parts of your program. Note that the reported
+  time only specifies the time in the predicate alone, not in called
+  predicates, so the time does not include nested calls.
 
-  To use profiling, the executable must be linked with the "pthread"
-  library (pass "-lpthread" when compiling the generated C code.)
+  To use performance-profiling, the executable must be linked with the
+  "pthread" library (pass "-lpthread" when compiling the generated C
+  code.)
+
+  There is also an experimental memory-profiler, which gathers some
+  information about heap-allocations and the sizes of various stacks.
+  When you compile your program with "-DPROFILE_MEMORY", a file is
+  generated (similar to using "-DPROFILE") containing entries of the
+  form
+
+    <predicate name>   C: <cp>   T: <trail>  E: <env>  H: <heap>
+
+  The meaning of the values is as follows:
+
+  * "<cp>": the average amount of choice-point stack above required by
+    this predicate (and all called predicates), at the point when the
+    predicate exited successfully or failed.
+
+  * "<trail>": the average amount of trail-stack space required by
+    this predicate (and all callees), at the point of exit or fail.
+
+  * "<env>": the average amount of environment-stack space required by
+    this predicate (and all called predicates), also at exit or fail.
+
+  * "<heap>": the total amount of heap-space allocated by this
+    predicate, over all invocations.
+
+  All sizes are in bytes.
 
 
 Calling code written in other languages
