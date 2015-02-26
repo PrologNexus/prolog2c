@@ -30,8 +30,9 @@ NOTES											              -*- Org -*-
    - atom_codes/2 could fail on full heap, force GC and retry,
      would need to be moved into file:lib/misc.pl
 ** Minor
-*** TODO Fresh checkout often leaves file:g-s-p.pl uncompiled
+*** Fresh checkout often leaves file:g-s-p.pl uncompiled
     - only rebuilds g-s-p.c, but that might not be sufficient.
+    - but "make clean" should be sufficient.
 *** pb should understand "volatile"
 *** Failure in term_expansion/2 will simply be ignored
 *** The output of TRACE_TAILCALL() is somewhat confusing
@@ -103,6 +104,7 @@ NOTES											              -*- Org -*-
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
 ** TODO if term_expansion/2 returns list, treat as separate (or no) terms
+   - add this also to /pi-in-pc/
 ** TODO current_prolog_flag/2, set_prolog_flag/2
    | Name                      | Default   | Changable |
    |---------------------------+-----------+-----------|
@@ -115,7 +117,6 @@ NOTES											              -*- Org -*-
    | version                   | <VERSION> | -         | 
    - put into lib/misc, includes lib/version (replaces current
      file:version.pl)
-** TODO Add support for ensure_loaded/1 in compiler  
 ** Predicates
    - simple atom-concatenation, at least as determinate primitive.
 ** Show warning for untriggered delayed goals with "-:d"
@@ -147,7 +148,7 @@ NOTES											              -*- Org -*-
    - once/1
    - undefined goals in interpreter throw error.
    - slightly faster db-key computation.
-   - pi: ensure_loaded/1 directive.
+   - ensure_loaded/1 directive.
    - added -q option to pi, also added some verbose output when including/consulting.
 * Build options
 ** Allow static allocation of data-areas
