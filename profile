@@ -24,7 +24,7 @@
   (unless (string=? "c" s)
     (run (./pc "-I" "." -q ,file -o ,cfile))))
 
-(run (gcc -std=gnu99 -I. ,@opts ,@moreopts ,cfile -o ,xfile -lm -lrt))
+(run (gcc -std=gnu99 -I. -g ,@opts ,@moreopts ,cfile -o ,xfile -lm -lrt))
 
 (let* ((status (run* (,(string-append "./" xfile) ,@(cdr args))))
        (pfile (capture (ls -t PROFILE.* "|" head -n1))))
