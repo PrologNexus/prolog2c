@@ -3654,6 +3654,7 @@ static void push_argument_list(X lst)
     C++; }						\
   int lj = setjmp(exception_handler);			\
   if(lj == 1) {						\
+    PROFILE_COUNTS;					\
     unwind_trail(catch_top->T);				\
     C0 = catch_top->C0;					\
     C = C0 + 1;						\
