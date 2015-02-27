@@ -139,7 +139,7 @@ NOTES											              -*- Org -*-
 ** DONE News
    - more lightweight copy_term/2, added duplicate_term/2
    - read_line/1
-   - profiling.
+   - speed- and memory-profiling.
    - string-canonicalization didn't handle empty strings.
    - pb: "-i" option.
    - pb: handling "\" inside text (not followed by WS + NL)
@@ -159,8 +159,6 @@ NOTES											              -*- Org -*-
 ** Detect singleton variables
 ** Report unused predicates
 * Experimental
-** DONE /memprofile/ (memory-profiling)
-   - not sure if this is truly correct or useful.
 ** DONE /pi-in-pc/ (make interpreter available in compiler)
    - use of term_expansion/2 is awkward, but handy.
    - allows arbitrary latent goals.
