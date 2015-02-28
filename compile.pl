@@ -482,6 +482,14 @@ compile_arithmetic_test(X, Y, B, OP, S1, S2) :-
 	TERM =.. [OP, T1, T2],
 	emit(TERM).
 
+compile_arithmetic_expression([X], DEST, _, S1, S2) :-
+	number(X),
+	register_literal(X, N, S1, S2),
+	emit(literal(N, DEST, X)).
+compile_arithmetic_expression(X, DEST, _, S1, S2) :-
+	number(X),
+	register_literal(X, N, S1, S2),
+	emit(literal(N, DEST, X)).
 compile_arithmetic_expression(X, DEST, B, S, S) :-
 	indexed_variable(X, N),
 	member(N, B),
@@ -489,10 +497,6 @@ compile_arithmetic_expression(X, DEST, B, S, S) :-
 compile_arithmetic_expression(X, _, _, _, _) :-
 	indexed_variable(X, N),
 	error(['unbound variable in arithmetic expression: ', N]). %XXX
-compile_arithmetic_expression(X, DEST, _, S1, S2) :-
-	number(X),
-	register_literal(X, N, S1, S2),
-	emit(literal(N, DEST, X)).
 
 compile_arithmetic_expression(EXP, DEST, B, S1, S2) :-
 	functor(EXP, NAME, ARITY),

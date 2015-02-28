@@ -283,6 +283,7 @@ pi_evaluate(X, Y) :-
 	!,
 	functor(X, NAME, ARITY),
 	pi_evaluate_op(NAME, ARITY, X, Y).
+pi_evaluate([X], X) :- number(X), !.
 pi_evaluate(X, X) :- number(X), !.
 pi_evaluate(X, _) :- throw(type_error(number, X)).
 pi_evaluate(X, _) :- throw(instantiation_error).
