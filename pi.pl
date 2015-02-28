@@ -20,15 +20,19 @@ repl :-
 	display('?- '), flush,
 	seeing(IN), telling(OUT),
 	read(TERM, VARS), 
-	(TERM == end_of_file, halt
-	; compound(TERM), TERM = [_|_], consult_files(TERM)
-	; catch(run_goal(TERM, VARS), EXN, (report_exception(EXN), see(IN), tell(OUT)))
-	),
-	!,			% force tailcall
-	repl.
-repl :-
-	display('\nno.\n'),
-	repl.
+	(TERM == end_of_file, halt; process_input(TERM, IN, OUT)).
+repl :- repl.
+
+%% always fails, to ensure trail is unwound
+process_input(TERM, _, _) :-
+	compound(TERM), TERM = [_|_], consult_files(TERM), !, fail.
+process_input(TERM, IN, OUT) :-
+	catch(run_goal(TERM, VARS), EXN, report_exception(EXN)),
+	see(IN), tell(OUT),
+	!, fail.
+process_input(TERM, IN, OUT) :-
+	see(IN), tell(OUT),
+	display('no.\n'), !, fail.
 
 consult_files([]).
 consult_files([F|R]) :- consult(F), consult_files(R).
