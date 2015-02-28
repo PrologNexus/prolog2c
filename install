@@ -4,5 +4,6 @@ mkdir -p ~/share/prolog/lib
 cp lib/*.pl ~/share/prolog/lib
 cp pc-autocompile pb ~/bin
 cp pc1o ~/bin/pc
+rm ~/bin/pi
 cp pio ~/bin/pi
 cp pc.h ~/include
