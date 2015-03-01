@@ -144,11 +144,11 @@ system_predicate(succ(?X,?Y), 'lib/arith.pl').
 system_predicate(plus(?X,?Y,?Z), 'lib/arith.pl').
 system_predicate(times(?X,?Y,?Z), 'lib/arith.pl').
 system_predicate(divide(?X,?Y,?Z,?U), 'lib/arith.pl').
-
 system_predicate(writef(+X), 'lib/writef.pl').
 system_predicate(writef(+X,+Y), 'lib/writef.pl').
 system_predicate(fwritef(+X,+Y), 'lib/writef.pl').
 system_predicate(fwritef(+X,+Y,+Z), 'lib/writef.pl').
+system_predicate(current_prolog_flag(+X,-Y), 'lib/flags.pl').
 
 arithmetic_operation(- X).
 arithmetic_operation(\ X).

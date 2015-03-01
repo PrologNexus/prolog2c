@@ -142,6 +142,8 @@ auto_include('$delay_goal', 4, 'lib/co.pl').
 auto_include('$freeze_goal', 4, 'lib/co.pl').
 auto_include(dif, 2, 'lib/co.pl').
 
+auto_include(current_prolog_flag, 2, 'lib/flags.pl').
+
 auto_include(_, _, _) :- fail.
 
 
