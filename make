@@ -18,7 +18,7 @@
     "compile.pl"
     "assemble.pl"
     "main.pl"
-    "version.pl"
+    "lib/flags.pl"
     "lib/lists.pl"
     "lib/misc.pl"
     "lib/write.pl"
@@ -218,7 +218,7 @@
   (system-predicates)
   (make/proc (list (list "pi.c" 
 			 (list "pi.pl"
-			       "version.pl"
+			       "lib/flags.pl"
 			       "lib/interp.pl"
 			       "pi_system_predicate.pl"
 			       "pi_call_primitive.pl" 
@@ -238,7 +238,7 @@
 
 (define (pb)
   (fluid-let ((gcc-compile-options (append gcc-compile-options pc-compile-options)))
-    (make-program "pb.pl" "pb" "version.pl")))
+    (make-program "pb.pl" "pb" "lib/flags.pl")))
 
 (define (bench)
   (let ((tests (string-split (capture (ls benchmarks/*.pl)) "\n")))

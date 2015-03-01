@@ -2,7 +2,6 @@
 
 
 :- include('swi.pl').
-:- include('version.pl').
 :- include('settings.pl').
 :- include('lib/rdtok.pl').
 :- include('lib/read.pl').
@@ -16,3 +15,5 @@
 :- include('compile.pl').
 :- include('assemble.pl').
 :- include('main.pl').
+
+show_version_and_exit :- display('<none>\n'), halt.

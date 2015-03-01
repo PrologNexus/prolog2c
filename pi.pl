@@ -1,7 +1,6 @@
 %%%% interpreter toplevel
 
 
-:- include('version.pl').
 :- include('lib/interp.pl').
 :- include('dcg.pl').
 
@@ -81,3 +80,10 @@ parse_arguments([FILENAME|MORE]) :-
 usage(CODE) :-
 	display('usage: pi [-version] [-q] [-h] [-t] [-i NAME] FILENAME ...\n'),
 	halt(CODE).
+
+show_version_and_exit :-
+	current_prolog_flag(version, V),
+	current_prolog_flag(prolog_title, T),
+	current_prolog_flag(prolog_copyright, C),
+	writef("%d version %d - %d\n", [T, V, C]),
+	halt.
