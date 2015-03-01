@@ -202,7 +202,7 @@
   (let-optionals more ((exe (strip-suffix src))
 		       deps)
     (let ((c (replace-suffix "c" src)))
-      (make/proc (list (list exe (list "pc.h" c)
+      (make/proc (list (list exe (list c)
 			     (lambda ()
 			       (run (gcc ,@gcc-compile-options ,c -lm -lrt -o ,exe))))
 		       (list c (cons src deps)
