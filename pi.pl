@@ -18,7 +18,7 @@ main :-
 repl :-
 	display('?- '), flush,
 	seeing(IN), telling(OUT),
-	read(TERM, VARS), 
+	catch(read(TERM, VARS), EXN, (report_exception(EXN), !, repl)),
 	(TERM == end_of_file, halt; process_input(TERM, VARS, IN, OUT)).
 repl :- repl.
 
