@@ -14,9 +14,6 @@
 % BASETYPE = ["unsigned"] ("int" | "char" | "short" | "long" | "float" | "double" | "void") 
 
 
-:- include('version.pl').
-
-
 %% parsing of definitions
 
 parse_definition(none, _, _, _) -->
@@ -438,6 +435,13 @@ parse_arguments([FILENAME|MORE]) :-
 usage(CODE) :-
 	display('usage: pb [-version] [-h] [-q] [-i] [-o OUTPUTNAME] [FILENAME]\n'),
 	halt(CODE).
+
+show_version_and_exit :-
+	current_prolog_flag(version, V),
+	current_prolog_flag(prolog_title, T),
+	current_prolog_flag(prolog_copyright, C),
+	display(T), display(' version '), display(V), display(' - '),
+	display(C), nl, halt.
 
 process_input_file(user) :-
 	!, read_all(INPUT), process_input(INPUT).
