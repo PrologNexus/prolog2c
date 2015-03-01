@@ -4451,6 +4451,20 @@ PRIMITIVE(cdb_key, X term, X key) {
   return unify(intern(str2), key);
 }
 
+PRIMITIVE(fixnum_bounds, X minimum, X maximum) {
+  XWORD mi, ma;
+#ifdef SIXTYFOUR
+  ma = 0x3fffffffffffffff;
+  mi = -0x3fffffffffffffff - 1;
+#else
+  ma = 0x3fffffff;
+  mi = -0x3fffffff - 1;
+#endif
+  return unify(minimum, word_to_fixnum(mi)) &&
+    unify(maximum, word_to_fixnum(ma));
+}
+
+
 #endif
 
 #endif
