@@ -19,17 +19,17 @@ repl :-
 	display('?- '), flush,
 	seeing(IN), telling(OUT),
 	read(TERM, VARS), 
-	(TERM == end_of_file, halt; process_input(TERM, IN, OUT)).
+	(TERM == end_of_file, halt; process_input(TERM, VARS, IN, OUT)).
 repl :- repl.
 
 %% always fails, to ensure trail is unwound
-process_input(TERM, _, _) :-
+process_input(TERM, _, _, _) :-
 	compound(TERM), TERM = [_|_], consult_files(TERM), !, fail.
-process_input(TERM, IN, OUT) :-
+process_input(TERM, VARS, IN, OUT) :-
 	catch(run_goal(TERM, VARS), EXN, report_exception(EXN)),
 	see(IN), tell(OUT),
 	!, fail.
-process_input(TERM, IN, OUT) :-
+process_input(TERM, _, IN, OUT) :-
 	see(IN), tell(OUT),
 	display('no.\n'), !, fail.
 
