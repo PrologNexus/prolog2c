@@ -848,7 +848,12 @@ Builtin predicates
 
         X xor Y
 
-     Bitwise xor
+     Bitwise xor.
+
+        max(X, Y)
+        min(X, Y)
+
+     Maximum and minimum of two numbers.
 
   - Operating-system interaction
 
@@ -1060,6 +1065,20 @@ Builtin predicates
      Sets the global variable with the name NAME to X. Note that this
      does not take care of backtracking, use copy_term/2 to preserve X
      in that case.
+
+        current_prolog_flag(+ATOM, -VAL)
+
+     Unifies VAL with the appropriate value for the Prolog-flag named
+     by ATOM. All flags available are not changable. Currently available
+     are these settings:
+
+        version                       Prolog version as integer
+        bounded                       true
+        max_arity                     999 (arbitrary, this has not been tested)
+        integer_rounding_function     toward_zero
+        max_integer                   
+        min_integer                   30 or 62 bit integer, depending on word size
+        unknown                       error
 
   - Predicates that are only available in the interpreter
 
