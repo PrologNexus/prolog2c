@@ -182,3 +182,5 @@ arithmetic_operation(sin(X)).
 arithmetic_operation(sqrt(X)).
 arithmetic_operation(truncate(X)).
 arithmetic_operation(clock).
+arithmetic_operation(max(X, Y)).
+arithmetic_operation(min(X, Y)).

@@ -530,6 +530,8 @@ arithmetic_operation(random, 1).
 arithmetic_operation(clock, 0).
 arithmetic_operation(xor, 2).
 arithmetic_operation(rem, 2).
+arithmetic_operation(max, 2).
+arithmetic_operation(min, 2).
 
 arithmetic_operation('+', 2, add).
 arithmetic_operation('/\\', 2, bitwise_and).
