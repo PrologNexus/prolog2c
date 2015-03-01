@@ -2981,6 +2981,66 @@ static inline X num_pow(X x, X y)
 }
 
 
+static inline X num_max(X x, X y)
+{
+  x = deref(x);
+  y = deref(y);
+
+  if(is_FIXNUM(x)) {
+    if(is_FIXNUM(y))
+      return fixnum_to_word(x) > fixnum_to_word(y) ? x : y;
+
+    if(is_FLONUM(y))						
+      return fixnum_to_word(x) > flonum_to_float(y) ? x : y;
+  
+    check_number_failed(y);
+  }					
+
+  if(is_FLONUM(x)) {						
+    if(is_FIXNUM(y))
+      return flonum_to_float(x) > fixnum_to_word(y) ? x : y;
+
+    if(is_FLONUM(y))							
+      return flonum_to_float(x) > flonum_to_float(y) ? x : y;
+
+    check_number_failed(y);
+  }						
+  
+  check_number_failed(x); 
+  return x;			/* never executed */
+}
+
+
+static inline X num_min(X x, X y)
+{
+  x = deref(x);
+  y = deref(y);
+
+  if(is_FIXNUM(x)) {
+    if(is_FIXNUM(y))
+      return fixnum_to_word(x) < fixnum_to_word(y) ? x : y;
+
+    if(is_FLONUM(y))						
+      return fixnum_to_word(x) < flonum_to_float(y) ? x : y;
+  
+    check_number_failed(y);
+  }					
+
+  if(is_FLONUM(x)) {						
+    if(is_FIXNUM(y))
+      return flonum_to_float(x) < fixnum_to_word(y) ? x : y;
+
+    if(is_FLONUM(y))							
+      return flonum_to_float(x) < flonum_to_float(y) ? x : y;
+
+    check_number_failed(y);
+  }						
+  
+  check_number_failed(x); 
+  return x;			/* never executed */
+}
+
+
 static inline X num_float(X x)
 {
   x = deref(x);
