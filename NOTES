@@ -30,6 +30,7 @@ NOTES											              -*- Org -*-
    - atom_codes/2 could fail on full heap, force GC and retry,
      would need to be moved into file:lib/misc.pl
 ** Minor
+*** is integer_rounding_function really "towards_zero"?
 *** Fresh checkout often leaves file:g-s-p.pl uncompiled
     - only rebuilds g-s-p.c, but that might not be sufficient.
     - but "make clean" should be sufficient.
@@ -105,18 +106,6 @@ NOTES											              -*- Org -*-
 * Features
 ** TODO if term_expansion/2 returns list, treat as separate (or no) terms
    - add this also to /pi-in-pc/
-** TODO current_prolog_flag/2, set_prolog_flag/2
-   | Name                      | Default   | Changable |
-   |---------------------------+-----------+-----------|
-   | bounded                   | false     | -         |
-   | max_arity                 | ?         | -         |
-   | integer_rounding_function | ?         | -         |
-   | max_integer               | ?         | -         |
-   | min_integer               | ?         | -         |
-   | unknown                   | error     | -         |
-   | version                   | <VERSION> | -         | 
-   - put into lib/misc, includes lib/version (replaces current
-     file:version.pl)
 ** Predicates
    - simple atom-concatenation, at least as determinate primitive.
 ** Show warning for untriggered delayed goals with "-:d"
@@ -137,6 +126,9 @@ NOTES											              -*- Org -*-
    - "max", "min", "asin", "acos"
 * Documentation
 ** DONE News
+   - min and max in arithmetic expressions.
+   - current_prolog_flag/2
+   - repl in pi doesn't pile up trail anymore.
    - more lightweight copy_term/2, added duplicate_term/2
    - read_line/1
    - speed- and memory-profiling.
@@ -150,6 +142,7 @@ NOTES											              -*- Org -*-
    - slightly faster db-key computation.
    - ensure_loaded/1 directive.
    - added -q option to pi, also added some verbose output when including/consulting.
+** TODO List missing ISO predicates here
 * Build options
 ** Allow static allocation of data-areas
    - statically allocated data for all areas.
@@ -214,4 +207,4 @@ NOTES											              -*- Org -*-
 ** Test on [pi], [call-cc]
 ** Test dist
 ** Tag, push, upload
-** Bump version (file:README + file:version.pl)
+** Bump version (file:README + file:lib/flags.pl)
