@@ -93,6 +93,10 @@ NOTES											              -*- Org -*-
 ** With some sort of type/groundness analysis many primitives could be optimized
    - functor, arg, name, univ, etc.
    - rewrite to simpler forms.
+** Perform first match in C when looking up DB-entry
+   - full unification may not trail properly due to timestamp issues.
+   - could at least perform a simple match without binding variables.
+   - must pass term to match in first-lookup and lookup for next item.
 ** current_op/3 needs fast path when operator name is known
    - could use single-bucket db, with unififcation inside
      db_find/db_next (provided, we implement matching in file:pc.h)
@@ -107,9 +111,21 @@ NOTES											              -*- Org -*-
 ** TODO if term_expansion/2 returns list, treat as separate (or no) terms
    - add this also to /pi-in-pc/
 ** Predicates
+   - acyclic_term(X) [ISO]
+     - should allow:
+       #+BEGIN_SRC prolog
+       unify_with_occurs_check(X, X) :- acyclic_term(X).
+       #+END_SRC
+   - rename_file/2, delete_file/1
    - simple atom-concatenation, at least as determinate primitive.
+** TODO catch SIGINT (others?) and throw exception
+   - user_interrupt
+   - perhaps: signal(SIGNUM)
+** dlopen, dlsym, to access primitives written in C
 ** Show warning for untriggered delayed goals with "-:d"
    - check trail-entries when unwinding trail and before exit.
+** TODO Implement ISO I/O, as far as possible
+   - implement Edinburgh I/O in terms of ISO.
 ** Allow access to delay goals
    - frozen(VAR, PTRARGS) :: return ptr/args pairs,
         non-deterministically
@@ -123,7 +139,7 @@ NOTES											              -*- Org -*-
    - would this simply prepend "lib/"?
 ** Extend numerical operators
    - constants "pi", perhaps "e"
-   - "max", "min", "asin", "acos"
+   - "asin", "acos"
 * Documentation
 ** DONE News
    - min and max in arithmetic expressions.
@@ -142,7 +158,43 @@ NOTES											              -*- Org -*-
    - slightly faster db-key computation.
    - ensure_loaded/1 directive.
    - added -q option to pi, also added some verbose output when including/consulting.
-** TODO List missing ISO predicates here
+** Missing ISO predicates
+   | Name                                         | Remarks                                         |
+   |----------------------------------------------+-------------------------------------------------|
+   | atom_chars/2                                 |                                                 |
+   | atom_concat/2                                |                                                 |
+   | atom_length/2                                |                                                 |
+   | char_code/2                                  |                                                 |
+   | number_chars/2                               |                                                 |
+   | sub_atom/5                                   |                                                 |
+   | get_byte/1, get_byte/2                       |                                                 |
+   | peek_byte/1, peek_byte/2                     |                                                 |
+   | put_byte/1, put_byte/2                       |                                                 |
+   | get_char/1, get_char/2                       |                                                 |
+   | get_code/1, get_code/2                       |                                                 |
+   | peek_char/1, peek_char/2                     |                                                 |
+   | peek_code/1, peek_code/2                     |                                                 |
+   | put_char/1, put_char/2                       |                                                 |
+   | put_code/1, put_code/2                       |                                                 |
+   | nl/1                                         |                                                 |
+   | current_predicate/1                          |                                                 |
+   | set_prolog_flag/2                            | not implemented, as they are no changable flags |
+   | call/1                                       |                                                 |
+   | at_end_of_stream/0, at_end_of_stream/1       |                                                 |
+   | close/1, close/2                             |                                                 |
+   | flush_output/1                               |                                                 |
+   | set_input/1                                  |                                                 |
+   | set_input/2                                  |                                                 |
+   | set_stream_position/2                        |                                                 |
+   | stream_property/2                            |                                                 |
+   | unify_with_occurs_check/2                    |                                                 |
+   | char_conversion/2, current_char_conversion/2 | silly                                           |
+   | read/2                                       | differs from our version                        |
+   | read_term/2, read_term/3                     |                                                 |
+   | write/2                                      |                                                 |
+   | write_canonical/1, write_canonical/2         |                                                 |
+   | write_term/2, write_term/3                   |                                                 |
+   | writeq/2                                     |                                                 |
 * Build options
 ** Allow static allocation of data-areas
    - statically allocated data for all areas.
@@ -173,6 +225,14 @@ NOTES											              -*- Org -*-
      terminate, for example)
    - would have to disable flonum-parsing in rdtok, which needs
      conditional, depending on variant (with flonums or without)
+** TODO /cycles/ Rational tree support
+*** TODO Add test-cases
+    - acyclic_term/2, freeze/thaw
+    - unify_with_occurs_check (search net for use-cases)
+*** TODO Document
+*** TODO Handle cyclic terms in term-comparison?
+*** TODO Cycle-warning in file:compile.pl is not right
+    - e.g.: A = ..., f(A, B) = f(A, C)
 * Runtime
 ** TODO Use macro to check for exceeded heap-limit
 * Tests
@@ -199,6 +259,12 @@ NOTES											              -*- Org -*-
 *** '$call_predicate'/2
 ** Interpreter
 *** expand_term/2 + term_expansion/2
+* Extensions
+** Things in the DEC10 library that might be interesting
+   - arrays.pl, logarr.pl
+   - ask.pl, read_sent.pl
+   - heap.pl, map.pl, trees.pl
+   - queues.pl
 * Release steps
 ** Document changes
 ** make fullcheck
