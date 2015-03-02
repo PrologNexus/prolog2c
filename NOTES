@@ -231,8 +231,6 @@ NOTES											              -*- Org -*-
     - unify_with_occurs_check (search net for use-cases)
 *** TODO Document
 *** TODO Handle cyclic terms in term-comparison?
-*** TODO Cycle-warning in file:compile.pl is not right
-    - e.g.: A = ..., f(A, B) = f(A, C)
 * Runtime
 ** TODO Use macro to check for exceeded heap-limit
 * Tests
