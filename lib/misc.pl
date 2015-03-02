@@ -69,3 +69,5 @@ between(L, U, X) :-
 '$between'(L, U, X) :-
     M is L + 1,
     '$between'(M, U, X).
+
+unify_with_occurs_check(X, X) :- acyclic_term(X).

@@ -32,6 +32,7 @@ macro(sleep(SECS), foreign_call(sleep_for_seconds(SECS))).
 macro(set_random_seed(SEED), foreign_call(set_random_seed(SEED))).
 macro(flush, foreign_call(flush_output)).
 macro(atom_hash(ATOM, HASH), foreign_call(atom_hash(ATOM, HASH))).
+macro(acyclic_term(X), foreign_call(acyclic_term(X))).
 
 
 % nothing matches - tryi auto-include and finally, fail
@@ -77,6 +78,7 @@ auto_include('=..', 2, 'lib/misc.pl').
 auto_include(deref_term, 4, 'lib/misc.pl').
 auto_include(copy_term, 2, 'lib/misc.pl').
 auto_include(duplicate_term, 2, 'lib/misc.pl').
+auto_include(unify_with_occurs_check, 2, 'lib/misc.pl').
 
 auto_include(union, 3, 'lib/sets.pl').
 auto_include(intersection, 3, 'lib/sets.pl').
@@ -207,6 +209,7 @@ determinate_builtin(fwritef, 3).
 determinate_builtin(read_atom, 2).
 determinate_builtin(read_line, 1).
 determinate_builtin(dif, 2).
+determinate_builtin(unify_with_occurs_check, 2).
 
 determinate_builtin(NAME, ARITY) :-
 	recorded(determinate, NAME/ARITY).

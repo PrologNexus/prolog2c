@@ -1658,6 +1658,56 @@ static void delete_term(X x)
 }
 
 
+static int check_cycles_recursive(X x)
+{
+  if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return 0;
+
+  if(is_byteblock(x)) return 0;
+
+  if(is_VAR(x)) {
+    X *top = shared_term_table + shared_term_counter;
+
+    for(X *ptr = shared_term_table; ptr < top; ++ptr) {
+      if(*ptr == x) return 1;	/* variable was already traversed */
+    }
+
+    X y = slot_ref(x, 0);
+
+    if(x == y) return 0;
+    
+    ASSERT(shared_term_counter + 1 < SHARED_TERM_TABLE_SIZE * 2, 
+	   "shared term table exceeded");
+    shared_term_table[ shared_term_counter++ ] = x;
+    int r = check_cycles_recursive(y);
+    --shared_term_counter;
+    return r;
+  }
+
+  XWORD size = objsize(x);
+  XWORD i = 0;
+
+  if(is_specialblock(x)) i = 1;
+
+  while(i < size) {
+    if(check_cycles_recursive(slot_ref(x, i))) 
+      return 1;
+
+    ++i;
+  }  
+
+  return 0;
+}
+
+
+static int check_cycles(X term)
+{
+  shared_term_counter = 0;
+  int r = check_cycles_recursive(term);
+  memset(shared_term_table, 0, sizeof(X) * shared_term_counter);
+  shared_term_counter = 0;
+}
+
+
 static DB *create_db(char *name, int namelen, XWORD tablesize)
 {
   DB *db = malloc(sizeof(DB));
@@ -4466,6 +4516,8 @@ PRIMITIVE(fixnum_bounds, X minimum, X maximum) {
   return unify(minimum, word_to_fixnum(mi)) &&
     unify(maximum, word_to_fixnum(ma));
 }
+
+PRIMITIVE(acyclic_term, X term) { return !check_cycles(term); }
 
 
 #endif
