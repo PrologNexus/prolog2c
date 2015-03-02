@@ -226,13 +226,13 @@ NOTES											              -*- Org -*-
    - would have to disable flonum-parsing in rdtok, which needs
      conditional, depending on variant (with flonums or without)
 ** TODO /cycles/ Rational tree support
+*** TODO unify() can not handle cycles
+    - e.g. "A=f(A),B=f(B),A=B"
 *** TODO Add test-cases
     - acyclic_term/2, freeze/thaw
     - unify_with_occurs_check (search net for use-cases)
 *** TODO Document
 *** TODO Handle cyclic terms in term-comparison?
-*** TODO Cycle-warning in file:compile.pl is not right
-    - e.g.: A = ..., f(A, B) = f(A, C)
 * Runtime
 ** TODO Use macro to check for exceeded heap-limit
 * Tests
