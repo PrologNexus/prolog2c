@@ -158,3 +158,12 @@ goals_and_variables(GOAL, VLIST, NEWGOAL, IARGS) :-
 	findall(I/_, member(I, GVARS), VLIST),
 	map_indexed_variables_to_real_variables(GOAL, VLIST, NEWGOAL),
 	findall(V, (member(I/_, VLIST), indexed_variable(V, I)), IARGS).
+
+
+%% check term of the form VAR = TERM or TERM = VAR for being cyclic
+
+possibly_cyclic_unification(X = Y) :-
+	collect_indexed_variables(X, XV),
+	collect_indexed_variables(Y, YV),
+	intersection(XV, YV, [_|_]),
+	(indexed_variable(X, _); indexed_variable(Y, _)).

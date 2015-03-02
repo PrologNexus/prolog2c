@@ -282,32 +282,32 @@ compile_body_expression((X -> Y), TAIL, D1, D2, B1, B2, S1, S2) :-
 
 % inline-unification
 compile_body_expression(X = Y, _, D, D, B, B, S, S) :-
+	%% same variable?
 	indexed_variable(X, N),
 	indexed_variable(Y, N).
 compile_body_expression(X = Y, _, D, D, B1, B2, S1, S2) :-
+	%% if possibly cyclic, don't compile to simple assignment
+	possibly_cyclic_unification(X = Y),
+	message(['explicit unification contains cycles: ', X = Y]),
+	compile_explicit_unification(X, Y, unify, B1, B2, S1, S2).
+compile_body_expression(X = Y, _, D, D, B1, B2, S1, S2) :-
+	%% X is an unbound variable
 	indexed_variable(X, N),
 	\+member(N, B1), \+indexed_variable(Y, _),
 	gensym('T', T, S1, S),
 	compile_term_for_unification(Y, T, [N|B1], B2, S, S2),
 	emit(assign(N, T)).
 compile_body_expression(X = Y, _, D, D, B1, B2, S1, S2) :-
+	%% Y is an unbound variable
 	indexed_variable(Y, N),
 	\+member(N, B1), \+indexed_variable(X, _),
 	gensym('T', T, S1, S),
 	compile_term_for_unification(X, T, [N|B1], B2, S, S2),
 	emit(assign(N, T)).
 compile_body_expression(X = Y, _, D, D, B1, B2, S1, S2) :-
-	gensym('T', T1, S1, S3),
-	compile_term_for_unification(X, T1, B1, B, S3, S4),
-	gensym('T', T2, S4, S5),
-	compile_term_for_unification(Y, T2, B, B2, S5, S2),
-	emit(unify(T1, T2)).
+	compile_explicit_unification(X, Y, unify, B1, B2, S1, S2).
 compile_body_expression(X \= Y, _, D, D, B1, B2, S1, S2) :-
-	gensym('T', T1, S1, S3),
-	compile_term_for_unification(X, T1, B1, B, S3, S4),
-	gensym('T', T2, S4, S5),
-	compile_term_for_unification(Y, T2, B, B2, S5, S2),
-	emit(not_unify(T1, T2)).
+	compile_explicit_unification(X, Y, not_unify, B1, B2, S1, S2).
 
 % identity comparison
 compile_body_expression(X == Y, _, D, D, B1, B2, S1, S2) :-
@@ -411,6 +411,16 @@ compile_body_expression(TERM, TAIL, D1, D2, B1, B2, S1, S2) :-
 % otherwise: error
 compile_body_expression(TERM, _, _, _, _, _, _, _) :-
 	error(['can not compile: ', TERM]).
+
+
+%% inline unification
+compile_explicit_unification(X, Y, OP, B1, B2, S1, S2) :-
+	gensym('T', T1, S1, S3),
+	compile_term_for_unification(X, T1, B1, B, S3, S4),
+	gensym('T', T2, S4, S5),
+	compile_term_for_unification(Y, T2, B, B2, S5, S2),
+	INST =.. [OP, T1, T2],
+	emit(INST).
 
 
 %% compile delayed goal
