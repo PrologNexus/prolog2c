@@ -1083,6 +1083,14 @@ Builtin predicates
         min_integer                   30 or 62 bit integer, depending on word size
         unknown                       error
 
+        acyclic_term(+TERM)
+
+    Succeeds if TERM does not contain any cycles.
+
+        unify_with_occurs_check(?X, ?Y)
+
+    Succeeds if X and Y can be unified without introducing cycles.
+
   - Predicates that are only available in the interpreter
 
         trace                             
