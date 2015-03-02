@@ -1,7 +1,7 @@
 
 
-?-Prolog - A small and simple Prolog system
-===========================================
+?-Prolog
+========
 
 
 Version 3
@@ -914,8 +914,9 @@ Builtin predicates
     SET3 is the the "symmetric difference" of SET1 and SET2 (i.e. it
     is the union without the intersection.)
 
-        union(+SET1, +SET2, -SET3)    
+        union(+SET1, +SET2, -SET3)
 
+    SET3 is the union of sets SET1 and SET2.
     
   - Predicates on ordered sets
 
