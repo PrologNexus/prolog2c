@@ -2822,8 +2822,7 @@ static int unify2(CHOICE_POINT *C0, X x, X y)
 
   XWORD s = objsize(x);
 
-  if(s != objsize(y)) 
-    return 0;
+  if(s != objsize(y)) return 0;
 
   if(is_byteblock(x))
     return !memcmp(objdata(x), objdata(y), s);
