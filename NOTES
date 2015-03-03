@@ -226,13 +226,30 @@ NOTES											              -*- Org -*-
    - would have to disable flonum-parsing in rdtok, which needs
      conditional, depending on variant (with flonums or without)
 ** TODO /cycles/ Rational tree support
-*** TODO unify() can not handle cycles
-    - e.g. "A=f(A),B=f(B),A=B"
 *** TODO Add test-cases
     - acyclic_term/2, freeze/thaw
     - unify_with_occurs_check (search net for use-cases)
+      #+BEGIN_SRC prolog
+      1 ?- A = f(A).
+      A = f(A).
+      2 ?- unify_with_occurs_check(A, f(A)).
+      false.
+      ?- X = f(X), Y = X, unify_with_occurs_check(X, Y).
+      X = Y, Y = f(Y).
+      ?- X = f(X), Y = f(Y), unify_with_occurs_check(X, Y).
+      X = Y, Y = f(Y).
+      #+END_SRC
+    - test cyclic structures with other builtins
+      #+BEGIN_SRC prolog
+      main :-
+	      A = f(A),
+	      B = f(B),
+	      A = B,
+	      \+acyclic_term(A).
+      #+END_SRC
+    - copy_term/2, duplicate_term/2
 *** TODO Document
-*** TODO Handle cyclic terms in term-comparison?
+*** TODO Handle cyclic terms in term-comparison
 * Runtime
 ** TODO Use macro to check for exceeded heap-limit
 * Tests
