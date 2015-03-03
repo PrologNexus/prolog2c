@@ -111,11 +111,7 @@ NOTES											              -*- Org -*-
 ** TODO if term_expansion/2 returns list, treat as separate (or no) terms
    - add this also to /pi-in-pc/
 ** Predicates
-   - acyclic_term(X) [ISO]
-     - should allow:
-       #+BEGIN_SRC prolog
-       unify_with_occurs_check(X, X) :- acyclic_term(X).
-       #+END_SRC
+   - ground/1
    - rename_file/2, delete_file/1
    - simple atom-concatenation, at least as determinate primitive.
 ** TODO catch SIGINT (others?) and throw exception
