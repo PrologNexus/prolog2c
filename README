@@ -39,7 +39,11 @@ Introduction
   Prolog programming. Basic ISO and Edinburgh system predicates and
   control structures are available. Modules, separate compilation or
   dynamic loading of compiled code are not provided, and
-  multithreading is not supported.
+  multithreading is not supported.  This Prolog implementation does
+  not attempt to be ISO compliant, event though many standard
+  predicates are available. Coroutines are available (freeze/2 and
+  dif/2). Handling infinite trees is supported in many cases, but
+  probably not in all.
 
   ?-Prolog has currently only been tested on Linux (x86, x86-64 and
   ARM), Mac OS X and Windows 7 (with the mingw32 and mingw64
@@ -1023,55 +1027,54 @@ Builtin predicates
 
         suspend(?X, ?Y)
 
-     Suspends execution in embedded code (see below for more
-     information about embedding).
+    Suspends execution in embedded code (see below for more
+    information about embedding).
 
         enable_trace(+X)                  
 
-     Enables "trace" mode in compiled code, starting at the next call,
-     exit or fail. For this to be effective, the program must be
-     compiled with the "-DTRACE" option.
+    Enables "trace" mode in compiled code, starting at the next call,
+    exit or fail. For this to be effective, the program must be
+    compiled with the "-DTRACE" option.
 
         compare(-X, ?X, ?Z)               
 
-     Compares X and Z and unifies X with one of the atoms '=', '<' or
-     '>', depending on whether Y is identical, ordered below or
-     ordered above Z.
+    Compares X and Z and unifies X with one of the atoms '=', '<' or
+    '>', depending on whether Y is identical, ordered below or
+    ordered above Z.
 
         between(+LOW, +HIGH, ?X)
 
-     X is between LOW and HIGH, inclusive. If X is unbound, produces
-     all solutions between LOW and HIGH.
+    X is between LOW and HIGH, inclusive. If X is unbound, produces
+    all solutions between LOW and HIGH.
 
         current_op(?P, ?A, ?N)
 
-     Unifies N with the name of any currently defined operators with
-     precedence P and associativity A.
+    Unifies N with the name of any currently defined operators with
+    precedence P and associativity A.
 
         op(+P, +A, +N)            
 
-     Defines a new operator with name N (an atom), precedence P (an
-     integer between 0 and 1200) and associativity A (one of the atoms
-     'fx', 'fy', 'xf', 'yf', 'xfx', 'xfy' or 'yfx'). N may also be a
-     list of atoms.
+    Defines a new operator with name N (an atom), precedence P (an
+    integer between 0 and 1200) and associativity A (one of the atoms
+    'fx', 'fy', 'xf', 'yf', 'xfx', 'xfy' or 'yfx'). N may also be a
+    list of atoms.
 
         global_ref(NAME, -X)          
     
-     Unifies X with the current value of the global variable NAME,
-     which must have been previously declared with the
-     "global_variable" directive (see below.)
+    Unifies X with the current value of the global variable NAME,
+    which must have been previously declared with the
+    "global_variable" directive (see below.)
 
         global_set(NAME, +X)          
 
-     Sets the global variable with the name NAME to X. Note that this
-     does not take care of backtracking, use copy_term/2 to preserve X
-     in that case.
+    Sets the global variable with the name NAME to X. Note that this
+    does not take care of backtracking, use copy_term/2 to preserve X
+    in that case.
 
         current_prolog_flag(+ATOM, -VAL)
 
-     Unifies VAL with the appropriate value for the Prolog-flag named
-     by ATOM. All flags available are not changable. Currently available
-     are these settings:
+    Unifies VAL with the appropriate value for the Prolog-flag named
+    by ATOM. Currently available are these settings:
 
         version                       Prolog version as integer
         bounded                       true
