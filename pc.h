@@ -3225,6 +3225,9 @@ static inline int compare_strings(XCHAR *str1, XWORD len1, XCHAR *str2, XWORD le
 
 static int compare_terms(X x, X y)
 {
+  x = deref(x);
+  y = deref(y);
+
   if(x == y) return 0;
 
   XWORD xt = is_FIXNUM(x) ? FIXNUM_TYPE : objtype(x);
