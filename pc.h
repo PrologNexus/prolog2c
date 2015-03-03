@@ -99,6 +99,7 @@
 #define STRING_BUFFER_SIZE 1024
 #define CATCHER_STACK_SIZE 1024
 #define TRAIL_STACK_GAP_BUFFER_SIZE 1024
+#define CYCLE_STACK_SIZE 1024
 
 
 /// miscellanous
@@ -443,6 +444,7 @@ static int initial_global_variable_count;
 static X *shared_term_table;
 static XWORD *shared_term_table_positions;
 static int shared_term_counter;
+static X *cycle_stack, *cycle_stack_top;
 static XCHAR *string_buffer, *string_buffer_top;
 static int string_buffer_length;
 static DB_ITEM *deleted_db_items;
@@ -1665,9 +1667,7 @@ static int check_cycles_recursive(X x)
   if(is_byteblock(x)) return 0;
 
   if(is_VAR(x)) {
-    X *top = shared_term_table + shared_term_counter;
-
-    for(X *ptr = shared_term_table; ptr < top; ++ptr) {
+    for(X *ptr = cycle_stack; ptr < cycle_stack_top; ++ptr) {
       if(*ptr == x) return 1;	/* variable was already traversed */
     }
 
@@ -1675,11 +1675,10 @@ static int check_cycles_recursive(X x)
 
     if(x == y) return 0;
     
-    ASSERT(shared_term_counter + 1 < SHARED_TERM_TABLE_SIZE * 2, 
-	   "shared term table exceeded");
-    shared_term_table[ shared_term_counter++ ] = x;
+    ASSERT(cycle_stack_top + 1 < cycle_stack + CYCLE_STACK_SIZE, "cycle-stack overflow");
+    *(cycle_stack_top++) = x;
     int r = check_cycles_recursive(y);
-    --shared_term_counter;
+    --cycle_stack_top;
     return r;
   }
 
@@ -1701,10 +1700,8 @@ static int check_cycles_recursive(X x)
 
 static int check_cycles(X term)
 {
-  shared_term_counter = 0;
-  int r = check_cycles_recursive(term);
-  memset(shared_term_table, 0, sizeof(X) * shared_term_counter);
-  shared_term_counter = 0;
+  cycle_stack_top = cycle_stack;
+  return check_cycles_recursive(term);
 }
 
 
@@ -2388,6 +2385,8 @@ static void initialize(int argc, char *argv[])
   ASSERT(shared_term_table, "out of memory - can not allocate shared term positions table");
   trail_stack_gap_buffer = malloc(TRAIL_STACK_GAP_BUFFER_SIZE * sizeof(TRAIL_STACK_GAP));
   ASSERT(trail_stack_gap_buffer, "out of memory - can not allocate initial trail-stack gap buffer");
+  cycle_stack = malloc(CYCLE_STACK_SIZE * sizeof(X));
+  ASSERT(cycle_stack, "out of memory - can not allocate cycle-stack");
 
   for(int i = 0; i < SYMBOL_TABLE_SIZE; ++i)
     symbol_table[ i ] = END_OF_LIST_VAL;
@@ -2720,14 +2719,14 @@ static void *next_frozen_goal(X *arglist)
 
 
 #define unify(x, y)   ({ X _x = (x), _y = (y); _x == _y || unify1(C0, _x, _y); })
+#define unify3(x, y)   ({ X _x = (x), _y = (y); _x == _y || unify2(C0, _x, _y); })
 
-static int unify1(CHOICE_POINT *C0, X x, X y)
+static int unify2(CHOICE_POINT *C0, X x, X y)
 {
   x = deref(x);
   y = deref(y);
 
-  if(is_FIXNUM(x) && is_FIXNUM(y)) 
-    return x == y;
+  if(is_FIXNUM(x) && is_FIXNUM(y)) return x == y;
 
   XWORD xt = is_FIXNUM(x) ? FIXNUM_TYPE : objtype(x);
   XWORD yt = is_FIXNUM(y) ? FIXNUM_TYPE : objtype(y);
@@ -2784,11 +2783,9 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
     return 1;
   }
 
-  if(xt != yt) 
-    return 0;
+  if(xt != yt) return 0;
   
-  if(xt == FIXNUM_TYPE)
-    return 1;
+  if(xt == FIXNUM_TYPE) return 1;
 
   XWORD s = objsize(x);
 
@@ -2800,17 +2797,33 @@ static int unify1(CHOICE_POINT *C0, X x, X y)
 
   int i = 0;
 
-  if(is_specialblock(x)) 
-    ++i;
+  if(is_specialblock(x)) ++i;
+
+  for(X *ptr = cycle_stack; ptr < cycle_stack_top; ptr += 2) {
+    if(*ptr == x) return ptr[ 1 ] == y;
+    else if(*ptr == y) return ptr[ 1 ] == y;
+  }
+
+  ASSERT(cycle_stack_top + 2 < cycle_stack + CYCLE_STACK_SIZE, "cycle-stack overflow");
+  *(cycle_stack_top++) = x;
+  *(cycle_stack_top++) = y;
 
   while(i < s) {
-    if(!unify(slot_ref(x, i), slot_ref(y, i)))
+    if(!unify3(slot_ref(x, i), slot_ref(y, i)))
       return 0;
 
     ++i;
   }
 
+  cycle_stack_top -= 2;
   return 1;
+}
+
+
+static inline int unify1(CHOICE_POINT *C0, X x, X y)
+{
+  cycle_stack_top = cycle_stack;
+  return unify2(C0, x, y);
 }
 
 
