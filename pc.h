@@ -1366,6 +1366,10 @@ static X deref_recursive(X val, int limit, int dup, int *failed)
   if(is_FIXNUM(val) || val == END_OF_LIST_VAL || is_byteblock(val) || is_SYMBOL(val))
     return val;
 
+  for(X *ptr = cycle_stack; ptr < cycle_stack_top; ptr += 2) {
+    if(*ptr == val) return ptr[ 1 ];
+  }
+
   XWORD s = objsize(val);
 
   if(alloc_top + s + 1 > fromspace_limit) {
@@ -1373,8 +1377,10 @@ static X deref_recursive(X val, int limit, int dup, int *failed)
     return val;
   }
 
+  *(cycle_stack_top++) = val;
   X *oldtop = alloc_top;	/* for restoration in case term is ground */
   ALLOCATE_BLOCK(BLOCK *p, objtype(val), s);
+  *(cycle_stack_top++) = (X)p;
   --limit;
   int i = 0;
 
@@ -1396,6 +1402,8 @@ static X deref_recursive(X val, int limit, int dup, int *failed)
     ++i;
   }
 
+  cycle_stack_top -= 2;
+
   if(!dup && !anynew) {
     // keep old value, as it is ground
     alloc_top = oldtop;
@@ -1411,6 +1419,7 @@ static X deref_all(X val, int limit, int dup, int *failed)
 #ifdef PROFILE_MEMORY
   XWORD oldheap = where->heap.total;
 #endif
+  cycle_stack_top = cycle_stack;
   X y = deref_recursive(val, limit, dup, failed);
   clear_shared_term_table();
 
