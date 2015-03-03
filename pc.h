@@ -1473,11 +1473,17 @@ static X freeze_term_recursive(X x)
     return tp[ 1 ] = y;
   }
 
+  for(X *ptr = cycle_stack; ptr < cycle_stack_top; ptr += 2) {
+    if(*ptr == x) return ptr[ 1 ];
+  }
+
+  *(cycle_stack_top++) = x;
   XWORD size = objsize(x);
   XWORD i = 0;
   BLOCK *b = (BLOCK *)malloc(sizeof(XWORD) * (size + 1));
   ASSERT(b, "out of memory - can not freeze block");
   b->h = objbits(x);
+  *(cycle_stack_top++) = (X)b;
 
   if(is_specialblock(x)) {
     ++i;
@@ -1489,12 +1495,14 @@ static X freeze_term_recursive(X x)
     ++i;
   }
 
+  cycle_stack_top -= 2;
   return (X)b;
 }
 
 
 static X freeze_term(X x)
 {
+  cycle_stack_top = cycle_stack;
   X y = freeze_term_recursive(x);
   clear_shared_term_table();
   return y;
@@ -1561,12 +1569,21 @@ static int thaw_term_recursive(X *xp)
     return 1;
   }
 
+  for(X *ptr = cycle_stack; ptr < cycle_stack_top; ptr += 2) {
+    if(*ptr == x) {
+      *xp = ptr[ 1 ];
+      return 1;
+    }
+  }
+
+  *(cycle_stack_top++) = x;
   XWORD i = 0;
   XWORD size = objsize(x);
 
   if(alloc_top + size + 1 > fromspace_limit) return 0;
 
   ALLOCATE_BLOCK(BLOCK *b, objtype(x), size);
+  *(cycle_stack_top++) = (X)b;
   
   // initialize, in case thawing elements fails
   for(i = 0; i < size; ++i)
@@ -1589,6 +1606,7 @@ static int thaw_term_recursive(X *xp)
     ++i;
   }
 
+  cycle_stack_top -= 2;
   *xp = (X)b;
   return 1;
 }
@@ -1600,6 +1618,7 @@ static X thaw_term(X x, int *failed)
   XWORD oldheap = where->heap.total;
 #endif
   X y = x;
+  cycle_stack_top = cycle_stack;
   *failed = !thaw_term_recursive(&y);
   clear_shared_term_table();
 
@@ -1666,11 +1685,11 @@ static int check_cycles_recursive(X x)
 
   if(is_byteblock(x)) return 0;
 
-  if(is_VAR(x)) {
-    for(X *ptr = cycle_stack; ptr < cycle_stack_top; ++ptr) {
-      if(*ptr == x) return 1;	/* variable was already traversed */
-    }
+  for(X *ptr = cycle_stack; ptr < cycle_stack_top; ++ptr) {
+    if(*ptr == x) return 1;	/* variable was already traversed */
+  }
 
+  if(is_VAR(x)) {
     X y = slot_ref(x, 0);
 
     if(x == y) return 0;
@@ -1682,6 +1701,7 @@ static int check_cycles_recursive(X x)
     return r;
   }
 
+  *(cycle_stack_top++) = x;
   XWORD size = objsize(x);
   XWORD i = 0;
 
@@ -1694,6 +1714,7 @@ static int check_cycles_recursive(X x)
     ++i;
   }  
 
+  --cycle_stack_top;
   return 0;
 }
 
