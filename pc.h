@@ -1377,6 +1377,7 @@ static X deref_recursive(X val, int limit, int dup, int *failed)
     return val;
   }
 
+  ASSERT(cycle_stack_top + 2 < cycle_stack + CYCLE_STACK_SIZE, "cycle-stack overflow");
   *(cycle_stack_top++) = val;
   X *oldtop = alloc_top;	/* for restoration in case term is ground */
   ALLOCATE_BLOCK(BLOCK *p, objtype(val), s);
@@ -1486,6 +1487,7 @@ static X freeze_term_recursive(X x)
     if(*ptr == x) return ptr[ 1 ];
   }
 
+  ASSERT(cycle_stack_top + 2 < cycle_stack + CYCLE_STACK_SIZE, "cycle-stack overflow");
   *(cycle_stack_top++) = x;
   XWORD size = objsize(x);
   XWORD i = 0;
@@ -1585,6 +1587,7 @@ static int thaw_term_recursive(X *xp)
     }
   }
 
+  ASSERT(cycle_stack_top + 2 < cycle_stack + CYCLE_STACK_SIZE, "cycle-stack overflow");
   *(cycle_stack_top++) = x;
   XWORD i = 0;
   XWORD size = objsize(x);
