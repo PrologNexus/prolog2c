@@ -1707,7 +1707,7 @@ static int check_cycles_recursive(X x)
     if(x == y) return 0;
     
     ASSERT(cycle_stack_top + 1 < cycle_stack + CYCLE_STACK_SIZE, "cycle-stack overflow");
-    *(cycle_stack_top++) = x;
+    *(cycle_stack_top++) = y;
     int r = check_cycles_recursive(y);
     --cycle_stack_top;
     return r;
