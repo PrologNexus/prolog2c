@@ -3,8 +3,9 @@ NOTES											              -*- Org -*-
 
 * Issues
 ** Major
+*** TODO Term-comparison doesn't handle cyclic structures, yet
 *** TODO Why is so much space accumulating on arg- and env-stacks?
-*** TODO 0028-endless-tailcall crashes in pi
+*** 0028-endless-tailcall crashes in pi
     - hits some limit, not sure which.
     - is in any case not keeping the memory-use constant.
 *** TODO [#B] Implementation of if-then-else seems to be broken
@@ -112,6 +113,7 @@ NOTES											              -*- Org -*-
    - add this also to /pi-in-pc/
 ** Predicates
    - ground/1
+   - at_end_of_stream/0, 
    - rename_file/2, delete_file/1
    - simple atom-concatenation, at least as determinate primitive.
 ** TODO catch SIGINT (others?) and throw exception
@@ -138,6 +140,12 @@ NOTES											              -*- Org -*-
    - "asin", "acos"
 * Documentation
 ** DONE News
+   - close/1
+   - pi: more robust with respect to current I/O ports in case of
+     exceptions.
+   - single-element list in arithmetic expressions.
+   - cycle-handling has been added to many builtins.
+   - acyclic_term/1, unify_with_occurs_check/2
    - min and max in arithmetic expressions.
    - current_prolog_flag/2
    - repl in pi doesn't pile up trail anymore.
@@ -175,16 +183,15 @@ NOTES											              -*- Org -*-
    | nl/1                                         |                                                 |
    | current_predicate/1                          |                                                 |
    | set_prolog_flag/2                            | not implemented, as they are no changable flags |
-   | call/1                                       |                                                 |
+   | call/1                                       | unimplemented                                   |
    | at_end_of_stream/0, at_end_of_stream/1       |                                                 |
-   | close/1, close/2                             |                                                 |
+   | close/2                                      | unimplemented                                   |
    | flush_output/1                               |                                                 |
    | set_input/1                                  |                                                 |
-   | set_input/2                                  |                                                 |
+   | set_output/1                                 | also: set_error_output/1                        |
    | set_stream_position/2                        |                                                 |
    | stream_property/2                            |                                                 |
-   | unify_with_occurs_check/2                    |                                                 |
-   | char_conversion/2, current_char_conversion/2 | silly                                           |
+   | char_conversion/2, current_char_conversion/2 | unimplemented                                   |
    | read/2                                       | differs from our version                        |
    | read_term/2, read_term/3                     |                                                 |
    | write/2                                      |                                                 |
@@ -221,9 +228,6 @@ NOTES											              -*- Org -*-
      terminate, for example)
    - would have to disable flonum-parsing in rdtok, which needs
      conditional, depending on variant (with flonums or without)
-** TODO /cycles/ Rational tree support
-*** TODO Benchmark
-*** TODO Handle cyclic terms in term-comparison
 * Runtime
 ** TODO Use macro to check for exceeded heap-limit
 * Tests
