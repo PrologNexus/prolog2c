@@ -30,7 +30,6 @@ macro(enable_trace(F), foreign_call(enable_trace(F))).
 macro(getpid(PID), foreign_call(get_process_id(PID))).
 macro(sleep(SECS), foreign_call(sleep_for_seconds(SECS))).
 macro(set_random_seed(SEED), foreign_call(set_random_seed(SEED))).
-macro(flush, foreign_call(flush_output)).
 macro(atom_hash(ATOM, HASH), foreign_call(atom_hash(ATOM, HASH))).
 macro(acyclic_term(X), foreign_call(acyclic_term(X))).
 macro(close(S), foreign_call(close_stream(S))).
@@ -69,7 +68,14 @@ auto_include(open, 3, 'lib/io.pl').
 auto_include(open, 4, 'lib/io.pl').
 auto_include(read_atom, 2, 'lib/io.pl').
 auto_include(read_line, 1, 'lib/io.pl').
-
+auto_include(flush_output, 0, 'lib/io.pl').
+auto_include(flush_output, 1, 'lib/io.pl').
+auto_include(at_end_of_file, 0, 'lib/io.pl').
+auto_include(at_end_of_file, 1, 'lib/io.pl').
+auto_include(set_input, 0, 'lib/io.pl').
+auto_include(set_output, 1, 'lib/io.pl').
+auto_include(set_error_output, 1, 'lib/io.pl').
+	     
 auto_include(op, 3, 'lib/op.pl').
 auto_include(current_op, 3, 'lib/op.pl').
 
@@ -211,6 +217,15 @@ determinate_builtin(read_atom, 2).
 determinate_builtin(read_line, 1).
 determinate_builtin(dif, 2).
 determinate_builtin(unify_with_occurs_check, 2).
+determinate_builtin(flush_output, 0).
+determinate_builtin(flush_output, 1).
+determinate_builtin(set_input, 1).
+determinate_builtin(set_output, 1).
+determinate_builtin(set_error_output, 1).
+determinate_builtin(at_end_of_file, 0).
+determinate_builtin(at_end_of_file, 1).
+determinate_builtin(flush_output, 0).
+determinate_builtin(flush_output, 1).
 
 determinate_builtin(NAME, ARITY) :-
 	recorded(determinate, NAME/ARITY).

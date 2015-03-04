@@ -290,7 +290,7 @@ wf_act(100, [Head|Tail], Tail) :-	%   Display
 %	nl, !, prexpr(Head).
 
 wf_act(102, List, List) :-		%   Flush
-	flush.
+	flush_output.
 
 wf_act(103, [Head|Tail], Tail) :-	%   aGglutinated
 	functor(Head, F, N),

@@ -75,8 +75,9 @@ system_predicate(put(+X), _, 'X may be fixnum or symbol').
 system_predicate(sleep(+X)).
 system_predicate(stream(+X)).
 system_predicate(var(+X)).
-system_predicate(flush).
 system_predicate(suspend(?X, ?Y)).
+system_predicate(acyclic_term(?X)).
+system_predicate(close(+X)).
 
 system_predicate(append(+X), 'io.pl').
 system_predicate(compare(-X, ?X, ?Z), 'misc.pl').
@@ -149,6 +150,14 @@ system_predicate(writef(+X,+Y), 'lib/writef.pl').
 system_predicate(fwritef(+X,+Y), 'lib/writef.pl').
 system_predicate(fwritef(+X,+Y,+Z), 'lib/writef.pl').
 system_predicate(current_prolog_flag(+X,-Y), 'lib/flags.pl').
+system_predicate(unify_with_occurs_check(?X, ?Y), 'lib/misc.pl').
+system_predicate(set_input(+X), 'lib/io.pl').
+system_predicate(set_output(+X), 'lib/io.pl').
+system_predicate(set_error_output(+X), 'lib/io.pl').
+system_predicate(flush_output, 'lib/io.pl').
+system_predicate(flush_output(+X), 'lib/io.pl').
+system_predicate(at_end_of_file, 'lib/io.pl').
+system_predicate(at_end_of_file(+X), 'lib/io.pl').
 
 arithmetic_operation(- X).
 arithmetic_operation(\ X).

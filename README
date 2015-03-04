@@ -412,6 +412,12 @@ Builtin predicates
 
   - Input/Output predicates
 
+        at_end_of_file
+        at_end_of_file(+STREAM)
+
+    Succeeds, if the current input stream or STREAM has reached the
+    end [ISO]
+
         close(+STREAM)
 
     Closes the given stream. If STREAM is the current input- or
@@ -457,9 +463,11 @@ Builtin predicates
     Writes the character with the code X to the current
     output-stream. X may be an integer or an atom.
 
-        flush
+        flush_output
+        flush_output(+STREAM)
 
-    Flushes pending but unwritten output in the current output-stream.
+    Flushes pending but unwritten output in the current output-stream,
+    or the stream given [ISO]
 
         append(+FILE)
 
@@ -550,8 +558,16 @@ Builtin predicates
     Writes X to the current-output stream, using operator-notation, if
     possible and quotes atoms that would need to be quoted on reading.
 
-    Note that all streams opened via see/1 and tell/1 are opened in binary 
-    mode.
+        set_input(+STREAM)
+	set_output(+STREAM)
+
+    Sets the current input or output stream to STREAM. You can pass
+    the atom 'user' to select the standard input or output port [ISO]
+
+        set_error_output(+STREAM)
+
+    Sets th current error output stream to STREAM. 'user' selects here
+    the standard error port.
 
   - Formatted output
 

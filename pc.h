@@ -4095,6 +4095,11 @@ PRIMITIVE(peek_byte, X c)
   return unify(word_to_fixnum(g), c);
 }
 
+PRIMITIVE(at_eof, X s) {
+  check_input_port(s);
+  return feof(port_file(s));
+}
+
 PRIMITIVE(open_stream, X name, X input, X mode, X result)
 {
   int len;
@@ -4363,7 +4368,11 @@ PRIMITIVE(set_random_seed, X seed)
   return 1;
 }
 
-static int flush_output(CHOICE_POINT *C0) { fflush(port_file(standard_output_port)); return 1; }
+PRIMITIVE(flush_output, X stream) { 
+  check_type_PORT(stream);
+  fflush(port_file(stream)); 
+  return 1; 
+}
 
 PRIMITIVE(do_throw, X ball) { throw_exception(ball); return 0; }
 
