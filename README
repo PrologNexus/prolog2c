@@ -41,9 +41,9 @@ Introduction
   dynamic loading of compiled code are not provided, and
   multithreading is not supported.  This Prolog implementation does
   not attempt to be ISO compliant, event though many standard
-  predicates are available. Coroutines are available (freeze/2 and
-  dif/2). Handling infinite trees is supported in many cases, but
-  probably not in all.
+  predicates are available. Coroutining is implemented (using freeze/2
+  and dif/2) and the handling infinite trees is supported in many
+  cases, but probably not all.
 
   ?-Prolog has currently only been tested on Linux (x86, x86-64 and
   ARM), Mac OS X and Windows 7 (with the mingw32 and mingw64
