@@ -140,6 +140,10 @@ NOTES											              -*- Org -*-
    - "asin", "acos"
 * Documentation
 ** DONE News
+   - char_code/2, atom_concat/3, atom_chars/2, atom_length/2,
+     current_input/1, current_output/1, number_chars/2, nl/1,
+     put_byte/1, put_byte/2, put_code/1, put_code/2, get_byte/1,
+     get_byte/2, get_code/1, get_code/2
    - close/1, set_input/1, set_output/1, set_error_output/1,
      at_end_of_stream/0, at_end_of_stream/1, flush_output/1
    - renamed flush/0 to flush_output/1.
@@ -167,22 +171,12 @@ NOTES											              -*- Org -*-
 ** Missing ISO predicates
    | Name                                         | Remarks                                         |
    |----------------------------------------------+-------------------------------------------------|
-   | atom_chars/2                                 |                                                 |
-   | atom_concat/2                                |                                                 |
-   | atom_length/2                                |                                                 |
-   | char_code/2                                  |                                                 |
-   | number_chars/2                               |                                                 |
    | sub_atom/5                                   |                                                 |
-   | get_byte/1, get_byte/2                       |                                                 |
    | peek_byte/1, peek_byte/2                     |                                                 |
-   | put_byte/1, put_byte/2                       |                                                 |
-   | get_char/1, get_char/2                       |                                                 |
-   | get_code/1, get_code/2                       |                                                 |
-   | peek_char/1, peek_char/2                     |                                                 |
+   | get_char/1, get_char/2                       | return end_of_file on EOF                       |
+   | peek_char/1, peek_char/2                     | s.a.                                            |
    | peek_code/1, peek_code/2                     |                                                 |
    | put_char/1, put_char/2                       |                                                 |
-   | put_code/1, put_code/2                       |                                                 |
-   | nl/1                                         |                                                 |
    | current_predicate/1                          |                                                 |
    | set_prolog_flag/2                            | not implemented, as they are no changable flags |
    | call/1                                       | unimplemented                                   |
