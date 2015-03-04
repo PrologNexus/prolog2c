@@ -89,6 +89,10 @@ system_predicate(get_byte(-X)).
 system_predicate(get_byte(+S, -X)).
 system_predicate(get_code(-X)).
 system_predicate(get_code(+S, -X)).
+system_predicate(peek_byte(-X)).
+system_predicate(peek_byte(+S, -X)).
+system_predicate(peek_code(-X)).
+system_predicate(peek_code(+S, -X)).
 system_predicate(put_byte(+X)).
 system_predicate(put_byte(+S, +X)).
 system_predicate(put_code(+X)).

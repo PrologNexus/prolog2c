@@ -25,6 +25,10 @@ macro(get_byte(S, BYTE), foreign_call(get_byte(S, BYTE))).
 macro(get_code(BYTE), foreign_call(get_byte(0, BYTE))).
 macro(get_code(S, BYTE), foreign_call(get_byte(S, BYTE))).
 macro(peek(BYTE), foreign_call(peek_byte(0, BYTE))).
+macro(peek_byte(BYTE), foreign_call(peek_byte(0, BYTE))).
+macro(peek_byte(S, BYTE), foreign_call(peek_byte(S, BYTE))).
+macro(peek_code(BYTE), foreign_call(peek_byte(0, BYTE))).
+macro(peek_code(S, BYTE), foreign_call(peek_byte(S, BYTE))).
 macro(erase(REF), foreign_call(db_erase(REF))).
 macro(getenv(NAME, VAL), foreign_call(get_environment_variable(NAME, VAL))).
 macro(shell(CMD, STATUS), foreign_call(shell_command(CMD, STATUS))).

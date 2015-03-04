@@ -113,17 +113,17 @@ NOTES											              -*- Org -*-
    - add this also to /pi-in-pc/
 ** Predicates
    - ground/1
-   - at_end_of_stream/0, 
    - rename_file/2, delete_file/1
-   - simple atom-concatenation, at least as determinate primitive.
+** TODO Add more ISO stuff
+   - set_stream_position/2
+   - get_char, put_char, peek_char
+   - write/2, writeq/2
 ** TODO catch SIGINT (others?) and throw exception
    - user_interrupt
    - perhaps: signal(SIGNUM)
 ** dlopen, dlsym, to access primitives written in C
 ** Show warning for untriggered delayed goals with "-:d"
    - check trail-entries when unwinding trail and before exit.
-** TODO Implement ISO I/O, as far as possible
-   - implement Edinburgh I/O in terms of ISO.
 ** Allow access to delay goals
    - frozen(VAR, PTRARGS) :: return ptr/args pairs,
         non-deterministically
@@ -132,6 +132,8 @@ NOTES											              -*- Org -*-
    - atom-length (string_length())
    - extend name/2, get/1, get0/1, put/1, skip/1 (and probably many
      more)
+   - different handling of put_code/put_byte, get_code/get_byte and
+     peek_code/peek_byte
 ** Allow "library(ATOM)" as file-spec
    - consult/1, include/1, ensure_loaded/1
    - would this simply prepend "lib/"?
@@ -143,7 +145,8 @@ NOTES											              -*- Org -*-
    - char_code/2, atom_concat/3, atom_chars/2, atom_length/2,
      current_input/1, current_output/1, number_chars/2, nl/1,
      put_byte/1, put_byte/2, put_code/1, put_code/2, get_byte/1,
-     get_byte/2, get_code/1, get_code/2
+     get_byte/2, get_code/1, get_code/2, peek_byte/1, peek_byte/2,
+     peek_code/1, peek_code/2
    - close/1, set_input/1, set_output/1, set_error_output/1,
      at_end_of_stream/0, at_end_of_stream/1, flush_output/1
    - renamed flush/0 to flush_output/1.
@@ -169,32 +172,25 @@ NOTES											              -*- Org -*-
    - ensure_loaded/1 directive.
    - added -q option to pi, also added some verbose output when including/consulting.
 ** Missing ISO predicates
-   | Name                                         | Remarks                                         |
-   |----------------------------------------------+-------------------------------------------------|
-   | sub_atom/5                                   |                                                 |
-   | peek_byte/1, peek_byte/2                     |                                                 |
-   | get_char/1, get_char/2                       | return end_of_file on EOF                       |
-   | peek_char/1, peek_char/2                     | s.a.                                            |
-   | peek_code/1, peek_code/2                     |                                                 |
-   | put_char/1, put_char/2                       |                                                 |
-   | current_predicate/1                          |                                                 |
-   | set_prolog_flag/2                            | not implemented, as they are no changable flags |
-   | call/1                                       | unimplemented                                   |
-   | close/2                                      | unimplemented                                   |
-   | set_stream_position/2                        |                                                 |
-   | stream_property/2                            |                                                 |
-   | char_conversion/2, current_char_conversion/2 | unimplemented                                   |
-   | read/2                                       | differs from our version                        |
-   | read_term/2, read_term/3                     |                                                 |
-   | write/2                                      |                                                 |
-   | write_canonical/1, write_canonical/2         |                                                 |
-   | write_term/2, write_term/3                   |                                                 |
-   | writeq/2                                     |                                                 |
-* Build options
-** Allow static allocation of data-areas
-   - statically allocated data for all areas.
-   - fixed sizes for gap-buffer and string-buffer.
-   - would need to put DBs, buckets and items into heap, using bytevectors.
+   | Name                                         | Remarks                                       |
+   |----------------------------------------------+-----------------------------------------------|
+   | sub_atom/5                                   |                                               |
+   | get_char/1, get_char/2                       | return end_of_file on EOF                     |
+   | peek_char/1, peek_char/2                     | s.a.                                          |
+   | put_char/1, put_char/2                       |                                               |
+   | current_predicate/1                          | unimplemented                                 |
+   | set_prolog_flag/2                            | unimplemented, as they are no changable flags |
+   | call/1                                       | unimplemented                                 |
+   | close/2                                      | unimplemented                                 |
+   | set_stream_position/2                        |                                               |
+   | stream_property/2                            |                                               |
+   | char_conversion/2, current_char_conversion/2 | unimplemented                                 |
+   | read/2                                       | differs from our version                      |
+   | read_term/2, read_term/3                     |                                               |
+   | write/2                                      |                                               |
+   | write_canonical/1, write_canonical/2         |                                               |
+   | write_term/2, write_term/3                   |                                               |
+   | writeq/2                                     |                                               |
 * Diagnostics
 ** Detect singleton variables
 ** Report unused predicates
@@ -226,15 +222,6 @@ NOTES											              -*- Org -*-
 ** TODO Evaluate memprofiling
    - do we need to update counts on fail or (re-)throw?
 ** TODO profile with gprof
-* Interpreter
-** TODO Allow detecting interpreter from running program
-   - or find some trick.
-   - could simply record some entry in RDB.
-** Add "listing"
-   - listing/1
-   - listing/0
-     - needs some way to enumerate all predicates (current_predicate/1).
-     - could use foreign_call(db_find_bucket(...))
 * Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
@@ -244,6 +231,7 @@ NOTES											              -*- Org -*-
 *** '$predicate_address'/2
 ** Builtins
 *** '$call_predicate'/2
+*** Allows single-element list in arithmetic expressions
 ** Interpreter
 *** expand_term/2 + term_expansion/2
 * Extensions
