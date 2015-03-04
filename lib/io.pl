@@ -15,8 +15,7 @@ seeing(S) :- foreign_call(current_input_stream(S)).
 
 seen :-
 	foreign_call(current_input_stream(S)),
-	foreign_call(close_stream(S)),
-	foreign_call(set_current_input_stream(0)).
+	foreign_call(close_stream(S)).
 
 tell(user) :-
 	foreign_call(set_current_output_stream(0)).
@@ -32,8 +31,7 @@ telling(S) :- foreign_call(current_output_stream(S)).
 
 told :-
 	foreign_call(current_output_stream(S)),
-	foreign_call(close_stream(S)),
-	foreign_call(set_current_output_stream(0)).
+	foreign_call(close_stream(S)).
 
 append(NAME) :-
 	foreign_call(open_stream(NAME, 0, 'ab', S)),
