@@ -7,15 +7,24 @@
 %       before a toplevel expression is compiled.
 
 macro(command_line_arguments(X), foreign_call(command_line_arguments(X))).
-macro(display(X), foreign_call(basic_write(X))).
+macro(display(X), foreign_call(basic_write(0, X))).
 macro(exists_file(NAME), foreign_call(file_exists(NAME))).
 macro(garbage_collect, foreign_call(gc)).
 macro(halt(C), foreign_call(halt(C))).
 macro(halt, foreign_call(halt(0))).
-macro(nl, foreign_call(put_byte(10))).
-macro(put(BYTE), foreign_call(put_byte(BYTE))).
-macro(get0(BYTE), foreign_call(get_byte(BYTE))).
-macro(peek(BYTE), foreign_call(peek_byte(BYTE))).
+macro(nl, foreign_call(put_byte(0, 10))).
+macro(nl(S), foreign_call(put_byte(S, 10))).
+macro(put(BYTE), foreign_call(put_byte(0, BYTE))).
+macro(put_byte(BYTE), foreign_call(put_byte(0, BYTE))).
+macro(put_byte(S, BYTE), foreign_call(put_byte(S, BYTE))).
+macro(put_code(BYTE), foreign_call(put_byte(0, BYTE))).
+macro(put_code(S, BYTE), foreign_call(put_byte(S, BYTE))).
+macro(get0(BYTE), foreign_call(get_byte(0, BYTE))).
+macro(get_byte(BYTE), foreign_call(get_byte(0, BYTE))).
+macro(get_byte(S, BYTE), foreign_call(get_byte(S, BYTE))).
+macro(get_code(BYTE), foreign_call(get_byte(0, BYTE))).
+macro(get_code(S, BYTE), foreign_call(get_byte(S, BYTE))).
+macro(peek(BYTE), foreign_call(peek_byte(0, BYTE))).
 macro(erase(REF), foreign_call(db_erase(REF))).
 macro(getenv(NAME, VAL), foreign_call(get_environment_variable(NAME, VAL))).
 macro(shell(CMD, STATUS), foreign_call(shell_command(CMD, STATUS))).
@@ -23,6 +32,10 @@ macro(atom_codes(A, LST), foreign_call(atom_codes(A, LST))).
 macro(number_codes(N, LST), foreign_call(number_codes(N, LST))).
 macro(functor(T, N, A), foreign_call(functor(T, N, A))).
 macro(arg(I, T, X), foreign_call(term_arg(I, T, X))).
+macro(seeing(S), foreign_call(current_input_stream(S))).
+macro(telling(S), foreign_call(current_output_stream(S))).
+macro(current_input(S), foreign_call(current_input_stream(S))).
+macro(current_output(S), foreign_call(current_output_stream(S))).
 macro(current_error_output(S), foreign_call(current_error_stream(S))).
 macro(read(T), read1(T)).
 macro(read(T, V), read1(T, V)).
@@ -33,6 +46,8 @@ macro(set_random_seed(SEED), foreign_call(set_random_seed(SEED))).
 macro(atom_hash(ATOM, HASH), foreign_call(atom_hash(ATOM, HASH))).
 macro(acyclic_term(X), foreign_call(acyclic_term(X))).
 macro(close(S), foreign_call(close_stream(S))).
+macro(char_code(A, C), foreign_call(atom_codes(A, [C]))).
+macro(atom_length(A, L), foreign_call(atom_length(A, L))).
 
 
 % nothing matches - tryi auto-include and finally, fail
@@ -70,8 +85,8 @@ auto_include(read_atom, 2, 'lib/io.pl').
 auto_include(read_line, 1, 'lib/io.pl').
 auto_include(flush_output, 0, 'lib/io.pl').
 auto_include(flush_output, 1, 'lib/io.pl').
-auto_include(at_end_of_file, 0, 'lib/io.pl').
-auto_include(at_end_of_file, 1, 'lib/io.pl').
+auto_include(at_end_of_stream, 0, 'lib/io.pl').
+auto_include(at_end_of_stream, 1, 'lib/io.pl').
 auto_include(set_input, 0, 'lib/io.pl').
 auto_include(set_output, 1, 'lib/io.pl').
 auto_include(set_error_output, 1, 'lib/io.pl').
@@ -153,6 +168,10 @@ auto_include(dif, 2, 'lib/co.pl').
 
 auto_include(current_prolog_flag, 2, 'lib/flags.pl').
 
+auto_include(atom_concat, 3, 'lib/iso.pl').
+auto_include(atom_chars, 2, 'lib/iso.pl').
+auto_include(number_chars, 2, 'lib/iso.pl').
+
 auto_include(_, _, _) :- fail.
 
 
@@ -222,10 +241,9 @@ determinate_builtin(flush_output, 1).
 determinate_builtin(set_input, 1).
 determinate_builtin(set_output, 1).
 determinate_builtin(set_error_output, 1).
-determinate_builtin(at_end_of_file, 0).
-determinate_builtin(at_end_of_file, 1).
-determinate_builtin(flush_output, 0).
-determinate_builtin(flush_output, 1).
+determinate_builtin(at_end_of_stream, 0).
+determinate_builtin(at_end_of_stream, 1).
+determinate_builtin(atom_chars, 2).
 
 determinate_builtin(NAME, ARITY) :-
 	recorded(determinate, NAME/ARITY).

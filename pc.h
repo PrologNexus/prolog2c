@@ -3539,6 +3539,12 @@ static void push_argument_list(X lst)
 }
 
 
+/// Port helpers
+
+static FILE *get_input_port(X s) { return port_file(s == ZERO ? standard_input_port : check_input_port(s)); }
+static FILE *get_output_port(X s) { return port_file(s == ZERO ? standard_output_port : check_output_port(s)); }
+
+
 /// VM operations
 
 #define CURRENT_NAME
@@ -3893,7 +3899,8 @@ X VARIABLE_ACCESS_NAME(int index)
 
 static int debug_hook(CHOICE_POINT *C0) { return 1; }
 
-PRIMITIVE(put_byte, X c) 
+
+PRIMITIVE(put_byte, X s, X c) 
 {
   int code;
 
@@ -3902,27 +3909,27 @@ PRIMITIVE(put_byte, X c)
   else if(is_VAR(c)) throw_exception(instantiation_error_atom);
   else type_error("integer", c);
   
-  fputc(code, port_file(standard_output_port)); 
+  fputc(code, get_output_port(s));
   return 1;
 }
 
-PRIMITIVE(put_string, X str)
+PRIMITIVE(put_string, X s, X str)
 {
   int len;
   XCHAR *ptr = to_string(str, &len);
-  fputs(ptr, port_file(standard_output_port));
+  fputs(ptr, get_output_port(s));
   return 1;
 }
 
-PRIMITIVE(basic_write, X x) 
+PRIMITIVE(basic_write, X s, X x) 
 { 
-  basic_write_term(port_file(standard_output_port), 0, 99999, 0, x); 
+  basic_write_term(get_output_port(s), 0, 99999, 0, x); 
   return 1; 
 }
 
-PRIMITIVE(basic_writeq, X x) 
+PRIMITIVE(basic_writeq, X s, X x) 
 { 
-  basic_write_term(port_file(standard_output_port), 0, 99999, 1, x); 
+  basic_write_term(get_output_port(s), 0, 99999, 1, x); 
   return 1; 
 }
 
@@ -4079,15 +4086,15 @@ PRIMITIVE(file_exists, X name)
   return !stat(fname, &info) && S_ISREG(info.st_mode);
 }
 
-PRIMITIVE(get_byte, X c)
+PRIMITIVE(get_byte, X s, X c)
 {
-  int g = fgetc(port_file(standard_input_port));
+  int g = fgetc(get_input_port(s));
   return unify(word_to_fixnum(g), c);
 }
 
-PRIMITIVE(peek_byte, X c)
+PRIMITIVE(peek_byte, X s, X c)
 {
-  FILE *fp = port_file(standard_input_port);
+  FILE *fp = get_input_port(s);
   int g = fgetc(fp);
 
   if(g != EOF) ungetc(g, fp);
@@ -4097,7 +4104,7 @@ PRIMITIVE(peek_byte, X c)
 
 PRIMITIVE(at_eof, X s) {
   check_input_port(s);
-  return feof(port_file(s));
+  return feof(port_file(check_type_PORT(s)));
 }
 
 PRIMITIVE(open_stream, X name, X input, X mode, X result)
@@ -4573,6 +4580,9 @@ PRIMITIVE(fixnum_bounds, X minimum, X maximum) {
 
 PRIMITIVE(acyclic_term, X term) { return !check_cycles(term); }
 
+PRIMITIVE(atom_length, X a, X len) { 
+  return unify(len, word_to_fixnum(string_length(slot_ref(check_type_SYMBOL(a), 0))));
+}
 
 #endif
 

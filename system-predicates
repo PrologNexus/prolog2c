@@ -51,7 +51,6 @@ system_predicate(clause(+X, ?Y)).
 system_predicate(clause(+X, ?Y, -Z)).
 system_predicate(command_line_arguments(-X), _, 'Filters out runtime-options ("-:..."), does not include program name').
 system_predicate(compound(+X)).
-system_predicate(current_error_output(-X)).
 system_predicate(db_reference(?X)).
 system_predicate(display(+X)).
 system_predicate(enable_trace(+X)).
@@ -67,6 +66,7 @@ system_predicate(halt, _, 'exits with code 0').
 system_predicate(halt(+X)).
 system_predicate(integer(+X)).
 system_predicate(nl).
+system_predicate(nl(+X)).
 system_predicate(nonvar(+X)).
 system_predicate(number(+X)).
 system_predicate(number_codes(?X, ?Y), _, 'uses strtol(3)/strtod(3), so allows leading space').
@@ -78,6 +78,21 @@ system_predicate(var(+X)).
 system_predicate(suspend(?X, ?Y)).
 system_predicate(acyclic_term(?X)).
 system_predicate(close(+X)).
+system_predicate(char_code(?X, ?Y)).
+system_predicate(atom_length(?X, ?Y)).
+system_predicate(seeing(-X)).
+system_predicate(telling(-X)).
+system_predicate(current_input(-X)).
+system_predicate(current_output(-X)).
+system_predicate(current_error_output(-X)).
+system_predicate(get_byte(-X)).
+system_predicate(get_byte(+S, -X)).
+system_predicate(get_code(-X)).
+system_predicate(get_code(+S, -X)).
+system_predicate(put_byte(+X)).
+system_predicate(put_byte(+S, +X)).
+system_predicate(put_code(+X)).
+system_predicate(put_code(+S, +X)).
 
 system_predicate(append(+X), 'io.pl').
 system_predicate(compare(-X, ?X, ?Z), 'misc.pl').
@@ -117,7 +132,6 @@ system_predicate(recordz(+X, -Y, -Z), 'rdb.pl').
 system_predicate(retract(+X), 'cdb.pl').
 system_predicate(reverse(?X, ?Y), 'lists.pl').
 system_predicate(see(+X), 'io.pl', 'may also pass stream (or "user")').
-system_predicate(seeing(-X), 'io.pl').
 system_predicate(seen, 'io.pl', 'does nothing if stdin').
 system_predicate(select(?X, ?Y, ?Z), 'sets.pl').
 system_predicate(shell(+X), 'misc.pl', 'expects exit-status 0').
@@ -127,7 +141,6 @@ system_predicate(sort(+X, -Y), 'sorts.pl').
 system_predicate(subtract(+X, +Y, -Z), 'sets.pl').
 system_predicate(tab(+X), 'io.pl').
 system_predicate(tell(+X), 'io.pl', 'may also pass stream (or "user")').
-system_predicate(telling(-X), 'io.pl').
 system_predicate(throw(+X), 'misc.pl').
 system_predicate(told, 'io.pl', 'does nothing if stdout or stderr').
 system_predicate(read_atom(+X, -Y), 'io.pl').
@@ -156,8 +169,11 @@ system_predicate(set_output(+X), 'lib/io.pl').
 system_predicate(set_error_output(+X), 'lib/io.pl').
 system_predicate(flush_output, 'lib/io.pl').
 system_predicate(flush_output(+X), 'lib/io.pl').
-system_predicate(at_end_of_file, 'lib/io.pl').
-system_predicate(at_end_of_file(+X), 'lib/io.pl').
+system_predicate(at_end_of_stream, 'lib/io.pl').
+system_predicate(at_end_of_stream(+X), 'lib/io.pl').
+system_predicate(atom_concat(?X, ?Y, ?Z), 'lib/iso.pl').
+system_predicate(atom_chars(?X, ?Y), 'lib/iso.pl').
+system_predicate(number_chars(?X, ?Y), 'lib/iso.pl').
 
 arithmetic_operation(- X).
 arithmetic_operation(\ X).

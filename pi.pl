@@ -16,7 +16,7 @@ main :-
 	 ; recorded(pi_silent, _, REF), erase(REF), repl).
 
 repl :-
-	display('?- '), flush,
+	display('?- '), flush_output,
 	seeing(IN), telling(OUT),
 	catch(read(TERM, VARS), EXN, (report_exception(EXN), !, repl)),
 	(TERM == end_of_file, halt; process_input(TERM, VARS, IN, OUT)).
@@ -39,7 +39,7 @@ consult_files([F|R]) :- consult(F), consult_files(R).
 run_goal(G, VARS) :-
 	call(G),
 	show_variables(VARS),
-	display(' ? '), flush,
+	display(' ? '), flush_output,
 	(get_response -> fail; display('\nyes.\n')).
 
 get_response :-

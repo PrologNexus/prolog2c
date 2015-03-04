@@ -11,8 +11,6 @@ see(NAME) :-
 	foreign_call(open_stream(NAME, 1, 'rb', S)),
 	foreign_call(set_current_input_stream(S)).
 
-seeing(S) :- foreign_call(current_input_stream(S)).
-
 seen :-
 	foreign_call(current_input_stream(S)),
 	foreign_call(close_stream(S)).
@@ -26,8 +24,6 @@ tell(S) :-
 tell(NAME) :-
 	foreign_call(open_stream(NAME, 0, 'wb', S)),
 	foreign_call(set_current_output_stream(S)).
-
-telling(S) :- foreign_call(current_output_stream(S)).
 
 told :-
 	foreign_call(current_output_stream(S)),
@@ -91,5 +87,5 @@ flush_output(user) :- flush_output.
 flush_output(S) :- foreign_call(flush_output(S)).
 
 at_end_of_stream :- foreign_call(current_output_stream(S)), foreign_call(at_eof(S)).
-at_end_of_stream(user) :- at_end_of_file.
+at_end_of_stream(user) :- at_end_of_stream.
 at_end_of_stream(S) :- foreign_call(at_eof(S)).

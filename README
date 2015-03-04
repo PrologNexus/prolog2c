@@ -318,10 +318,20 @@ Builtin predicates
 
   - Conversion-predicates
 
+        atom_chars(?X, ?Y)
+
+    Unifies Y with a list of single-character atoms representing the
+    characters in the atom X or vice versa [ISO]
+
         atom_codes(?X, ?Y)
 
     Unifies X with the atom constructed from the character-codes in
     the list Y or vice versa [ISO]
+
+        char_code(?X, ?Y)
+
+    Unifies X with the atom constructed from the character code Y
+    or vice versa [ISO]
 
         number_codes(?X, ?Y)
 
@@ -412,8 +422,8 @@ Builtin predicates
 
   - Input/Output predicates
 
-        at_end_of_file
-        at_end_of_file(+STREAM)
+        at_end_of_stream
+        at_end_of_stream(+STREAM)
 
     Succeeds, if the current input stream or STREAM has reached the
     end [ISO]
@@ -423,6 +433,11 @@ Builtin predicates
     Closes the given stream. If STREAM is the current input- or
     output- stream, then the default I/O stream becomes current [ISO]
   
+        current_input(-X)
+        current_output(-X)
+
+    Unifies X with the current input- or output-stream [ISO]
+
         current_error_output(-X)
 
     Unifies X with the current error output stream.
@@ -433,8 +448,10 @@ Builtin predicates
     printed in list- notation.
 
         nl
+        nl(+STREAM)
 
-    Writes the newline character on the current output stream [ISO]
+    Writes the newline character on the current output stream or the
+    stream given [ISO]
 
         open(+NAME, +MODE, -STREAM)
 
@@ -463,6 +480,15 @@ Builtin predicates
     Writes the character with the code X to the current
     output-stream. X may be an integer or an atom.
 
+        put_byte(+BYTE)
+        put_byte(+STREAM, +BYTE)
+        put_code(+BYTE)
+        put_code(+STREAM, +BYTE)
+
+    Writes a byte to the current output stream or the stream given. As
+    there is currently no UNICODE support, these predicates are
+    interchangable [ISO]
+
         flush_output
         flush_output(+STREAM)
 
@@ -484,6 +510,15 @@ Builtin predicates
 
     Unifies X with the code of the next character in the current
     input-stream.
+
+        get_byte(-BYTE)
+        get_byte(+STREAM, -BYTE)
+        get_code(-BYTE)
+        get_code(+STREAM, -BYTE)
+
+    Read a byte from the current input stream or the stream given. As
+    there is currently no UNICODE support, these predicates are
+    interchangable [ISO]
 
         read(-X)
 
@@ -1037,6 +1072,15 @@ Builtin predicates
 
   - Other predicates
 
+        atom_length(+X, -Y)
+
+    Unifies Y with the number of characters in the atom X [ISO]
+
+        atom_concat(?X, ?Y, ?Z)
+
+    Concatenates the atoms or numbers X and Y, producing the atom Z
+    [ISO]
+
         true
 
     Always succeeds [ISO]
@@ -1044,7 +1088,6 @@ Builtin predicates
         fail                      
 
     Always fails [ISO]
-
 
         garbage_collect
 
