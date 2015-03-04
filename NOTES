@@ -222,18 +222,7 @@ NOTES											              -*- Org -*-
    - would have to disable flonum-parsing in rdtok, which needs
      conditional, depending on variant (with flonums or without)
 ** TODO /cycles/ Rational tree support
-*** TODO Add test-cases
-    - unify_with_occurs_check
-    - this fails, currently (already cyclic terms are not detected,
-      but SWI loops on last example, too):
-      #+BEGIN_SRC prolog
-      main :-
-	    \+unify_with_occurs_check(A, f(A)),
-	    X = f(X), Y = X, \+acyclic_term(X), \+acyclic_term(Y).
-            X = f(X), Y = X, unify_with_occurs_check(X, Y), % fails
-            X2 = f(X2), Y2 = f(Y2), unify_with_occurs_check(X2, Y2). % fails
-      #+END_SRC
-*** TODO Document
+*** TODO Benchmark
 *** TODO Handle cyclic terms in term-comparison
 * Runtime
 ** TODO Use macro to check for exceeded heap-limit
