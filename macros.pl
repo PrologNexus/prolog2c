@@ -33,6 +33,7 @@ macro(set_random_seed(SEED), foreign_call(set_random_seed(SEED))).
 macro(flush, foreign_call(flush_output)).
 macro(atom_hash(ATOM, HASH), foreign_call(atom_hash(ATOM, HASH))).
 macro(acyclic_term(X), foreign_call(acyclic_term(X))).
+macro(close(S), foreign_call(close_stream(S))).
 
 
 % nothing matches - tryi auto-include and finally, fail

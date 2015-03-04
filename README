@@ -411,6 +411,11 @@ Builtin predicates
     True if X is an unbound variable [ISO]
 
   - Input/Output predicates
+
+        close(+STREAM)
+
+    Closes the given stream. If STREAM is the current input- or
+    output- stream, then the default I/O stream becomes current [ISO]
   
         current_error_output(-X)
 
