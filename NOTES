@@ -140,7 +140,9 @@ NOTES											              -*- Org -*-
    - "asin", "acos"
 * Documentation
 ** DONE News
-   - close/1
+   - close/1, set_input/1, set_output/1, set_error_output/1,
+     at_end_of_stream/0, at_end_of_stream/1, flush_output/1
+   - renamed flush/0 to flush_output/1.
    - pi: more robust with respect to current I/O ports in case of
      exceptions.
    - single-element list in arithmetic expressions.
@@ -184,11 +186,7 @@ NOTES											              -*- Org -*-
    | current_predicate/1                          |                                                 |
    | set_prolog_flag/2                            | not implemented, as they are no changable flags |
    | call/1                                       | unimplemented                                   |
-   | at_end_of_stream/0, at_end_of_stream/1       |                                                 |
    | close/2                                      | unimplemented                                   |
-   | flush_output/1                               |                                                 |
-   | set_input/1                                  |                                                 |
-   | set_output/1                                 | also: set_error_output/1                        |
    | set_stream_position/2                        |                                                 |
    | stream_property/2                            |                                                 |
    | char_conversion/2, current_char_conversion/2 | unimplemented                                   |
