@@ -63,6 +63,13 @@ NOTES											              -*- Org -*-
     - at least as much as possible and sensible.
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
+** TODO Special case long lists of facts
+   - facts that only contain atomic arguments should be compiled into
+     more space-efficient code.
+   - more general: if all arguments in clause are ground, unify static
+     array of literals with args (unify_literals(ARGS, LITERALS) ->
+     bool)
+   - measure impact in speed, size and compile-times.
 ** If clause contains a single tail-call, CP-creation could be avoided
    - saves little, though.
 ** Remove unused predicates
@@ -146,7 +153,7 @@ NOTES											              -*- Org -*-
      current_input/1, current_output/1, number_chars/2, nl/1,
      put_byte/1, put_byte/2, put_code/1, put_code/2, get_byte/1,
      get_byte/2, get_code/1, get_code/2, peek_byte/1, peek_byte/2,
-     peek_code/1, peek_code/2
+     peek_code/1, peek_code/2, read/2, display/2, write/2, writeq/2
    - close/1, set_input/1, set_output/1, set_error_output/1,
      at_end_of_stream/0, at_end_of_stream/1, flush_output/1
    - renamed flush/0 to flush_output/1.
@@ -185,12 +192,9 @@ NOTES											              -*- Org -*-
    | set_stream_position/2                        |                                               |
    | stream_property/2                            |                                               |
    | char_conversion/2, current_char_conversion/2 | unimplemented                                 |
-   | read/2                                       | differs from our version                      |
    | read_term/2, read_term/3                     |                                               |
-   | write/2                                      |                                               |
    | write_canonical/1, write_canonical/2         |                                               |
    | write_term/2, write_term/3                   |                                               |
-   | writeq/2                                     |                                               |
 * Diagnostics
 ** Detect singleton variables
 ** Report unused predicates
@@ -230,8 +234,9 @@ NOTES											              -*- Org -*-
 ** Compiler
 *** '$predicate_address'/2
 ** Builtins
+*** read1/2
 *** '$call_predicate'/2
-*** Allows single-element list in arithmetic expressions
+*** Single-element list in arithmetic expressions
 ** Interpreter
 *** expand_term/2 + term_expansion/2
 * Extensions
