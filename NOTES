@@ -56,6 +56,7 @@ NOTES											              -*- Org -*-
      be statically initialized with non-constants, and this applies to
      many data objects for literals.
    - but user-defined literals can't be shared, or not?
+*** TODO 0046-arithmetic test fails in 32-bit pc
 *** Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
 *** Reader-error should throw syntax_error with message argument
@@ -153,7 +154,9 @@ NOTES											              -*- Org -*-
      current_input/1, current_output/1, number_chars/2, nl/1,
      put_byte/1, put_byte/2, put_code/1, put_code/2, get_byte/1,
      get_byte/2, get_code/1, get_code/2, peek_byte/1, peek_byte/2,
-     peek_code/1, peek_code/2, read/2, display/2, write/2, writeq/2
+     peek_code/1, peek_code/2, read/2, display/2, write/2, writeq/2,
+     put_char/1, put_char/2, get_char/1, get_char/2, peek_char/1,
+     peek_char/2
    - close/1, set_input/1, set_output/1, set_error_output/1,
      at_end_of_stream/0, at_end_of_stream/1, flush_output/1
    - renamed flush/0 to flush_output/1.
@@ -179,22 +182,19 @@ NOTES											              -*- Org -*-
    - ensure_loaded/1 directive.
    - added -q option to pi, also added some verbose output when including/consulting.
 ** Missing ISO predicates
-   | Name                                         | Remarks                                       |
-   |----------------------------------------------+-----------------------------------------------|
-   | sub_atom/5                                   |                                               |
-   | get_char/1, get_char/2                       | return end_of_file on EOF                     |
-   | peek_char/1, peek_char/2                     | s.a.                                          |
-   | put_char/1, put_char/2                       |                                               |
-   | current_predicate/1                          | unimplemented                                 |
-   | set_prolog_flag/2                            | unimplemented, as they are no changable flags |
-   | call/1                                       | unimplemented                                 |
-   | close/2                                      | unimplemented                                 |
-   | set_stream_position/2                        |                                               |
-   | stream_property/2                            |                                               |
-   | char_conversion/2, current_char_conversion/2 | unimplemented                                 |
-   | read_term/2, read_term/3                     |                                               |
-   | write_canonical/1, write_canonical/2         |                                               |
-   | write_term/2, write_term/3                   |                                               |
+   | Name                                         | Remarks                                        |
+   |----------------------------------------------+------------------------------------------------|
+   | sub_atom/5                                   |                                                |
+   | current_predicate/1                          | unimplemented                                  |
+   | set_prolog_flag/2                            | unimplemented, as there are no changable flags |
+   | call/1                                       | unimplemented                                  |
+   | close/2                                      | unimplemented                                  |
+   | set_stream_position/2                        | too vague to be useful                         |
+   | stream_property/2                            |                                                |
+   | char_conversion/2, current_char_conversion/2 | unimplemented                                  |
+   | read_term/2, read_term/3                     |                                                |
+   | write_canonical/1, write_canonical/2         |                                                |
+   | write_term/2, write_term/3                   |                                                |
 * Diagnostics
 ** Detect singleton variables
 ** Report unused predicates
