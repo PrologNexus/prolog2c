@@ -179,6 +179,12 @@ auto_include(current_prolog_flag, 2, 'lib/flags.pl').
 auto_include(atom_concat, 3, 'lib/iso.pl').
 auto_include(atom_chars, 2, 'lib/iso.pl').
 auto_include(number_chars, 2, 'lib/iso.pl').
+auto_include(get_char, 1, 'lib/iso.pl').
+auto_include(get_char, 2, 'lib/iso.pl').
+auto_include(peek_char, 1, 'lib/iso.pl').
+auto_include(peek_char, 2, 'lib/iso.pl').
+auto_include(put_char, 1, 'lib/iso.pl').
+auto_include(put_char, 2, 'lib/iso.pl').
 
 auto_include(_, _, _) :- fail.
 
@@ -256,6 +262,12 @@ determinate_builtin(set_error_output, 1).
 determinate_builtin(at_end_of_stream, 0).
 determinate_builtin(at_end_of_stream, 1).
 determinate_builtin(atom_chars, 2).
+determinate_builtin(get_char, 1).
+determinate_builtin(get_char, 2).
+determinate_builtin(peek_char, 1).
+determinate_builtin(peek_char, 2).
+determinate_builtin(put_char, 1).
+determinate_builtin(üput_char, 2).
 
 determinate_builtin(NAME, ARITY) :-
 	recorded(determinate, NAME/ARITY).

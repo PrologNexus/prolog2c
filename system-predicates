@@ -182,6 +182,12 @@ system_predicate(at_end_of_stream(+X), 'lib/io.pl').
 system_predicate(atom_concat(?X, ?Y, ?Z), 'lib/iso.pl').
 system_predicate(atom_chars(?X, ?Y), 'lib/iso.pl').
 system_predicate(number_chars(?X, ?Y), 'lib/iso.pl').
+system_predicate(get_char(?X), 'lib/iso.pl').
+system_predicate(get_char(?X, ?Y), 'lib/iso.pl').
+system_predicate(peek_char(?X), 'lib/iso.pl').
+system_predicate(peek_char(?X, ?Y), 'lib/iso.pl').
+system_predicate(put_char(?X), 'lib/iso.pl').
+system_predicate(put_char(?X, ?Y), 'lib/iso.pl').
 
 arithmetic_operation(- X).
 arithmetic_operation(\ X).

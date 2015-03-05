@@ -461,7 +461,7 @@ Builtin predicates
     or "append". OPTIONS should be a list of open-options, currently
     supported are only the following:
 
-        type(text)  -  the default
+        type(text)        default
         type(binary)
 
     To make the stream the current input or output port use see/1 or
@@ -482,6 +482,13 @@ Builtin predicates
     given. As there is currently no UNICODE support, these predicates
     are interchangable [ISO]
 
+        peek_char(-CHAR)
+	peek_char(+STREAM, -CHAR)
+
+    Peeks a character as a length 1 atom from the current input stream
+    or the stream given. On end-of-file CHAR is unified with the atom
+    'end_of_file' [ISO]
+
         put(+X)
 
     Writes the character with the code X to the current
@@ -495,6 +502,12 @@ Builtin predicates
     Writes a byte to the current output stream or the stream given. As
     there is currently no UNICODE support, these predicates are
     interchangable [ISO]
+
+        put_char(+CHAR)
+	put_char(+STREAM, +CHAR)
+
+    Writes the length 1 atom CHAR to the current output stream or the
+    stream given [ISO]
 
         flush_output
         flush_output(+STREAM)
@@ -526,6 +539,13 @@ Builtin predicates
     Read a byte from the current input stream or the stream given. As
     there is currently no UNICODE support, these predicates are
     interchangable [ISO]
+
+        get_char(-CHAR)
+	get_char(+STREAM, -CHAR)
+
+    Read a character as a length 1 atom from the current input stream
+    or the stream given. On end-of-file CHAR is unified with the atom
+    'end_of_file' [ISO]
 
         read(-X)
         read(+STREAM, -X)
