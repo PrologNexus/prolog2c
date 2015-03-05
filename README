@@ -443,9 +443,10 @@ Builtin predicates
     Unifies X with the current error output stream.
 
         display(+X)
+        display(+STREAM, +X)
 
-    Display X on the current output stream, note that lists are
-    printed in list- notation.
+    Display X on the current output stream or the stream given, note
+    that lists are printed in list- notation.
 
         nl
         nl(+STREAM)
@@ -454,9 +455,6 @@ Builtin predicates
     stream given [ISO]
 
         open(+NAME, +MODE, -STREAM)
-
-    Equivalent to open(NAME, MODE, STREAM, []) [ISO]
-
         open(+NAME, +MODE, -STREAM, +OPTIONS)
 
     Opens a file stream. MODE may be one of the atoms "read", "write"
@@ -530,15 +528,10 @@ Builtin predicates
     interchangable [ISO]
 
         read(-X)
+        read(+STREAM, -X)
 
-    Reads the next term from the current input- stream and unifies it
-    with X [ISO]
-
-        read(-X, -Y)
-
-    Similar to read/1, but unifies Y with a list of "ATOM=VARIABLE"
-    terms, with an element for each variable (different from "_") in
-    the read term.
+    Reads the next term from the current input-stream or the stream
+    given and unifies it with X [ISO]
 
         read_atom(+LEN, -X)
 
@@ -593,14 +586,17 @@ Builtin predicates
     one.
 
         write(+X)
+        write(+STREAM, +X)
 
-    Writes X to the current-output stream, using operator notation, if
-    possible.
+    Writes X to the current-output stream or the stream given, using
+    operator notation, if possible.
 
         writeq(+X)
+        writeq(+STREAM, +X)
 
-    Writes X to the current-output stream, using operator-notation, if
-    possible and quotes atoms that would need to be quoted on reading.
+    Writes X to the current-output stream or the stream given, using
+    operator-notation, if possible and quotes atoms that would need to
+    be quoted on reading.
 
         set_input(+STREAM)
 	set_output(+STREAM)

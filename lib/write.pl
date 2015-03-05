@@ -42,8 +42,20 @@ print(Term) :-
 write(Term) :-
 	write_out(Term, write, 1200, punct, _).
 
+write(S, X) :-
+	foreign_call(current_output_stream(OLD)),
+	foreign_call(set_current_output_stream(S)),
+	write(X),
+	foreign_call(set_current_output_stream(OLD)).
+
 writeq(Term) :-
 	write_out(Term, writeq, 1200, punct, _).
+
+writeq(S, X) :-
+	foreign_call(current_output_stream(OLD)),
+	foreign_call(set_current_output_stream(S)),
+	writeq(X),
+	foreign_call(set_current_output_stream(OLD)).
 
 
 %   maybe_paren(P, Prio, Char, Ci, Co)

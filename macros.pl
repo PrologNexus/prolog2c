@@ -8,6 +8,7 @@
 
 macro(command_line_arguments(X), foreign_call(command_line_arguments(X))).
 macro(display(X), foreign_call(basic_write(0, X))).
+macro(display(S, X), foreign_call(basic_write(S, X))).
 macro(exists_file(NAME), foreign_call(file_exists(NAME))).
 macro(garbage_collect, foreign_call(gc)).
 macro(halt(C), foreign_call(halt(C))).
@@ -42,7 +43,7 @@ macro(current_input(S), foreign_call(current_input_stream(S))).
 macro(current_output(S), foreign_call(current_output_stream(S))).
 macro(current_error_output(S), foreign_call(current_error_stream(S))).
 macro(read(T), read1(T)).
-macro(read(T, V), read1(T, V)).
+macro(read(S, T), read2(S, T)).
 macro(enable_trace(F), foreign_call(enable_trace(F))).
 macro(getpid(PID), foreign_call(get_process_id(PID))).
 macro(sleep(SECS), foreign_call(sleep_for_seconds(SECS))).
@@ -114,6 +115,8 @@ auto_include(symdiff, 3, 'lib/sets.pl').
 
 auto_include(write, 1, 'lib/write.pl').
 auto_include(writeq, 1, 'lib/write.pl').
+auto_include(write, 2, 'lib/write.pl').
+auto_include(writeq, 2, 'lib/write.pl').
 
 auto_include(recorda, 2, 'lib/rdb.pl').
 auto_include(recorda, 3, 'lib/rdb.pl').
@@ -146,6 +149,7 @@ auto_include(ord_memberchk, 2, 'lib/ordset.pl').
 
 auto_include(read_tokens, 2, 'lib/rdtok.pl').
 auto_include(read1, 1, 'lib/read.pl').
+auto_include(read2, 1, 'lib/read.pl').
 
 auto_include(clause, 2, 'lib/cdb.pl').
 auto_include(clause, 3, 'lib/cdb.pl').
@@ -211,6 +215,8 @@ determinate_builtin(copy_term, 2).
 determinate_builtin(duplicate_term, 2).
 determinate_builtin(write, 1).
 determinate_builtin(writeq, 1).
+determinate_builtin(write, 2).
+determinate_builtin(writeq, 2).
 determinate_builtin(recorda, 2).
 determinate_builtin(recorda, 3).
 determinate_builtin(recordz, 2).
@@ -221,6 +227,8 @@ determinate_builtin('$findall_collect', 1).
 determinate_builtin(ord_memberchk, 2).
 determinate_builtin(read_tokens, 2).
 determinate_builtin(read1, 1).
+determinate_builtin(read1, 2).
+determinate_builtin(read2, 1).
 determinate_builtin(abolish, 1).
 determinate_builtin(asserta, 1).
 determinate_builtin(asserta, 2).

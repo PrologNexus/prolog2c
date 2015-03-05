@@ -18,6 +18,13 @@
 
 read1(Answer) :- read1(Answer, _).
 
+%% this corresponds to ISO read/2
+read2(S, A) :-
+	foreign_call(current_input_stream(OLD)),
+	foreign_call(set_current_input_stream(S)),
+	read1(A),
+	foreign_call(set_current_input_stream(OLD)).
+
 
 %   read(?Answer, ?Variables)
 %   reads a term from the current input stream and unifies it with
