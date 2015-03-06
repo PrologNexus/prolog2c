@@ -1990,6 +1990,10 @@ static void collect_garbage(CHOICE_POINT *C)
   for(int i = 0; i < global_variable_counter; ++i)
     mark1(&(global_variables[ i ]));
 
+  // mark exception values in catcher stack
+  for(CATCHER *cp = catch_stack; cp < catch_top; ++cp)
+    mark1(&(cp->ball));
+
 #ifdef USE_DELAY
   // mark triggered frozen goals list
   mark1(&triggered_frozen_goals);
@@ -2098,6 +2102,19 @@ static void collect_garbage(CHOICE_POINT *C)
   TRAIL_STACK_GAP *gp2 = trail_stack_gap_buffer;
 
   for(CHOICE_POINT *cp = choice_point_stack; cp < C; ++cp) {
+    while(gp2 < gp && cp->T > gp2->position) {
+      ts_shift += gp2->size;
+      ++gp2;
+    }
+
+    cp->T -= ts_shift;
+  }
+
+  // do the same for trail-ptrs in catcher-stack
+  ts_shift = 0;
+  gp2 = trail_stack_gap_buffer;
+
+  for(CATCHER *cp = catch_stack; cp < catch_top; ++cp) {
     while(gp2 < gp && cp->T > gp2->position) {
       ts_shift += gp2->size;
       ++gp2;
