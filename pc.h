@@ -1708,14 +1708,15 @@ static int check_cycles_recursive(X x)
   if(is_byteblock(x)) return 0;
 
   for(X *ptr = cycle_stack; ptr < cycle_stack_top; ++ptr) {
-    if(*ptr == x) return 1;	/* variable was already traversed */
+    if(*ptr == x) return 1;	/* value was already traversed */
   }
 
   if(is_VAR(x)) {
     X y = slot_ref(x, 0);
 
     if(x == y) return 0;
-    
+
+    //XXX just set x to y and fall through?
     ASSERT(cycle_stack_top + 1 < cycle_stack + CYCLE_STACK_SIZE, "cycle-stack overflow");
     *(cycle_stack_top++) = y;
     int r = check_cycles_recursive(y);
@@ -1723,6 +1724,7 @@ static int check_cycles_recursive(X x)
     return r;
   }
 
+  ASSERT(cycle_stack_top + 1 < cycle_stack + CYCLE_STACK_SIZE, "cycle-stack overflow");
   *(cycle_stack_top++) = x;
   XWORD size = objsize(x);
   XWORD i = 0;
