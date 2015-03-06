@@ -25,6 +25,8 @@
 #include <errno.h>
 #include <strings.h>
 #include <limits.h>
+#include <signal.h>
+
 
 #ifdef _WIN32
 # include <windows.h>
@@ -407,7 +409,7 @@ typedef struct PINFO
 
 static BLOCK END_OF_LIST_VAL_BLOCK = { END_OF_LIST_TAG };
 static X dot_atom, system_error_atom, type_error_atom, evaluation_error_atom;
-static X instantiation_error_atom;
+static X instantiation_error_atom, user_interrupt_atom;
 
 static PORT_BLOCK default_input_port = { PORT_TAG|4, NULL, ONE, ONE, ZERO };
 static PORT_BLOCK default_output_port = { PORT_TAG|4, NULL, ZERO, ONE, ZERO };
@@ -979,6 +981,7 @@ static void intern_static_symbols(X sym1)
   type_error_atom = intern(CSTRING("type_error"));
   evaluation_error_atom = intern(CSTRING("evaluation_error"));
   instantiation_error_atom = intern(CSTRING("instantiation_error"));
+  user_interrupt_atom = intern(CSTRING("user_interrupt"));
 }
 
 
@@ -1041,6 +1044,13 @@ static void throw_exception(X ball)
   arg_top = catch_top->arg_top;
   catch_top->ball = ball;
   longjmp(exception_handler, 1);
+}
+
+
+static void signal_handler(int sig)
+{
+  signal(SIGINT, signal_handler);
+  throw_exception(user_interrupt_atom);
 }
 
 
@@ -1996,6 +2006,7 @@ static void collect_garbage(CHOICE_POINT *C)
   mark1(&type_error_atom);
   mark1(&evaluation_error_atom);
   mark1(&instantiation_error_atom);
+  mark1(&user_interrupt_atom);
 
   // mark standard ports
   mark1(&standard_input_port);
@@ -2440,6 +2451,7 @@ static void initialize(int argc, char *argv[])
   variable_counter = 0;
   triggered_frozen_goals = END_OF_LIST_VAL;
   first_distinct_variable = NULL;
+  signal(SIGINT, signal_handler);
 
 #ifdef DEBUG_GC
   memset(tospace, TAINTED_PTR_B & 0xff, (XWORD)tospace_end - (XWORD)tospace);
