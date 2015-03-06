@@ -3,6 +3,7 @@ NOTES											              -*- Org -*-
 
 * Issues
 ** Major
+*** TODO 0046-arithmetic test fails in 32-bit pc
 *** TODO Term-comparison doesn't handle cyclic structures, yet
 *** TODO Why is so much space accumulating on arg- and env-stacks?
 *** 0028-endless-tailcall crashes in pi
@@ -24,7 +25,7 @@ NOTES											              -*- Org -*-
      main :- f(0.463647609000806).
 *** Everything is still rather slow and uses too much memory
    - see file:broken-tests/
-*** Once trail-stack reserve is reached, GC will happen all the time if the trail can't be reduced
+*** Once trail-stack reserve is reached, GC will loop if the trail can't be reduced
 *** If heap is insufficient deref_term/3 will loop endlessly
    - also read_atom/2, recorded/X, retract/1 and clause/X
 *** name/2 and functor/3 (and others?) may exceed heap-reserve for large inputs
@@ -66,7 +67,6 @@ NOTES											              -*- Org -*-
      be statically initialized with non-constants, and this applies to
      many data objects for literals.
    - but user-defined literals can't be shared, or not?
-*** TODO 0046-arithmetic test fails in 32-bit pc
 *** Unbound var in arithmetic expr doesn't show variable name
    - extend var-rep to hold name, in addition to index.
 *** Reader-error should throw syntax_error with message argument
@@ -84,8 +84,9 @@ NOTES											              -*- Org -*-
      unifies args.
    - but what about clause-indexing? perhaps compile only blocks of
      facts after indexing-jump?
-   - could build decision-tree from all clause-arguments to allow more
-     efficient dispatch.
+     - perhaps just make this optional ("-compress-facts")
+     - could build decision-tree from all clause-arguments to allow more
+       efficient dispatch.
 ** If clause contains a single tail-call, CP-creation could be avoided
    - saves little, though.
 ** Remove unused predicates
@@ -132,6 +133,7 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
+** TODO Check out ISO-extensions in file:/archive/iso-prolog-extensions.pdf
 ** DONE if term_expansion/2 returns list, treat as separate (or no) terms
    - add this also to /pi-in-pc/
 ** handle arbitrary signals
