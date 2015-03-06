@@ -317,7 +317,7 @@ pi_consult_terms(PNA) :-
 	read(TERM),
 	TERM \== end_of_file,
 	expand_term(TERM, TERM2),
-	pi_insert_tem(PNA, TERM2, CNA),
+	pi_insert_item(PNA, TERM2, CNA),
 	!,
 	pi_consult_terms(CNA).
 pi_consult_terms(PNA) :-
@@ -342,14 +342,19 @@ pi_find_file(FILE, FILE2) :-
 pi_find_file(FILE, _) :-
 	throw(existence_error(FILE)).
 
-pi_insert_tem(PNA, (:- BODY), PNA) :-
+pi_insert_item(PNA, [], PNA) :- !.
+pi_insert_item(PNA, [C1|R], PNA2) :-
+	!,
+	pi_insert_item(PNA, C1, PNA1),
+	pi_insert_item(PNA1, R, PNA2).
+pi_insert_item(PNA, (:- BODY), PNA) :-
         !,
 	pi_process_directive(BODY).
-pi_insert_tem(PNA, (HEAD :- BODY), N/A) :-
+pi_insert_item(PNA, (HEAD :- BODY), N/A) :-
         functor(HEAD, N, A),
 	!,
 	pi_add_clause(PNA, N, A, HEAD, BODY).
-pi_insert_tem(PNA, FACT, N/A) :-
+pi_insert_item(PNA, FACT, N/A) :-
         functor(FACT, N, A),
 	!,
 	pi_add_clause(PNA, N, A, FACT, true).
