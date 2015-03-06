@@ -93,6 +93,10 @@ assemble(push_catcher(L), S, S) :- gen('PUSH_CATCHER(&&', L, ');\n').
 assemble(pop_catcher, S, S) :- gen('POP_CATCHER;\n').
 assemble(enter_catcher, S, S) :- gen('SET_WHERE(PREVIOUS_PINFO);\n').
 assemble(unify_throw(R), S, S) :- gen('if(!unify(catch_top->ball,', R, ')) RETHROW;\n').
+assemble(unify_args(L, NS), S, S) :-
+	gen('static X ', L, '[]={'),
+	forall(member(N, NS), gen('literal_', N, ',')),
+	gen('NULL};\nif(!unify_args(C0,A,', L, ')) FAIL;\n').
 
 assemble(make_term(RLIST, R), S, S) :-
 	length(RLIST, N),

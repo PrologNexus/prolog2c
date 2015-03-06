@@ -31,7 +31,7 @@ compile_clause_list([CLAUSE|MORE], NAME/ARITY, [I/T|MAP], S1, S2) :-
 % rule
 compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, S1, S2) :-
         show_compiled_clause((HEAD :- BODY)),
-	!,			% avoid match of next clause
+	!,			% avoid match of next clause (fact)
 	I2 is I + 1,
 	clause_label(NAME, ARITY, I2, L),
 	compile_redo(LAST, L),
@@ -70,7 +70,17 @@ secondary_clause_label(N, A, I, L) :-
 
 %% compile head-unification
 
-compile_head(HEAD, NS, BOUND, S1, S2) :-
+compile_head(HEAD, _, [], S, S) :-
+	functor(HEAD, _, 0).	% nothing to do
+compile_head(HEAD, _, [], S1, S2) :-
+	ground_term(HEAD),	% special case for head, where all arguments are ground
+	HEAD =.. [_|ARGS],
+	default_setting(unify_argument_list_threshold, T),
+	functor(HEAD, _, ARITY), ARITY >= T,
+	register_literals(ARGS, LS, S1, S3),
+	gen_label(LBL, S3, S2),
+	emit(unify_args(LBL, LS)).	
+compile_head(HEAD, NS, BOUND, S1, S2) :-	
 	HEAD =.. [_|ARGS],
 	compile_unification(ARGS, NS, 0, [], BOUND, S1, S2).
 
@@ -590,6 +600,11 @@ register_literal(TERM, N, S, S) :-
 register_literal(TERM, N, S1, S2) :-
 	gen_literal_index(N, S1, S2),
 	recordz(literal, [N|TERM]).
+
+register_literals([], [], S, S).
+register_literals([L|R], [N|R2], S1, S) :-
+	register_literal(L, N, S1, S2),
+	register_literals(R, R2, S2, S).
 
 
 %% create variables that are in the 2nd set but not in the first

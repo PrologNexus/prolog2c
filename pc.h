@@ -2934,6 +2934,19 @@ static inline int unify1(CHOICE_POINT *C0, X x, X y)
 }
 
 
+static int unify_args(CHOICE_POINT *C0, X *A, X *args)
+{
+  while(*args != NULL) {
+    if(!unify(*A, *args)) return 0;
+
+    ++A;
+    ++args;
+  }
+
+  return 1;
+}
+
+
 /// term-construction
 
 static X make_term_from_list(int arity, X functor, X args)
