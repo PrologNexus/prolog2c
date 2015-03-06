@@ -331,7 +331,7 @@ generate_static_literal(I, X, S, S) :-
 	length(STRING, LEN),
 	gen('static STRING_BLOCK lbs', I, '={STRING_TAG|(', LEN, '+1),{'),
 	generate_data_list(STRING),
-	gen(',0}};\nstatic SYMBOL_BLOCK lb', I, '={SYMBOL_TAG|3,(X)&lbs', I),
+	gen('0}};\nstatic SYMBOL_BLOCK lb', I, '={SYMBOL_TAG|3,(X)&lbs', I),
 	atom_hash(X, HASH),
 	gen(',PREVIOUS_SYMBOL,word_to_fixnum(', HASH),
 	gen(')};\n#undef PREVIOUS_SYMBOL\n#define PREVIOUS_SYMBOL (X)&lb', I),
@@ -370,7 +370,6 @@ generate_static_literals([X|MORE], I, IF, [IS|IMORE], S1, S2) :-
 % output helpers
 
 generate_data_list([]).
-generate_data_list([X]) :- gen(X), !.
 generate_data_list([X|Y]) :- gen(X,','), generate_data_list(Y).
 
 generate_foreign_arguments([]).
