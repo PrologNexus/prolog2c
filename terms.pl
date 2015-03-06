@@ -29,13 +29,13 @@ indexed_variable(X, I) :- X =.. ['_var_', I].
 
 %% check if term contains variables and fail if it does
 
-literal_term(X) :- indexed_variable(X, _), !, fail.
-literal_term([X|Y]) :-
-	!, literal_term(X), literal_term(Y).
-literal_term(X) :- atomic(X), !.
-literal_term(X) :-
+ground_term(X) :- indexed_variable(X, _), !, fail.
+ground_term([X|Y]) :-
+	!, ground_term(X), ground_term(Y).
+ground_term(X) :- atomic(X), !.
+ground_term(X) :-
 	X =.. LST,
-	literal_term(LST).
+	ground_term(LST).
 
 
 %% collect instances of '_var_'(N) into lists of indexes

@@ -111,7 +111,7 @@ compile_term_for_unification(X, DEST, BOUND, BOUND2, S, S) :-
 	   emit(make_variable(DEST), assign(N, DEST)))).
 
 compile_term_for_unification(X, DEST, BOUND, BOUND, S1, S2) :-
-	literal_term(X), 	% literal term not containing variables?
+	ground_term(X), 	% literal term not containing variables?
 	register_literal(X, N, S1, S2),
 	emit(literal(N, DEST, X)).
 compile_term_for_unification([X|Y], DEST, BOUND1, BOUND2, S1, S2) :-
