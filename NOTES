@@ -31,6 +31,16 @@ NOTES											              -*- Org -*-
    - atom_codes/2 could fail on full heap, force GC and retry,
      would need to be moved into file:lib/misc.pl
 ** Minor
+*** TODO Eliminate redundant switch-operations
+    - e.g.:
+      #+BEGIN_SRC prolog
+      foo(a, 1).
+      foo(b, 1).
+      foo(c, 1).
+      foo(d, 1).
+      #+END_SRC
+      produces 4 switch_on_atom operations.
+    - see compile_dispatch_sequence in file:index.pl
 *** is integer_rounding_function really "towards_zero"?
 *** Fresh checkout often leaves file:g-s-p.pl uncompiled
     - only rebuilds g-s-p.c, but that might not be sufficient.
@@ -67,10 +77,15 @@ NOTES											              -*- Org -*-
 ** TODO Special case long lists of facts
    - facts that only contain atomic arguments should be compiled into
      more space-efficient code.
-   - more general: if all arguments in clause are ground, unify static
-     array of literals with args (unify_literals(ARGS, LITERALS) ->
-     bool)
-   - measure impact in speed, size and compile-times.
+   - store ptr to argument array in CP (for example "E" field), array
+     holds args of a single head, followed by NULL. 
+   - terminate full array with NULL.
+   - after ENTER, goto handler in boilerplate that sets redo and
+     unifies args.
+   - but what about clause-indexing? perhaps compile only blocks of
+     facts after indexing-jump?
+   - could build decision-tree from all clause-arguments to allow more
+     efficient dispatch.
 ** If clause contains a single tail-call, CP-creation could be avoided
    - saves little, though.
 ** Remove unused predicates
@@ -117,18 +132,9 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
-** TODO if term_expansion/2 returns list, treat as separate (or no) terms
+** DONE if term_expansion/2 returns list, treat as separate (or no) terms
    - add this also to /pi-in-pc/
-** Predicates
-   - ground/1
-   - rename_file/2, delete_file/1
-** TODO Add more ISO stuff
-   - set_stream_position/2
-   - get_char, put_char, peek_char
-   - write/2, writeq/2
-** TODO catch SIGINT (others?) and throw exception
-   - user_interrupt
-   - perhaps: signal(SIGNUM)
+** handle arbitrary signals
 ** dlopen, dlsym, to access primitives written in C
 ** Show warning for untriggered delayed goals with "-:d"
    - check trail-entries when unwinding trail and before exit.
@@ -144,19 +150,20 @@ NOTES											              -*- Org -*-
      peek_code/peek_byte
 ** Allow "library(ATOM)" as file-spec
    - consult/1, include/1, ensure_loaded/1
-   - would this simply prepend "lib/"?
+   - would this simply prepend "lib/" and append ".pl"?
 ** Extend numerical operators
    - constants "pi", perhaps "e"
    - "asin", "acos"
 * Documentation
 ** DONE News
+   - SIGINT is handled and produces an exception (user_interrupt)
    - char_code/2, atom_concat/3, atom_chars/2, atom_length/2,
      current_input/1, current_output/1, number_chars/2, nl/1,
      put_byte/1, put_byte/2, put_code/1, put_code/2, get_byte/1,
      get_byte/2, get_code/1, get_code/2, peek_byte/1, peek_byte/2,
      peek_code/1, peek_code/2, read/2, display/2, write/2, writeq/2,
      put_char/1, put_char/2, get_char/1, get_char/2, peek_char/1,
-     peek_char/2
+     peek_char/2, ground/1, rename_file/2, delete_file/1
    - close/1, set_input/1, set_output/1, set_error_output/1,
      at_end_of_stream/0, at_end_of_stream/1, flush_output/1
    - renamed flush/0 to flush_output/1.
