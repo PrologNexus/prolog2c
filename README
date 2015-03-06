@@ -988,6 +988,14 @@ Builtin predicates
     shell/1 fails when the command returns with an exit-status that is
     not 0.
 
+        rename_file(+OLD, +NEW)
+
+    Renames the file designated by the atom or string OLD to NEW.
+
+        delete_file(+NAME)
+
+    Deletes the file designated by the atom or string NAME.
+
   - Set operations
 
         intersection(+SET1, +SET2, -SET3)

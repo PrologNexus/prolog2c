@@ -4674,6 +4674,30 @@ PRIMITIVE(atom_length, X a, X len) {
 
 PRIMITIVE(ground, X term) { return check_ground(term); }
 
+PRIMITIVE(rename_file, X old, X new) {
+  int len;
+  XCHAR *on = strdup(to_string(old, &len));
+  XCHAR *nn = to_string(new, &len);
+  
+  if(rename(on, nn) != 0) {
+    free(on);
+    system_error(strerror(errno));
+  }
+
+  free(on);
+  return 1;
+}
+
+PRIMITIVE(delete_file, X fn) {
+  int len;
+  XCHAR *name = to_string(fn, &len);
+
+  if(unlink(name) != 0)
+    system_error(strerror(errno));
+
+  return 1;
+}
+
 
 #endif
 

@@ -54,6 +54,8 @@ macro(close(S), foreign_call(close_stream(S))).
 macro(char_code(A, C), foreign_call(atom_codes(A, [C]))).
 macro(atom_length(A, L), foreign_call(atom_length(A, L))).
 macro(ground(X), foreign_call(ground(X))).
+macro(rename_file(X, Y), foreign_call(rename_file(X, Y))).
+macro(delete_file(X), foreign_call(delete_file(X))).
 
 
 % nothing matches - tryi auto-include and finally, fail
