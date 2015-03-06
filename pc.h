@@ -2980,6 +2980,17 @@ static X make_term_from_list(int arity, X functor, X args)
 
 /// numerical operations
 
+
+static inline XFLOAT to_float(X x)
+{
+  if(is_FIXNUM(x)) return fixnum_to_float(x);
+  else if(is_FLONUM(x)) return flonum_to_float(x);
+
+  check_number_failed(x);
+  return 0;
+}
+
+
 #define NUMERIC_BINARY_CMP(name, op)		\
   static inline int name(X x, X y)		\
   { x = deref(x); \
@@ -3238,29 +3249,29 @@ static inline X num_float(X x)
 static inline X num_frac(X x)
 {
   XFLOAT i;
-  return FLONUM(modf(flonum_to_float(check_type_FLONUM(deref(x))), &i));
+  return FLONUM(modf(to_float(deref(x)), &i));
 }
 
 
 static inline X num_int(X x)
 {
   XFLOAT i;
-  modf(flonum_to_float(check_type_FLONUM(deref(x))), &i);
+  modf(to_float(deref(x)), &i);
   return FLONUM(i);
 }
 
 
-static inline X num_floor(X x) { return FLONUM(floor(flonum_to_float(check_type_FLONUM(deref(x))))); }
-static inline X num_ceiling(X x) { return FLONUM(ceil(flonum_to_float(check_type_FLONUM(deref(x))))); }
-static inline X num_round(X x) { return FLONUM(round(flonum_to_float(check_type_FLONUM(deref(x))))); }
-static inline X num_truncate(X x) { return FLONUM(trunc(flonum_to_float(check_type_FLONUM(deref(x))))); }
-static inline X num_sin(X x) { return FLONUM(sin(flonum_to_float(check_type_FLONUM(deref(x))))); }
-static inline X num_cos(X x) { return FLONUM(cos(flonum_to_float(check_type_FLONUM(deref(x))))); }
-static inline X num_tan(X x) { return FLONUM(tan(flonum_to_float(check_type_FLONUM(deref(x))))); }
-static inline X num_atan(X x) { return FLONUM(atan(flonum_to_float(check_type_FLONUM(deref(x))))); }
-static inline X num_exp(X x) { return FLONUM(exp(flonum_to_float(check_type_FLONUM(deref(x))))); }
-static inline X num_log(X x) { return FLONUM(log(flonum_to_float(check_type_FLONUM(deref(x))))); }
-static inline X num_sqrt(X x) { return FLONUM(sqrt(flonum_to_float(check_type_FLONUM(deref(x))))); }
+static inline X num_floor(X x) { return FLONUM(floor(to_float(deref(x)))); }
+static inline X num_ceiling(X x) { return FLONUM(ceil(to_float(deref(x)))); }
+static inline X num_round(X x) { return FLONUM(round(to_float(deref(x)))); }
+static inline X num_truncate(X x) { return FLONUM(trunc(to_float(deref(x)))); }
+static inline X num_sin(X x) { return FLONUM(sin(to_float(deref(x)))); }
+static inline X num_cos(X x) { return FLONUM(cos(to_float(deref(x)))); }
+static inline X num_tan(X x) { return FLONUM(tan(to_float(deref(x)))); }
+static inline X num_atan(X x) { return FLONUM(atan(to_float(deref(x)))); }
+static inline X num_exp(X x) { return FLONUM(exp(to_float(deref(x)))); }
+static inline X num_log(X x) { return FLONUM(log(to_float(deref(x)))); }
+static inline X num_sqrt(X x) { return FLONUM(sqrt(to_float(deref(x)))); }
 
 
 static inline X num_abs(X x)
