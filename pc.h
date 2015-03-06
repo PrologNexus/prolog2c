@@ -1054,7 +1054,7 @@ static void signal_handler(int sig)
 }
 
 
-static void system_error(char *msg)
+static void system_error(XCHAR *msg)
 {
   X str = intern(CSTRING(msg));
   X exn = STRUCTURE(system_error_atom, 1);
@@ -1063,7 +1063,7 @@ static void system_error(char *msg)
 }
 
 
-static void type_error(char *msg, X culprit)
+static void type_error(XCHAR *msg, X culprit)
 {
   X str = intern(CSTRING(msg));
   X exn = STRUCTURE(type_error_atom, 2);
