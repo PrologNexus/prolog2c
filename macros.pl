@@ -53,6 +53,7 @@ macro(acyclic_term(X), foreign_call(acyclic_term(X))).
 macro(close(S), foreign_call(close_stream(S))).
 macro(char_code(A, C), foreign_call(atom_codes(A, [C]))).
 macro(atom_length(A, L), foreign_call(atom_length(A, L))).
+macro(ground(X), foreign_call(ground(X))).
 
 
 % nothing matches - tryi auto-include and finally, fail

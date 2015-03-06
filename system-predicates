@@ -98,6 +98,7 @@ system_predicate(put_byte(+X)).
 system_predicate(put_byte(+S, +X)).
 system_predicate(put_code(+X)).
 system_predicate(put_code(+S, +X)).
+system_predicate(ground(?X)).
 
 system_predicate(append(+X), 'io.pl').
 system_predicate(compare(-X, ?X, ?Z), 'misc.pl').

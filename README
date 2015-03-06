@@ -420,6 +420,10 @@ Builtin predicates
 
     True if X is an unbound variable [ISO]
 
+        ground(?X)
+
+    True if X does not contain unbound variables [ISO]
+
   - Input/Output predicates
 
         at_end_of_stream
