@@ -2036,9 +2036,9 @@ static void collect_garbage(CHOICE_POINT *C)
   for(int i = 0; i < global_variable_counter; ++i)
     mark1(&(global_variables[ i ]));
 
-  // mark exception values in catcher stack
-  for(CATCHER *cp = catch_stack; cp < catch_top; ++cp)
-    mark1(&(cp->ball));
+  // mark topmost exception value in catcher stack
+  if(catch_top > catch_stack)
+    mark1(&((catch_top - 1)->ball));
 
 #ifdef USE_DELAY
   // mark triggered frozen goals list
