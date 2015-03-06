@@ -268,7 +268,7 @@ determinate_builtin(get_char, 2).
 determinate_builtin(peek_char, 1).
 determinate_builtin(peek_char, 2).
 determinate_builtin(put_char, 1).
-determinate_builtin(üput_char, 2).
+determinate_builtin(put_char, 2).
 
 determinate_builtin(NAME, ARITY) :-
 	recorded(determinate, NAME/ARITY).
