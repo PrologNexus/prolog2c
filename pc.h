@@ -2947,6 +2947,36 @@ static int unify_args(CHOICE_POINT *C0, X *A, X *args)
 }
 
 
+static int unify_block(CHOICE_POINT *C0, X *A)
+{
+  X *args = *(arg_top - 1);
+  X *tp = trail_top;
+
+  while(*args != NULL) {	/* loop over facts */
+  next:
+    while(*args != NULL) {	/* loop over arguments */
+      if(!unify(deref(*A), *args)) {
+	unwind_trail(tp);
+
+	while(*args != NULL) ++args; /* skip args in this fact */
+
+	++args;
+	goto next;			/* try next fact */
+      }
+      else {
+	++A;
+	++args;
+      }
+    }
+
+    *(arg_top - 1) = args + 1;
+    return 1;
+  }
+
+  return 0;
+}
+
+
 /// term-construction
 
 static X make_term_from_list(int arity, X functor, X args)
@@ -3953,6 +3983,14 @@ suspend:							       \
  saved_state.C0 = C0;						       \
  saved_state.C = C;						       \
  RETURN_RESULT;
+
+
+#define UNIFY_BLOCK(dl, rl, xl)			\
+  { SET_REDO(&&rl);				\
+    *(arg_top++) = (X *)dl;			\
+  rl:						\
+    if(!unify_block(C0, A)) FAIL;		\
+    EXIT(xl); }
 
 
 #define DISPATCH_ON_SYMBOL(table, lbl, len)  goto *(lookup_symbol_in_table(A[0], table, &&lbl, len))

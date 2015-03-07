@@ -7,8 +7,11 @@ compile_clauses(NAME/ARITY, CLAUSES, S1, S2) :-
 	gen_label(L1, S1, S3),
 	emit(enter(NAME, ARITY, L1)),
 	register_defined_predicate(NAME/ARITY),
-	build_index_to_type_map(CLAUSES, 1, MAP),
-	compile_clause_list(CLAUSES, NAME/ARITY, MAP, S3, S2).
+	(fact_block(CLAUSES), recorded(compress_facts, yes)
+	-> compile_fact_block(CLAUSES, S3, S2)
+	; build_index_to_type_map(CLAUSES, 1, MAP),
+	 compile_clause_list(CLAUSES, NAME/ARITY, MAP, S3, S2)
+	).
 
 compile_clause_list([CLAUSE], NAME/ARITY, [I/_], S1, S2) :-
 	clause_label(NAME, ARITY, I, L1),
@@ -46,6 +49,26 @@ compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, S1, S2) :-
 compile_clause(HEAD, NA, I, M, S1, S2) :-
 	compile_clause((HEAD :- true), NA, I, M, S1, S2).
 
+
+%% compile "block" of facts, if all arguments are ground
+
+fact_block([]).
+fact_block([(_ :- _)|_]) :- !, fail.
+fact_block([H|R]) :- ground_term(H), !, fact_block(R).
+
+compile_fact_block(CLAUSES, S1, S) :-
+	compile_facts(CLAUSES, DATA, S1, S2),
+	gen_label(L, S2, S),
+	emit(unify_facts(L, DATA)).
+
+compile_facts([], [], S, S).
+compile_facts([F|R], [D|ATA], S1, S) :-
+	F =.. [_|ARGS],
+	register_literals(ARGS, D, S1, S2),
+	compile_facts(R, ATA, S2, S).
+
+
+%% show clauses as they are compiled
 show_compiled_clause(CLAUSE) :-
 	recorded(show_compiled_clauses, yes),
 	display('% '), writeq(CLAUSE), put(46), nl.

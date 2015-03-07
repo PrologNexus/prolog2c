@@ -95,8 +95,15 @@ assemble(enter_catcher, S, S) :- gen('SET_WHERE(PREVIOUS_PINFO);\n').
 assemble(unify_throw(R), S, S) :- gen('if(!unify(catch_top->ball,', R, ')) RETHROW;\n').
 assemble(unify_args(L, NS), S, S) :-
 	gen('static X ', L, '[]={'),
-	forall(member(N, NS), gen('literal_', N, ',')),
+	generate_literal_list(NS),
 	gen('NULL};\nif(!unify_args(C0,A,', L, ')) FAIL;\n').
+assemble(unify_facts(L, DATA), S1, S2) :-
+	gen_label(L2, S1, S3),
+	gen_label(L3, S3, S2),
+	gen('static X ', L, '[]={'),
+	forall(member(XS, DATA), (generate_literal_list(XS), gen('NULL,'))),
+	gen('NULL};\nUNIFY_BLOCK(', L, ',', L2),
+	gen(',', L3, ');\n').
 
 assemble(make_term(RLIST, R), S, S) :-
 	length(RLIST, N),
@@ -384,3 +391,8 @@ generate_slot_inits(R, I, [X|M]) :-
 	gen(X, ');\n'),
 	I2 is I + 1,
 	generate_slot_inits(R, I2, M).
+
+generate_literal_list([]).
+generate_literal_list([N|R]) :-
+	gen('literal_', N, ','),
+	generate_literal_list(R).
