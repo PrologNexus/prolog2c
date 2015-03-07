@@ -390,12 +390,12 @@ getpad(Size, Just) -->
 	getdigits(3, Digits),	{   name(Size, Digits)   },
 	[Char],			{   getpad(Char, Just)   }.
 
-	getpad(114, r).		%  right justified
-	getpad(108, l).		%  left justified
-	getpad( 99, c).		%  centered
-	getpad( 82, r).		%  right justified
-	getpad( 76, l).		%  left justified
-	getpad( 67, c).		%  centered
+getpad(114, r).			%  right justified
+getpad(108, l).			%  left justified
+getpad( 99, c).			%  centered
+getpad( 82, r).			%  right justified
+getpad( 76, l).			%  left justified
+getpad( 67, c).			%  centered
 
 
 				%   padout(A,S,J) writes the item A in a
