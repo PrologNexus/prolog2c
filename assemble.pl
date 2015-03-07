@@ -101,7 +101,7 @@ assemble(unify_facts(L, DATA), S1, S2) :-
 	gen_label(L2, S1, S3),
 	gen_label(L3, S3, S2),
 	gen('static X ', L, '[]={'),
-	forall(member(XS, DATA), (generate_literal_list(XS), gen('NULL,'))),
+	forall(member(XS, DATA), generate_literal_list(XS)),
 	gen('NULL};\nUNIFY_BLOCK(', L, ',', L2),
 	gen(',', L3, ');\n').
 
