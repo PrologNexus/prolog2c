@@ -74,19 +74,7 @@ NOTES											              -*- Org -*-
     - at least as much as possible and sensible.
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
-** TODO Special case long lists of facts
-   - facts that only contain atomic arguments should be compiled into
-     more space-efficient code.
-   - store ptr to argument array in CP (for example "E" field), array
-     holds args of a single head, followed by NULL. 
-   - terminate full array with NULL.
-   - after ENTER, goto handler in boilerplate that sets redo and
-     unifies args.
-   - but what about clause-indexing? perhaps compile only blocks of
-     facts after indexing-jump?
-     - perhaps just make this optional ("-compress-facts")
-     - could build decision-tree from all clause-arguments to allow more
-       efficient dispatch.
+** Deref arguments in advance
 ** If clause contains a single tail-call, CP-creation could be avoided
    - saves little, though.
 ** Remove unused predicates
@@ -133,6 +121,7 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
+** TODO Check if we can use file:lib/canon.pl for printing query results
 ** TODO Check out ISO-extensions in file:/archive/iso-prolog-extensions.pdf
 ** DONE if term_expansion/2 returns list, treat as separate (or no) terms
    - add this also to /pi-in-pc/
@@ -229,6 +218,12 @@ NOTES											              -*- Org -*-
      terminate, for example)
    - would have to disable flonum-parsing in rdtok, which needs
      conditional, depending on variant (with flonums or without)
+** DONE /compress-facts/ (special case long lists of facts)
+   - but what about clause-indexing? perhaps compile only blocks of
+     facts after indexing-jump?
+     - perhaps just make this optional ("-compress-facts")
+     - could build decision-tree from all clause-arguments to allow more
+       efficient dispatch.
 * Runtime
 ** TODO Use macro to check for exceeded heap-limit
 * Tests
