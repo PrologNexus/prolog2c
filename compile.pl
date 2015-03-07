@@ -56,8 +56,10 @@ fact_block([]).
 fact_block([(_ :- _)|_]) :- !, fail.
 fact_block([H|R]) :- ground_term(H), !, fact_block(R).
 
-compile_fact_block(CLAUSES, S1, S) :-
+compile_fact_block(NA, CLAUSES, S1, S) :-
 	compile_facts(CLAUSES, DATA, S1, S2),
+	length(DATA, N1), DATA = [A1|_], length(A1, N2), N3 is N1 * N2,
+	message(['% compressed fact block ', NA, ': ', N1/N3]),
 	gen_label(L, S2, S),
 	emit(unify_facts(L, DATA)).
 
