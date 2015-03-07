@@ -327,7 +327,7 @@ compile_body_expression(X = Y, _, D, D, B, B, S, S) :-
 compile_body_expression(X = Y, _, D, D, B1, B2, S1, S2) :-
 	%% if possibly cyclic, don't compile to simple assignment
 	possibly_cyclic_unification(X = Y),
-	message(['explicit unification contains cycles: ', X = Y]),
+	message(['% explicit unification contains cycles: ', X = Y]),
 	compile_explicit_unification(X, Y, unify, B1, B2, S1, S2).
 compile_body_expression(X = Y, _, D, D, B1, B2, S1, S2) :-
 	%% X is an unbound variable
