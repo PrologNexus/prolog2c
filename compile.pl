@@ -7,8 +7,12 @@ compile_clauses(NAME/ARITY, CLAUSES, S1, S2) :-
 	gen_label(L1, S1, S3),
 	emit(enter(NAME, ARITY, L1)),
 	register_defined_predicate(NAME/ARITY),
-	(fact_block(CLAUSES), recorded(compress_facts, yes)
-	-> compile_fact_block(CLAUSES, S3, S2)
+	(length(CLAUSES, N),
+	 default_setting(fact_block_threshold, T),
+	 N >= T,
+	 fact_block(CLAUSES),
+	 recorded(compress_facts, yes)
+	-> compile_fact_block(NAME/ARITY, CLAUSES, S3, S2)
 	; build_index_to_type_map(CLAUSES, 1, MAP),
 	 compile_clause_list(CLAUSES, NAME/ARITY, MAP, S3, S2)
 	).
