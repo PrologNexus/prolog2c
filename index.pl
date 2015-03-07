@@ -210,3 +210,26 @@ find_free_dispatch_table_entry(I, LEN, ES, IR) :-
 	I2 is I + 1,
 	find_free_dispatch_table_entry(I2, LEN, ES, IR).
 find_free_dispatch_table_entry(I, _, _, I).
+
+
+%% create table of first clause-indices in set of clauses, with one
+%% entry per type, from type-map
+%
+% TABLE = [INTEGER, ATOM, NULL, PAIR, STRUCTURE]
+
+type_map_first_indices(MAP, TABLE) :-
+	type_map_first_indices(MAP, 0, 0, 0, 0, 0, TABLE).
+
+type_map_first_indices([], I, A, N, P, S, [I, A, N, P, S]).
+type_map_first_indices([C/integer(_)|R], 0, A, N, P, S, TABLE) :-
+	type_map_first_indices(R, C, A, N, P, S, TABLE).
+type_map_first_indices([C/atom(_)|R], I, 0, N, P, S, TABLE) :-
+	type_map_first_indices(R, I, C, N, P, S, TABLE).
+type_map_first_indices([C/null|R], I, A, 0, P, S, TABLE) :-
+	type_map_first_indices(R, I, A, C, P, S, TABLE).
+type_map_first_indices([C/pair|R], I, A, N, 0, S, TABLE) :-
+	type_map_first_indices(R, I, A, N, C, S, TABLE).
+type_map_first_indices([C/structure(_)|R], I, A, N, P, 0, TABLE) :-
+	type_map_first_indices(R, I, A, N, P, C, TABLE).
+type_map_first_indices([_|R], I, A, N, P, S, TABLE) :-
+	type_map_first_indices(R, I, A, N, P, S, TABLE).

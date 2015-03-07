@@ -2947,23 +2947,57 @@ static int unify_args(CHOICE_POINT *C0, X *A, X *args)
 }
 
 
-static int unify_block(CHOICE_POINT *C0, X *A, int arity)
+static int unify_block(CHOICE_POINT *C0, X *A, int arity, int *typemap)
 {
   X *args = A[ arity ];
   X *tp = trail_top;
 
+  /* if this is the first entry, then dispatch on type, if first arg
+     is not a variable (assumes A[0] is already derefd) */
+  if(args == A[ arity + 1 ]) {
+    X A0 = A[ 0 ];
+
+    // typemap: { INT1, ATOM1, NULL1, PAIR1, STRUCTURE1 }
+    // fixnum first
+    if(is_FIXNUM(A0)) {
+      if(typemap[ 0 ]) 
+	args += arity * (typemap[ 0 ] - 1);
+    }
+    else if(!is_VAR(A0)) {	/* var? start with first clause */
+      if(A0 == END_OF_LIST_VAL) {
+	if(typemap[ 2 ])
+	  args += arity * (typemap[ 2 ] - 1);
+      }
+      else if(is_SYMBOL(A0)) {
+	if(typemap[ 1 ])
+	  args += arity * (typemap[ 1 ] - 1);
+      }
+      else if(is_PAIR(A0)) {
+	if(typemap[ 3 ]) 
+	  args += arity * (typemap[ 3 ] - 1);
+      }
+      else if(is_STRUCTURE(A0)) {
+	if(typemap[ 4 ]) 
+	  args += arity * (typemap[ 4 ] - 1);
+      }
+    }
+  }
+
   while(*args != NULL) {	/* loop over facts */
-  next:
-    for(int i = 0; i < arity; ++i) { /* loop over arguments */
+    int i;
+
+    for(i = 0; i < arity; ++i) { /* loop over arguments */
       if(!unify(A[ i ], *(args++))) {
 	unwind_trail(tp);
 	args += arity - (i + 1);	/* skip args in this fact */
-	goto next;			/* try next fact */
+	break;
       }
     }
 
-    A[ arity ] = args;
-    return 1;
+    if(i == arity) {
+      A[ arity ] = args;
+      return 1;
+    }
   }
 
   return 0;
@@ -3859,11 +3893,13 @@ static FILE *get_output_port(X s) { return port_file(s == ZERO ? standard_output
 
 #define RETHROW       throw_exception(catch_top->ball)
 
-#define UNIFY_BLOCK(dl, rl, xl)				\
+#define UNIFY_BLOCK(dl, rl, xl, tl)			\
   { SET_REDO(&&rl);					\
     *(arg_top++) = (X *)dl;				\
+    *(arg_top++) = (X *)dl;				\
+    C0->arg_top += 2;					\
   rl:							\
-    if(!unify_block(C0, A, CURRENT_ARITY)) {		\
+    if(!unify_block(C0, A, CURRENT_ARITY, tl)) {	\
       SET_REDO(NULL); 					\
       FAIL; }						\
     BLOCK_EXIT(xl); }
@@ -3876,7 +3912,7 @@ static FILE *get_output_port(X s) { return port_file(s == ZERO ? standard_output
     E = C0->E;							\
     if(A[ CURRENT_ARITY ] == NULL) {				\
       env_top = C0->env_top;					\
-      arg_top = C0->arg_top - CURRENT_ARITY;			\
+      arg_top = C0->arg_top - CURRENT_ARITY - 2;		\
       C = C0; }							\
     C0 = C0->C0;						\
     goto *R; }

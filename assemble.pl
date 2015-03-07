@@ -97,13 +97,16 @@ assemble(unify_args(L, NS), S, S) :-
 	gen('static X ', L, '[]={'),
 	generate_literal_list(NS),
 	gen('NULL};\nif(!unify_args(C0,A,', L, ')) FAIL;\n').
-assemble(unify_facts(L, DATA), S1, S2) :-
+assemble(unify_facts(L, DATA, TABLE), S1, S2) :-
 	gen_label(L2, S1, S3),
-	gen_label(L3, S3, S2),
-	gen('static X ', L, '[]={'),
+	gen_label(L3, S3, S4),
+	gen_label(L4, S4, S2),
+	gen('static int ', L4, '[]={'),
+	generate_data_list(TABLE),
+	gen('};\nstatic X ', L, '[]={'),
 	forall(member(XS, DATA), generate_literal_list(XS)),
 	gen('NULL};\nUNIFY_BLOCK(', L, ',', L2),
-	gen(',', L3, ');\n').
+	gen(',', L3, ',', L4, ');\n').
 
 assemble(make_term(RLIST, R), S, S) :-
 	length(RLIST, N),

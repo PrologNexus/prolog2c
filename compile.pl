@@ -7,14 +7,15 @@ compile_clauses(NAME/ARITY, CLAUSES, S1, S2) :-
 	gen_label(L1, S1, S3),
 	emit(enter(NAME, ARITY, L1)),
 	register_defined_predicate(NAME/ARITY),
-	(length(CLAUSES, N),
-	 default_setting(fact_block_threshold, T),
-	 N >= T,
-	 fact_block(CLAUSES),
-	 recorded(compress_facts, yes)
+	( ARITY > 0,
+	  length(CLAUSES, N),
+	  default_setting(fact_block_threshold, T),
+	  N >= T,
+	  fact_block(CLAUSES),
+	  recorded(compress_facts, yes)
 	-> compile_fact_block(NAME/ARITY, CLAUSES, S3, S2)
 	; build_index_to_type_map(CLAUSES, 1, MAP),
-	 compile_clause_list(CLAUSES, NAME/ARITY, MAP, S3, S2)
+	  compile_clause_list(CLAUSES, NAME/ARITY, MAP, S3, S2)
 	).
 
 compile_clause_list([CLAUSE], NAME/ARITY, [I/_], S1, S2) :-
@@ -26,7 +27,7 @@ compile_clause_list([CLAUSE], NAME/ARITY, [I/_], S1, S2) :-
 compile_clause_list([CLAUSE|MORE], NAME/ARITY, [I/T|MAP], S1, S2) :-
 	clause_label(NAME, ARITY, I, L1),
 	emit(label(L1)),
-	(I =:= 1
+	( I =:= 1
 	-> compile_clause_indexing(NAME, ARITY, [I/T|MAP], S1, S3)
 	; S3 = S1
 	),
@@ -61,11 +62,13 @@ fact_block([(_ :- _)|_]) :- !, fail.
 fact_block([H|R]) :- ground_term(H), !, fact_block(R).
 
 compile_fact_block(NA, CLAUSES, S1, S) :-
+	build_index_to_type_map(CLAUSES, 1, MAP),
+	type_map_first_indices(MAP, TABLE),
 	compile_facts(CLAUSES, DATA, S1, S2),
 	length(DATA, N1), DATA = [A1|_], length(A1, N2), N3 is N1 * N2,
 	message(['% compressed fact block ', NA, ': ', N1/N3]),
 	gen_label(L, S2, S),
-	emit(unify_facts(L, DATA)).
+	emit(unify_facts(L, DATA, TABLE)).
 
 compile_facts([], [], S, S).
 compile_facts([F|R], [D|ATA], S1, S) :-
