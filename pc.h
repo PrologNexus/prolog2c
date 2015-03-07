@@ -3762,23 +3762,14 @@ static FILE *get_output_port(X s) { return port_file(s == ZERO ? standard_output
 # define PROFILE_COUNTS
 #endif
 
-#ifdef USE_DELAY  
-# define EXIT(lbl)			     \
+#define EXIT(lbl)			     \
   { CALL_TRIGGERED(lbl);		     \
     TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY); \
+    PROFILE_COUNTS;			     \
     R = C0->R;				     \
     E = C0->E;				     \
     C0 = C0->C0;			     \
     goto *R; }
-#else
-# define EXIT(lbl)						\
-  { TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY);			\
-    PROFILE_COUNTS;						\
-    R = C0->R;							\
-    E = C0->E;							\
-    C0 = C0->C0;						\
-    goto *R; }
-#endif
 
 #define DETERMINATE_EXIT		     \
   { TRACE_EXIT(CURRENT_NAME, CURRENT_ARITY); \
