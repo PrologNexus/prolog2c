@@ -101,9 +101,9 @@ assemble(unify_facts(L, DATA, TABLE, TILEN, ITABLE, TALEN, ATABLE, TSLEN, STABLE
 	gen_label(L2, S1, S3),
 	gen_label(L3, S3, S4),
 	gen_label(L4, S4, S5),
-	gen_label(LIT, S4, S5),
-	gen_label(LAT, S5, S6),
-	gen_label(LST, S6, S2),
+	gen_label(LIT, S5, S6),
+	gen_label(LAT, S6, S7),
+	gen_label(LST, S7, S2),
 	gen('static int ', L4, '[]={'),
 	generate_data_list(TABLE),
 	gen('};\nstatic X ', L, '[]={'),
@@ -334,9 +334,9 @@ assemble_atom_dispatch(I, LEN, [I-(ATOM/LABEL)|MORE], NULL) :-
 	I2 is I + 1,
 	assemble_atom_dispatch(I2, LEN, MORE, NULL).
 assemble_atom_dispatch(I, LEN, ENTRIES, NULL) :-
-	gen('{NULL,', NULL, ','),
+	gen('{NULL,', NULL, '},'),
 	I2 is I + 1,
-	assemble_atom_dispatch(I2, LEN, ENTRIES).
+	assemble_atom_dispatch(I2, LEN, ENTRIES, NULL).
 
 assemble_structure_dispatch(I, I, _, _).
 assemble_structure_dispatch(I, LEN, [I-((N/A)/LABEL)|MORE], NULL) :-
