@@ -60,7 +60,8 @@ fact_block([]).
 fact_block([(_ :- _)|_]) :- !, fail.
 fact_block([H|R]) :- ground_term(H), !, fact_block(R).
 
-compile_fact_block(NA, CLAUSES, DMAP, S1, S) :-
+compile_fact_block(NA, CLAUSES, MAP, S1, S) :-
+	scan_indexing_types(MAP, [], DMAP),
 	type_map_first_indices(DMAP, TABLE),
 	compile_facts(CLAUSES, DATA, S1, S2),
 	length(DATA, N1), DATA = [A1|_], length(A1, N2), N3 is N1 * N2,
