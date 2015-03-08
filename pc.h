@@ -487,6 +487,7 @@ static XWORD trail_stack_gap_buffer_size = TRAIL_STACK_GAP_BUFFER_SIZE;
 static int gc_caused_by_trailing = 0;
 static X triggered_frozen_goals;
 static X first_distinct_variable;
+static int cycle_stack_overflowed = 0;
 
 #if defined(PROFILE) || defined(PROFILE_MEMORY)
 static PINFO system_pinfo = { .name = "<system>", .next = NULL };
@@ -535,6 +536,18 @@ static XCHAR *type_names[] = {
 # define DBG              OUTPUT
 # define DRIBBLE(...)     { if(verbose) OUTPUT(__VA_ARGS__); }
 #endif
+
+#ifdef DEBUGGING
+# define DBG_DRIBBLE(...)   DRIBBLE(__VA_ARGS__);
+#else
+# define DBG_DRIBBLE(...)
+#endif
+
+#define CHECK_CYCLE_STACK						\
+  { if(!cycle_stack_overflowed && cycle_stack_top + 2 >= cycle_stack + CYCLE_STACK_SIZE) { \
+      DRIBBLE("[cycle-stack overflow - cycle-checks may be ineffective]\n"); \
+      cycle_stack_overflowed = 1;					\
+      cycle_stack_top = cycle_stack; } }
 
 
 /// accessors and type-testing
@@ -1411,7 +1424,7 @@ static X deref_recursive(X val, int limit, int dup, int *failed)
     return val;
   }
 
-  ASSERT(cycle_stack_top + 2 < cycle_stack + CYCLE_STACK_SIZE, "cycle-stack overflow");
+  CHECK_CYCLE_STACK;
   *(cycle_stack_top++) = val;
   X *oldtop = alloc_top;	/* for restoration in case term is ground */
   ALLOCATE_BLOCK(BLOCK *p, objtype(val), s);
@@ -1521,7 +1534,7 @@ static X freeze_term_recursive(X x)
     if(*ptr == x) return ptr[ 1 ];
   }
 
-  ASSERT(cycle_stack_top + 2 < cycle_stack + CYCLE_STACK_SIZE, "cycle-stack overflow");
+  CHECK_CYCLE_STACK;
   *(cycle_stack_top++) = x;
   XWORD size = objsize(x);
   XWORD i = 0;
@@ -1621,7 +1634,7 @@ static int thaw_term_recursive(X *xp)
     }
   }
 
-  ASSERT(cycle_stack_top + 2 < cycle_stack + CYCLE_STACK_SIZE, "cycle-stack overflow");
+  CHECK_CYCLE_STACK;
   *(cycle_stack_top++) = x;
   XWORD i = 0;
   XWORD size = objsize(x);
@@ -1741,14 +1754,14 @@ static int check_cycles_recursive(X x)
     if(x == y) return 0;
 
     //XXX just set x to y and fall through?
-    ASSERT(cycle_stack_top + 1 < cycle_stack + CYCLE_STACK_SIZE, "cycle-stack overflow");
+    CHECK_CYCLE_STACK;
     *(cycle_stack_top++) = y;
     int r = check_cycles_recursive(y);
     --cycle_stack_top;
     return r;
   }
 
-  ASSERT(cycle_stack_top + 1 < cycle_stack + CYCLE_STACK_SIZE, "cycle-stack overflow");
+  CHECK_CYCLE_STACK;
   *(cycle_stack_top++) = x;
   XWORD size = objsize(x);
   XWORD i = 0;
@@ -1792,7 +1805,7 @@ static int check_ground_recursive(X x)
     return check_ground_recursive(y);
   }
 
-  ASSERT(cycle_stack_top + 1 < cycle_stack + CYCLE_STACK_SIZE, "cycle-stack overflow");
+  CHECK_CYCLE_STACK;
   *(cycle_stack_top++) = x;
   XWORD size = objsize(x);
   XWORD i = 0;
@@ -2940,7 +2953,7 @@ static int unify2(CHOICE_POINT *C0, X x, X y)
     else if(*ptr == y) return ptr[ 1 ] == y;
   }
 
-  ASSERT(cycle_stack_top + 2 < cycle_stack + CYCLE_STACK_SIZE, "cycle-stack overflow");
+  CHECK_CYCLE_STACK;
   *(cycle_stack_top++) = x;
   *(cycle_stack_top++) = y;
 
