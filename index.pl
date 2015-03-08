@@ -107,71 +107,29 @@ compile_dispatch_sequence([I/var], N, A, _, S, S) :-
 	secondary_clause_label(N, A, I, L),
 	emit(jump(L)).
 compile_dispatch_sequence([I1/atom(ATM1)|DMAP], N, A, XS, S1, S2) :-
-	%%XXX refactor this
-	findall(X, (member(X, DMAP), X = _/atom(_)), ACASES),
-	default_setting(atom_table_index_threshold, T),
-	length(ACASES, TL),
-	TL >= T - 1,		% including first element
-	secondary_clause_label(N, A, I1, L1),
-	findall(ATM/LABEL, (member(I/atom(ATM), ACASES),
-			    secondary_clause_label(N, A, I, LABEL)),
-		TABLE),
+	build_dispatch_table(N/A, atom, atom_table_index_threshold, [I1/atom(ATM1)|DMAP],
+			     ENTRIES3, TLEN, DMAP2),
+	findall(KEY-ATOM/LABEL, (member(KEY-ATOM/INDEX, ENTRIES3),
+				 secondary_clause_label(N, A, INDEX, LABEL) ),
+		ENTRIES4),
 	gen_label(LX, S1, S3),
-	length(TABLE, LEN),
-	default_setting(dispatch_table_size_factor, F),
-	TLEN is F * (LEN + 1),
-	findall(KEY-(ATOM/LABEL),
-		(member(ATOM/LABEL, [ATM1/L1|TABLE]),
-		 atom_hash(ATOM, HASH),
-		 KEY is HASH rem TLEN),
-		ENTRIES),
-	keysort(ENTRIES, ENTRIES2),
-	adjust_dispatch_table(ENTRIES2, TLEN, ENTRIES3, DUPS),
-	message(['% collisions in atom-dispatch table for ', N/A, ': ', DUPS/TLEN]),
-	emit(switch_and_dispatch_on_atom(ENTRIES3, TLEN, LX)),
-	subtract(DMAP, ACASES, DMAP2),
+	emit(switch_and_dispatch_on_atom(ENTRIES4, TLEN, LX)),
 	compile_dispatch_sequence(DMAP2, N, A, XS, S3, S2).
 compile_dispatch_sequence([I1/structure(NA1)|DMAP], N, A, XS, S1, S2) :-
-	findall(X, (member(X, DMAP), X = _/structure(_)), SCASES),
-	compile_structure_dispatch_sequence(I1, NA1, DMAP, SCASES, N, A, XS, S1, S2).
+	build_dispatch_table(N/A, structure, structure_table_index_threshold,
+			     [I1/structure(NA1)|DMAP], ENTRIES3, TLEN, DMAP2),
+	findall(KEY-NA/LABEL, (member(KEY-NA/INDEX, ENTRIES3),
+			       secondary_clause_label(N, A, INDEX, LABEL) ),
+		ENTRIES4),
+	gen_label(LX, S1, S3),
+	emit(switch_and_dispatch_on_structure(ENTRIES4, TLEN, LX)),
+	compile_dispatch_sequence(DMAP2, N, A, XS, S3, S2).
 compile_dispatch_sequence([I/T|DMAP], N, A, XS, S1, S2) :-
 	dispatch_instruction(T, INSTNAME),
 	secondary_clause_label(N, A, I, L),
 	INST =.. [INSTNAME, L],
 	emit(INST),
  	compile_dispatch_sequence(DMAP, N, A, XS, S1, S2).
-
-compile_structure_dispatch_sequence(I1, NA1, DMAP, SCASES, N, A, XS, S1, S2) :-
-	%%XXX refactor this
-	length(SCASES, TL),
-	default_setting(structure_table_index_threshold, T),
-	TL >= T - 1,		% including first element
-	secondary_clause_label(N, A, I1, L1),
-	findall(NA/LABEL, (member(I/structure(NA), SCASES),
-			   secondary_clause_label(N, A, I, LABEL)),
-		TABLE),
-	gen_label(LX, S1, S3),
-	length(TABLE, LEN),
-	default_setting(dispatch_table_size_factor, F),
-	TLEN is F * (LEN + 1),
-	findall(KEY-(NA/LABEL),
-		(member(NA/LABEL, [NA1/L1|TABLE]),
-		 NA = NAME/ARITY,
-		 atom_hash(NAME, HASH1), HASH is HASH1 + ARITY, 
-		 KEY is HASH rem TLEN),
-		ENTRIES),
-	keysort(ENTRIES, ENTRIES2),
-	adjust_dispatch_table(ENTRIES2, TLEN, ENTRIES3, DUPS),
-	message(['% collisions in structure-dispatch table for ', N/A, ': ', DUPS/TLEN]),
-	emit(switch_and_dispatch_on_structure(ENTRIES3, TLEN, LX)),
-	subtract(DMAP, SCASES, DMAP2),
-	compile_dispatch_sequence(DMAP2, N, A, XS, S3, S2).
-compile_structure_dispatch_sequence(I1, _, DMAP, SCASES, N, A, XS, S1, S2) :-
-	% theshold not reached, eliminate remaining structure cases
-	subtract(DMAP, SCASES, DMAP2),
-	secondary_clause_label(N, A, I1, L),
-	emit(switch_on_structure(L)),
- 	compile_dispatch_sequence(DMAP2, N, A, XS, S1, S2).
 	
 
 %% integer already handled
@@ -240,11 +198,6 @@ type_map_first_indices([_|R], I, A, N, P, S, TABLE) :-
 
 %% build hash-table from elements in dispatch map, mapping
 %  element-hashes to clause-indices (used for fact-blocks)
-%
-% XXX even though this is a slight generalization of the hash-table
-% creating code above (in the secondary indexing of normal clauses),
-% it is not used there - here we map hashes to clause-indexes,
-% there we map to (secondary) clause labels.
 
 build_dispatch_table(NA, DFUNCTOR, THRESHOLD, DMAP, DTABLE, TLEN, DMAP2) :-
 	findall(X, (member(X, DMAP), X = _/DMATCH, functor(DMATCH, DFUNCTOR, 1)), CASES),
