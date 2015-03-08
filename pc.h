@@ -270,6 +270,7 @@ typedef struct BLOCK_STRUCTURE_DISPATCH
 {
   X name;
   int arity;
+  XWORD index;
 } BLOCK_STRUCTURE_DISPATCH;
 
 typedef struct SYMBOL_DISPATCH
@@ -2967,8 +2968,8 @@ static int unify_args(CHOICE_POINT *C0, X *A, X *args)
 
 static int unify_block(CHOICE_POINT *C0, X *A, int arity, int *typemap, 
 		       int ilen, BLOCK_INTEGER_DISPATCH *itable, 
-		       int alen, BLOCK_INTEGER_DISPATCH *atable, 
-		       int slen, BLOCK_INTEGER_DISPATCH *stable)
+		       int alen, BLOCK_SYMBOL_DISPATCH *atable, 
+		       int slen, BLOCK_STRUCTURE_DISPATCH *stable)
 {
   X *args = A[ arity ];
   X *tp = trail_top;
@@ -2995,7 +2996,7 @@ static int unify_block(CHOICE_POINT *C0, X *A, int arity, int *typemap,
 	      goto enter;
 	    }
     
-	    if(tnum == NULL) break;
+	    if(itable[ key ].index == 0) break;
 
 	    key = (key + 1) % ilen;
 	  }
@@ -3976,14 +3977,14 @@ static FILE *get_output_port(X s) { return port_file(s == ZERO ? standard_output
 #define RETHROW       throw_exception(catch_top->ball)
 
 #define UNIFY_BLOCK(dl, rl, xl, tl, ilen, it, alen, at, slen, st)	\
-  { SET_REDO(&&rl);					\
-    *(arg_top++) = (X *)dl;				\
-    *(arg_top++) = (X *)dl;				\
-    C0->arg_top += 2;					\
-  rl:							\
-    if(!unify_block(C0, A, CURRENT_ARITY, tl, ilen, it, aöen, at, slen, st)) { \
-      SET_REDO(NULL); 					\
-      FAIL; }						\
+  { SET_REDO(&&rl);							\
+    *(arg_top++) = (X *)dl;						\
+    *(arg_top++) = (X *)dl;						\
+    C0->arg_top += 2;							\
+  rl:									\
+    if(!unify_block(C0, A, CURRENT_ARITY, tl, ilen, it, alen, at, slen, st)) { \
+      SET_REDO(NULL);							\
+      FAIL; }								\
     BLOCK_EXIT(xl); }
 
 #define BLOCK_EXIT(lbl)						\
