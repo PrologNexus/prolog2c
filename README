@@ -115,6 +115,7 @@ Usage
     -I DIRECTORY            add DIRECTORY to the current include-
                             path.
     -q                      do not show any output while compiling.
+    -compress-facts         reduce code produced for facts (see below)
 
   Any output preceeded with "%" is purely for informational purposes
   and can be disabled with the "-q" option.
@@ -1339,6 +1340,20 @@ Performance tips
   Any use of delay/2, freeze/2 or dif/2 will have a detrimental impact
   on overall performance.
 
+  As large sets of facts can increase Code-size and C compile-times
+  considerably, a mode is provided that reduces the amount of code
+  generated for sets of body-less clauses, provided all arguments in
+  the definition are ground. This has a negative impact on overall
+  speed but scales better in programs that use large fact databases.
+  To use this feature, compile your program with the "-compress-facts"
+  option.
+
+  For large programs it may be necessary to increase the sizes of one
+  or more data areas in the compiler (which is itself just another
+  Prolog program.) In such a case, use the appropriate runtime options
+  to increase the default sizes, as described in the "Limitations"
+  section.
+
   You can use the built-in statistical profiler to examine the time
   spent in the predicates of your program by compiling the generated C
   code with the "-DPROFILE" C compiler option. On successful
@@ -1725,6 +1740,7 @@ Limitations
     Choice-point stack  CHOICE_POINT_STACK_SIZE   -:C<SIZE>     10,000,000
     Environment-stack   ENVIRONMENT_STACK_SIZE    -:E<SIZE>     10,000,000
     Argument-stack      ARGUMENT_STACK_SIZE       -:A<SIZE>     10,000,000
+    Shared-term table   SHARED_TERM_TABLE_SIZE    -:S<SIZE>        100,000
 
   All sizes are in bytes, with the exception of "heap reserve", which
   is a percentage of the total heap-size, which is kept free to

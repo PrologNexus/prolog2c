@@ -9,6 +9,7 @@ compile_clauses(NAME/ARITY, CLAUSES, S1, S2) :-
 	register_defined_predicate(NAME/ARITY),
 	build_index_to_type_map(CLAUSES, 1, MAP),
 	( ARITY > 0,
+	  recorded(compress_facts, yes),
 	  length(CLAUSES, N),
 	  default_setting(fact_block_threshold, T),
 	  N >= T,
