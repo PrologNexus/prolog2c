@@ -97,16 +97,42 @@ assemble(unify_args(L, NS), S, S) :-
 	gen('static X ', L, '[]={'),
 	generate_literal_list(NS),
 	gen('NULL};\nif(!unify_args(C0,A,', L, ')) FAIL;\n').
-assemble(unify_facts(L, DATA, TABLE), S1, S2) :-
+assemble(unify_facts(L, DATA, TABLE, TILEN, ITABLE, TALEN, ATABLE, TSLEN, STABLE), S1, S2) :-
 	gen_label(L2, S1, S3),
 	gen_label(L3, S3, S4),
-	gen_label(L4, S4, S2),
+	gen_label(L4, S4, S5),
+	gen_label(LIT, S4, S5),
+	gen_label(LAT, S5, S6),
+	gen_label(LST, S6, S2),
 	gen('static int ', L4, '[]={'),
 	generate_data_list(TABLE),
 	gen('};\nstatic X ', L, '[]={'),
 	forall(member(XS, DATA), generate_literal_list(XS)),
-	gen('NULL};\nUNIFY_BLOCK(', L, ',', L2),
-	gen(',', L3, ',', L4, ');\n').
+	gen('NULL};\n'),
+	( ITABLE == none
+	-> LLIT = 'NULL'
+	; gen('static BLOCK_INTEGER_DISPATCH ', LIT, '[]={'),
+	  assemble_integer_dispatch(0, TILEN, ITABLE),
+	  gen('};\n'),
+	  LLIT = LIT
+	),
+	( ATABLE == none
+	-> LLAT = 'NULL'
+	; gen('static BLOCK_SYMBOL_DISPATCH ', LAT, '[]={'),
+	  assemble_atom_dispatch(0, TALEN, ATABLE),
+	  gen('};\n'),
+	  LLAT = LAT
+	),
+	( STABLE == none
+	-> LLST = 'NULL'
+	; gen('static BLOCK_STRUCTURE_DISPATCH ', LST, '[]={'),
+	  assemble_structure_dispatch(0, TSLEN, STABLE),
+	  gen('};\n'),
+	  LLST = LST
+	),
+	gen_list(['UNIFY_BLOCK(', L, ',', L2, ',', L3, ',', L4, ',', TILEN,
+		  ',', LLIT, ',', TALEN, ',', LLAT, ',', TSLEN, ',', LLST,
+		  ');\n']).
 
 assemble(make_term(RLIST, R), S, S) :-
 	length(RLIST, N),
@@ -289,11 +315,22 @@ assemble_arguments([X|MORE], I) :-
 
 %% assemble dispatch table
 
+assemble_integer_dispatch(I, I, _).
+assemble_integer_dispatch(I, LEN, [I-(INT/LABEL)|MORE]) :-
+	!,
+	gen('{', INT, ','), gen_label_or_index(LABEL), gen('},'),
+	I2 is I + 1,
+	assemble_integer_dispatch(I2, LEN, MORE).
+assemble_integer_dispatch(I, LEN, ENTRIES) :-
+	gen('{0,0},'),
+	I2 is I + 1,
+	assemble_integer_dispatch(I2, LEN, ENTRIES).
+
 assemble_atom_dispatch(I, I, _).
 assemble_atom_dispatch(I, LEN, [I-(ATOM/LABEL)|MORE]) :-
 	!,
 	mangle_name(ATOM, NAME),
-	gen('{(X)SYMBOL', NAME, ',&&', LABEL, '},'),
+	gen('{(X)SYMBOL', NAME, ','), gen_label_or_index(LABEL), gen('},'),
 	I2 is I + 1,
 	assemble_atom_dispatch(I2, LEN, MORE).
 assemble_atom_dispatch(I, LEN, ENTRIES) :-
@@ -305,13 +342,16 @@ assemble_structure_dispatch(I, I, _).
 assemble_structure_dispatch(I, LEN, [I-((N/A)/LABEL)|MORE]) :-
 	!,
 	mangle_name(N, NAME),
-	gen('{(X)SYMBOL', NAME, ',', A), gen(',&&', LABEL, '},'),
+	gen('{(X)SYMBOL', NAME, ',', A, ','), gen_label_or_index(LABEL), gen('},'),
 	I2 is I + 1,
 	assemble_structure_dispatch(I2, LEN, MORE).
 assemble_structure_dispatch(I, LEN, ENTRIES) :-
 	gen('{NULL,0,NULL},'),
 	I2 is I + 1,
 	assemble_structure_dispatch(I2, LEN, ENTRIES).
+
+gen_label_or_index(X) :- integer(X), !, gen(X).
+gen_label_or_index(X) :- gen('&&', X).
 
 
 %% generate literal data

@@ -107,6 +107,7 @@ compile_dispatch_sequence([I/var], N, A, _, S, S) :-
 	secondary_clause_label(N, A, I, L),
 	emit(jump(L)).
 compile_dispatch_sequence([I1/atom(ATM1)|DMAP], N, A, XS, S1, S2) :-
+	%%XXX refactor this
 	findall(X, (member(X, DMAP), X = _/atom(_)), ACASES),
 	default_setting(atom_table_index_threshold, T),
 	length(ACASES, TL),
@@ -141,6 +142,7 @@ compile_dispatch_sequence([I/T|DMAP], N, A, XS, S1, S2) :-
  	compile_dispatch_sequence(DMAP, N, A, XS, S1, S2).
 
 compile_structure_dispatch_sequence(I1, NA1, DMAP, SCASES, N, A, XS, S1, S2) :-
+	%%XXX refactor this
 	length(SCASES, TL),
 	default_setting(structure_table_index_threshold, T),
 	TL >= T - 1,		% including first element
@@ -213,7 +215,8 @@ find_free_dispatch_table_entry(I, _, _, I).
 
 
 %% create table of first clause-indices in set of clauses, with one
-%% entry per type, from type-map
+%% entry per type, from type-map (used in first-level claus-indexing
+%% for fact-blocks)
 %
 % TABLE = [INTEGER, ATOM, NULL, PAIR, STRUCTURE]
 
@@ -233,3 +236,38 @@ type_map_first_indices([C/structure(_)|R], I, A, N, P, 0, TABLE) :-
 	type_map_first_indices(R, I, A, N, P, C, TABLE).
 type_map_first_indices([_|R], I, A, N, P, S, TABLE) :-
 	type_map_first_indices(R, I, A, N, P, S, TABLE).
+
+
+%% build hash-table from elements in dispatch map, mapping
+%  element-hashes to clause-indices (used for fact-blocks)
+%
+% XXX even though this is a slight generalization of the hash-table
+% creating code above (in the secondary indexing of normal clauses),
+% it is not used there - here we map hashes to clause-indexes,
+% there we map to (secondary) clause labels.
+
+build_dispatch_table(NA, DFUNCTOR, THRESHOLD, DMAP, DTABLE, TLEN, DMAP2) :-
+	findall(X, (member(X, DMAP), X = _/DMATCH, functor(DMATCH, DFUNCTOR, 1)), CASES),
+	length(CASES, TL),
+	default_setting(THRESHOLD, T), TL >= T,
+	%% match atom(X), integer(X), structure(X)
+	findall(ITEM/LABEL, (member(LABEL/CASE, CASES), arg(1, CASE, ITEM)), TABLE),
+	length(TABLE, LEN),
+	default_setting(dispatch_table_size_factor, F),
+	TLEN is F * LEN,
+	findall(KEY-(ITEM/LABEL),
+		(member(ITEM/LABEL, TABLE),
+		 build_dispatch_table_entry(ITEM, HASH),
+		 KEY is HASH rem TLEN),
+		ENTRIES),
+	keysort(ENTRIES, ENTRIES2),
+	adjust_dispatch_table(ENTRIES2, TLEN, DTABLE, DUPS),
+	message(['% collisions in ', DFUNCTOR, ' dispatch table for ', NA, ': ', DUPS/TLEN]),
+	subtract(DMAP, CASES, DMAP2).
+
+build_dispatch_table_entry(NAME/ARITY, HASH) :-
+	!, atom_hash(NAME, HASH1), HASH is HASH1 + ARITY.
+build_dispatch_table_entry(INT, INT) :-
+	integer(INT), !.
+build_dispatch_table_entry(ATOM, HASH) :-
+	atom_hash(ATOM, HASH).

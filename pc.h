@@ -254,6 +254,24 @@ typedef struct TRAIL_STACK_GAP
   XWORD size; 
 } TRAIL_STACK_GAP;
 
+typedef struct BLOCK_INTEGER_DISPATCH
+{
+  XWORD num;
+  XWORD index;
+} BLOCK_INTEGER_DISPATCH;
+
+typedef struct BLOCK_SYMBOL_DISPATCH
+{
+  X symbol;
+  XWORD index;
+} BLOCK_SYMBOL_DISPATCH;
+
+typedef struct BLOCK_STRUCTURE_DISPATCH
+{
+  X name;
+  int arity;
+} BLOCK_STRUCTURE_DISPATCH;
+
 typedef struct SYMBOL_DISPATCH
 {
   X symbol;
@@ -2947,7 +2965,10 @@ static int unify_args(CHOICE_POINT *C0, X *A, X *args)
 }
 
 
-static int unify_block(CHOICE_POINT *C0, X *A, int arity, int *typemap)
+static int unify_block(CHOICE_POINT *C0, X *A, int arity, int *typemap, 
+		       int ilen, BLOCK_INTEGER_DISPATCH *itable, 
+		       int alen, BLOCK_INTEGER_DISPATCH *atable, 
+		       int slen, BLOCK_INTEGER_DISPATCH *stable)
 {
   X *args = A[ arity ];
   X *tp = trail_top;
@@ -2960,8 +2981,28 @@ static int unify_block(CHOICE_POINT *C0, X *A, int arity, int *typemap)
     // typemap: { INT1, ATOM1, NULL1, PAIR1, STRUCTURE1 }
     // fixnum first
     if(is_FIXNUM(A0)) {
-      if(typemap[ 0 ]) 
+      if(typemap[ 0 ]) {
+	if(itable) {
+	  // secondary clause-indexing for integer case
+	  XWORD num = fixnum_to_word(A0);
+	  XWORD key = (num < 0 ? -num : num) % ilen;
+
+	  for(;;) {
+	    XWORD tnum = itable[ key ].num;
+	    
+	    if(tnum == num) {
+	      args += arity * (itable[ key ].index - 1);
+	      goto enter;
+	    }
+    
+	    if(tnum == NULL) break;
+
+	    key = (key + 1) % ilen;
+	  }
+	}
+
 	args += arity * (typemap[ 0 ] - 1);
+      }
     }
     else if(!is_VAR(A0)) {	/* var? start with first clause */
       if(A0 == END_OF_LIST_VAL) {
@@ -2969,20 +3010,61 @@ static int unify_block(CHOICE_POINT *C0, X *A, int arity, int *typemap)
 	  args += arity * (typemap[ 2 ] - 1);
       }
       else if(is_SYMBOL(A0)) {
-	if(typemap[ 1 ])
+	if(typemap[ 1 ]) {
+	  if(atable) {
+	    // secondary clause-indexing for atom case
+	    XWORD key = fixnum_to_word(slot_ref(A0, 2)) % alen;
+
+	    for(;;) {
+	      X tsym = atable[ key ].symbol;
+
+	      if(tsym == A0) {
+		args += arity * (atable[ key ].index - 1);
+		goto enter;
+	      }
+    
+	      if(tsym == NULL) break;
+
+	      key = (key + 1) % alen;
+	    }
+	  }
+	  
 	  args += arity * (typemap[ 1 ] - 1);
+	}
       }
       else if(is_PAIR(A0)) {
 	if(typemap[ 3 ]) 
 	  args += arity * (typemap[ 3 ] - 1);
       }
       else if(is_STRUCTURE(A0)) {
-	if(typemap[ 4 ]) 
+	if(typemap[ 4 ]) {
+	  if(stable) {
+	    // secondary clause-indexing for structure case
+	    X sym = slot_ref(A0, 0);
+	    int sarity = objsize(A0) - 1;
+	    XWORD key = (fixnum_to_word(slot_ref(sym, 2)) + sarity) % slen;
+
+	    for(;;) {
+	      X tsym = stable[ key ].name;
+	      
+	      if(tsym == sym && stable[ key ].arity == sarity) {
+		args += arity * (stable[ key ].index - 1);
+		goto enter;
+	      }
+	      
+	      if(tsym == NULL) break;
+	      
+	      key = (key + 1) % slen;
+	    }
+	  }
+	  
 	  args += arity * (typemap[ 4 ] - 1);
+	}
       }
     }
   }
 
+ enter:
   while(*args != NULL) {	/* loop over facts */
     int i;
 
@@ -3893,13 +3975,13 @@ static FILE *get_output_port(X s) { return port_file(s == ZERO ? standard_output
 
 #define RETHROW       throw_exception(catch_top->ball)
 
-#define UNIFY_BLOCK(dl, rl, xl, tl)			\
+#define UNIFY_BLOCK(dl, rl, xl, tl, ilen, it, alen, at, slen, st)	\
   { SET_REDO(&&rl);					\
     *(arg_top++) = (X *)dl;				\
     *(arg_top++) = (X *)dl;				\
     C0->arg_top += 2;					\
   rl:							\
-    if(!unify_block(C0, A, CURRENT_ARITY, tl)) {	\
+    if(!unify_block(C0, A, CURRENT_ARITY, tl, ilen, it, aöen, at, slen, st)) { \
       SET_REDO(NULL); 					\
       FAIL; }						\
     BLOCK_EXIT(xl); }

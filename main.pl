@@ -9,7 +9,6 @@
 %   -o FILENAME             override output file name (default: <SOURCE_FILE>.c)
 %   -I FILENAME             add FILENAME to include-path
 %   -q                      disable any output
-%   -compress-facts         compress blocks of facts with ground arguments
 %
 % - The contents of PC_INCLUDE_PATH are prepended to the default include-path.
 
@@ -54,9 +53,6 @@ parse_arguments(['-I', DIR|MORE]) :-
 	erase(REF),
 	recorda(include_path, [DIR|OLD]),
 	parse_arguments(MORE).
-parse_arguments(['-compress-facts'|MORE]) :-
-	recordz(compress_facts, yes),
-	parse_arguments(MORE).
 parse_arguments(['-h'|_]) :- usage(0).
 parse_arguments(['-help'|_]) :- usage(0).
 parse_arguments(['--help'|_]) :- usage(0).
@@ -73,6 +69,5 @@ parse_arguments([INFILE|MORE]) :-
 parse_arguments(_) :- usage(1).
 
 usage(STATUS) :-
-	gen('usage: pc [-version] [-h] [-v] [-o FILENAME] [-i] [-I DIRECTORY]',
-	    '[-compress-facts] [FILENAME]\n'),
+	gen('usage: pc [-version] [-h] [-v] [-o FILENAME] [-i] [-I DIRECTORY] [FILENAME]\n'),
 	halt(STATUS).
