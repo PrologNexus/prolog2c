@@ -77,7 +77,7 @@ NOTES											              -*- Org -*-
 ** Deref arguments in advance
 ** Use power-of-2 sized hash-tables 
    - use binary-and instead of mod operation.
-Q** If clause contains a single tail-call, CP-creation could be avoided
+** If clause contains a single tail-call, CP-creation could be avoided
    - saves little, though.
 ** Remove unused predicates
    - could be done in assembly-stage
