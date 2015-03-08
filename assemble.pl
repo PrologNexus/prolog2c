@@ -112,21 +112,21 @@ assemble(unify_facts(L, DATA, TABLE, TILEN, ITABLE, TALEN, ATABLE, TSLEN, STABLE
 	( ITABLE == none
 	-> LLIT = 'NULL'
 	; gen('static BLOCK_INTEGER_DISPATCH ', LIT, '[]={'),
-	  assemble_integer_dispatch(0, TILEN, ITABLE),
+	  assemble_integer_dispatch(0, TILEN, ITABLE, 0),
 	  gen('};\n'),
 	  LLIT = LIT
 	),
 	( ATABLE == none
 	-> LLAT = 'NULL'
 	; gen('static BLOCK_SYMBOL_DISPATCH ', LAT, '[]={'),
-	  assemble_atom_dispatch(0, TALEN, ATABLE),
+	  assemble_atom_dispatch(0, TALEN, ATABLE, '0'),
 	  gen('};\n'),
 	  LLAT = LAT
 	),
 	( STABLE == none
 	-> LLST = 'NULL'
 	; gen('static BLOCK_STRUCTURE_DISPATCH ', LST, '[]={'),
-	  assemble_structure_dispatch(0, TSLEN, STABLE),
+	  assemble_structure_dispatch(0, TSLEN, STABLE, '0'),
 	  gen('};\n'),
 	  LLST = LST
 	),
@@ -277,14 +277,14 @@ assemble(switch_on_structure(L), S, S) :- gen('if(is_STRUCTURE(A[0])) goto ', L,
 assemble(switch_and_dispatch_on_atom(ENTRIES, TLEN, LX), S, S) :-
 	gen('if(!is_SYMBOL(A[0])) goto ', LX, ';\n'),
 	gen('static SYMBOL_DISPATCH dt_', LX, '[]={'),
-	assemble_atom_dispatch(0, TLEN, ENTRIES),
+	assemble_atom_dispatch(0, TLEN, ENTRIES, 'NULL'),
 	gen('};\nDISPATCH_ON_SYMBOL(dt_', LX, ','),
 	gen(LX, ',', TLEN),
 	gen(');\n', LX, ':\n').
 assemble(switch_and_dispatch_on_structure(ENTRIES, TLEN, LX), S, S) :-
 	gen('if(!is_STRUCTURE(A[0])) goto ', LX, ';\n'),
 	gen('static STRUCTURE_DISPATCH dt_', LX, '[]={'),
-	assemble_structure_dispatch(0, TLEN, ENTRIES),
+	assemble_structure_dispatch(0, TLEN, ENTRIES, 'NULL'),
 	gen('};\nDISPATCH_ON_STRUCTURE(dt_', LX, ','),
 	gen(LX, ',', TLEN),
 	gen(');\n', LX, ':\n').
@@ -315,40 +315,40 @@ assemble_arguments([X|MORE], I) :-
 
 %% assemble dispatch table
 
-assemble_integer_dispatch(I, I, _).
-assemble_integer_dispatch(I, LEN, [I-(INT/LABEL)|MORE]) :-
+assemble_integer_dispatch(I, I, _, _).
+assemble_integer_dispatch(I, LEN, [I-(INT/LABEL)|MORE], NULL) :-
 	!,
 	gen('{', INT, ','), gen_label_or_index(LABEL), gen('},'),
 	I2 is I + 1,
-	assemble_integer_dispatch(I2, LEN, MORE).
-assemble_integer_dispatch(I, LEN, ENTRIES) :-
-	gen('{0,0},'),
+	assemble_integer_dispatch(I2, LEN, MORE, NULL).
+assemble_integer_dispatch(I, LEN, ENTRIES, NULL) :-
+	gen('{0,', NULL, '},'),
 	I2 is I + 1,
-	assemble_integer_dispatch(I2, LEN, ENTRIES).
+	assemble_integer_dispatch(I2, LEN, ENTRIES, NULL).
 
-assemble_atom_dispatch(I, I, _).
-assemble_atom_dispatch(I, LEN, [I-(ATOM/LABEL)|MORE]) :-
+assemble_atom_dispatch(I, I, _, _).
+assemble_atom_dispatch(I, LEN, [I-(ATOM/LABEL)|MORE], NULL) :-
 	!,
 	mangle_name(ATOM, NAME),
 	gen('{(X)SYMBOL', NAME, ','), gen_label_or_index(LABEL), gen('},'),
 	I2 is I + 1,
-	assemble_atom_dispatch(I2, LEN, MORE).
-assemble_atom_dispatch(I, LEN, ENTRIES) :-
-	gen('{NULL,NULL},'),
+	assemble_atom_dispatch(I2, LEN, MORE, NULL).
+assemble_atom_dispatch(I, LEN, ENTRIES, NULL) :-
+	gen('{NULL,', NULL, ','),
 	I2 is I + 1,
 	assemble_atom_dispatch(I2, LEN, ENTRIES).
 
-assemble_structure_dispatch(I, I, _).
-assemble_structure_dispatch(I, LEN, [I-((N/A)/LABEL)|MORE]) :-
+assemble_structure_dispatch(I, I, _, _).
+assemble_structure_dispatch(I, LEN, [I-((N/A)/LABEL)|MORE], NULL) :-
 	!,
 	mangle_name(N, NAME),
 	gen('{(X)SYMBOL', NAME, ',', A, ','), gen_label_or_index(LABEL), gen('},'),
 	I2 is I + 1,
-	assemble_structure_dispatch(I2, LEN, MORE).
-assemble_structure_dispatch(I, LEN, ENTRIES) :-
-	gen('{NULL,0,NULL},'),
+	assemble_structure_dispatch(I2, LEN, MORE, NULL).
+assemble_structure_dispatch(I, LEN, ENTRIES, NULL) :-
+	gen('{NULL,0,', NULL, '},'),
 	I2 is I + 1,
-	assemble_structure_dispatch(I2, LEN, ENTRIES).
+	assemble_structure_dispatch(I2, LEN, ENTRIES, NULL).
 
 gen_label_or_index(X) :- integer(X), !, gen(X).
 gen_label_or_index(X) :- gen('&&', X).
