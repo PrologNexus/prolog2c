@@ -75,7 +75,9 @@ NOTES											              -*- Org -*-
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
 ** Deref arguments in advance
-** If clause contains a single tail-call, CP-creation could be avoided
+** Use power-of-2 sized hash-tables 
+   - use binary-and instead of mod operation.
+Q** If clause contains a single tail-call, CP-creation could be avoided
    - saves little, though.
 ** Remove unused predicates
    - could be done in assembly-stage
