@@ -7,6 +7,9 @@ gen(T1, T2, T3) :- gen(T1, T2), gen(T3).
 gen(T1, T2, T3, T4) :- gen(T1, T2, T3), gen(T4).
 gen(T1, T2, T3, T4, T5) :- gen(T1, T2, T3, T4), gen(T5).
 
+gen_list([]).
+gen_list([X|R]) :- gen(X), !, gen_list(R).
+
 error(MSG) :-
 	current_error_output(ERR), tell(ERR),
 	display('ERROR: '),
