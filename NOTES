@@ -219,11 +219,8 @@ NOTES											              -*- Org -*-
    - would have to disable flonum-parsing in rdtok, which needs
      conditional, depending on variant (with flonums or without)
 ** DONE /compress-facts/ (special case long lists of facts)
-   - but what about clause-indexing? perhaps compile only blocks of
-     facts after indexing-jump?
-     - perhaps just make this optional ("-compress-facts")
-     - could build decision-tree from all clause-arguments to allow more
-       efficient dispatch.
+   - pi: code size reduced, but 0085-boyer is much slower (3.3 vs 2.3
+     secs).
 * Runtime
 ** TODO Use macro to check for exceeded heap-limit
 * Tests
