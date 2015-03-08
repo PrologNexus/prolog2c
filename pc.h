@@ -81,6 +81,10 @@
 # define SYMBOL_TABLE_SIZE 3001
 #endif
 
+#ifndef SHARED_TERM_TABLE_SIZE
+# define SHARED_TERM_TABLE_SIZE 100000
+#endif
+
 
 // percentages
 #ifndef HEAP_RESERVE
@@ -464,6 +468,7 @@ static int global_variable_counter = 0;
 static int initial_global_variable_count;
 static X *shared_term_table;
 static XWORD *shared_term_table_positions;
+static XWORD shared_term_table_size;
 static int shared_term_counter;
 static X *cycle_stack, *cycle_stack_top;
 static XCHAR *string_buffer, *string_buffer_top;
@@ -1263,7 +1268,7 @@ static void clear_shared_term_table()
 
 static X *lookup_shared_term(X x, int addnew)
 {
-  XWORD key = (unsigned long)x % SHARED_TERM_TABLE_SIZE;
+  XWORD key = (unsigned long)x % shared_term_table_size;
   int f = 0;
   key *= 2;
 
@@ -1277,7 +1282,7 @@ static X *lookup_shared_term(X x, int addnew)
 
     key += 2;			// try next
     
-    if(key >= (SHARED_TERM_TABLE_SIZE * 2)) { /* beyond table size? */
+    if(key >= (shared_term_table_size * 2)) { /* beyond table size? */
       ASSERT(!f, "shared term table full");
       f = 1;
       key = 0;			/* start over from the beginning */
@@ -2395,6 +2400,7 @@ static void initialize(int argc, char *argv[])
   choice_point_stack_size = CHOICE_POINT_STACK_SIZE;
   trail_stack_size = TRAIL_STACK_SIZE;
   argument_stack_size = ARGUMENT_STACK_SIZE;
+  shared_term_table_size = SHARED_TERM_TABLE_SIZE / sizeof(X);
   global_argc = argc;
   global_argv = argv;
   debugging = 0;
@@ -2440,6 +2446,10 @@ static void initialize(int argc, char *argv[])
 
       case 'T':
 	trail_stack_size = numeric_arg(arg + 3);
+	break;
+
+      case 'S':
+	shared_term_table_size = numeric_arg(arg + 3);
 	break;
 
 	// no option for ifthen-stack, in the moment
@@ -2504,10 +2514,10 @@ static void initialize(int argc, char *argv[])
   arg_top = argument_stack;
   string_buffer = malloc(string_buffer_length = STRING_BUFFER_SIZE);
   ASSERT(argument_stack, "out of memory - can not allocate string buffer");
-  shared_term_table = malloc(SHARED_TERM_TABLE_SIZE * 2 * sizeof(X));
+  shared_term_table = malloc(shared_term_table_size * 2 * sizeof(X));
   ASSERT(shared_term_table, "out of memory - can not allocate shared term table");
-  memset(shared_term_table, 0, SHARED_TERM_TABLE_SIZE * 2 * sizeof(X));
-  shared_term_table_positions = malloc(SHARED_TERM_TABLE_SIZE * sizeof(XWORD));
+  memset(shared_term_table, 0, shared_term_table_size * 2 * sizeof(X));
+  shared_term_table_positions = malloc(shared_term_table_size * sizeof(XWORD));
   ASSERT(shared_term_table, "out of memory - can not allocate shared term positions table");
   trail_stack_gap_buffer = malloc(TRAIL_STACK_GAP_BUFFER_SIZE * sizeof(TRAIL_STACK_GAP));
   ASSERT(trail_stack_gap_buffer, "out of memory - can not allocate initial trail-stack gap buffer");
