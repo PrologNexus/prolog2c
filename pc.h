@@ -1335,9 +1335,7 @@ static void unwind_trail(X *tp)
     }
 #endif
 
-#ifdef DEBUGGING
-    DRIBBLE("[detrail: _" XWORD_OUTPUT_FORMAT "]\n", fixnum_to_word(slot_ref((X)var, 1)));
-#endif
+    DBG_DRIBBLE("[detrail: _" XWORD_OUTPUT_FORMAT "]\n", fixnum_to_word(slot_ref((X)var, 1)));
     SLOT_SET(var, 0, var);
 #ifdef USE_DELAY
     SLOT_SET(var, 3, al);
@@ -2846,9 +2844,8 @@ static inline void trigger_frozen_goal(X var)
 
   SLOT_SET(var, 3, END_OF_LIST_VAL);
 
-  if(debugging)
-    DRIBBLE("[%d frozen goal(s) triggered on _" XWORD_OUTPUT_FORMAT "]\n", 
-	    count, fixnum_to_word(slot_ref(var, 1)));
+  DBG_DRIBBLE("[%d frozen goal(s) triggered on _" XWORD_OUTPUT_FORMAT "]\n", 
+	      count, fixnum_to_word(slot_ref(var, 1)));
 }
 
 
