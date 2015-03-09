@@ -1493,16 +1493,23 @@ static X deref_all(X val, int limit, int dup, int *failed)
 /// Databases
 
 // evict into malloc'd memory
-static X freeze_term_recursive(X x)
+static void freeze_term_recursive(X x, X *dest)
 {
+ restart:
   x = deref(x);
 
-  if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return x;
+  if(is_FIXNUM(x) || x == END_OF_LIST_VAL) {
+    *dest = x;
+    return;
+  }
 
   if(is_VAR(x)) {
     X *tp = lookup_shared_term(x, 1);
 
-    if(*tp != NULL) return tp[ 1 ];
+    if(*tp != NULL) {
+      *dest = tp[ 1 ];
+      return;
+    }
 
     *tp = x;
     BLOCK *newvar = (BLOCK *)malloc(sizeof(XWORD) * (VAR_SIZE + 1));
@@ -1512,10 +1519,13 @@ static X freeze_term_recursive(X x)
     newvar->d[ 1 ] = word_to_fixnum(variable_counter++);
     newvar->d[ 2 ] = word_to_fixnum(0); /* timestamp */
     tp[ 1 ] = (X)newvar;
+    *dest = tp[ 1 ];
 #ifdef USE_DELAY
-    newvar->d[ 3 ] = freeze_term_recursive(slot_ref(x, 3));
+    x = slot_ref(x, 3);
+    dest = &(newvar->d[ 3 ]);
+    goto restart;
 #endif
-    return tp[ 1 ];
+    return;
   }
 
   ASSERT(!is_DBREFERENCE(x), "db-references can not be frozen");
@@ -1526,7 +1536,8 @@ static X freeze_term_recursive(X x)
     ASSERT(b, "out of memory - can not freeze byteblock");
     b->h = objbits(x);
     memcpy(b->d, objdata(x), size);
-    return (X)b;
+    *dest = (X)b;
+    return;
   }
 
   if(is_SYMBOL(x)) {
@@ -1534,14 +1545,26 @@ static X freeze_term_recursive(X x)
     X str = slot_ref(x, 0);
     X *tp = lookup_shared_term(str, 1);
 
-    if(*tp != NULL) return tp[ 1 ];
+    if(*tp != NULL) {
+      *dest = tp[ 1 ];
+      return;
+    }
 
     *tp = x;
-    X y = freeze_term_recursive(str);
-    return tp[ 1 ] = y;
+    freeze_term_recursive(str, &(tp[ 1 ]));
+    *dest = tp[ 1 ];
+    return;
   }
 
-  SEARCH_IN_CYCLE_STACK(x);
+#ifndef NO_CHECK_CYCLES
+  for(X *ptr = cycle_stack; ptr < cycle_stack_top; ptr += 2) {	
+    if(*ptr == x) {
+      *dest = ptr[ 1 ];
+      return;
+    }
+  }			
+#endif
+
   CHECK_CYCLE_STACK;
   PUSH_ON_CYCLE_STACK(x);
   XWORD size = objsize(x);
@@ -1556,20 +1579,34 @@ static X freeze_term_recursive(X x)
     b->d[ 0 ] = slot_ref(x, 0);
   }
 
+  *dest = (X)b;
+
+#ifdef NO_CHECK_CYCLES
+  if(i >= size) return;
+
+  --size;
+#endif
+
   while(i < size) {
-    b->d[ i ] = freeze_term_recursive(slot_ref(x, i));
+    freeze_term_recursive(slot_ref(x, i), &(b->d[ i ]));
     ++i;
   }
 
+#ifdef NO_CHECK_CYCLES
+  x = slot_ref(x, i);
+  dest = &(b->d[ i ]);
+  goto restart;
+#else
   POP_CYCLE_STACK;
-  return (X)b;
+#endif
 }
 
 
 static X freeze_term(X x)
 {
   INIT_CYCLE_STACK;
-  X y = freeze_term_recursive(x);
+  X y;
+  freeze_term_recursive(x, &y);
   clear_shared_term_table();
   return y;
 }
@@ -1580,7 +1617,10 @@ static X freeze_term(X x)
 // another note: previously stored compound items will not be identical, with the exceptions of atoms
 static int thaw_term_recursive(X *xp)
 {
-  X x = *xp;
+  X x;
+
+ restart:
+  x = *xp;
 
   if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return 1;
 
@@ -1664,6 +1704,14 @@ static int thaw_term_recursive(X *xp)
   }
   else i = 0;
 
+  *xp = (X)b;
+
+#ifdef NO_CHECK_CYCLES
+  if(i >= size) return 1;
+
+  --size;
+#endif
+
   while(i < size) {
     b->d[ i ] = slot_ref(x, i);
     
@@ -1675,8 +1723,13 @@ static int thaw_term_recursive(X *xp)
     ++i;
   }
 
+#ifdef NO_CHECK_CYCLES
+  xp = &(b->d[ i ]);
+  goto restart;
+#else
   POP_CYCLE_STACK;
-  *xp = (X)b;
+#endif
+
   return 1;
 }
 
