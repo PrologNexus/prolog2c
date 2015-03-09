@@ -1764,7 +1764,7 @@ static int check_cycles_recursive(X x)
     if(x == y) return 0;
 
     //XXX just set x to y and fall through?
-    ASSERT(cycle_stack_top + 1 >= cycle_stack + CYCLE_STACK_SIZE,
+    ASSERT(cycle_stack_top + 1 < cycle_stack + CYCLE_STACK_SIZE,
 	   "cycle-stack overflow");
     *(cycle_stack_top++) = y;
     int r = check_cycles_recursive(y);
@@ -1772,7 +1772,7 @@ static int check_cycles_recursive(X x)
     return r;
   }
 
-  ASSERT(cycle_stack_top + 1 >= cycle_stack + CYCLE_STACK_SIZE,
+  ASSERT(cycle_stack_top + 1 < cycle_stack + CYCLE_STACK_SIZE,
 	 "cycle-stack overflow");
   *(cycle_stack_top++) = x;
   XWORD size = objsize(x);
