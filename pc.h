@@ -1721,6 +1721,7 @@ static int thaw_term_recursive(X *xp)
   }
 
 #ifdef NO_CHECK_CYCLES
+  b->d[ i ] = slot_ref(x, i);
   xp = &(b->d[ i ]);
   goto restart;
 #else
