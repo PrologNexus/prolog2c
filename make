@@ -34,6 +34,13 @@
     "pc.pl"))
 
 (define pc-compile-options
+  '("-DNO_CHECK_CYCLES"
+    "-DTRAIL_STACK_SIZE=10000000"
+    "-DCHOICE_POINT_STACK_SIZE=20000000"
+    "-DENVIRONMENT_STACK_SIZE=10000000"
+    "-DHEAP_SIZE=100000000"))
+
+(define pi-compile-options
   '("-DTRAIL_STACK_SIZE=10000000"
     "-DCHOICE_POINT_STACK_SIZE=20000000"
     "-DENVIRONMENT_STACK_SIZE=10000000"
@@ -79,12 +86,14 @@
 (define (pc1)
   (pc1.c)
   (make (("pc1" ("pc1.c" "pc.h")
-	  (run (gcc ,@gcc-compile-options pc1.c -lm -lrt -o pc1 ,@pc-compile-options))))))
+	  (run (gcc ,@gcc-compile-options pc1.c -lm -lrt -o pc1
+		    ,@pc-compile-options))))))
 
 (define (pc32)
   (pc1.c)
   (make (("pc32" ("pc1.c" "pc.h")
-	  (run (gcc -m32 ,@gcc-compile-options pc1.c -lm -lrt -o pc32 ,@pc-compile-options))))))
+	  (run (gcc -m32 ,@gcc-compile-options pc1.c -lm -lrt -o pc32
+		    ,@pc-compile-options))))))
 
 (define (pc1o)
   (pc1.c)
@@ -229,15 +238,15 @@
 (define (pi)
   (pi.c)
   (make (("pi" ("pi.c" "pc.h")
-	  (run (gcc ,@gcc-compile-options pi.c -lm -lrt -o pi ,@pc-compile-options))))))
+	  (run (gcc ,@gcc-compile-options pi.c -lm -lrt -o pi ,@pi-compile-options))))))
 
 (define (pio)
   (pi.c)
   (make (("pio" ("pi.c" "pc.h")
-	  (run (gcc ,@gcc-optimized-compile-options pi.c -lm -lrt -o pio ,@pc-compile-options))))))
+	  (run (gcc ,@gcc-optimized-compile-options pi.c -lm -lrt -o pio ,@pi-compile-options))))))
 
 (define (pb)
-  (fluid-let ((gcc-compile-options (append gcc-compile-options pc-compile-options)))
+  (fluid-let ((gcc-compile-options (append gcc-compile-options pi-compile-options)))
     (make-program "pb.pl" "pb" "lib/flags.pl")))
 
 (define (bench)
