@@ -468,7 +468,6 @@ static X *shared_term_table;
 static XWORD *shared_term_table_positions;
 static XWORD shared_term_table_size;
 static int shared_term_counter;
-static X *cycle_stack, *cycle_stack_top;
 static XCHAR *string_buffer, *string_buffer_top;
 static int string_buffer_length;
 static DB_ITEM *deleted_db_items;
@@ -486,6 +485,7 @@ static int gc_caused_by_trailing = 0;
 static X triggered_frozen_goals;
 static X first_distinct_variable;
 static int cycle_stack_overflowed = 0;
+static X *cycle_stack, *cycle_stack_top;
 
 #if defined(PROFILE) || defined(PROFILE_MEMORY)
 static PINFO system_pinfo = { .name = "<system>", .next = NULL };
@@ -541,11 +541,29 @@ static XCHAR *type_names[] = {
 # define DBG_DRIBBLE(...)
 #endif
 
-#define CHECK_CYCLE_STACK						\
+#ifndef NO_CHECK_CYCLES
+
+# define CHECK_CYCLE_STACK						\
   { if(!cycle_stack_overflowed && cycle_stack_top + 2 >= cycle_stack + CYCLE_STACK_SIZE) { \
       DRIBBLE("[cycle-stack overflow - cycle-checks may be ineffective]\n"); \
       cycle_stack_overflowed = 1;					\
       cycle_stack_top = cycle_stack; } }
+
+# define SEARCH_IN_CYCLE_STACK(val)				\
+  for(X *ptr = cycle_stack; ptr < cycle_stack_top; ptr += 2) {	\
+    if(*ptr == val) return ptr[ 1 ]; }				\
+
+# define PUSH_ON_CYCLE_STACK(val)  *(cycle_stack_top++) = (val)
+# define POP_CYCLE_STACK   cycle_stack_top -= 2
+# define INIT_CYCLE_STACK  cycle_stack_top = cycle_stack
+
+#else
+# define CHECK_CYCLE_STACK
+# define SEARCH_IN_CYCLE_STACK(val)
+# define INIT_CYCLE_STACK
+# define PUSH_ON_CYCLE_STACK(val)
+# define POP_CYCLE_STACK
+#endif
 
 
 /// accessors and type-testing
@@ -1409,10 +1427,7 @@ static X deref_recursive(X val, int limit, int dup, int *failed)
   if(is_FIXNUM(val) || val == END_OF_LIST_VAL || is_byteblock(val) || is_SYMBOL(val))
     return val;
 
-  for(X *ptr = cycle_stack; ptr < cycle_stack_top; ptr += 2) {
-    if(*ptr == val) return ptr[ 1 ];
-  }
-
+  SEARCH_IN_CYCLE_STACK(val)
   XWORD s = objsize(val);
 
   if(alloc_top + s + 1 > fromspace_limit) {
@@ -1421,10 +1436,10 @@ static X deref_recursive(X val, int limit, int dup, int *failed)
   }
 
   CHECK_CYCLE_STACK;
-  *(cycle_stack_top++) = val;
+  PUSH_ON_CYCLE_STACK(val);
   X *oldtop = alloc_top;	/* for restoration in case term is ground */
   ALLOCATE_BLOCK(BLOCK *p, objtype(val), s);
-  *(cycle_stack_top++) = (X)p;
+  PUSH_ON_CYCLE_STACK((X)p);
   --limit;
   int i = 0;
 
@@ -1446,7 +1461,7 @@ static X deref_recursive(X val, int limit, int dup, int *failed)
     ++i;
   }
 
-  cycle_stack_top -= 2;
+  POP_CYCLE_STACK;
 
   if(!dup && !anynew) {
     // keep old value, as it is ground
@@ -1463,7 +1478,7 @@ static X deref_all(X val, int limit, int dup, int *failed)
 #ifdef PROFILE_MEMORY
   XWORD oldheap = where->heap.total;
 #endif
-  cycle_stack_top = cycle_stack;
+  INIT_CYCLE_STACK;
   X y = deref_recursive(val, limit, dup, failed);
   clear_shared_term_table();
 
@@ -1526,18 +1541,15 @@ static X freeze_term_recursive(X x)
     return tp[ 1 ] = y;
   }
 
-  for(X *ptr = cycle_stack; ptr < cycle_stack_top; ptr += 2) {
-    if(*ptr == x) return ptr[ 1 ];
-  }
-
+  SEARCH_IN_CYCLE_STACK(x);
   CHECK_CYCLE_STACK;
-  *(cycle_stack_top++) = x;
+  PUSH_ON_CYCLE_STACK(x);
   XWORD size = objsize(x);
   XWORD i = 0;
   BLOCK *b = (BLOCK *)malloc(sizeof(XWORD) * (size + 1));
   ASSERT(b, "out of memory - can not freeze block");
   b->h = objbits(x);
-  *(cycle_stack_top++) = (X)b;
+  PUSH_ON_CYCLE_STACK((X)b);
 
   if(is_specialblock(x)) {
     ++i;
@@ -1549,14 +1561,14 @@ static X freeze_term_recursive(X x)
     ++i;
   }
 
-  cycle_stack_top -= 2;
+  POP_CYCLE_STACK;
   return (X)b;
 }
 
 
 static X freeze_term(X x)
 {
-  cycle_stack_top = cycle_stack;
+  INIT_CYCLE_STACK;
   X y = freeze_term_recursive(x);
   clear_shared_term_table();
   return y;
@@ -1623,22 +1635,24 @@ static int thaw_term_recursive(X *xp)
     return 1;
   }
 
-  for(X *ptr = cycle_stack; ptr < cycle_stack_top; ptr += 2) {
-    if(*ptr == x) {
-      *xp = ptr[ 1 ];
-      return 1;
+#ifndef NO_CHECK_CYCLES
+  for(X *ptr = cycle_stack; ptr < cycle_stack_top; ptr += 2) {	
+    if(*ptr == x) {						
+      *xp = ptr[ 1 ];						
+      return 1; 
     }
   }
+#endif
 
   CHECK_CYCLE_STACK;
-  *(cycle_stack_top++) = x;
+  PUSH_ON_CYCLE_STACK(x);
   XWORD i = 0;
   XWORD size = objsize(x);
 
   if(alloc_top + size + 1 > fromspace_limit) return 0;
 
   ALLOCATE_BLOCK(BLOCK *b, objtype(x), size);
-  *(cycle_stack_top++) = (X)b;
+  PUSH_ON_CYCLE_STACK((X)b);
   
   // initialize, in case thawing elements fails
   for(i = 0; i < size; ++i)
@@ -1661,7 +1675,7 @@ static int thaw_term_recursive(X *xp)
     ++i;
   }
 
-  cycle_stack_top -= 2;
+  POP_CYCLE_STACK;
   *xp = (X)b;
   return 1;
 }
@@ -1673,7 +1687,7 @@ static X thaw_term(X x, int *failed)
   XWORD oldheap = where->heap.total;
 #endif
   X y = x;
-  cycle_stack_top = cycle_stack;
+  INIT_CYCLE_STACK;
   *failed = !thaw_term_recursive(&y);
   clear_shared_term_table();
 
@@ -1750,14 +1764,16 @@ static int check_cycles_recursive(X x)
     if(x == y) return 0;
 
     //XXX just set x to y and fall through?
-    CHECK_CYCLE_STACK;
+    ASSERT(cycle_stack_top + 1 >= cycle_stack + CYCLE_STACK_SIZE,
+	   "cycle-stack overflow");
     *(cycle_stack_top++) = y;
     int r = check_cycles_recursive(y);
     --cycle_stack_top;
     return r;
   }
 
-  CHECK_CYCLE_STACK;
+  ASSERT(cycle_stack_top + 1 >= cycle_stack + CYCLE_STACK_SIZE,
+	 "cycle-stack overflow");
   *(cycle_stack_top++) = x;
   XWORD size = objsize(x);
   XWORD i = 0;
@@ -1789,9 +1805,11 @@ static int check_ground_recursive(X x)
 
   if(is_byteblock(x)) return 1;
 
+#ifndef NO_CHECK_CYCLES
   for(X *ptr = cycle_stack; ptr < cycle_stack_top; ++ptr) {
     if(*ptr == x) return 1;	/* value was already traversed */
   }
+#endif
 
   if(is_VAR(x)) {
     X y = slot_ref(x, 0);
@@ -1802,7 +1820,8 @@ static int check_ground_recursive(X x)
   }
 
   CHECK_CYCLE_STACK;
-  *(cycle_stack_top++) = x;
+  PUSH_ON_CYCLE_STACK(x);
+  PUSH_ON_CYCLE_STACK(NULL);	/* not used */
   XWORD size = objsize(x);
   XWORD i = 0;
 
@@ -1815,14 +1834,14 @@ static int check_ground_recursive(X x)
     ++i;
   }  
 
-  --cycle_stack_top;
+  POP_CYCLE_STACK;
   return 1;
 }
 
 
 static int check_ground(X term)
 {
-  cycle_stack_top = cycle_stack;
+  INIT_CYCLE_STACK;
   return check_ground_recursive(term);
 }
 
@@ -2943,14 +2962,16 @@ static int unify2(CHOICE_POINT *C0, X x, X y)
 
   if(is_specialblock(x)) ++i;
 
+#ifndef NO_CHECK_CYCLES
   for(X *ptr = cycle_stack; ptr < cycle_stack_top; ptr += 2) {
     if(*ptr == x) return ptr[ 1 ] == y;
     else if(*ptr == y) return ptr[ 1 ] == y;
   }
+#endif
 
   CHECK_CYCLE_STACK;
-  *(cycle_stack_top++) = x;
-  *(cycle_stack_top++) = y;
+  PUSH_ON_CYCLE_STACK(x);
+  PUSH_ON_CYCLE_STACK(y);
 
   while(i < s) {
     if(!unify3(slot_ref(x, i), slot_ref(y, i)))
@@ -2959,14 +2980,14 @@ static int unify2(CHOICE_POINT *C0, X x, X y)
     ++i;
   }
 
-  cycle_stack_top -= 2;
+  POP_CYCLE_STACK;
   return 1;
 }
 
 
 static inline int unify1(CHOICE_POINT *C0, X x, X y)
 {
-  cycle_stack_top = cycle_stack;
+  INIT_CYCLE_STACK;
   return unify2(C0, x, y);
 }
 

@@ -1334,6 +1334,10 @@ Performance tips
   Compile the generated C code with "-DUNSAFE" to disable all safety
   checks (implies "-DNDEBUG".)
 
+  Compiling generated C code with "-DNO_CHECK_CYCLES" drop
+  cycle-checks in builtin operations, with the exception of
+  acyclic_term/2.
+
   Asserting and retrieving terms in the record- or clause-database
   involves copying and thus should be avoided in time-critical code.
 

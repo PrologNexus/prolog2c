@@ -18,7 +18,13 @@ endif
 
 all: pc pi pb
 
-% : %.c pc.h
+pc : pc.c pc.h
+	$(CC) $(SETTINGS) -DNO_CHECK_CYCLES $(OPTFLAGS) $(CFLAGS) $< -o $@ $(LIBS)
+
+pi : pi.c pc.h
+	$(CC) $(SETTINGS) $(OPTFLAGS) $(CFLAGS) $< -o $@ $(LIBS)
+
+pb : pb.c pc.h
 	$(CC) $(SETTINGS) $(OPTFLAGS) $(CFLAGS) $< -o $@ $(LIBS)
 
 
