@@ -3,8 +3,6 @@ NOTES											              -*- Org -*-
 
 * Issues
 ** Major
-*** TODO compiling wn_ant.pl crashes on freezing hash-table
-    - possibly exceeded C stack in freeze_term()
 *** TODO 0046-arithmetic test fails in 32-bit pc
 *** TODO Term-comparison doesn't handle cyclic structures, yet
 *** TODO Why is so much space accumulating on arg- and env-stacks?
@@ -151,6 +149,11 @@ NOTES											              -*- Org -*-
    - "asin", "acos"
 * Documentation
 ** DONE News
+   - large sets of facts can be compiled more efficiently by using the
+     "-compress-facts" option.
+   - the routines for storing and retrieving terms to and from the
+     record- or clause databsae are now tail-recursive and handle
+     larger terms.
    - SIGINT is handled and produces an exception (user_interrupt)
    - char_code/2, atom_concat/3, atom_chars/2, atom_length/2,
      current_input/1, current_output/1, number_chars/2, nl/1,
@@ -165,7 +168,8 @@ NOTES											              -*- Org -*-
    - pi: more robust with respect to current I/O ports in case of
      exceptions.
    - single-element list in arithmetic expressions.
-   - cycle-handling has been added to many builtins.
+   - cycle-handling has been added to many builtins. May be disabled
+     for large terms.
    - acyclic_term/1, unify_with_occurs_check/2
    - min and max in arithmetic expressions.
    - current_prolog_flag/2
