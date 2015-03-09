@@ -3,6 +3,8 @@ NOTES											              -*- Org -*-
 
 * Issues
 ** Major
+*** TODO compiling wn_ant.pl crashes on freezing hash-table
+    - possibly exceeded C stack in freeze_term()
 *** TODO 0046-arithmetic test fails in 32-bit pc
 *** TODO Term-comparison doesn't handle cyclic structures, yet
 *** TODO Why is so much space accumulating on arg- and env-stacks?
