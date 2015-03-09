@@ -484,7 +484,6 @@ static XWORD trail_stack_gap_buffer_size = TRAIL_STACK_GAP_BUFFER_SIZE;
 static int gc_caused_by_trailing = 0;
 static X triggered_frozen_goals;
 static X first_distinct_variable;
-static int cycle_stack_overflowed = 0;
 static X *cycle_stack, *cycle_stack_top;
 
 #if defined(PROFILE) || defined(PROFILE_MEMORY)
@@ -544,10 +543,8 @@ static XCHAR *type_names[] = {
 #ifndef NO_CHECK_CYCLES
 
 # define CHECK_CYCLE_STACK						\
-  { if(!cycle_stack_overflowed && cycle_stack_top + 2 >= cycle_stack + CYCLE_STACK_SIZE) { \
-      DRIBBLE("[cycle-stack overflow - cycle-checks may be ineffective]\n"); \
-      cycle_stack_overflowed = 1;					\
-      cycle_stack_top = cycle_stack; } }
+  ASSERT(cycle_stack_top + 2 < cycle_stack + CYCLE_STACK_SIZE,		\
+	 "cycle-stack overflow - cycle-checks may be ineffective")
 
 # define SEARCH_IN_CYCLE_STACK(val)				\
   for(X *ptr = cycle_stack; ptr < cycle_stack_top; ptr += 2) {	\
