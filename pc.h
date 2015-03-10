@@ -1295,7 +1295,7 @@ static void clear_shared_term_table()
 
 static X *lookup_shared_term(X x, int addnew)
 {
-  XWORD key = (XWORD)x % shared_term_table_size;
+  XWORD key = (UXWORD)x % shared_term_table_size;
   int f = 0;
   key *= 2;
 
