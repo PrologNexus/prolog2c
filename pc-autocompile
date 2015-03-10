@@ -13,7 +13,6 @@ set -e
 PC_OPTIONS=
 C_OPTIONS=
 OPTFLAGS="-O2 -fomit-frame-pointer"
-LD_OPTIONS=
 PC_SOURCEFILE=
 
 while true; do
@@ -24,10 +23,6 @@ while true; do
 	-C)
 	    shift
 	    C_OPTIONS="${C_OPTIONS} $1"
-	    shift;;
-	-L)
-	    shift
-	    LD_OPTIONS="${LD_OPTIONS} $1"
 	    shift;;
 	-O0)
 	    OPTFLAGS=
@@ -71,5 +66,5 @@ PC_SOURCEFILE2=`basename "${PC_SOURCEFILE}"`
 ${PC_PREFIX}pc -q "${PC_SOURCEFILE}" ${PC_OPTIONS} -o "${TMPDIR}/${PC_SOURCEFILE2}.c"
 gcc -std=gnu99 ${OPTFLAGS} -fno-strict-aliasing -fwrapv -DTRACE -DNDEBUG \
     ${C_OPTIONS} ${PC_INCLUDEPATH} -I. "${TMPDIR}/${PC_SOURCEFILE2}.c" -o "${CACHEDIR}/${HASH}" \
-    -lm -lrt ${LD_OPTIONS}
+    -lm -lrt
 exec "${CACHEDIR}/${HASH}" "$@"
