@@ -71,3 +71,15 @@ between(L, U, X) :-
     '$between'(M, U, X).
 
 unify_with_occurs_check(X, X) :- acyclic_term(X).
+
+atom_codes(A, LST) :-
+	var(A), !, foreign_call(atom_codes(A, LST)).
+atom_codes(A, LST) :-
+	foreign_call(atom_codes(A, LST1)),
+	(LST1 == 0 -> atom_codes(A, LST); LST = LST1).
+
+number_codes(A, LST) :-
+	var(A), !, foreign_call(number_codes(A, LST)).
+number_codes(A, LST) :-
+	foreign_call(number_codes(A, LST1)),
+	(LST1 == 0 -> number_codes(A, LST); LST = LST1).

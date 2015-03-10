@@ -403,8 +403,6 @@ basename(FNAME, BNAME) :-
 	append(BNAME, [46|_], LST), !.
 basename(FNAME, BNAME) :- name(FNAME, BNAME).
 
-read_all(LST) :- read_atom(all, X), name(X, LST).
-
 take_list([], _, []).
 take_list(_, 0, []).
 take_list([X|R], N, [X|R2]) :- N2 is N - 1, take_list(R, N2, R2).
@@ -444,9 +442,9 @@ show_version_and_exit :-
 	display(C), nl, halt.
 
 process_input_file(user) :-
-	!, read_all(INPUT), process_input(INPUT).
+	!, read_string(all, INPUT), process_input(INPUT).
 process_input_file(FILENAME) :-
-	see(FILENAME), read_all(INPUT), seen,
+	see(FILENAME), read_string(all, INPUT), seen,
 	process_input(INPUT).
 
 process_input(INPUT) :-

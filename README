@@ -558,18 +558,21 @@ Builtin predicates
     Reads the next term from the current input-stream or the stream
     given and unifies it with X [ISO]
 
-        read_atom(+LEN, -X)
+        read_string(+LEN, -X)
 
     Read up to LEN characters from the current input port and unify X
-    with an atom composed of those characters. If LEN is not an
-    integer, all remaining input will be read.
+    with an list composed of the character codes. If LEN is not an
+    integer, all remaining input will be read. X will contain less than
+    LEN character codes when fewer than that number of characters
+    remain in the input stream. On end-of-file, X will be the empty
+    list.
 
         read_line(-X)
 
-    Read one line from the current input port as an atom and unify it
-    with X. If the end of file is reached, then X is unified with the
-    atom `end_of_file`. Any end-of-line character terminating the line
-    is not included in the returned atom.
+    Read one line from the current input port as a list of character
+    codes and unify it with X. If the end of file is reached, then X
+    is unified with the atom `end_of_file`. Any end-of-line character
+    terminating the line is not included in the returned atom.
 
         see(+X)
 
@@ -1770,10 +1773,14 @@ Version history
 
     - Large sets of facts can be compiled more efficiently by using the
       "-compress-facts" option.
+    - Reduced storage consumption in compiler.
     - The routines for storing and retrieving terms to and from the
       record- or clause database are now tail-recursive and handle
       larger terms.
-    - SIGINT is handled and produces an exception (user_interrupt)
+    - SIGINT is handled and produces an exception (user_interrupt),
+      if the platform supports it.
+    - Renamed read_atom/2 to read_string/2. read_atom/2 and read_line/1
+      return now character-code lists instead of atoms.
     - New library predicates and builtins:
       char_code/2, atom_concat/3, atom_chars/2, atom_length/2,
       current_input/1, current_output/1, number_chars/2, nl/1,

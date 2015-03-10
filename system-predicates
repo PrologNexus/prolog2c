@@ -152,7 +152,7 @@ system_predicate(tab(+X), 'io.pl').
 system_predicate(tell(+X), 'io.pl', 'may also pass stream (or "user")').
 system_predicate(throw(+X), 'misc.pl').
 system_predicate(told, 'io.pl', 'does nothing if stdout or stderr').
-system_predicate(read_atom(+X, -Y), 'io.pl').
+system_predicate(read_string(+X, -Y), 'io.pl').
 system_predicate(read_line(-Y), 'io.pl').
 system_predicate(abolish(+PI), 'cdb.pl').
 system_predicate(append(?X, ?Y, ?Z), 'lists.pl').

@@ -430,7 +430,7 @@ typedef struct PINFO
 
 static BLOCK END_OF_LIST_VAL_BLOCK = { END_OF_LIST_TAG };
 static X dot_atom, system_error_atom, type_error_atom, evaluation_error_atom;
-static X instantiation_error_atom, user_interrupt_atom;
+static X instantiation_error_atom, user_interrupt_atom, end_of_file_atom;
 
 static PORT_BLOCK default_input_port = { PORT_TAG|4, NULL, ONE, ONE, ZERO };
 static PORT_BLOCK default_output_port = { PORT_TAG|4, NULL, ZERO, ONE, ZERO };
@@ -1032,6 +1032,7 @@ static void intern_static_symbols(X sym1)
   evaluation_error_atom = intern(CSTRING("evaluation_error"));
   instantiation_error_atom = intern(CSTRING("instantiation_error"));
   user_interrupt_atom = intern(CSTRING("user_interrupt"));
+  end_of_file_atom = intern(CSTRING("end_of_file"));
 }
 
 
@@ -2160,6 +2161,7 @@ static void collect_garbage(CHOICE_POINT *C)
   mark1(&evaluation_error_atom);
   mark1(&instantiation_error_atom);
   mark1(&user_interrupt_atom);
+  mark1(&end_of_file_atom);
 
   // mark standard ports
   mark1(&standard_input_port);
@@ -3844,14 +3846,20 @@ static XCHAR *to_string(X x, int *size)
 }
 
 
-// does not check for full heap, so make sure the string isn't too long
+// triggers GC if space is insufficient
 static X string_to_list(XCHAR *str, int len)
 {
+  XWORD size = len * 3 * sizeof(XWORD); /* N pairs */
+
+  if((XWORD)alloc_top + size  >= (XWORD)fromspace_limit) {
+    alloc_top = fromspace_limit; /* force GC */
+    return ZERO;
+  }
+
   X lst = END_OF_LIST_VAL;
-  XCHAR *ptr = str + len;
 
   while(len > 0)
-    lst = PAIR(word_to_fixnum(ptr[ --len ]), lst);
+    lst = PAIR(word_to_fixnum(str[ --len ]), lst);
 
   return lst;
 }
@@ -4588,12 +4596,7 @@ PRIMITIVE(atom_codes, X atom, X lst)
     ptr = (XCHAR *)objdata(str);
   }
 
-  X p = END_OF_LIST_VAL;
-
-  while(len)
-    p = PAIR(word_to_fixnum(ptr[ --len ]), p);
-
-  return unify(lst, p);
+  return unify(lst, string_to_list(ptr, len));
 }
 
 PRIMITIVE(number_codes, X num, X lst)
@@ -4628,12 +4631,7 @@ PRIMITIVE(number_codes, X num, X lst)
     sprintf(string_buffer, XFLOAT_OUTPUT_FORMAT, flonum_to_float(num));
 
   int len = strlen(string_buffer);
-  X p = END_OF_LIST_VAL;
-
-  while(len)
-    p = PAIR(word_to_fixnum(string_buffer[ --len ]), p);
-
-  return unify(lst, p);
+  return unify(lst, string_to_list(string_buffer, len));
 }
 
 PRIMITIVE(functor, X term, X name, X arity)
@@ -4737,7 +4735,7 @@ PRIMITIVE(atom_hash, X sym, X hash) {
   return(unify(slot_ref(sym, 2), hash));
 }
 
-PRIMITIVE(read_atom, X len, X atom) {
+PRIMITIVE(read_string, X len, X lst) {
   FILE *fp = port_file(standard_input_port);
   XCHAR *ptr = string_buffer;
   int c, f = 1;
@@ -4750,10 +4748,12 @@ PRIMITIVE(read_atom, X len, X atom) {
     if((c = fgetc(fp)) == EOF) break;
 
     if(ptr >= string_buffer + string_buffer_length + 1) {
+      int here = ptr - string_buffer;
       string_buffer = realloc(string_buffer, string_buffer_length *= 2);
       ASSERT(string_buffer, 
 	     "out of memory - can not increase size of string-buffer to " XWORD_OUTPUT_FORMAT, 
 	     (XWORD)string_buffer_length);
+      ptr = string_buffer + here;
     }
 
     *(ptr++) = c;
@@ -4762,18 +4762,10 @@ PRIMITIVE(read_atom, X len, X atom) {
 
   string_buffer_top = ptr;
   XWORD slen = ptr - string_buffer;
-
-  if(((XWORD)alloc_top + slen + sizeof(XWORD) + 1) >= (XWORD)fromspace_limit) {
-    alloc_top = fromspace_limit; /* force GC */
-    return 0;			
-  }
-
-  X str = STRING(slen);
-  memcpy(objdata(str), string_buffer, slen);
-  return(unify(intern(str), atom));
+  return unify(lst, string_to_list(string_buffer, slen));
 }
 
-PRIMITIVE(read_line, X result) {
+PRIMITIVE(read_line, X lst) {
   FILE *fp = port_file(standard_input_port);
   XCHAR *ptr = string_buffer;
   int p = 0;
@@ -4782,7 +4774,7 @@ PRIMITIVE(read_line, X result) {
   while(space > 0) {
     if(fgets(string_buffer + p, space, fp) == NULL) {
       if(p > 0) break;
-      else return unify(result, ZERO);
+      else return unify(lst, end_of_file_atom);
     }
 
     int n = strlen(string_buffer + p);
@@ -4805,27 +4797,19 @@ PRIMITIVE(read_line, X result) {
 
   string_buffer_top = string_buffer + p;
 
-  if(((XWORD)alloc_top + p + sizeof(XWORD) + 1) >= (XWORD)fromspace_limit) {
-    alloc_top = fromspace_limit; /* force GC */
-    return 0;			
-  }
-
   if(string_buffer[ strlen(string_buffer) - 1 ] == '\n') --p;
 
-  X str = STRING(p);
-  memcpy(objdata(str), string_buffer, p);
-  return(unify(intern(str), result));
+  return unify(lst, string_to_list(string_buffer, p));
 }
 
-PRIMITIVE(re_intern, X atom) {
+PRIMITIVE(retry_string_to_list, X lst) {
   XWORD len = string_buffer_top - string_buffer;
+  X str = string_to_list(string_buffer, len);
 
-  if(((XWORD)alloc_top + len + sizeof(XWORD) + 1) >= (XWORD)fromspace_limit)
-    CRASH("out of memory - can not allocate atom of length " XWORD_OUTPUT_FORMAT, len);
+  if(str == ZERO) 
+    CRASH("out of memory - can not allocate string of length " XWORD_OUTPUT_FORMAT, len);
 
-  X str = STRING(len);
-  memcpy(objdata(str), string_buffer, len);
-  return(unify(intern(str), atom));  
+  return unify(lst, str);
 }
 
 PRIMITIVE(delay_goal, X var, X prio, X ptr, X args) {

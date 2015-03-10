@@ -28,5 +28,5 @@ file_modification_time(F, T) :-
 	append("/tmp/tmp", RS, TF),
 	concatenate(["stat -c %Y '", F, "' >", TF], CMD),
 	shell(CMD),
-	see(TF), read_atom(all, TM), seen, chop(TM, TMS),
+	see(TF), read_string(all, TM), seen, chop(TM, TMS),
 	number_codes(T, TMS), !.

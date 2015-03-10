@@ -33,8 +33,6 @@ macro(peek_code(S, BYTE), foreign_call(peek_byte(S, BYTE))).
 macro(erase(REF), foreign_call(db_erase(REF))).
 macro(getenv(NAME, VAL), foreign_call(get_environment_variable(NAME, VAL))).
 macro(shell(CMD, STATUS), foreign_call(shell_command(CMD, STATUS))).
-macro(atom_codes(A, LST), foreign_call(atom_codes(A, LST))).
-macro(number_codes(N, LST), foreign_call(number_codes(N, LST))).
 macro(functor(T, N, A), foreign_call(functor(T, N, A))).
 macro(arg(I, T, X), foreign_call(term_arg(I, T, X))).
 macro(seeing(S), foreign_call(current_input_stream(S))).
@@ -89,7 +87,7 @@ auto_include(told, 0, 'lib/io.pl').
 auto_include(telling, 1, 'lib/io.pl').
 auto_include(open, 3, 'lib/io.pl').
 auto_include(open, 4, 'lib/io.pl').
-auto_include(read_atom, 2, 'lib/io.pl').
+auto_include(read_string, 2, 'lib/io.pl').
 auto_include(read_line, 1, 'lib/io.pl').
 auto_include(flush_output, 0, 'lib/io.pl').
 auto_include(flush_output, 1, 'lib/io.pl').
@@ -253,7 +251,7 @@ determinate_builtin(writef, 1).
 determinate_builtin(writef, 2).
 determinate_builtin(fwritef, 2).
 determinate_builtin(fwritef, 3).
-determinate_builtin(read_atom, 2).
+determinate_builtin(read_string, 2).
 determinate_builtin(read_line, 1).
 determinate_builtin(dif, 2).
 determinate_builtin(unify_with_occurs_check, 2).
@@ -271,6 +269,8 @@ determinate_builtin(peek_char, 1).
 determinate_builtin(peek_char, 2).
 determinate_builtin(put_char, 1).
 determinate_builtin(put_char, 2).
+determinate_builtin(atom_codes, 2).
+determinate_builtin(number_codes, 2).
 
 determinate_builtin(NAME, ARITY) :-
 	recorded(determinate, NAME/ARITY).

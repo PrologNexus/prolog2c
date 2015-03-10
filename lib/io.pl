@@ -65,13 +65,13 @@ open(NAME, MODE, INPUT, MODE, [type(binary)|MORE], STREAM) :-
 open(NAME, MODE, INPUT, MODE, [_|MORE], STREAM) :-
 	open(NAME, MODE, INPUT, MODE, MORE, STREAM).
 
-read_atom(LEN, ATM) :- foreign_call(read_atom(LEN, A1)), !, ATM = A1.
-read_atom(_, ATM) :- '$re_intern'(ATM).
+read_string(LEN, ATM) :-
+	foreign_call(read_string(LEN, A1)),
+	(A1 == 0 -> foreign_call(retry_string_to_list(ATM)); ATM = A1).
 
-'$re_intern'(ATM) :- foreign_call(re_intern(ATM)).
-
-read_line(ATM) :- foreign_call(read_line(A1)), !, (A1 \== 0 -> ATM = A1; ATM = end_of_file).
-read_line(ATM) :- '$re_intern'(ATM).
+read_line(ATM) :-
+	foreign_call(read_line(A1)),
+	(A1 == 0 -> foreign_call(retry_string_to_list(ATM)); ATM = A1).
 
 set_input(user) :- foreign_call(set_current_input_stream(0)), !.
 set_input(S) :- foreign_call(set_current_input_stream(S)).
