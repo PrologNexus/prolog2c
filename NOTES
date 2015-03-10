@@ -133,7 +133,12 @@ NOTES											              -*- Org -*-
    is_list1( [_|_] ).
    #+END_SRC
 ** TODO Check if we can use file:lib/canon.pl for printing query results
-** TODO Check out ISO-extensions in file:/archive/iso-prolog-extensions.pdf
+** ISO-extensions ISO DTR 13211-1:2006
+   - op(500, yfx, '><')   (xor)
+   - op(200, fy, +)       (unary plus)
+   - "^": integer exponentation
+   - numbervars/3
+   - log/2, atan/2, asin/1, acos/1, epsilon/0, pi/0, e/0 (arithmetic)
 ** DONE if term_expansion/2 returns list, treat as separate (or no) terms
    - add this also to /pi-in-pc/
 ** handle arbitrary signals
@@ -157,45 +162,8 @@ NOTES											              -*- Org -*-
    - constants "pi", perhaps "e"
    - "asin", "acos"
 * Documentation
-** DONE News
-   - large sets of facts can be compiled more efficiently by using the
-     "-compress-facts" option.
-   - the routines for storing and retrieving terms to and from the
-     record- or clause databsae are now tail-recursive and handle
-     larger terms.
-   - SIGINT is handled and produces an exception (user_interrupt)
-   - char_code/2, atom_concat/3, atom_chars/2, atom_length/2,
-     current_input/1, current_output/1, number_chars/2, nl/1,
-     put_byte/1, put_byte/2, put_code/1, put_code/2, get_byte/1,
-     get_byte/2, get_code/1, get_code/2, peek_byte/1, peek_byte/2,
-     peek_code/1, peek_code/2, read/2, display/2, write/2, writeq/2,
-     put_char/1, put_char/2, get_char/1, get_char/2, peek_char/1,
-     peek_char/2, ground/1, rename_file/2, delete_file/1
-   - close/1, set_input/1, set_output/1, set_error_output/1,
-     at_end_of_stream/0, at_end_of_stream/1, flush_output/1
-   - renamed flush/0 to flush_output/1.
-   - pi: more robust with respect to current I/O ports in case of
-     exceptions.
-   - single-element list in arithmetic expressions.
-   - cycle-handling has been added to many builtins. May be disabled
-     for large terms.
-   - acyclic_term/1, unify_with_occurs_check/2
-   - min and max in arithmetic expressions.
-   - current_prolog_flag/2
-   - repl in pi doesn't pile up trail anymore.
-   - more lightweight copy_term/2, added duplicate_term/2
-   - read_line/1
-   - speed- and memory-profiling.
-   - string-canonicalization didn't handle empty strings.
-   - pb: "-i" option.
-   - pb: handling "\" inside text (not followed by WS + NL)
-   - pb: fixed handling zero-argument function with result.
-   - pb: "/* success */" result modifier.
-   - once/1
-   - undefined goals in interpreter throw error.
-   - slightly faster db-key computation.
-   - ensure_loaded/1 directive.
-   - added -q option to pi, also added some verbose output when including/consulting.
+** Add pc-autocompile to dist and document
+   - find a better name.
 ** Missing ISO predicates
    | Name                                         | Remarks                                        |
    |----------------------------------------------+------------------------------------------------|
@@ -219,30 +187,14 @@ NOTES											              -*- Org -*-
    - allows arbitrary latent goals.
    - compare file-size + compile overhead in optimized mode.
    - would allow conditional compilation.
-** prolog-implementation of CDB
-   - needs tree-based DB, perhaps using lib/tree23.
-   - problematic, as it depends on GC'd trailed vars and needs 2 tree
-     lookups for recording (to add a new element to an existing list of
-     old vals: first to get old, second to put old with new added)
-     - update_23 allows this, by adding a variable and unifying it
-       with the result-"mode".
-   - term-copying needed for storing new DB in global copies whole
-     DB, which is too inefficient.
-     - might be addressed by more efficient deref_all()
-   - dbreference type changes.
 ** DONE /intmath/ (integer-only math)
    - lib/rdtok returns end_of_file when reading flonum (which makes pi
      terminate, for example)
    - would have to disable flonum-parsing in rdtok, which needs
      conditional, depending on variant (with flonums or without)
-** DONE /compress-facts/ (special case long lists of facts)
-   - pi: code size reduced, but 0085-boyer is much slower (3.3 vs 2.3
-     secs).
 * Runtime
 ** TODO Use macro to check for exceeded heap-limit
 * Tests
-** TODO Evaluate memprofiling
-   - do we need to update counts on fail or (re-)throw?
 ** TODO profile with gprof
 * Test suites
 ** file:/archive/prologsuite.tar.gz
@@ -257,12 +209,6 @@ NOTES											              -*- Org -*-
 *** Single-element list in arithmetic expressions
 ** Interpreter
 *** expand_term/2 + term_expansion/2
-* Extensions
-** Things in the DEC10 library that might be interesting
-   - arrays.pl, logarr.pl
-   - ask.pl, read_sent.pl
-   - heap.pl, map.pl, trees.pl
-   - queues.pl
 * Release steps
 ** Document changes
 ** make fullcheck
