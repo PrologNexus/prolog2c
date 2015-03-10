@@ -1765,6 +1765,47 @@ Limitations
 Version history
 ---------------
 
+
+  - Version 3:
+
+    - Large sets of facts can be compiled more efficiently by using the
+      "-compress-facts" option.
+    - The routines for storing and retrieving terms to and from the
+      record- or clause database are now tail-recursive and handle
+      larger terms.
+    - SIGINT is handled and produces an exception (user_interrupt)
+    - New library predicates and builtins:
+      char_code/2, atom_concat/3, atom_chars/2, atom_length/2,
+      current_input/1, current_output/1, number_chars/2, nl/1,
+      put_byte/1, put_byte/2, put_code/1, put_code/2, get_byte/1,
+      get_byte/2, get_code/1, get_code/2, peek_byte/1, peek_byte/2,
+      peek_code/1, peek_code/2, read/2, display/2, write/2, writeq/2,
+      put_char/1, put_char/2, get_char/1, get_char/2, peek_char/1,
+      peek_char/2, ground/1, rename_file/2, delete_file/1, once/1,
+      close/1, set_input/1, set_output/1, set_error_output/1,
+      at_end_of_stream/0, at_end_of_stream/1, flush_output/1,
+      acyclic_term/1, unify_with_occurs_check/2, current_prolog_flag/2,
+      read_line/1, duplicate_term/2
+    - Renamed flush/0 to flush_output/1.
+    - pi interpreter:
+      - More robust with respect to current I/O ports in case of
+        exceptions, also reduced memory usage across queries.
+      - Added -q option, also added some output when including/
+        consulting files.
+      - Undefined goals now throw an error.
+    - Handling of Single-element list in arithmetic expressions.
+    - Cycle-handling has been added to many builtins. May be disabled.
+    - Added min/2 and max/2 in arithmetic expressions.
+    - Added support for speed- and memory-profiling.
+    - String-canonicalization didn't handle empty strings.
+    - pb wrapper generator:
+      - "-i" option.
+      - handling "\" inside text (not followed by WS + NL)
+      - fixed handling zero-argument function with result.
+      - "/* success */" result modifier.
+    - Slightly faster db-key computation.
+    - Added ensure_loaded/1 directive.
+
   - Version 2:
 
     - Many bugfixes, everywhere.
