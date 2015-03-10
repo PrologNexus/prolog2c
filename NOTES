@@ -27,7 +27,8 @@ NOTES											              -*- Org -*-
    - see file:broken-tests/
 *** Once trail-stack reserve is reached, GC will loop if the trail can't be reduced
 *** If heap is insufficient deref_term/3 will loop endlessly
-   - also read_atom/2, recorded/X, retract/1 and clause/X
+   - also recorded/X, retract/1 and clause/X, atom_codes/2,
+     number_codes/2.
 *** name/2 and functor/3 (and others?) may exceed heap-reserve for large inputs
    - atom_codes/2 could fail on full heap, force GC and retry,
      would need to be moved into file:lib/misc.pl
@@ -133,12 +134,6 @@ NOTES											              -*- Org -*-
    is_list1( [_|_] ).
    #+END_SRC
 ** TODO Check if we can use file:lib/canon.pl for printing query results
-** ISO-extensions ISO DTR 13211-1:2006
-   - op(500, yfx, '><')   (xor)
-   - op(200, fy, +)       (unary plus)
-   - "^": integer exponentation
-   - numbervars/3
-   - log/2, atan/2, asin/1, acos/1, epsilon/0, pi/0, e/0 (arithmetic)
 ** DONE if term_expansion/2 returns list, treat as separate (or no) terms
    - add this also to /pi-in-pc/
 ** handle arbitrary signals
@@ -158,9 +153,6 @@ NOTES											              -*- Org -*-
 ** Allow "library(ATOM)" as file-spec
    - consult/1, include/1, ensure_loaded/1
    - would this simply prepend "lib/" and append ".pl"?
-** Extend numerical operators
-   - constants "pi", perhaps "e"
-   - "asin", "acos"
 * Documentation
 ** Add pc-autocompile to dist and document
    - find a better name.
@@ -178,6 +170,12 @@ NOTES											              -*- Org -*-
    | read_term/2, read_term/3                     |                                                |
    | write_canonical/1, write_canonical/2         |                                                |
    | write_term/2, write_term/3                   |                                                |
+** ISO-extensions ISO DTR 13211-1:2006
+   | +/1                            | arithemtic, op(200, fy, +), unary plus    |
+   | numbervars/3                   |                                           |
+   | log/2, atan/2, asin/1, acos/1, | arithmetic expressions                    |
+   | epsilon/0, pi/0, e/0           | arithmetic constants                      |
+   | ^/2                            | integer exponentation (error on overflow) |
 * Diagnostics
 ** Detect singleton variables
 ** Report unused predicates
