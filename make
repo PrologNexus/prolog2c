@@ -240,6 +240,12 @@
   (make (("pi" ("pi.c" "pc.h")
 	  (run (gcc ,@gcc-compile-options pi.c -lm -lrt -o pi ,@pi-compile-options))))))
 
+(define (arm-pi)
+  (pi.c)
+  (make (("arm-pi" ("pi.c" "pc.h")
+	  (run (/opt/arm-unknown-linux-gnueabi/bin/arm-unknown-linux-gnueabi-gcc
+		,@gcc-compile-options pi.c -lm -lrt -o arm-pi ,@pi-compile-options))))))
+
 (define (pio)
   (pi.c)
   (make (("pio" ("pi.c" "pc.h")
