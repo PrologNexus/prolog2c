@@ -51,8 +51,6 @@ NOTES											              -*- Org -*-
 *** The output of TRACE_TAILCALL() is somewhat confusing
     - Not sure if arguments output reflects the correct state.
     - can we get rid of this?
-*** Reduce memory use in pc
-    - seems to build up a lot of choice points.
 *** Erasing a db-entry that is already marked is currently ignored
    - actual deletion will happen on next GC.
    - should we throw an error?
@@ -123,6 +121,17 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
+** is_list/1 seems to be used often
+   #+BEGIN_SRC prolog
+   /* is_list( +List ) holds when List is a list.
+    */
+   is_list( List ) :-
+	   nonvar( List ),
+	   is_list1( List ).
+
+   is_list1( [] ).
+   is_list1( [_|_] ).
+   #+END_SRC
 ** TODO Check if we can use file:lib/canon.pl for printing query results
 ** TODO Check out ISO-extensions in file:/archive/iso-prolog-extensions.pdf
 ** DONE if term_expansion/2 returns list, treat as separate (or no) terms

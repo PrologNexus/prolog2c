@@ -160,7 +160,7 @@ process_boilerplate_code(STATE) :-
 	emit(trace_off),
 	findall(B, (recorded(boilerplate, B, REF), erase(REF)), BOILERPLATE),
 	BOILERPLATE \= [],
-	process_input(BOILERPLATE, [], _, STATE).
+	!, process_input(BOILERPLATE, [], _, STATE).
 
 process_initialization_goals(STATE) :-
 	\+recorded(initialization_done, _),
@@ -168,7 +168,7 @@ process_initialization_goals(STATE) :-
 	(recorded(pre_initialization_goal, IGOAL); IGOAL = true),
 	recorda(initialization_done, true),
 	default_setting(entry_point, EP),
-	process_input([(EP :- IGOAL, GOAL)], [], _, STATE).
+	!, process_input([(EP :- IGOAL, GOAL)], [], _, STATE).
 
 
 %% list unresolved calls

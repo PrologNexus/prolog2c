@@ -34,7 +34,7 @@ compile_clause_list([CLAUSE|MORE], NAME/ARITY, [I/T|MAP], S1, S2) :-
 	secondary_clause_label(NAME, ARITY, I, L2),
 	emit(label(L2)),
 	compile_clause(CLAUSE, NAME/ARITY, I, notlast, S3, S4),
-	compile_clause_list(MORE, NAME/ARITY, MAP, S4, S2).
+	!, compile_clause_list(MORE, NAME/ARITY, MAP, S4, S2).
 
 % rule
 compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, S1, S2) :-
@@ -197,12 +197,12 @@ compile_body(BODY, LAST, BOUND, S1, S2) :-
 compile_body_expression(TERM, TAIL, D1, D2, B1, B2, S1, S2) :-
 	macro(TERM, EXPANSION),
 	TERM \= EXPANSION,	% handle macro that just adds boilerplate (e.g. "autoload" like)
-	compile_body_expression(EXPANSION, TAIL, D1, D2, B1, B2, S1, S2).
+	!, compile_body_expression(EXPANSION, TAIL, D1, D2, B1, B2, S1, S2).
 
 % conjunction
 compile_body_expression((X, Y), TAIL, D1, D2, B1, B2, S1, S2) :-
 	compile_body_expression(X, nontail, D1, D, B1, B, S1, S),
-	compile_body_expression(Y, TAIL, D, D2, B, B2, S, S2).
+	!, compile_body_expression(Y, TAIL, D, D2, B, B2, S, S2).
 
 % if-then-else
 compile_body_expression((X -> Y; Z), TAIL, D1, D2, B1, B2, S1, S2) :-
@@ -282,7 +282,7 @@ compile_body_expression(findall(T, G, L), TAIL, D, D, B1, B2, S1, S2) :-
 	add_boilerplate(P, (HEAD :- G2, '$findall_push'(T2), fail)),
 	HEAD2 =.. [P|IARGS],
 	compile_body_expression(\+HEAD2, nontail, D, _, B1, B3, S5, S6),
-	compile_body_expression('$findall_collect'(L), TAIL, D, _, B3, B2, S6, S2).
+	!, compile_body_expression('$findall_collect'(L), TAIL, D, _, B3, B2, S6, S2).
 
 % forall
 compile_body_expression(forall(G, A), TAIL, D, D, B1, B2, S1, S2) :-
@@ -294,7 +294,7 @@ compile_body_expression(forall(G, A), TAIL, D, D, B1, B2, S1, S2) :-
 	add_boilerplate(P, (HEAD :- G2, \+(A2), !, fail)),
 	add_boilerplate(P2, HEAD),
 	HEAD2 =.. [P|IARGS],
-	compile_body_expression(HEAD2, TAIL, D, _, B1, B2, S4, S2).
+	!, compile_body_expression(HEAD2, TAIL, D, _, B1, B2, S4, S2).
 
 % bagof
 compile_body_expression(bagof(T, G, L), TAIL, D1, D2, B1, B2, S1, S2) :-
