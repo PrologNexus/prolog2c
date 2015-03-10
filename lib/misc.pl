@@ -83,3 +83,5 @@ number_codes(A, LST) :-
 number_codes(A, LST) :-
 	foreign_call(number_codes(A, LST1)),
 	(LST1 == 0 -> number_codes(A, LST); LST = LST1).
+
+char_code(A, C) :- atom_codes(A, [C]).

@@ -49,7 +49,6 @@ macro(set_random_seed(SEED), foreign_call(set_random_seed(SEED))).
 macro(atom_hash(ATOM, HASH), foreign_call(atom_hash(ATOM, HASH))).
 macro(acyclic_term(X), foreign_call(acyclic_term(X))).
 macro(close(S), foreign_call(close_stream(S))).
-macro(char_code(A, C), foreign_call(atom_codes(A, [C]))).
 macro(atom_length(A, L), foreign_call(atom_length(A, L))).
 macro(ground(X), foreign_call(ground(X))).
 macro(rename_file(X, Y), foreign_call(rename_file(X, Y))).
@@ -75,6 +74,9 @@ auto_include(memberchk, 2, 'lib/lists.pl').
 auto_include(compare, 3, 'lib/misc.pl').
 auto_include(shell, 1, 'lib/misc.pl').
 auto_include(between, 3, 'lib/misc.pl').
+auto_include(atom_codes, 2, 'lib/misc.pl').
+auto_include(number_codes, 2, 'lib/misc.pl').
+auto_include(char_code, 2, 'lib/misc.pl').
 
 auto_include(tab, 1, 'lib/io.pl').
 auto_include(skip, 1, 'lib/io.pl').
