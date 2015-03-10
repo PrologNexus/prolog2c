@@ -1294,7 +1294,7 @@ static void clear_shared_term_table()
 
 static X *lookup_shared_term(X x, int addnew)
 {
-  XWORD key = (unsigned long)x % shared_term_table_size;
+  XWORD key = (XWORD)x % shared_term_table_size;
   int f = 0;
   key *= 2;
 
@@ -2470,7 +2470,7 @@ static XWORD numeric_arg(char *arg)
 static void initialize(int argc, char *argv[])
 {
 #ifdef _WIN32
-  QueryPerformanceFrequency(&win32_p_freq);
+  QueryPerformanceFrequency(&win32_perf_freq);
 #endif
 
   heap_size = HEAP_SIZE;
