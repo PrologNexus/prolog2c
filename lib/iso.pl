@@ -8,9 +8,21 @@ atom_concat(X, Y, Z) :-
 atom_concat(X, Y, Z) :-
 	name(X, XL), name(Y, YL), append(XL, YL, ZL), atom_codes(Z, ZL).
 
-atom_chars(X, Y) :- atom_codes(X, XL), findall(CH, (member(C, XL), char_code(CH, C)), Y).
+atom_chars(X, Y) :-
+	var(X), !,
+	findall(C, (member(CH, Y), char_code(CH, C)), YL),
+	atom_codes(X, YL).
+atom_chars(X, Y) :-
+	atom_codes(X, XL),
+	findall(CH, (member(C, XL), char_code(CH, C)), Y).
 
-number_chars(X, Y) :- number_codes(X, XL), findall(CH, (member(C, XL), char_code(CH, C)), Y).
+number_chars(X, Y) :-
+	var(X), !,
+	findall(C, (member(CH, Y), char_code(CH, C)), YL),
+	number_codes(X, YL).
+number_chars(X, Y) :-
+	number_codes(X, XL),
+	findall(CH, (member(C, XL), char_code(CH, C)), Y).
 
 get_char(C) :- get_byte(C1), (C1 == -1 -> C = end_of_file; char_code(C, C1)).
 
