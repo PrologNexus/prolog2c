@@ -1,47 +1,75 @@
-#!/bin/sh
+#!/bin/bash
 ### autocompile-script for pc
 #
 # usage: pc-autocompile [-h] FILENAME ARGUMENT ...
 
+
+PC_PREFIX=
+PC_INCLUDEPATH=
+# define PC_AUTOCOMPILE_CACHE if ~/.autocompile-cache is not sufficient
+
 set -e
 
-case "$1" in
-    -h|-help|--help)
-	echo "usage: pc-autocompile [-h] FILENAME ARGUMENT ..."
-	exit;;
-esac
+PC_OPTIONS=
+C_OPTIONS=
+OPTFLAGS="-O2 -fomit-frame-pointer"
+LD_OPTIONS=
+PC_SOURCEFILE=
 
-tmpdir=$TMPDIR;
+while true; do
+    case "$1" in
+	-h|-help|--help)
+	    echo "usage: pc-autocompile [-h] [OPTION ...] FILENAME ARGUMENT ..."
+	    exit;;
+	-C)
+	    shift
+	    C_OPTIONS="${C_OPTIONS} $1"
+	    shift;;
+	-L)
+	    shift
+	    LD_OPTIONS="${LD_OPTIONS} $1"
+	    shift;;
+	-O0)
+	    OPTFLAGS=
+	    shift;;
+	-*)
+	    PC_OPTIONS="${PC_OPTIONS} $1"
+	    shift;;
+	*)
+	    PC_SOURCEFILE="$1"
+	    shift
+	    break;;
+    esac
+done
 
-if test -z "$tmpdir"; then
-    tmpdir=/tmp
+if test -z "${TMPDIR}"; then
+    TMPDIR=/tmp
 fi
 
-filename=$1
-shift
-cachedir="$PC_AUTOCOMPILE_CACHE"
+CACHEDIR="$PC_AUTOCOMPILE_CACHE"
 
-if test -z "$cachedir"; then
-    cachedir=~/.autocompile-cache
+if test -z "${CACHEDIR}"; then
+    CACHEDIR=~/.autocompile-cache
 fi
 
-if test \! -d "$cachedir"; then
-    mkdir "$cachedir"
+if test \! -d "${CACHEDIR}"; then
+    mkdir "${CACHEDIR}"
 fi
 
-hash=`md5sum "$filename" | sed -e 's/^\([a-f0-9]\+\).*$/\1/'`
+HASH=`md5sum "${PC_SOURCEFILE}" | sed -e 's/^\([a-f0-9]\+\).*$/\1/'`
 
-if test -z "$hash"; then
-    echo "invalid filename: $filename" >2
+if test -z "${HASH}"; then
+    echo "invalid ${PC_SOURCEFILE}" >2
     exit 1
 fi
 
-if test -x "${cachedir}/${hash}"; then
-    exec "${cachedir}/${hash}" "$@"
+if test -x "${CACHEDIR}/${HASH}"; then
+    exec "${CACHEDIR}/${HASH}" "$@"
 fi
 
-filename2=`basename "$filename"`
-pc -q "$filename" -o "${tmpdir}/${filename2}.c"
-gcc -std=gnu99 -O2 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -DTRACE -DNDEBUG \
-    -I. "${tmpdir}/${filename2}.c" -o "${cachedir}/${hash}" -lm
-exec "${cachedir}/${hash}" "$@"
+PC_SOURCEFILE2=`basename "${PC_SOURCEFILE}"`
+${PC_PREFIX}pc -q "${PC_SOURCEFILE}" ${PC_OPTIONS} -o "${TMPDIR}/${PC_SOURCEFILE2}.c"
+gcc -std=gnu99 ${OPTFLAGS} -fno-strict-aliasing -fwrapv -DTRACE -DNDEBUG \
+    ${C_OPTIONS} ${PC_INCLUDEPATH} -I. "${TMPDIR}/${PC_SOURCEFILE2}.c" -o "${CACHEDIR}/${HASH}" \
+    -lm -lrt ${LD_OPTIONS}
+exec "${CACHEDIR}/${HASH}" "$@"
