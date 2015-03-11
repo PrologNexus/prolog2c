@@ -1,7 +1,7 @@
 %%% prolog flags
 
 
-current_prolog_flag(version, 3).
+current_prolog_flag(version, 4).
 
 current_prolog_flag(prolog_title, '?-Prolog').
 current_prolog_flag(prolog_copyright, '(c)MMXV Felix L. Winkelmann').
