@@ -71,6 +71,7 @@ auto_include(append, 3, 'lib/lists.pl').
 auto_include(member, 2, 'lib/lists.pl').
 auto_include(reverse, 2, 'lib/lists.pl').
 auto_include(memberchk, 2, 'lib/lists.pl').
+auto_include(is_list, 1, 'lib/lists.pl').
 
 auto_include(compare, 3, 'lib/misc.pl').
 auto_include(shell, 1, 'lib/misc.pl').
@@ -274,6 +275,7 @@ determinate_builtin(put_char, 1).
 determinate_builtin(put_char, 2).
 determinate_builtin(atom_codes, 2).
 determinate_builtin(number_codes, 2).
+determinate_builtin(is_list, 1).
 
 determinate_builtin(NAME, ARITY) :-
 	recorded(determinate, NAME/ARITY).

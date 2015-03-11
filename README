@@ -1114,6 +1114,10 @@ Builtin predicates
 
     Like member/2, but produces only one solution.
 
+        is_list(?X)
+
+    True, if X is a list.
+
   - Calling code written in other languages
 
         foreign_call(CALL)

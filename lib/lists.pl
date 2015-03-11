@@ -16,3 +16,8 @@ length([_|X], N) :- length(X, N2), N is N2 + 1.
 
 memberchk(X, [X|_]) :- !.
 memberchk(X, [_|R]) :- memberchk(X, R).
+
+is_list(List) :- nonvar(List), '$is_list'(List).
+
+'$is_list'([]).
+'$is_list'([_|_]).
