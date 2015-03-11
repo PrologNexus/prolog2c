@@ -4438,6 +4438,14 @@ PRIMITIVE(file_exists, X name)
   return !stat(fname, &info) && S_ISREG(info.st_mode);
 }
 
+PRIMITIVE(dir_exists, X name) 
+{
+  struct stat info;
+  int len;
+  XCHAR *fname = to_string(name, &len);
+  return !stat(fname, &info) && S_ISDIR(info.st_mode);
+}
+
 PRIMITIVE(get_byte, X s, X c)
 {
   int g = fgetc(get_input_port(s));

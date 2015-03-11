@@ -10,6 +10,7 @@ macro(command_line_arguments(X), foreign_call(command_line_arguments(X))).
 macro(display(X), foreign_call(basic_write(0, X))).
 macro(display(S, X), foreign_call(basic_write(S, X))).
 macro(exists_file(NAME), foreign_call(file_exists(NAME))).
+macro(exists_directory(NAME), foreign_call(dir_exists(NAME))).
 macro(garbage_collect, foreign_call(gc)).
 macro(halt(C), foreign_call(halt(C))).
 macro(halt, foreign_call(halt(0))).

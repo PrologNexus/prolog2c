@@ -57,6 +57,7 @@ system_predicate(display(+S, +X)).
 system_predicate(enable_trace(+X)).
 system_predicate(erase(+X)).
 system_predicate(exists_file(+X), _, 'fails if nonexistent or not a regular file').
+system_predicate(exists_directory(+X), _, 'fails if nonexistent or not a directory').
 system_predicate(float(+X)).
 system_predicate(foreign_pointer(+X)).
 system_predicate(functor(?X, ?Y, ?Z)).

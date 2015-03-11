@@ -966,7 +966,12 @@ Builtin predicates
 
         exists_file(+X)
 
-    True, if the file with the name X (an atom or string) exists.
+    True, if the regular file with the name X (an atom or string)
+    exists.
+
+        exists_directory(+X)
+
+    True, if the directory with the name X (an atom or string) exists.
 
         getenv(+X, -Y)
 
