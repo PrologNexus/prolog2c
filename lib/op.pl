@@ -63,5 +63,5 @@ op(P, A, N) :-
 	global_ref(operator_table, OT),
 	(select(op(_, _, N), OT, OT2); OT2 = OT),
 	!,
-	copy_term(op(P, A, N), X),
-	global_set(operator_table, [X|OT2]).
+	copy_term([op(P, A, N)|OT2], OT3),
+	global_set(operator_table, OT3).
