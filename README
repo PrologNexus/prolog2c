@@ -89,10 +89,10 @@ Building and installation
     -I <library-directory>
 
   as additional command-line options when compiling a source file, or
-  by setting the environment variable `PC_INCLUDE_PATH` to a list of
-  directories to be searched, separated by ":" (which should not
-  include the "lib/" part - i.e. the path(s) should point to the
-  location in which the "lib" directory resides.)
+  by setting the environment variable `PC_INCLUDE_PATH` to the name of
+  a directory to be searched (which should not include the "lib/" part
+  - i.e. the path should point to the location in which the "lib"
+  directory resides.)
 
 
 Usage
