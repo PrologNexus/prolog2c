@@ -78,7 +78,8 @@ Building and installation
   have GNU make, then compile the files manually, see Makefile for the
   proper options you have to pass to the compiler.
 
-  Compilation may take a while, particularly with clang.
+  Compilation may take a while, particularly with clang, which needs
+  several hours to compile pi.c with high optimization settings.
 
   Several builtin predicates are actually implemented in Prolog and
   reside in separate library files in the "lib" directory. You can
