@@ -28,7 +28,10 @@ repl :- repl.
 
 %% always fails, to ensure trail is unwound
 process_input(TERM, _, _, _) :-
-	compound(TERM), TERM = [_|_], consult_files(TERM), !, fail.
+	compound(TERM),	TERM = [_|_], 
+	catch(consult_files(TERM), EXN, report_exception(EXN)),
+	see(IN), tell(OUT),
+	!, fail.
 process_input(TERM, VARS, IN, OUT) :-
 	catch(run_goal(TERM, VARS), EXN, report_exception(EXN)),
 	see(IN), tell(OUT),
