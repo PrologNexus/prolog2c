@@ -193,6 +193,7 @@ system_predicate(put_char(?X), 'lib/iso.pl').
 system_predicate(put_char(?X, ?Y), 'lib/iso.pl').
 
 arithmetic_operation(- X).
+arithmetic_operation(+ X).
 arithmetic_operation(\ X).
 arithmetic_operation(X + Y).
 arithmetic_operation(X - Y).

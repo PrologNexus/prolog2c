@@ -543,6 +543,8 @@ compile_arithmetic_test(X, Y, B, OP, S1, S2) :-
 	TERM =.. [OP, T1, T2],
 	emit(TERM).
 
+compile_arithmetic_expression(+X, DEST, B, S1, S2) :-
+	compile_arithmetic_expression(X, DEST, B, S1, S2).
 compile_arithmetic_expression([X], DEST, _, S1, S2) :-
 	number(X),
 	register_literal(X, N, S1, S2),

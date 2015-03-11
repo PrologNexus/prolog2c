@@ -817,7 +817,11 @@ Builtin predicates
 
   - Arithmetic operators
 
-        \- X
+        + X
+
+    Identity [ISO]
+
+        - X
 
     Negation [ISO]
 
