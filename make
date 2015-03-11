@@ -229,6 +229,7 @@
 			 (list "pi.pl"
 			       "lib/flags.pl"
 			       "lib/interp.pl"
+			       "dcg.pl"
 			       "pi_system_predicate.pl"
 			       "pi_call_primitive.pl" 
 			       "pi_evaluate_op.pl" "dcg.pl")
