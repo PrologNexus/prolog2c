@@ -3,6 +3,7 @@ NOTES											              -*- Org -*-
 
 * Issues
 ** Major
+*** pi doesn't respect PC_INCLUDE_PATH
 *** TODO 0046-arithmetic test fails in 32-bit pc
 *** TODO Term-comparison doesn't handle cyclic structures, yet
 *** TODO Why is so much space accumulating on arg- and env-stacks?
@@ -26,7 +27,7 @@ NOTES											              -*- Org -*-
 *** Everything is still rather slow and uses too much memory
    - see file:broken-tests/
 *** Once trail-stack reserve is reached, GC will loop if the trail can't be reduced
-*** If heap is insufficient deref_term/3 will loop endlessly
+*** If heap is insufficient deref_term/4 will loop endlessly
    - also recorded/X, retract/1 and clause/X, atom_codes/2,
      number_codes/2.
 *** name/2 and functor/3 (and others?) may exceed heap-reserve for large inputs
@@ -171,7 +172,6 @@ NOTES											              -*- Org -*-
    | write_canonical/1, write_canonical/2         |                                                |
    | write_term/2, write_term/3                   |                                                |
 ** ISO-extensions ISO DTR 13211-1:2006
-   | +/1                            | arithemtic, op(200, fy, +), unary plus    |
    | numbervars/3                   |                                           |
    | log/2, atan/2, asin/1, acos/1, | arithmetic expressions                    |
    | epsilon/0, pi/0, e/0           | arithmetic constants                      |
@@ -202,6 +202,7 @@ NOTES											              -*- Org -*-
 ** Compiler
 *** '$predicate_address'/2
 ** Builtins
+*** deref_term/4
 *** read1/2
 *** '$call_predicate'/2
 *** Single-element list in arithmetic expressions

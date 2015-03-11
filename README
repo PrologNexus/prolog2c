@@ -78,8 +78,7 @@ Building and installation
   have GNU make, then compile the files manually, see Makefile for the
   proper options you have to pass to the compiler.
 
-  Compilation may take a while, particularly with clang, which needs
-  several hours to compile pi.c with high optimization settings.
+  Compilation may take a while, particularly with clang.
 
   Several builtin predicates are actually implemented in Prolog and
   reside in separate library files in the "lib" directory. You can
@@ -1342,7 +1341,7 @@ Performance tips
   Compile the generated C code with "-DUNSAFE" to disable all safety
   checks (implies "-DNDEBUG".)
 
-  Compiling generated C code with "-DNO_CHECK_CYCLES" drops
+  Compiling generated C code with "-DNO\_CHECK\_CYCLES" drops
   cycle-checks in builtin operations (this does not affect
   acyclic_term/1).
 
@@ -1491,16 +1490,16 @@ Calling code written in other languages
 
   Notes:
 
-  - "PRIMITIVE()", "unify()", "CSTRING()" and "system_error()" are
+  - "PRIMITIVE()", "unify()", "CSTRING()" and "system\_error()" are
     only visible in compiled Prolog code. If you want to implement
     the C part of your extension in a separate source-file, you can
     include "pc.h", but will have to do without some of the macros
     and functions provided in "pc.h" (look for definitions guarded
-    with "COMPILED_PROLOG_PROGRAM".)
+    with "COMPILED\_PROLOG\_PROGRAM".)
 
   - "PRIMITIVE()" is not strictly necessary. It only ensures the
     result type is "int" and an implicit first argument of type
-    "CHOICE_POINT *" is passed. This argument _must_ be named "C0",
+    "CHOICE\_POINT *" is passed. This argument _must_ be named "C0",
     as "unify()" actually is a macro that uses it.
 
   - "CSYMBOL()" allocates a Prolog atom, from a zero-terminated C
@@ -1508,10 +1507,10 @@ Calling code written in other languages
     to allocate using an arbitrary allocation pointer, called
     "CSYMBOL1()", etc.
 
-  - "system_error()" throws an exception of type system_error/1.
-    You can also use "throw_exception()" to trigger an arbitrary
-    exception object, or "type_error()" to trigger an exception of
-    type type_error/2.
+  - "system\_error()" throws an exception of type system\_error/1.
+    You can also use "throw\_exception()" to trigger an arbitrary
+    exception object, or "type\_error()" to trigger an exception of
+    type type\_error/2.
 
   - "unify" is a macro, expanding into an inline test and a call to
     a general unification routine. It is also only usable in
@@ -1520,7 +1519,7 @@ Calling code written in other languages
 
   - You can add your extensions permanently to the compiler by
     adding a macro/2 clause in the file "macros.pl" of the compiler
-    sources and adding a clause for auto_include/3 (in the same
+    sources and adding a clause for auto\_include/3 (in the same
     file), which ensures that a file is included automatically and
     compiled with the original program. Finally copy your extension
     file into the "lib" directory (wherever you chose to install
@@ -1782,23 +1781,23 @@ Version history
     - The routines for storing and retrieving terms to and from the
       record- or clause database are now tail-recursive and handle
       larger terms.
-    - SIGINT is handled and produces an exception (user_interrupt),
+    - SIGINT is handled and produces an exception (user\_interrupt),
       if the platform supports it.
-    - Renamed read_atom/2 to read_string/2. read_atom/2 and read_line/1
+    - Renamed read\_atom/2 to read\_string/2. read\_atom/2 and read\_line/1
       return now character-code lists instead of atoms.
     - New library predicates and builtins:
-      char_code/2, atom_concat/3, atom_chars/2, atom_length/2,
-      current_input/1, current_output/1, number_chars/2, nl/1,
-      put_byte/1, put_byte/2, put_code/1, put_code/2, get_byte/1,
-      get_byte/2, get_code/1, get_code/2, peek_byte/1, peek_byte/2,
-      peek_code/1, peek_code/2, read/2, display/2, write/2, writeq/2,
-      put_char/1, put_char/2, get_char/1, get_char/2, peek_char/1,
-      peek_char/2, ground/1, rename_file/2, delete_file/1, once/1,
-      close/1, set_input/1, set_output/1, set_error_output/1,
-      at_end_of_stream/0, at_end_of_stream/1, flush_output/1,
-      acyclic_term/1, unify_with_occurs_check/2, current_prolog_flag/2,
-      read_line/1, duplicate_term/2
-    - Renamed flush/0 to flush_output/1.
+      char\_code/2, atom\_concat/3, atom\_chars/2, atom\_length/2,
+      current\_input/1, current\_output/1, number\_chars/2, nl/1,
+      put\_byte/1, put\_byte/2, put\_code/1, put\_code/2, get\_byte/1,
+      get\_byte/2, get\_code/1, get\_code/2, peek\_byte/1, peek\_byte/2,
+      peek\_code/1, peek\_code/2, read/2, display/2, write/2, writeq/2,
+      put\_char/1, put\_char/2, get\_char/1, get\_char/2, peek\_char/1,
+      peek\_char/2, ground/1, rename\_file/2, delete\_file/1, once/1,
+      close/1, set\_input/1, set\_output/1, set\_error\_output/1,
+      at\_end\_of\_stream/0, at\_end\_of\_stream/1, flush\_output/1,
+      acyclic\_term/1, unify\_with\_occurs\_check/2, current\_prolog\_flag/2,
+      read\_line/1, duplicate\_term/2
+    - Renamed flush/0 to flush\_output/0.
     - pi interpreter:
       - More robust with respect to current I/O ports in case of
         exceptions, also reduced memory usage across queries.
@@ -1816,13 +1815,13 @@ Version history
       - fixed handling zero-argument function with result.
       - "/* success */" result modifier.
     - Slightly faster db-key computation.
-    - Added ensure_loaded/1 directive.
+    - Added ensure\_loaded/1 directive.
 
   - Version 2:
 
     - Many bugfixes, everywhere.
     - Added "writef.pl" and "arith.pl" to library.
-    - Added primitive read_atom/2.
+    - Added primitive read\_atom/2.
     - The interpreter handles DCG rules now.
     - Added "foreign pointer" type.
     - Added support for coroutines (freeze + dif)
