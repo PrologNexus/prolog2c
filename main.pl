@@ -11,7 +11,7 @@
 %   -q                      disable any output
 %   -compress-facts         compress blocks of facts with ground arguments
 %
-% - The contents of PC_INCLUDE_PATH are prepended to the default include-path.
+% - The content of PC_INCLUDE_PATH are prepended to the default include-path.
 
 :- initialization(main).
 
@@ -28,13 +28,11 @@ compile(ARGS) :-
 
 set_include_path :-
 	default_setting(include_path, PATH),
-	(getenv('PC_INCLUDE_PATH', IPATH) 
-	->
-	 split_string(IPATH, 58, PATHS),
-	 append(PATHS, PATH, PATHS2)
-	; PATHS2 = PATH
+	( getenv('PC_INCLUDE_PATH', IPATH) 
+	-> append([IPATH], PATH, PATH2)
+	; PATH2 = PATH
 	),
-	recorda(include_path, PATHS2).
+	recorda(include_path, PATH2).
 
 parse_arguments([]).
 parse_arguments(['-o', OFILE|MORE]) :-

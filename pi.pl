@@ -5,7 +5,8 @@
 :- include('dcg.pl').
 
 main :-
-	pi_init,
+	get_include_path(PATH),
+	pi_init(PATH),
 	command_line_arguments(ARGS),
 	'$predicate_address'(dcg_rule/2, ADR),
 	asserta((term_expansion((X --> Y), Z) :- '$call_predicate'(ADR, [(X --> Y), Z]))),
@@ -14,6 +15,9 @@ main :-
 	((recorded(pi_initialization_goal, G); recorded(pi_default_initialization_goal, G))
 	 -> call(G)
 	 ; recorded(pi_silent, _, REF), erase(REF), repl).
+
+get_include_path([PATH, '.']) :- getenv('PC_INCLUDE_PATH', PATH).
+get_include_path(['.']).
 
 repl :-
 	display('?- '), flush_output,

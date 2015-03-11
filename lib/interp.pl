@@ -1,4 +1,4 @@
-%%%% interpeter core
+%%%% interpreter core
 
 %% based on:
 
@@ -21,8 +21,9 @@
 :- pre_initialization(global_set(pi_trace_depth, none)).
 
 
-pi_init :-
+pi_init(INCPATH) :-
 	assertz(term_expansion(X, X)),
+	recordz(pi_include_path, INCPATH),
 	recordz(pi_silent, yes).
 
 pi_do_goal(Goal) :-
@@ -304,7 +305,7 @@ expand_term(TERM, TERM).
 %%
 
 consult(FILE) :-
-	pi_find_file(FILE, FILE2),
+	pi_locate_file(FILE, FILE2),
 	seeing(OLD),
 	see(FILE2),
 	recordz(pi_loaded, FILE2),
@@ -330,17 +331,23 @@ pi_consult_terms(PNA) :-
 	pi_consult_terms(PNA).
 pi_consult_terms(_).
 
-pi_find_file(FILE, FILE2) :-
-	\+atom(FILE), atom_codes(FILE, F2), pi_find_file(F2, FILE2).
-pi_find_file(FILE, FILE) :-
-	exists_file(FILE), !.
-pi_find_file(FILE, FILE2) :-
-	atom_codes(FILE, STR),
-	append(STR, ".pl", STR2),
-	atom_codes(FILE2, STR2),
-	exists_file(FILE2), !.
-pi_find_file(FILE, _) :-
-	throw(existence_error(FILE)).
+
+%% a copy of incfile.pl
+
+pi_locate_file(NAME, RNAME) :-
+	recorded(pi_include_path, PATH),
+	pi_locate_file(NAME, PATH, RNAME).
+pi_locate_file(NAME, [], REALNAME) :-
+	throw(existence_error(NAME)).
+pi_locate_file(NAME, [DIR|_], REALNAME) :-
+	atom(NAME),
+	atom_concat(DIR, '/', DIR1), '$pi_locate_file'(DIR1, NAME, REALNAME), !.
+pi_locate_file(NAME, [_|MORE], REALNAME) :- pi_locate_file(NAME, MORE, REALNAME).
+
+'$pi_locate_file'(D, N, R) :- atom_concat(D, N, N1), '$pi_locate_file_2'(N1, R).
+
+'$pi_locate_file_2'(N, R) :- atom_concat(N, '.pl', R), exists_file(R).
+'$pi_locate_file_2'(N, N) :- exists_file(N).
 
 pi_insert_item(PNA, [], PNA) :- !.
 pi_insert_item(PNA, [C1|R], PNA2) :-
@@ -368,12 +375,11 @@ pi_process_directive(initialization(G)) :-
 	; recordz(pi_initialization_goal, G)
 	).
 pi_process_directive(ensure_loaded(FILE)) :-
-	pi_find_file(FILE, FILE2),
-	(recorded(pi_loaded, FILE2); pi_process_directive(include(FILE2))).
+	(recorded(pi_loaded, FILE); pi_process_directive(include(FILE))).
 pi_process_directive(include(FILE)) :-
-	pi_find_file(FILE, FILE2),
+	pi_locate_file(FILE, FILE2),
 	seeing(CURRENT),
-	(recorded(pi_include_file_stack, OLD, REF)	-> erase(REF); OLD = []),
+	(recorded(pi_include_file_stack, OLD, REF) -> erase(REF); OLD = []),
 	recordz(pi_include_file_stack, [CURRENT|OLD]),
 	see(FILE2),
 	recordz(pi_loaded, FILE2),

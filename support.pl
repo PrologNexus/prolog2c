@@ -48,33 +48,28 @@ concatenate([X|Y], Z) :-
 	concatenate(Y, Z2),
 	append(X, Z2, Z).
 
-locate_file(NAME, REALNAME) :-
-	recorded(include_path, PATH),
-	locate_file(NAME, PATH, REALNAME).
-
-locate_file(NAME, [], _) :-
-	error(['include-file not found: ', NAME]).
-locate_file(NAME, [DIR|_], REALNAME) :-
-	atomic_list_concat([DIR, '/', NAME], REALNAME),
-	exists_file(REALNAME), !.
-locate_file(NAME, [DIR|_], REALNAME) :-
-	atomic_list_concat([DIR, '/', NAME, '.pl'], REALNAME),
-	exists_file(REALNAME), !.
-locate_file(NAME, [_|MORE], REALNAME) :-
-	locate_file(NAME, MORE, REALNAME).
-
-split_string(STR, SEP, [PART|P2]) :-
-	append(PART, [SEP|MORE], STR),
-	!,
-	split_string(MORE, SEP, P2).
-split_string(STR, _, [STR]).
-
-
 %% extract second arg of terms in list - this doesn't use findall/3,
 %% to avoid renaming
-
 map_second([], []).
 map_second([T|MORE], [V|REST]) :-
 	arg(2, T, V),
 	map_second(MORE, REST).
 
+
+%%% locating files
+
+locate_file(NAME, RNAME) :-
+	recorded(include_path, PATH),
+	locate_file(NAME, PATH, RNAME).
+locate_file(NAME, _) :-
+	error(['include-file not found: ', NAME]).
+
+locate_file(_, [], _) :- !, fail.
+locate_file(NAME, [DIR|_], REALNAME) :-
+	atom_concat(DIR, '/', DIR1), '$locate_file'(DIR1, NAME, REALNAME), !.
+locate_file(NAME, [_|MORE], REALNAME) :- locate_file(NAME, MORE, REALNAME).
+
+'$locate_file'(D, N, R) :- atom_concat(D, N, N1), '$locate_file_2'(N1, R).
+
+'$locate_file_2'(N, R) :- atom_concat(N, '.pl', R), exists_file(R).
+'$locate_file_2'(N, N) :- exists_file(N).

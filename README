@@ -163,6 +163,10 @@ Interpreter
   goal to be executed, if no initialization-goal was declared in the
   source file.
 
+  Files consulted or included are located relative to the current
+  working directory, optionally with the content of the environment
+  variable "PC\_INCLUDE\_PATH" prepended, if it is defined.
+
   In contrast to the compiler, the clause-database represents the
   program that is currently executing and manipulations of the
   database using arsserta/assertz will influence running code. The
