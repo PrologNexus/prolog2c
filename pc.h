@@ -1632,7 +1632,7 @@ static int thaw_term_recursive(X *xp)
 
     *tp = x;
 
-    if(alloc_top + objsize(x) + 1 >= fromspace_limit) return 0;
+    if(alloc_top + objsize(x) + 1 > fromspace_limit) return 0;
     
     tp[ 1 ] = *xp = make_var();
 #ifdef USE_DELAY
@@ -3851,7 +3851,7 @@ static X string_to_list(XCHAR *str, int len)
 {
   XWORD size = len * 3 * sizeof(XWORD); /* N pairs */
 
-  if((XWORD)alloc_top + size  >= (XWORD)fromspace_limit) {
+  if((XWORD)alloc_top + size  > (XWORD)fromspace_limit) {
     alloc_top = fromspace_limit; /* force GC */
     return ZERO;
   }
