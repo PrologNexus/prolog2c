@@ -4037,7 +4037,7 @@ static FILE *get_output_port(X s) { return port_file(s == ZERO ? standard_output
     goto lbl; }
 
 #define CHECK_LIMIT					\
-  { if(alloc_top > fromspace_limit)			\
+  { if(alloc_top >= fromspace_limit)			\
       collect_garbage(C);				\
     ASSERT((char *)arg_top < (char *)argument_stack + argument_stack_size, \
 	   "argument-stack overflow"); } 
