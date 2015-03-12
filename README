@@ -107,6 +107,8 @@ Usage
                             file-extension replaced by ".c")
     -q                      do not show any output while compiling.
     -compress-facts         reduce code produced for facts (see below)
+    -xref                   write cross-referencing information to
+                            stdout
 
   Any output preceeded with "%" is purely for informational purposes
   and can be disabled with the "-q" option.
@@ -484,7 +486,7 @@ Builtin predicates
     [ISO]
 
         peek_char(-CHAR)
-	peek_char(+STREAM, -CHAR)
+        peek_char(+STREAM, -CHAR)
 
     Peeks a character as a length 1 atom from the current input stream
     or the stream given. On end-of-file CHAR is unified with the atom
@@ -506,7 +508,7 @@ Builtin predicates
     interchangable [ISO]
 
         put_char(+CHAR)
-	put_char(+STREAM, +CHAR)
+        put_char(+STREAM, +CHAR)
 
     Writes the length 1 atom CHAR to the current output stream or the
     stream given [ISO]
@@ -545,7 +547,7 @@ Builtin predicates
     interchangable [ISO]
 
         get_char(-CHAR)
-	get_char(+STREAM, -CHAR)
+        get_char(+STREAM, -CHAR)
 
     Read a character as a length 1 atom from the current input stream
     or the stream given. On end-of-file CHAR is unified with the atom
@@ -628,7 +630,7 @@ Builtin predicates
     be quoted on reading.
 
         set_input(+STREAM)
-	set_output(+STREAM)
+        set_output(+STREAM)
 
     Sets the current input or output stream to STREAM. You can pass
     the atom 'user' to select the standard input or output port [ISO]
