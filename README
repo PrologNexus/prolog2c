@@ -433,7 +433,9 @@ Builtin predicates
         close(+STREAM)
 
     Closes the given stream. If STREAM is the current input- or
-    output- stream, then the default I/O stream becomes current [ISO]
+    output- stream, then the default I/O stream becomes current,
+    if STREAM refers to one of the default I/O streams, than nothing
+    is done [ISO]
   
         current_input(-X)
         current_output(-X)
@@ -630,6 +632,15 @@ Builtin predicates
 
     Sets th current error output stream to STREAM. 'user' selects here
     the standard error port.
+
+    The following builtin stream aliases are available:
+
+        current_input
+        current_output
+        current_error    these refer to the currently active I/O streams
+        user_input      
+        user_output
+        user_error       these refer to the initial I/O streams (i.e. console)
 
   - Formatted output
 
