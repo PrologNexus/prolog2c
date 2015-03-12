@@ -98,7 +98,6 @@ auto_include(at_end_of_stream, 0, 'lib/io.pl').
 auto_include(at_end_of_stream, 1, 'lib/io.pl').
 auto_include(set_input, 0, 'lib/io.pl').
 auto_include(set_output, 1, 'lib/io.pl').
-auto_include(set_error_output, 1, 'lib/io.pl').
 	     
 auto_include(op, 3, 'lib/op.pl').
 auto_include(current_op, 3, 'lib/op.pl').
@@ -262,7 +261,6 @@ determinate_builtin(flush_output, 0).
 determinate_builtin(flush_output, 1).
 determinate_builtin(set_input, 1).
 determinate_builtin(set_output, 1).
-determinate_builtin(set_error_output, 1).
 determinate_builtin(at_end_of_stream, 0).
 determinate_builtin(at_end_of_stream, 1).
 determinate_builtin(atom_chars, 2).

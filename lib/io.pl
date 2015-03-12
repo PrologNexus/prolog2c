@@ -19,8 +19,7 @@ seen :-
 tell(user) :-
 	!, foreign_call(set_current_output_stream(user_output)).
 tell(ALIAS) :-
-	(ALIAS == user_output; ALIAS == user_error;
-	 ALIAS == current_output; ALIAS == current_error),
+	(ALIAS == user_output; ALIAS == user_error; ALIAS == current_output),
 	!, foreign_call(set_current_output_stream(ALIAS)).
 tell(S) :-
 	stream(S), 
@@ -80,7 +79,6 @@ read_line(ATM) :-
 
 set_input(S) :- foreign_call(set_current_input_stream(S)).
 set_output(S) :- foreign_call(set_current_output_stream(S)).
-set_error_output(S) :- foreign_call(set_current_error_stream(S)).
 
 flush_output :- foreign_call(current_output_stream(S)), foreign_call(flush_output(S)).
 flush_output(S) :- foreign_call(flush_output(S)).

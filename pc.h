@@ -1040,7 +1040,6 @@ static void intern_static_symbols(X sym1)
   user_error_atom = intern(CSTRING("user_error"));
   current_input_atom = intern(CSTRING("current_input"));
   current_output_atom = intern(CSTRING("current_output"));
-  current_error_atom = intern(CSTRING("current_error"));
 }
 
 
@@ -2175,7 +2174,6 @@ static void collect_garbage(CHOICE_POINT *C)
   mark1(&user_error_atom);
   mark1(&current_input_atom);
   mark1(&current_output_atom);
-  mark1(&current_error_atom);
 
   // mark standard ports
   mark1(&standard_input_port);
@@ -3906,7 +3904,6 @@ static X get_output_stream(X s)
   if(s == user_output_atom) return &default_output_port;
   else if(s == user_error_atom) return &default_error_port;
   else if(s == current_output_atom) return standard_output_port;
-  else if(s == current_error_atom) return standard_error_port;
   
   return check_output_port(s);
 }
