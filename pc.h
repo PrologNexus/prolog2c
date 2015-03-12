@@ -431,6 +431,8 @@ typedef struct PINFO
 static BLOCK END_OF_LIST_VAL_BLOCK = { END_OF_LIST_TAG };
 static X dot_atom, system_error_atom, type_error_atom, evaluation_error_atom;
 static X instantiation_error_atom, user_interrupt_atom, end_of_file_atom;
+static X user_input_atom, user_output_atom, user_error_atom;
+static X current_input_atom, current_output_atom, current_error_atom;
 
 static PORT_BLOCK default_input_port = { PORT_TAG|4, NULL, ONE, ONE, ZERO };
 static PORT_BLOCK default_output_port = { PORT_TAG|4, NULL, ZERO, ONE, ZERO };
@@ -1033,6 +1035,12 @@ static void intern_static_symbols(X sym1)
   instantiation_error_atom = intern(CSTRING("instantiation_error"));
   user_interrupt_atom = intern(CSTRING("user_interrupt"));
   end_of_file_atom = intern(CSTRING("end_of_file"));
+  user_input_atom = intern(CSTRING("user_input"));
+  user_output_atom = intern(CSTRING("user_output"));
+  user_error_atom = intern(CSTRING("user_error"));
+  current_input_atom = intern(CSTRING("current_input"));
+  current_output_atom = intern(CSTRING("current_output"));
+  current_error_atom = intern(CSTRING("current_error"));
 }
 
 
@@ -2162,6 +2170,12 @@ static void collect_garbage(CHOICE_POINT *C)
   mark1(&instantiation_error_atom);
   mark1(&user_interrupt_atom);
   mark1(&end_of_file_atom);
+  mark1(&user_input_atom);
+  mark1(&user_output_atom);
+  mark1(&user_error_atom);
+  mark1(&current_input_atom);
+  mark1(&current_output_atom);
+  mark1(&current_error_atom);
 
   // mark standard ports
   mark1(&standard_input_port);
@@ -3878,8 +3892,28 @@ static void push_argument_list(X lst)
 
 /// Port helpers
 
-static FILE *get_input_port(X s) { return port_file(s == ZERO ? standard_input_port : check_input_port(s)); }
-static FILE *get_output_port(X s) { return port_file(s == ZERO ? standard_output_port : check_output_port(s)); }
+static X get_input_stream(X s) 
+{
+  if(s == user_input_atom) return &default_input_port;
+  else if(s == current_input_atom) return standard_input_port;
+  
+  return check_input_port(s);
+}
+
+
+static X get_output_stream(X s) 
+{
+  if(s == user_output_atom) return &default_output_port;
+  else if(s == user_error_atom) return &default_error_port;
+  else if(s == current_output_atom) return standard_output_port;
+  else if(s == current_error_atom) return standard_error_port;
+  
+  return check_output_port(s);
+}
+
+
+static inline FILE *get_input_port(X s) { return port_file(get_input_stream(s)); }
+static inline FILE *get_output_port(X s) { return port_file(get_output_stream(s)); }
 
 
 /// VM operations
@@ -4462,10 +4496,7 @@ PRIMITIVE(peek_byte, X s, X c)
   return unify(word_to_fixnum(g), c);
 }
 
-PRIMITIVE(at_eof, X s) {
-  check_input_port(s);
-  return feof(port_file(check_type_PORT(s)));
-}
+PRIMITIVE(at_eof, X s) { return feof(port_file(get_input_port(s))); }
 
 PRIMITIVE(open_stream, X name, X input, X mode, X result)
 {
@@ -4542,37 +4573,19 @@ PRIMITIVE(current_error_stream, X stream) { return unify(standard_error_port, st
 
 PRIMITIVE(set_current_input_stream, X stream)
 {
-  if(stream == ZERO)			      /* 'user' */
-    standard_input_port = &default_input_port;
-  else {
-    check_input_port(stream);
-    standard_input_port = stream;
-  }
-
+  standard_input_port = get_input_stream(stream);
   return 1;
 }
 
 PRIMITIVE(set_current_output_stream, X stream)
 {
-  if(stream == ZERO)		/* 'user' */
-    standard_output_port = &default_output_port;
-  else {
-    check_output_port(stream);
-    standard_output_port = stream;
-  }
-
+  standard_output_port = get_output_stream(stream);
   return 1;
 }
 
 PRIMITIVE(set_current_error_stream, X stream)
 {
-  if(stream == ZERO)		/* 'user' */
-    standard_error_port = &default_error_port;
-  else {
-    check_output_port(stream);
-    standard_error_port = stream;
-  }
-
+  standard_error_port = get_output_stream(stream);
   return 1;
 }
 
@@ -4726,8 +4739,7 @@ PRIMITIVE(set_random_seed, X seed)
 }
 
 PRIMITIVE(flush_output, X stream) { 
-  check_type_PORT(stream);
-  fflush(port_file(stream)); 
+  fflush(get_output_port(stream));
   return 1; 
 }
 

@@ -7,28 +7,28 @@
 %       before a toplevel expression is compiled.
 
 macro(command_line_arguments(X), foreign_call(command_line_arguments(X))).
-macro(display(X), foreign_call(basic_write(user_output, X))).
+macro(display(X), foreign_call(basic_write(current_output, X))).
 macro(display(S, X), foreign_call(basic_write(S, X))).
 macro(exists_file(NAME), foreign_call(file_exists(NAME))).
 macro(exists_directory(NAME), foreign_call(dir_exists(NAME))).
 macro(garbage_collect, foreign_call(gc)).
 macro(halt(C), foreign_call(halt(C))).
 macro(halt, foreign_call(halt(0))).
-macro(nl, foreign_call(put_byte(user_output, 10))).
+macro(nl, foreign_call(put_byte(current_output, 10))).
 macro(nl(S), foreign_call(put_byte(S, 10))).
-macro(put(BYTE), foreign_call(put_byte(user_output, BYTE))).
-macro(put_byte(BYTE), foreign_call(put_byte(user_output, BYTE))).
+macro(put(BYTE), foreign_call(put_byte(current_output, BYTE))).
+macro(put_byte(BYTE), foreign_call(put_byte(current_output, BYTE))).
 macro(put_byte(S, BYTE), foreign_call(put_byte(S, BYTE))).
-macro(put_code(BYTE), foreign_call(put_byte(user_output, BYTE))).
+macro(put_code(BYTE), foreign_call(put_byte(current_output, BYTE))).
 macro(put_code(S, BYTE), foreign_call(put_byte(S, BYTE))).
-macro(get0(BYTE), foreign_call(get_byte(user_input, BYTE))).
-macro(get_byte(BYTE), foreign_call(get_byte(user_input, BYTE))).
+macro(get0(BYTE), foreign_call(get_byte(current_input, BYTE))).
+macro(get_byte(BYTE), foreign_call(get_byte(current_input, BYTE))).
 macro(get_byte(S, BYTE), foreign_call(get_byte(S, BYTE))).
-macro(get_code(BYTE), foreign_call(get_byte(user_input, BYTE))).
+macro(get_code(BYTE), foreign_call(get_byte(current_input, BYTE))).
 macro(get_code(S, BYTE), foreign_call(get_byte(S, BYTE))).
-macro(peek_byte(BYTE), foreign_call(peek_byte(user_input, BYTE))).
+macro(peek_byte(BYTE), foreign_call(peek_byte(current_input, BYTE))).
 macro(peek_byte(S, BYTE), foreign_call(peek_byte(S, BYTE))).
-macro(peek_code(BYTE), foreign_call(peek_byte(user_input, BYTE))).
+macro(peek_code(BYTE), foreign_call(peek_byte(current_input, BYTE))).
 macro(peek_code(S, BYTE), foreign_call(peek_byte(S, BYTE))).
 macro(erase(REF), foreign_call(db_erase(REF))).
 macro(getenv(NAME, VAL), foreign_call(get_environment_variable(NAME, VAL))).

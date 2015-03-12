@@ -2,7 +2,7 @@
 
 
 see(ALIAS) :-
-	(ALIAS == user; ALIAS == user_input),
+	(ALIAS == user; ALIAS == user_input; ALIAS = current_input),
 	!, foreign_call(set_current_input_stream(user_input)).
 see(S) :-
 	stream(S),
@@ -16,11 +16,12 @@ seen :-
 	foreign_call(current_input_stream(S)),
 	foreign_call(close_stream(S)).
 
+tell(user) :-
+	!, foreign_call(set_current_output_stream(user_output)).
 tell(ALIAS) :-
-	( ALIAS == user
-	-> foreign_call(set_current_output_stream(user_output))
-	; foreign_call(set_current_output_stream(ALIAS))
-	), !.
+	(ALIAS == user_output; ALIAS == user_error;
+	 ALIAS == current_output; ALIAS == current_error),
+	!, foreign_call(set_current_output_stream(ALIAS)).
 tell(S) :-
 	stream(S), 
 	!,
