@@ -15,12 +15,12 @@ main :-
 	see(iotest),
 	seeing(S2),
 	see(S2),
-	peek(C), display(C), nl,
+	peek_byte(C), display(C), nl,
 	skip(116),		% t
 	display('skip\n'),
-	g0(101), g0(115), peek(116), g0(116),
+	g0(101), g0(115), peek_byte(116), g0(116),
 	display('peek\n'),
-	g(49), g(10), peek(-1), g(-1),
+	g(49), g(10), peek_byte(-1), g(-1),
 	nl,
 	seen,
 	tab(10), display('three\n').

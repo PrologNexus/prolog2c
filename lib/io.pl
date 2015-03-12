@@ -1,8 +1,9 @@
 %%% basic I/O - Edinburgh'ish
 
 
-see(user) :-
-	foreign_call(set_current_input_stream(0)).
+see(ALIAS) :-
+	(ALIAS == user; ALIAS == user_input),
+	!, foreign_call(set_current_input_stream(user_input)).
 see(S) :-
 	stream(S),
 	!,
@@ -15,8 +16,11 @@ seen :-
 	foreign_call(current_input_stream(S)),
 	foreign_call(close_stream(S)).
 
-tell(user) :-
-	foreign_call(set_current_output_stream(0)).
+tell(ALIAS) :-
+	( ALIAS == user
+	-> foreign_call(set_current_output_stream(user_output))
+	; foreign_call(set_current_output_stream(ALIAS))
+	), !.
 tell(S) :-
 	stream(S), 
 	!,
@@ -73,19 +77,12 @@ read_line(ATM) :-
 	foreign_call(read_line(A1)),
 	(A1 == 0 -> foreign_call(retry_string_to_list(ATM)); ATM = A1).
 
-set_input(user) :- foreign_call(set_current_input_stream(0)), !.
 set_input(S) :- foreign_call(set_current_input_stream(S)).
-
-set_output(user) :- foreign_call(set_current_output_stream(0)), !.
 set_output(S) :- foreign_call(set_current_output_stream(S)).
-
-set_error_output(user) :- foreign_call(set_current_error_stream(0)), !.
 set_error_output(S) :- foreign_call(set_current_error_stream(S)).
 
 flush_output :- foreign_call(current_output_stream(S)), foreign_call(flush_output(S)).
-flush_output(user) :- flush_output.
 flush_output(S) :- foreign_call(flush_output(S)).
 
 at_end_of_stream :- foreign_call(current_output_stream(S)), foreign_call(at_eof(S)).
-at_end_of_stream(user) :- at_end_of_stream.
 at_end_of_stream(S) :- foreign_call(at_eof(S)).

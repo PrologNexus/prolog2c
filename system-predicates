@@ -72,7 +72,6 @@ system_predicate(nl(+X)).
 system_predicate(nonvar(+X)).
 system_predicate(number(+X)).
 system_predicate(number_codes(?X, ?Y), _, 'uses strtol(3)/strtod(3), so allows leading space').
-system_predicate(peek(+X), _, '-1 on EOF').
 system_predicate(put(+X), _, 'X may be fixnum or symbol').
 system_predicate(sleep(+X)).
 system_predicate(stream(+X)).

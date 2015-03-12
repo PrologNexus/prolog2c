@@ -1421,7 +1421,7 @@ tokenize_file(Filename,Tokens) :-
 %  Reads an entire stream and tokenizes it.
 
 tokenize_stream([]) :-
-   peek(-1),
+   peek_code(-1),
    !.
 
 tokenize_stream(Tokens) :-
@@ -1441,7 +1441,7 @@ tokenize_line(Tokens) :-
 %  This makes it easier to append the results of successive calls.
 
 tokenize_line_dl(Tail/Tail) :-
-   peek(-1),                        % unnecessary test?
+   peek_code(-1),                        % unnecessary test?
    !.
 
 tokenize_line_dl(Dlist) :-
@@ -1494,7 +1494,7 @@ tokenize_line_x(digit,Char,[n(T)|Tokens]/Tail) :-
 % This handles numbers that are written with the decimal point first.
 
 tokenize_line_x(_, '.', Dlist) :-
-   peek(P), atom_codes(P1, [P]),
+   peek_code(P), atom_codes(P1, [P]),
    char_type_char(P1,digit,_),
    !,
    % Start over, classifying '.' as a digit
@@ -1532,7 +1532,7 @@ tokenize_letters(_,'''',Rest,NewType,NewChar) :-
    % Absorb an apostrophe, but only when it precedes t.
    % This keeps words together like doesn't, won't.
    %
-   peek(116),			% t
+   peek_code(116),			% t
    !,
    get0(_),
    tokenize_letters(letter,t,Rest,NewType,NewChar).
@@ -1552,7 +1552,7 @@ tokenize_digits(digit,Char,[Char|Rest],NewType,NewChar) :-
    tokenize_digits(Type2,Char2,Rest,NewType,NewChar).
 
 tokenize_digits(_, ',', Rest,NewType,NewChar) :-
-   peek(P), atom_codes(P1, [P]),
+   peek_code(P), atom_codes(P1, [P]),
    char_type_char(P1,digit,Char2),
    !,
    % It's a comma followed by a digit, so skip it and continue.
@@ -1560,7 +1560,7 @@ tokenize_digits(_, ',', Rest,NewType,NewChar) :-
    tokenize_digits(digit,Char2,Rest,NewType,NewChar).
 
 tokenize_digits(_, '.', ['.'|Rest],NewType,NewChar) :-
-   peek(P), atom_codes(P1, [P]),
+   peek_code(P), atom_codes(P1, [P]),
    char_type_char(P1,digit,Char2),
    !,
    % It's a period followed by a digit, so include it and continue.

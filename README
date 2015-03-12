@@ -466,23 +466,20 @@ Builtin predicates
         type(text)        default
         type(binary)
 
-    To make the stream the current input or output port use see/1 or
-    tell/1, respectively [ISO]
-
-        peek(+X)
-
-    Reads the next character from the current input-stream and unifies
-    the character code with X (-1 if end of file is reached). The
-    character is not removed from the input stream.
+    Stream-aliases for user-defined ports are not supported. To make
+    the stream the current input or output port use see/1 or tell/1,
+    respectively [ISO]
 
         peek_byte(-BYTE)
         peek_byte(+STREAM, -BYTE)
         peek_code(-BYTE)
         peek_code(+STREAM, -BYTE)
 
-    Peek a character from the current input stream or the stream
-    given. As there is currently no UNICODE support, these predicates
-    are interchangable [ISO]
+    Peeks a character from the current input stream or the stream
+    given and unifies it with BYTE (-1 if the end of file is reached.)
+    The character is not removed from the input port.  As there is
+    currently no UNICODE support, these predicates are interchangable
+    [ISO]
 
         peek_char(-CHAR)
 	peek_char(+STREAM, -CHAR)
