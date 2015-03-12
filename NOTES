@@ -3,7 +3,6 @@ NOTES											              -*- Org -*-
 
 * Issues
 ** Major
-*** pi doesn't respect PC_INCLUDE_PATH
 *** TODO 0046-arithmetic test fails in 32-bit pc
 *** TODO Term-comparison doesn't handle cyclic structures, yet
 *** TODO Why is so much space accumulating on arg- and env-stacks?
@@ -123,17 +122,6 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
-** is_list/1 seems to be used often
-   #+BEGIN_SRC prolog
-   /* is_list( +List ) holds when List is a list.
-    */
-   is_list( List ) :-
-	   nonvar( List ),
-	   is_list1( List ).
-
-   is_list1( [] ).
-   is_list1( [_|_] ).
-   #+END_SRC
 ** TODO Check if we can use file:lib/canon.pl for printing query results
 ** DONE if term_expansion/2 returns list, treat as separate (or no) terms
    - add this also to /pi-in-pc/
@@ -155,6 +143,15 @@ NOTES											              -*- Org -*-
    - consult/1, include/1, ensure_loaded/1
    - would this simply prepend "lib/" and append ".pl"?
 * Documentation
+** DONE News
+   - stream aliases "user_input", "user_output" and "user_error"
+     allowed.
+   - removed peek/1.
+   - PC_INCLUDE_PATH has been renamed PC_LIBRARY_DIR and is only
+     allowed to contain a single directory.
+   - filenames may now be "library(NAME)".
+   - pi: respects PC_LIBRARY_DIR.
+   - is_list/1, exists_directory/1
 ** Add pc-autocompile to dist and document
    - find a better name.
 ** Missing ISO predicates
@@ -176,6 +173,14 @@ NOTES											              -*- Org -*-
    | log/2, atan/2, asin/1, acos/1, | arithmetic expressions                    |
    | epsilon/0, pi/0, e/0           | arithmetic constants                      |
    | ^/2                            | integer exponentation (error on overflow) |
+* Tools
+** "pm": build utility
+   - takes a bucnh of files and produces a wrapper and a makefile.
+   - add cross-referencing mode to pc that does not compile, but
+     produce a file:
+     - defined(NAME/ARITY)
+     - directive(DIRECTIVE)
+   - detect .bind files and integrate.
 * Diagnostics
 ** Detect singleton variables
 ** Report unused predicates
