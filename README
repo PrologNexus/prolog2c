@@ -494,7 +494,7 @@ Builtin predicates
         put(+STREAM, +X)
 
     Writes the character with the code X to the current output-stream
-    or STREAM. X may be an integer or an atom.
+    or STREAM.
 
         put_byte(+BYTE)
         put_byte(+STREAM, +BYTE)

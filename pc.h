@@ -4288,7 +4288,6 @@ PRIMITIVE(put_byte, X s, X c)
   int code;
 
   if(is_FIXNUM(c)) code = fixnum_to_word(c);
-  else if(is_SYMBOL(c)) code = *((char *)objdata(slot_ref(c, 0)));
   else if(is_VAR(c)) throw_exception(instantiation_error_atom);
   else type_error("integer", c);
   
