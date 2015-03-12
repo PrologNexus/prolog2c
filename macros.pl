@@ -17,11 +17,13 @@ macro(halt, foreign_call(halt(0))).
 macro(nl, foreign_call(put_byte(current_output, 10))).
 macro(nl(S), foreign_call(put_byte(S, 10))).
 macro(put(BYTE), foreign_call(put_byte(current_output, BYTE))).
+macro(put(S, BYTE), foreign_call(put_byte(S, BYTE))).
 macro(put_byte(BYTE), foreign_call(put_byte(current_output, BYTE))).
 macro(put_byte(S, BYTE), foreign_call(put_byte(S, BYTE))).
 macro(put_code(BYTE), foreign_call(put_byte(current_output, BYTE))).
 macro(put_code(S, BYTE), foreign_call(put_byte(S, BYTE))).
 macro(get0(BYTE), foreign_call(get_byte(current_input, BYTE))).
+macro(get0(S, BYTE), foreign_call(get_byte(S, BYTE))).
 macro(get_byte(BYTE), foreign_call(get_byte(current_input, BYTE))).
 macro(get_byte(S, BYTE), foreign_call(get_byte(S, BYTE))).
 macro(get_code(BYTE), foreign_call(get_byte(current_input, BYTE))).
@@ -207,8 +209,11 @@ determinate_builtin(memberchk, 2).
 determinate_builtin(compare, 3).
 determinate_builtin(shell, 1).
 determinate_builtin(tab, 1).
+determinate_builtin(tab, 2).
 determinate_builtin(skip, 1).
+determinate_builtin(skip, 2).
 determinate_builtin(get, 1).
+determinate_builtin(get, 2).
 determinate_builtin(see, 1).
 determinate_builtin(seen, 0).
 determinate_builtin(seeing, 1).

@@ -37,16 +37,22 @@ append(NAME) :-
 	foreign_call(open_stream(NAME, 0, 'ab', S)),
 	foreign_call(set_current_output_stream(S)).
 
-tab(N) :- N > 0, !, put(32), N2 is N - 1, tab(N2).
-tab(_).
+tab(N) :- tab(current_output, N).
 
-get(C) :-
-	!, get0(C2),
+tab(S, N) :- N > 0, !, put(32), N2 is N - 1, tab(N2).
+tab(_, _).
+
+get(C) :- get(current_input, C).
+
+get(S, C) :-
+	!, get0(S, C2),
 	(C2 =:= -1, C = -1
 	; C2 =\= 32, C = C2
-	; get(C)).
+	; get(S, C)).
 
-skip(C) :-
+skip(C) :- skip(current_output, C).
+
+skip(S, C) :-
 	!, get0(C2),
 	(C2 =:= -1
 	; C == C2

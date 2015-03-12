@@ -491,9 +491,10 @@ Builtin predicates
     'end_of_file' [ISO]
 
         put(+X)
+        put(+STREAM, +X)
 
-    Writes the character with the code X to the current
-    output-stream. X may be an integer or an atom.
+    Writes the character with the code X to the current output-stream
+    or STREAM. X may be an integer or an atom.
 
         put_byte(+BYTE)
         put_byte(+STREAM, +BYTE)
@@ -523,14 +524,16 @@ Builtin predicates
     string).
 
         get(-X)
+        get(+STREAM, -X)
 
     Unifies X with the code of the next non- whitespace character in
-    the current input- stream.
+    the current input-stream or STREAM.
 
         get0(-X)
+        get0(+STREAM, -X)
 
     Unifies X with the code of the next character in the current
-    input-stream.
+    input-stream or STREAM.
 
         get_byte(-BYTE)
         get_byte(+STREAM, -BYTE)
@@ -586,13 +589,15 @@ Builtin predicates
     one.
 
         skip(+X)
+        skip(+STREAM, +X)
 
-    Reads characters from the current input-stream until a character
-    that unifies with X is read.
+    Reads characters from the current input-stream or STREAM until a
+    character that unifies with X is read.
 
         tab(+N)
+        tab(+STREAM, +N)
 
-    Writes N spaces to the current output stream.
+    Writes N spaces to the current output stream or STREAM.
 
         tell(+X)
 
@@ -628,19 +633,16 @@ Builtin predicates
     Sets the current input or output stream to STREAM. You can pass
     the atom 'user' to select the standard input or output port [ISO]
 
-        set_error_output(+STREAM)
-
-    Sets th current error output stream to STREAM. 'user' selects here
-    the standard error port.
-
     The following builtin stream aliases are available:
 
         current_input
-        current_output
-        current_error    these refer to the currently active I/O streams
+        current_output   these refer to the currently active I/O streams
         user_input      
         user_output
         user_error       these refer to the initial I/O streams (i.e. console)
+
+    tell/1 and see/1 accept the stream-alias `user`, which has the
+    same meaning as `user_output` and `user_input`, respectively.
 
   - Formatted output
 

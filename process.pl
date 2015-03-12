@@ -8,6 +8,9 @@ compile_file(FILE) :-
 compile_file(FILE) :-
 	error(['compilation of ', FILE, ' failed.']).
 
+compile_file_finished(_) :-
+	recorded(xref_mode, yes),
+	!, emit_xref_information.
 compile_file_finished(STATE) :-
 	process_boilerplate_code(STATE).
 compile_file_finished(STATE) :-
@@ -96,6 +99,11 @@ process_directive((DECL1, DECL2), S1, S2) :-
 	process_directive(DECL1, S1, S),
 	process_directive(DECL2, S, S2).
 
+process_directive(DECL, _, _) :-
+	recorded(xref_mode, yes),
+	recordz(directive, DECL),
+	fail.
+
 process_directive(initialization(GOAL), STATE, STATE) :-
 	(recorded(initialization_goal, OLD, REF), erase(REF) ->
 	 recorda(initialization_goal, (OLD, GOAL))
@@ -175,18 +183,16 @@ process_initialization_goals(STATE) :-
 
 check_unresolved_calls :-
 	recorded(unresolved, _),
-	telling(OLD), current_error_output(ERR), tell(ERR),
-	display('\nUnresolved predicate calls:\n\n'),
-	report_unresolved_calls,
-	tell(OLD).
+	display(user_error, '\nUnresolved predicate calls:\n\n'),
+	report_unresolved_calls.
 check_unresolved_calls.
 
 report_unresolved_calls :-
 	recorded(unresolved, N/A),
-	tab(2), write(N/A), nl, fail.
+	tab(user_error, 2), write(user_error, N/A), nl(user_error), fail.
 report_unresolved_calls :-
 	recorded(unresolved, _),
-	nl,
+	nl(user_error),
 	halt(1).
 report_unresolved_calls.
 

@@ -72,7 +72,8 @@ system_predicate(nl(+X)).
 system_predicate(nonvar(+X)).
 system_predicate(number(+X)).
 system_predicate(number_codes(?X, ?Y), _, 'uses strtol(3)/strtod(3), so allows leading space').
-system_predicate(put(+X), _, 'X may be fixnum or symbol').
+system_predicate(put(+X)).
+system_predicate(put(+S, +X)).
 system_predicate(sleep(+X)).
 system_predicate(stream(+X)).
 system_predicate(var(+X)).
@@ -108,6 +109,8 @@ system_predicate(copy_term(?X, ?Y), 'misc.pl').
 system_predicate(duplicate_term(?X, ?Y), 'misc.pl').
 system_predicate(between(+X, +Y, ?Z), 'misc.pl').
 system_predicate(current_op(?X, ?Y, ?Z), 'op.pl').
+system_predicate(get(+S, -X), 'io.pl').
+system_predicate(get0(+S, -X), 'io.pl').
 system_predicate(get(-X), 'io.pl').
 system_predicate(get0(-X), 'io.pl').
 system_predicate(intersection(+X, +Y, -Z), 'sets.pl').
@@ -149,6 +152,7 @@ system_predicate(skip(+X), 'io.pl').
 system_predicate(sort(+X, -Y), 'sorts.pl').
 system_predicate(subtract(+X, +Y, -Z), 'sets.pl').
 system_predicate(tab(+X), 'io.pl').
+system_predicate(tab(+S, +X), 'io.pl').
 system_predicate(tell(+X), 'io.pl', 'may also pass stream (or "user")').
 system_predicate(throw(+X), 'misc.pl').
 system_predicate(told, 'io.pl', 'does nothing if stdout or stderr').
@@ -178,7 +182,6 @@ system_predicate(current_prolog_flag(+X,-Y), 'lib/flags.pl').
 system_predicate(unify_with_occurs_check(?X, ?Y), 'lib/misc.pl').
 system_predicate(set_input(+X), 'lib/io.pl').
 system_predicate(set_output(+X), 'lib/io.pl').
-system_predicate(set_error_output(+X), 'lib/io.pl').
 system_predicate(flush_output, 'lib/io.pl').
 system_predicate(flush_output(+X), 'lib/io.pl').
 system_predicate(at_end_of_stream, 'lib/io.pl').
