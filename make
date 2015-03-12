@@ -18,6 +18,7 @@
     "compile.pl"
     "assemble.pl"
     "main.pl"
+    "xref.pl"
     "lib/flags.pl"
     "lib/lists.pl"
     "lib/misc.pl"
