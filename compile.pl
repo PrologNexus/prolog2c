@@ -663,22 +663,6 @@ make_unbound_vars(VS, [_|Y], S1, S) :-
 	make_unbound_vars(VS, Y, S1, S).
 
 
-%% register defined or unresolved predicates
-
-register_unresolved_call(NA) :-
-	(recorded(defined, NA)
-	; recorded(unresolved, NA)
-	; recordz(unresolved, NA)).
-
-register_defined_predicate(NA) :-
-	(recorded(defined, NA)
-	-> N/A = NA, error(['Non-contiguous predicate definition: ', N, '/', A])
-	; recordz(defined, NA)
-	),
-	recorded(unresolved, NA, REF), erase(REF).
-register_defined_predicate(_).
-
-
 %% bagof/setof
 
 compile_bagof(T, G, L, [], TAIL, D1, D2, B1, B2, S1, S2) :-

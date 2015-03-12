@@ -10,6 +10,7 @@
 %   -I FILENAME             add FILENAME to include-path
 %   -q                      disable any output
 %   -compress-facts         compress blocks of facts with ground arguments
+%   -xref                   write cross-referencing infromation to stdout
 %
 % - The content of PC_INCLUDE_PATH are prepended to the default include-path.
 
@@ -33,6 +34,9 @@ set_library_path :-
 parse_arguments([]).
 parse_arguments(['-o', OFILE|MORE]) :-
 	recorda(output_file, OFILE),
+	parse_arguments(MORE).
+parse_arguments(['-xref'|MORE]) :-
+	recordz(xref_mode, yes),
 	parse_arguments(MORE).
 parse_arguments(['-i'|MORE]) :-
 	recorda(show_intermediate_code, yes),
@@ -63,5 +67,5 @@ parse_arguments(_) :- usage(1).
 
 usage(STATUS) :-
 	gen('usage: pc [-version] [-h] [-v] [-o FILENAME] [-i]',
-	    ' [-compress-facts] [FILENAME]\n'),
+	    ' [-xref] [-compress-facts] [FILENAME]\n'),
 	halt(STATUS).

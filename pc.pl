@@ -11,6 +11,7 @@
 :- include('process.pl').
 :- include('compile.pl').
 :- include('assemble.pl').
+:- include('xref.pl').
 
 atomic_list_concat(AL, A) :-
 	findall(AA, (member(A, AL), name(A, AA)), LL),
