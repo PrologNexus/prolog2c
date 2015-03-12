@@ -441,8 +441,6 @@ show_version_and_exit :-
 	display(T), display(' version '), display(V), display(' - '),
 	display(C), nl, halt.
 
-process_input_file(user) :-
-	!, read_string(all, INPUT), process_input(INPUT).
 process_input_file(FILENAME) :-
 	see(FILENAME), read_string(all, INPUT), seen,
 	process_input(INPUT).
