@@ -380,8 +380,7 @@ c_value(TYPE, _) :-
 %% utilities
 
 error(MSG, ARG) :-
-	current_error_output(OUT), tell(OUT),
-	nl, gen('*** ', MSG, ': '), writeq(ARG), nl,
+	fwritef(user_error, '\n*** %d: %q\n', [MSG, ARG]),
 	halt(1).
 
 gen(T) :- display(T).

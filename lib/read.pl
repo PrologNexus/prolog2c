@@ -338,20 +338,18 @@ exprtl(S, _, Term, _, Term, S).
 
 
 read_syntax_error(Message, List) :-
-	telling(OLD), current_error_output(ERR), tell(ERR),
-	nl, display('**'),
+	display(user_error, '\n**'),
 	display_list(Message),
-	tell(OLD),
 	length(List, Length),
 	recorda(syntax_error, length(Length)), !,
 	fail.
 
 display_list([Head|Tail]) :-
-	put(32),
+	put(user_error, 32),
 	display_token(Head), !,
 	display_list(Tail).
 display_list([]) :-
-	nl.
+	nl(user_error).
 
 read_syntax_error(List) :-
 	recorded(syntax_error, length(AfterError), Ref),
@@ -364,19 +362,18 @@ read_syntax_error(List) :-
 	throw(syntax_error).
 
 display_list(X, 0) :-
-	display('<<here>> '), !,
+	display(user_error, '<<here>> '), !,
 	display_list(X, 99999).
 display_list([Head|Tail], BeforeError) :-
 	display_token(Head),
-	put(32),
+	put(user_error, 32),
 	Left is BeforeError-1, !,
 	display_list(Tail, Left).
 display_list([], _) :-
-	nl.
+	nl(user_error).
 
-display_token(atom(X))	  :- !,	display(X).
-display_token(var(_,X))	  :- !,	display(X).
-display_token(integer(X)) :- !,	display(X).
-display_token(string(X))  :- !,	display(X).
-display_token(X)	  :-	display(X).
-
+display_token(atom(X))	  :- !,	display(user_error, X).
+display_token(var(_,X))	  :- !,	display(user_error, X).
+display_token(integer(X)) :- !,	display(user_error, X).
+display_token(string(X))  :- !,	display(user_error, X).
+display_token(X)	  :-	display(user_error, X).

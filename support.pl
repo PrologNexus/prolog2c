@@ -11,9 +11,9 @@ gen_list([]).
 gen_list([X|R]) :- gen(X), !, gen_list(R).
 
 error(MSG) :-
-	current_error_output(ERR), tell(ERR),
-	display('ERROR: '),
-	forall(member(X, MSG), write(X)), nl, nl,
+	display(user_error, 'ERROR: '),
+	forall(member(X, MSG), write(user_error, X)),
+	display(user_error, '\n\n'),
 	halt(1).
 
 message(MSG) :-
@@ -62,6 +62,6 @@ locate_file(library(FN), RNAME) :-
 	recorded(library_dir, DIR),
 	atomic_list_concat([DIR, '/', FN], FN2),
 	locate_file(FN2, RNAME).
-locate_file(NAME, RNAME) :- atom_concat(NAME, '.pl', RNAME), exists_file(RNAME).
-locate_file(NAME, NAME) :- exists_file(NAME).
+locate_file(NAME, RNAME) :- atom_concat(NAME, '.pl', RNAME), exists_file(RNAME), !.
+locate_file(NAME, NAME) :- exists_file(NAME), !.
 locate_file(NAME, _) :- error(['file not found: ', NAME]).

@@ -149,19 +149,12 @@ pi_tr_body(Goal, Body, Depth, AfterCut, HadCut) :-
 %%
 
 pi_trace_out(T, M) :-
-	telling(OLD),
-	current_error_output(ERR),
-	tell(ERR),
-	tab(T), display(M), nl,
-	tell(OLD), !.
+	tab(user_error, T), display(user_error, M),
+	nl(user_error), !.
 
 pi_trace_out(T, M, G) :-
-	telling(OLD),
-	current_error_output(ERR),
-	tell(ERR),
-	tab(T), display(M), writeq(G), nl,
-	tell(OLD),
-	!, fail.
+	tab(user_error, T), display(user_error, M),
+	writeq(user_error, G), nl(user_error), !, fail.
 
 
 %%
