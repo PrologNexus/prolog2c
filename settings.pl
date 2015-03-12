@@ -3,7 +3,7 @@
 
 default_setting(output_file, user).
 default_setting(entry_point, '$start').
-default_setting(include_path, ['.']).
+default_setting(library_dir, 'lib').
 default_setting(integer_table_index_threshold, 5).  % only used in fact-blocks
 default_setting(atom_table_index_threshold, 10).
 default_setting(structure_table_index_threshold, 5).

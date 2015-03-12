@@ -118,7 +118,7 @@ process_directive(ensure_loaded(FNAME), S1, S2) :-
 	locate_file(FNAME, REALNAME),
 	(recorded(included, REALNAME)
 	-> S2 = S1
-	; process_directive(include(FNAME), S1, S2)
+	; process_directive(include(REALNAME), S1, S2)
 	).
 
 process_directive(global_variable(NAME), S, S) :-

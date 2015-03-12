@@ -84,15 +84,8 @@ Building and installation
   reside in separate library files in the "lib" directory. You can
   install the compiler and interpreter-binaries wherever you like, but
   to find the libraries the compiler must be able to locate the
-  library directory. This can be done either by passing 
-
-    -I <library-directory>
-
-  as additional command-line options when compiling a source file, or
-  by setting the environment variable `PC_INCLUDE_PATH` to the name of
-  a directory to be searched (which should not include the "lib/" part
-  - i.e. the path should point to the location in which the "lib"
-  directory resides.)
+  library directory. This can be done by setting the environment
+  variable `PC_LIBRARY_DIR` to the name of a directory to be searched.
 
 
 Usage
@@ -112,8 +105,6 @@ Usage
     -o FILENAME             specify output-file name (defaults to
                             the name of the source file, with the
                             file-extension replaced by ".c")
-    -I DIRECTORY            add DIRECTORY to the current include-
-                            path.
     -q                      do not show any output while compiling.
     -compress-facts         reduce code produced for facts (see below)
 
@@ -164,8 +155,10 @@ Interpreter
   source file.
 
   Files consulted or included are located relative to the current
-  working directory, optionally with the content of the environment
-  variable "PC\_INCLUDE\_PATH" prepended, if it is defined.
+  working directory. File-references of the form `library(NAME)` are
+  converted into a path relative to the current library directory,
+  which is either `lib` or the value of the environment variable
+  "PC\_LIBRARY\_DIR", if it is defined.
 
   In contrast to the compiler, the clause-database represents the
   program that is currently executing and manipulations of the
@@ -1321,7 +1314,7 @@ Directives
   Include the contents of FILENAME at the current position in the
   source-code that contains this clause. If the file exists and has
   the extension ".pl", then the extension may be omitted in the
-  directive.
+  directive. FILENAME may be of the form "library(ATOM)".
  
        initialization GOAL                      [compiler, interpreter]
 
@@ -1342,7 +1335,7 @@ Directives
 
   Similar to "include", but only includes FILENAME if it has not been
   earlier included using "ensure_loaded" or "include" (or "consult" in
-  the interpreter.)
+  the interpreter.) FILENAME may be of the form "library(ATOM)".
 
 
 Performance tips

@@ -21,9 +21,9 @@
 :- pre_initialization(global_set(pi_trace_depth, none)).
 
 
-pi_init(INCPATH) :-
+pi_init(LDIR) :-
 	assertz(term_expansion(X, X)),
-	recordz(pi_include_path, INCPATH),
+	recordz(pi_library_dir, LDIR),
 	recordz(pi_silent, yes).
 
 pi_do_goal(Goal) :-
@@ -334,20 +334,14 @@ pi_consult_terms(_).
 
 %% a copy of incfile.pl
 
-pi_locate_file(NAME, RNAME) :-
-	recorded(pi_include_path, PATH),
-	pi_locate_file(NAME, PATH, RNAME).
-pi_locate_file(NAME, [], REALNAME) :-
-	throw(existence_error(NAME)).
-pi_locate_file(NAME, [DIR|_], REALNAME) :-
-	atom(NAME),
-	atom_concat(DIR, '/', DIR1), '$pi_locate_file'(DIR1, NAME, REALNAME), !.
-pi_locate_file(NAME, [_|MORE], REALNAME) :- pi_locate_file(NAME, MORE, REALNAME).
-
-'$pi_locate_file'(D, N, R) :- atom_concat(D, N, N1), '$pi_locate_file_2'(N1, R).
-
-'$pi_locate_file_2'(N, R) :- atom_concat(N, '.pl', R), exists_file(R).
-'$pi_locate_file_2'(N, N) :- exists_file(N).
+pi_locate_file(library(FN), RNAME) :-
+	recorded(pi_library_dir, DIR),
+	atom_concat(DIR, '/', DIR1),
+	atom_concat(DIR1, FN, FN2),
+	pi_locate_file(FN2, RNAME).
+pi_locate_file(NAME, RNAME) :- atom_concat(NAME, '.pl', RNAME), exists_file(RNAME).
+pi_locate_file(NAME, NAME) :- exists_file(NAME).
+pi_locate_file(NAME, _) :- throw(existence_error(NAME)).
 
 pi_insert_item(PNA, [], PNA) :- !.
 pi_insert_item(PNA, [C1|R], PNA2) :-

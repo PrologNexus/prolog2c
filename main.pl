@@ -21,18 +21,14 @@ main :-
 	halt.
 
 compile(ARGS) :-
-	set_include_path,
+	set_library_path,
 	parse_arguments(ARGS),
 	(recorded(source_file, FILE); usage(1)),
 	compile_file(FILE).
 
-set_include_path :-
-	default_setting(include_path, PATH),
-	( getenv('PC_INCLUDE_PATH', IPATH) 
-	-> append([IPATH], PATH, PATH2)
-	; PATH2 = PATH
-	),
-	recorda(include_path, PATH2).
+set_library_path :-
+	(getenv('PC_LIBRARY_DIR', DIR); default_setting(library_dir, DIR)),
+	recordz(library_dir, DIR).
 
 parse_arguments([]).
 parse_arguments(['-o', OFILE|MORE]) :-
@@ -46,11 +42,6 @@ parse_arguments(['-v'|MORE]) :-
 	parse_arguments(MORE).
 parse_arguments(['-q'|MORE]) :-
 	recorda(silent, yes),
-	parse_arguments(MORE).
-parse_arguments(['-I', DIR|MORE]) :-
-	recorded(include_path, OLD, REF),
-	erase(REF),
-	recorda(include_path, [DIR|OLD]),
 	parse_arguments(MORE).
 parse_arguments(['-compress-facts'|MORE]) :-
 	recordz(compress_facts, yes),
@@ -71,6 +62,6 @@ parse_arguments([INFILE|MORE]) :-
 parse_arguments(_) :- usage(1).
 
 usage(STATUS) :-
-	gen('usage: pc [-version] [-h] [-v] [-o FILENAME] [-i] [-I DIRECTORY]',
+	gen('usage: pc [-version] [-h] [-v] [-o FILENAME] [-i]',
 	    ' [-compress-facts] [FILENAME]\n'),
 	halt(STATUS).

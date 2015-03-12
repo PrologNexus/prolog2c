@@ -58,18 +58,10 @@ map_second([T|MORE], [V|REST]) :-
 
 %%% locating files
 
-locate_file(NAME, RNAME) :-
-	recorded(include_path, PATH),
-	locate_file(NAME, PATH, RNAME).
-locate_file(NAME, _) :-
-	error(['include-file not found: ', NAME]).
-
-locate_file(_, [], _) :- !, fail.
-locate_file(NAME, [DIR|_], REALNAME) :-
-	atom_concat(DIR, '/', DIR1), '$locate_file'(DIR1, NAME, REALNAME), !.
-locate_file(NAME, [_|MORE], REALNAME) :- locate_file(NAME, MORE, REALNAME).
-
-'$locate_file'(D, N, R) :- atom_concat(D, N, N1), '$locate_file_2'(N1, R).
-
-'$locate_file_2'(N, R) :- atom_concat(N, '.pl', R), exists_file(R).
-'$locate_file_2'(N, N) :- exists_file(N).
+locate_file(library(FN), RNAME) :-
+	recorded(library_dir, DIR),
+	atomic_list_concat([DIR, '/', FN], FN2),
+	locate_file(FN2, RNAME).
+locate_file(NAME, RNAME) :- atom_concat(NAME, '.pl', RNAME), exists_file(RNAME).
+locate_file(NAME, NAME) :- exists_file(NAME).
+locate_file(NAME, _) :- error(['file not found: ', NAME]).
