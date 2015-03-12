@@ -1670,15 +1670,6 @@ char_table('9',   digit,     '9' ).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-/* is_list( +List ) holds when List is a list.
- */
-is_list( List ) :-
-	nonvar( List ),
-	is_list1( List ).
-
-is_list1( [] ).
-is_list1( [_|_] ).
-
 
 main :-
 	tokenize_file('tests/acknowledgments.txt', TOKENS),
