@@ -22,7 +22,7 @@
 
 (let ((s (suffix file)))
   (unless (string=? "c" s)
-    (run (./pc "-I" "." -q ,file -o ,cfile))))
+    (run (./pc -q ,file -o ,cfile))))
 
 (run (gcc -std=gnu99 -I. -g ,@opts ,@moreopts ,cfile -o ,xfile -lm -lrt))
 

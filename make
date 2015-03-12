@@ -80,7 +80,7 @@
 (define (pc1.c)
   (make/proc (list (list "pc1.c" source-files
 			 (lambda ()
-			   (run (./pc "-I" "." pc.pl -o pc1.c)))))
+			   (run (./pc pc.pl -o pc1.c)))))
 	     "pc1.c"))
 
 (define (pc1)
@@ -104,7 +104,7 @@
 (define (pc2.c)
   (pc1)
   (make/proc (list (list "pc2.c" (cons "pc.h" source-files)
-			 (lambda () (run (./pc1 "-I" "." pc.pl -o pc2.c)))))
+			 (lambda () (run (./pc1 pc.pl -o pc2.c)))))
 	     "pc2.c"))
 
 (define (tags)
@@ -190,7 +190,7 @@
 	 ("embedded.o" ("embedded.c" "pc.h")
 	  (run (gcc ,@gcc-compile-options -c embedded.c -o embedded.o -DEMBEDDED)))
 	 ("embedded.c" ("embedded.pl" "pc1")
-	  (run (./pc1 "-I" "." embedded.pl -o embedded.c)))))
+	  (run (./pc1 embedded.pl -o embedded.c)))))
   (run (tmp/embed)))
 
 (define (full-check)
@@ -216,7 +216,7 @@
 			       (run (gcc ,@gcc-compile-options ,c -lm -lrt -o ,exe))))
 		       (list c (cons src deps)
 			     (lambda ()
-			       (run (./pc "-I" "." ,src -o ,c)))))))))
+			       (run (./pc ,src -o ,c)))))))))
 
 (define (system-predicates)
   (make-program "g-s-p.pl" "g-s-p")
@@ -234,7 +234,7 @@
 			       "pi_call_primitive.pl" 
 			       "pi_evaluate_op.pl" "dcg.pl")
 			 (lambda ()
-			   (run (./pc "-I" "." pi.pl -o pi.c)))))))
+			   (run (./pc pi.pl -o pi.c)))))))
 
 (define (pi)
   (pi.c)

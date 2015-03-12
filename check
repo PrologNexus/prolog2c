@@ -58,7 +58,7 @@
 	    (else #f))))
 
 (unless pi
-  (run (,pc -q "-I" "." "-I" tmp ,file -o ,cfile))
+  (run (,pc -q ,file -o ,cfile))
   (run (gcc -std=gnu99 -I. ,cfile ,@opts ,@moreopts -o ,xfile -lm -lrt)))
 
 (define status
