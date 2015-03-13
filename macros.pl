@@ -81,6 +81,9 @@ auto_include(atom_codes, 2, 'misc').
 auto_include(number_codes, 2, 'misc').
 auto_include(char_code, 2, 'misc').
 
+auto_include(atomic_list_concat, 2, 'str').
+auto_include(split_string, 4, 'str').
+
 auto_include(tab, 1, 'io').
 auto_include(skip, 1, 'io').
 auto_include(get, 1, 'io').
@@ -278,6 +281,8 @@ determinate_builtin(put_char, 2).
 determinate_builtin(atom_codes, 2).
 determinate_builtin(number_codes, 2).
 determinate_builtin(is_list, 1).
+determinate_builtin(atomic_list_concat, 2).
+determinate_builtin(split_string, 4).
 
 determinate_builtin(NAME, ARITY) :-
 	recorded(determinate, NAME/ARITY).

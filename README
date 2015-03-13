@@ -1136,15 +1136,6 @@ Builtin predicates
 
   - Other predicates
 
-        atom_length(+X, -Y)
-
-    Unifies Y with the number of characters in the atom X [ISO]
-
-        atom_concat(?X, ?Y, ?Z)
-
-    Concatenates the atoms or numbers X and Y, producing the atom Z
-    [ISO]
-
         true
 
     Always succeeds [ISO]
@@ -1221,6 +1212,27 @@ Builtin predicates
         acyclic_term(+TERM)
 
     Succeeds if TERM does not contain any cycles.
+
+        atom_length(+X, -Y)
+
+    Unifies Y with the number of characters in the atom X [ISO]
+
+        atom_concat(?X, ?Y, ?Z)
+
+    Concatenates the atoms or numbers X and Y, producing the atom Z
+    [ISO]
+
+        atomic_list_concat(+LIST, +ATOM)
+
+    Concatenates the atoms or numbers in LIST, producing the atom
+    ATOM.
+
+        split_string(+STRING, +SEPCHARS, +PADCHARS, -LIST) 
+
+    Splits STRING into a list of substrings, where substrings are
+    separated by any of the characters in the string SEPCHARS and
+    where each substring may be preceded or followed by the characters
+    in the string PADCHARS.
 
   - Predicates that are only available in the interpreter
 

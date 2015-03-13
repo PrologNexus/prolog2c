@@ -195,6 +195,8 @@ system_predicate(peek_char(?X), 'lib/iso.pl').
 system_predicate(peek_char(?X, ?Y), 'lib/iso.pl').
 system_predicate(put_char(?X), 'lib/iso.pl').
 system_predicate(put_char(?X, ?Y), 'lib/iso.pl').
+system_predicate(atomic_list_concat(+X, -Y), 'str.pl').
+system_predicate(split_string(+X, +Y, +Z, -L), 'str.pl').
 
 arithmetic_operation(- X).
 arithmetic_operation(+ X).
