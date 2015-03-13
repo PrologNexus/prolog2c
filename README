@@ -636,6 +636,10 @@ Builtin predicates
     Sets the current input or output stream to STREAM. You can pass
     the atom 'user' to select the standard input or output port [ISO]
 
+        terminal_stream(+STREAM)
+
+    Succeeds if STREAM refers to a terminal.
+
     The following builtin stream aliases are available:
 
         current_input
@@ -705,7 +709,6 @@ Builtin predicates
 
     If the argument list is neither [] or the empty list, it is turned into
     a one-element list.
-
 
   - Database access predicates
 
@@ -1206,6 +1209,9 @@ Builtin predicates
         max_integer                   
         min_integer                   30 or 62 bit integer, depending on word size
         unknown                       error
+        apple                         true or false
+        unix                          true or false
+        windows                       true or false
 
     No flags are changable, so there is no set_prolog_flag/2.
 

@@ -3890,6 +3890,18 @@ static void push_argument_list(X lst)
 
 /// Port helpers
 
+static X get_stream(X s) 
+{
+  if(s == user_input_atom) return &default_input_port;
+  else if(s == user_output_atom) return standard_output_port;
+  else if(s == user_error_atom) return &default_error_port;
+  else if(s == current_input_atom) return standard_input_port;
+  else if(s == current_output_atom) return standard_output_port;
+  
+  return check_input_port(s);
+}
+
+
 static X get_input_stream(X s) 
 {
   if(s == user_input_atom) return &default_input_port;
@@ -4954,6 +4966,32 @@ PRIMITIVE(delete_file, X fn) {
   return 1;
 }
 
+PRIMITIVE(tty_stream, X s) { return isatty(fileno(port_file(get_stream(s)))); }
+
+PRIMITIVE(os_type, X type) {
+  switch(fixnum_to_word(type)) {
+  case 0:			/* unix */
+#ifdef __unix__
+    return 1;
+#else
+    return 0;
+#endif
+  case 1:			/* windows */
+#ifdef WIN32
+    return 1;
+#else
+    return 0;
+#endif
+  case 2:			/* apple */
+#ifdef __APPLE__
+    return 1;
+#else
+    return 0;
+#endif
+  }
+
+  return 0;
+}
 
 #endif
 
