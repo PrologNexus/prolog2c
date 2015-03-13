@@ -33,6 +33,8 @@ NOTES											              -*- Org -*-
    - atom_codes/2 could fail on full heap, force GC and retry,
      would need to be moved into file:lib/misc.pl
 ** Minor
+*** split_string/4 does not retain empty strings
+    - this is incompatible to SWIs version.
 *** TODO Eliminate redundant switch-operations
     - e.g.:
       #+BEGIN_SRC prolog
@@ -139,19 +141,20 @@ NOTES											              -*- Org -*-
      more)
    - different handling of put_code/put_byte, get_code/get_byte and
      peek_code/peek_byte
-** Allow "library(ATOM)" as file-spec
-   - consult/1, include/1, ensure_loaded/1
-   - would this simply prepend "lib/" and append ".pl"?
 * Documentation
 ** DONE News
-   - stream aliases "user_input", "user_output" and "user_error"
-     allowed.
-   - removed peek/1.
+   - current_prolog_flag/2 understands apple, windows, unix
+   - Added builtins put/2, tab/2, skip/2, get/2, get0/2, is_list/1,
+     exists_directory/1, atomic_list_concat/2, split_string/4,
+     terminal_stream/1
+   - Added support for stream aliases "current_input",
+     "current-output", "user_input", "user_output" and "user_error".
+   - Dropped peek/1
+   - pi: Respects PC_LIBRARY_DIR.
    - PC_INCLUDE_PATH has been renamed PC_LIBRARY_DIR and is only
      allowed to contain a single directory.
-   - filenames may now be "library(NAME)".
-   - pi: respects PC_LIBRARY_DIR.
-   - is_list/1, exists_directory/1
+   - Filenames may now be "library(NAME)", refering to the current
+     library directory.
 ** Add pc-autocompile to dist and document
    - find a better name.
 ** Missing ISO predicates
@@ -175,11 +178,7 @@ NOTES											              -*- Org -*-
    | ^/2                            | integer exponentation (error on overflow) |
 * Tools
 ** "pm": build utility
-   - takes a bucnh of files and produces a wrapper and a makefile.
-   - add cross-referencing mode to pc that does not compile, but
-     produce a file:
-     - defined(NAME/ARITY)
-     - directive(DIRECTIVE)
+   - takes a bunch of files and produces a wrapper and a makefile.
    - detect .bind files and integrate.
 * Diagnostics
 ** Detect singleton variables
