@@ -69,6 +69,10 @@ parse_arguments(['-h'|_]) :- usage(0).
 parse_arguments(['-help'|_]) :- usage(0).
 parse_arguments(['--help'|_]) :- usage(0).
 parse_arguments(['-version'|_]) :- show_version_and_exit.
+parse_arguments(['-n'|MORE]) :-
+	recorded(pi_library_dir, _, REF), erase(REF),
+	recordz(pi_library_dir, 'lib'),
+	parse_arguments(MORE).
 parse_arguments(['-t'|MORE]) :-
 	global_set(pi_trace_depth, 0),
 	parse_arguments(MORE).
@@ -85,7 +89,7 @@ parse_arguments([FILENAME|MORE]) :-
 	parse_arguments(MORE).
 
 usage(CODE) :-
-	display('usage: pi [-version] [-q] [-h] [-t] [-i NAME] FILENAME ...\n'),
+	display('usage: pi [-version] [-n] [-q] [-h] [-t] [-i NAME] FILENAME ...\n'),
 	halt(CODE).
 
 show_version_and_exit :-

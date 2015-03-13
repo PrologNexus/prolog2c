@@ -58,12 +58,12 @@
 	    (else #f))))
 
 (unless pi
-  (run (,pc -q ,file -o ,cfile))
+  (run (,pc -n -q ,file -o ,cfile))
   (run (gcc -std=gnu99 -I. ,cfile ,@opts ,@moreopts -o ,xfile -lm -lrt)))
 
 (define status
   (if pi
-      (run* (./timeout -t ,timeout ./pi "-i" main ,file > ,outfile))
+      (run* (./timeout -t ,timeout ./pi "-n" "-i" main ,file > ,outfile))
       (run* (./timeout -t ,timeout ,(string-append "./" xfile) > ,outfile))))
 
 (cond ((not (status-check status))

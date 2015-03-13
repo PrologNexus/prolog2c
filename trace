@@ -13,7 +13,7 @@
 
 (let ((s (suffix file)))
   (unless (string=? "c" s)
-    (run (./pc ,file -o ,cfile))))
+    (run (./pc -n ,file -o ,cfile))))
 
 (run (gcc -std=gnu99 -I. -save-temps=obj -g ,cfile -o ,xfile -DTRACE -DDEBUG_GC -lm))
 (exit (run* (,(string-append "./" xfile) -:v -:d ,@(cdr args))))

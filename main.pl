@@ -11,6 +11,7 @@
 %   -q                      disable any output
 %   -compress-facts         compress blocks of facts with ground arguments
 %   -xref                   write cross-referencing infromation to stdout
+%   -n                      ignore PC_LIBRARY_DIR
 %
 % - The content of PC_INCLUDE_PATH are prepended to the default include-path.
 
@@ -43,6 +44,11 @@ parse_arguments(['-i'|MORE]) :-
 	parse_arguments(MORE).
 parse_arguments(['-v'|MORE]) :-
 	recorda(show_compiled_clauses, yes),
+	parse_arguments(MORE).
+parse_arguments(['-n'|MORE]) :-
+	recorded(library_dir, _, REF), erase(REF),
+	default_setting(library_dir, DIR),
+	recordz(library_dir, DIR),
 	parse_arguments(MORE).
 parse_arguments(['-q'|MORE]) :-
 	recorda(silent, yes),
