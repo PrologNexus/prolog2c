@@ -62,134 +62,134 @@ macro(TERM, TERM) :-
 	functor(TERM, NAME, ARITY),
 	atom(NAME),
 	auto_include(NAME, ARITY, FILE),
-	add_boilerplate(FILE, (:- include(FILE))).
+	add_boilerplate(FILE, (:- include(library(FILE)))).
 
 
 %% auto-include definitions
 
-auto_include(length, 2, 'lib/lists.pl').
-auto_include(append, 3, 'lib/lists.pl').
-auto_include(member, 2, 'lib/lists.pl').
-auto_include(reverse, 2, 'lib/lists.pl').
-auto_include(memberchk, 2, 'lib/lists.pl').
-auto_include(is_list, 1, 'lib/lists.pl').
+auto_include(length, 2, 'lists').
+auto_include(append, 3, 'lists').
+auto_include(member, 2, 'lists').
+auto_include(reverse, 2, 'lists').
+auto_include(memberchk, 2, 'lists').
+auto_include(is_list, 1, 'lists').
 
-auto_include(compare, 3, 'lib/misc.pl').
-auto_include(shell, 1, 'lib/misc.pl').
-auto_include(between, 3, 'lib/misc.pl').
-auto_include(atom_codes, 2, 'lib/misc.pl').
-auto_include(number_codes, 2, 'lib/misc.pl').
-auto_include(char_code, 2, 'lib/misc.pl').
+auto_include(compare, 3, 'misc').
+auto_include(shell, 1, 'misc').
+auto_include(between, 3, 'misc').
+auto_include(atom_codes, 2, 'misc').
+auto_include(number_codes, 2, 'misc').
+auto_include(char_code, 2, 'misc').
 
-auto_include(tab, 1, 'lib/io.pl').
-auto_include(skip, 1, 'lib/io.pl').
-auto_include(get, 1, 'lib/io.pl').
-auto_include(see, 1, 'lib/io.pl').
-auto_include(seen, 0, 'lib/io.pl').
-auto_include(seeing, 1, 'lib/io.pl').
-auto_include(tell, 1, 'lib/io.pl').
-auto_include(told, 0, 'lib/io.pl').
-auto_include(telling, 1, 'lib/io.pl').
-auto_include(open, 3, 'lib/io.pl').
-auto_include(open, 4, 'lib/io.pl').
-auto_include(read_string, 2, 'lib/io.pl').
-auto_include(read_line, 1, 'lib/io.pl').
-auto_include(flush_output, 0, 'lib/io.pl').
-auto_include(flush_output, 1, 'lib/io.pl').
-auto_include(at_end_of_stream, 0, 'lib/io.pl').
-auto_include(at_end_of_stream, 1, 'lib/io.pl').
-auto_include(set_input, 0, 'lib/io.pl').
-auto_include(set_output, 1, 'lib/io.pl').
+auto_include(tab, 1, 'io').
+auto_include(skip, 1, 'io').
+auto_include(get, 1, 'io').
+auto_include(see, 1, 'io').
+auto_include(seen, 0, 'io').
+auto_include(seeing, 1, 'io').
+auto_include(tell, 1, 'io').
+auto_include(told, 0, 'io').
+auto_include(telling, 1, 'io').
+auto_include(open, 3, 'io').
+auto_include(open, 4, 'io').
+auto_include(read_string, 2, 'io').
+auto_include(read_line, 1, 'io').
+auto_include(flush_output, 0, 'io').
+auto_include(flush_output, 1, 'io').
+auto_include(at_end_of_stream, 0, 'io').
+auto_include(at_end_of_stream, 1, 'io').
+auto_include(set_input, 0, 'io').
+auto_include(set_output, 1, 'io').
 	     
-auto_include(op, 3, 'lib/op.pl').
-auto_include(current_op, 3, 'lib/op.pl').
+auto_include(op, 3, 'op').
+auto_include(current_op, 3, 'op').
 
-auto_include(throw, 1, 'lib/misc.pl').
-auto_include(name, 2, 'lib/misc.pl').
-auto_include('=..', 2, 'lib/misc.pl').
-auto_include(deref_term, 4, 'lib/misc.pl').
-auto_include(copy_term, 2, 'lib/misc.pl').
-auto_include(duplicate_term, 2, 'lib/misc.pl').
-auto_include(unify_with_occurs_check, 2, 'lib/misc.pl').
+auto_include(throw, 1, 'misc').
+auto_include(name, 2, 'misc').
+auto_include('=..', 2, 'misc').
+auto_include(deref_term, 4, 'misc').
+auto_include(copy_term, 2, 'misc').
+auto_include(duplicate_term, 2, 'misc').
+auto_include(unify_with_occurs_check, 2, 'misc').
 
-auto_include(union, 3, 'lib/sets.pl').
-auto_include(intersection, 3, 'lib/sets.pl').
-auto_include(subtract, 3, 'lib/sets.pl').
-auto_include(select, 3, 'lib/sets.pl').
-auto_include(symdiff, 3, 'lib/sets.pl').
+auto_include(union, 3, 'sets').
+auto_include(intersection, 3, 'sets').
+auto_include(subtract, 3, 'sets').
+auto_include(select, 3, 'sets').
+auto_include(symdiff, 3, 'sets').
 
-auto_include(write, 1, 'lib/write.pl').
-auto_include(writeq, 1, 'lib/write.pl').
-auto_include(write, 2, 'lib/write.pl').
-auto_include(writeq, 2, 'lib/write.pl').
+auto_include(write, 1, 'write').
+auto_include(writeq, 1, 'write').
+auto_include(write, 2, 'write').
+auto_include(writeq, 2, 'write').
 
-auto_include(recorda, 2, 'lib/rdb.pl').
-auto_include(recorda, 3, 'lib/rdb.pl').
-auto_include(recordz, 2, 'lib/rdb.pl').
-auto_include(recordz, 3, 'lib/rdb.pl').
-auto_include(recorded, 2, 'lib/rdb.pl').
-auto_include(recorded, 3, 'lib/rdb.pl').
+auto_include(recorda, 2, 'rdb').
+auto_include(recorda, 3, 'rdb').
+auto_include(recordz, 2, 'rdb').
+auto_include(recordz, 3, 'rdb').
+auto_include(recorded, 2, 'rdb').
+auto_include(recorded, 3, 'rdb').
 
-auto_include('$findall_start', 0, 'lib/findall.pl').
-auto_include('$findall_push', 1, 'lib/findall.pl').
-auto_include('$findall_collect', 1, 'lib/findall.pl').
-auto_include('$bagof_start', 3, 'lib/findall.pl').
-auto_include('$bagof_finish', 1, 'lib/findall.pl').
+auto_include('$findall_start', 0, 'findall').
+auto_include('$findall_push', 1, 'findall').
+auto_include('$findall_collect', 1, 'findall').
+auto_include('$bagof_start', 3, 'findall').
+auto_include('$bagof_finish', 1, 'findall').
 
-auto_include(sort, 2, 'lib/sorts.pl').
-auto_include(keysort, 2, 'lib/sorts.pl').
-auto_include(merge, 3, 'lib/sorts.pl').
+auto_include(sort, 2, 'sorts').
+auto_include(keysort, 2, 'sorts').
+auto_include(merge, 3, 'sorts').
 
-auto_include(list_to_ord_set, 2, 'lib/ordset.pl').
-auto_include(ord_disjoint, 2, 'lib/ordset.pl').
-auto_include(ord_insert, 3, 'lib/ordset.pl').
-auto_include(ord_intersect, 2, 'lib/ordset.pl').
-auto_include(ord_intersect, 3, 'lib/ordset.pl').
-auto_include(ord_seteq, 2, 'lib/ordset.pl').
-auto_include(ord_subset, 2, 'lib/ordset.pl').
-auto_include(ord_symdiff, 2, 'lib/ordset.pl').
-auto_include(ord_union, 2, 'lib/ordset.pl').
-auto_include(ord_subtract, 2, 'lib/ordset.pl').
-auto_include(ord_memberchk, 2, 'lib/ordset.pl').
+auto_include(list_to_ord_set, 2, 'ordset').
+auto_include(ord_disjoint, 2, 'ordset').
+auto_include(ord_insert, 3, 'ordset').
+auto_include(ord_intersect, 2, 'ordset').
+auto_include(ord_intersect, 3, 'ordset').
+auto_include(ord_seteq, 2, 'ordset').
+auto_include(ord_subset, 2, 'ordset').
+auto_include(ord_symdiff, 2, 'ordset').
+auto_include(ord_union, 2, 'ordset').
+auto_include(ord_subtract, 2, 'ordset').
+auto_include(ord_memberchk, 2, 'ordset').
 
-auto_include(read_tokens, 2, 'lib/rdtok.pl').
-auto_include(read1, 1, 'lib/read.pl').
-auto_include(read2, 1, 'lib/read.pl').
+auto_include(read_tokens, 2, 'rdtok').
+auto_include(read1, 1, 'read').
+auto_include(read2, 1, 'read').
 
-auto_include(clause, 2, 'lib/cdb.pl').
-auto_include(clause, 3, 'lib/cdb.pl').
-auto_include(retract, 1, 'lib/cdb.pl').
-auto_include(abolish, 1, 'lib/cdb.pl').
-auto_include(asserta, 1, 'lib/cdb.pl').
-auto_include(asserta, 2, 'lib/cdb.pl').
-auto_include(assertz, 1, 'lib/cdb.pl').
-auto_include(assertz, 2, 'lib/cdb.pl').
+auto_include(clause, 2, 'cdb').
+auto_include(clause, 3, 'cdb').
+auto_include(retract, 1, 'cdb').
+auto_include(abolish, 1, 'cdb').
+auto_include(asserta, 1, 'cdb').
+auto_include(asserta, 2, 'cdb').
+auto_include(assertz, 1, 'cdb').
+auto_include(assertz, 2, 'cdb').
 
-auto_include(succ, 2, 'lib/arith.pl').
-auto_include(plus, 3, 'lib/arith.pl').
-auto_include(times, 3, 'lib/arith.pl').
-auto_include(divide, 4, 'lib/arith.pl').
+auto_include(succ, 2, 'arith').
+auto_include(plus, 3, 'arith').
+auto_include(times, 3, 'arith').
+auto_include(divide, 4, 'arith').
 
-auto_include(writef, 1, 'lib/writef.pl').
-auto_include(writef, 2, 'lib/writef.pl').
-auto_include(fwritef, 2, 'lib/writef.pl').
-auto_include(fwritef, 3, 'lib/writef.pl').
+auto_include(writef, 1, 'writef').
+auto_include(writef, 2, 'writef').
+auto_include(fwritef, 2, 'writef').
+auto_include(fwritef, 3, 'writef').
 
-auto_include('$delay_goal', 4, 'lib/co.pl').
-auto_include('$freeze_goal', 4, 'lib/co.pl').
-auto_include(dif, 2, 'lib/co.pl').
+auto_include('$delay_goal', 4, 'co').
+auto_include('$freeze_goal', 4, 'co').
+auto_include(dif, 2, 'co').
 
-auto_include(current_prolog_flag, 2, 'lib/flags.pl').
+auto_include(current_prolog_flag, 2, 'flags').
 
-auto_include(atom_concat, 3, 'lib/iso.pl').
-auto_include(atom_chars, 2, 'lib/iso.pl').
-auto_include(number_chars, 2, 'lib/iso.pl').
-auto_include(get_char, 1, 'lib/iso.pl').
-auto_include(get_char, 2, 'lib/iso.pl').
-auto_include(peek_char, 1, 'lib/iso.pl').
-auto_include(peek_char, 2, 'lib/iso.pl').
-auto_include(put_char, 1, 'lib/iso.pl').
-auto_include(put_char, 2, 'lib/iso.pl').
+auto_include(atom_concat, 3, 'iso').
+auto_include(atom_chars, 2, 'iso').
+auto_include(number_chars, 2, 'iso').
+auto_include(get_char, 1, 'iso').
+auto_include(get_char, 2, 'iso').
+auto_include(peek_char, 1, 'iso').
+auto_include(peek_char, 2, 'iso').
+auto_include(put_char, 1, 'iso').
+auto_include(put_char, 2, 'iso').
 
 auto_include(_, _, _) :- fail.
 
