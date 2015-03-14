@@ -159,6 +159,7 @@ pi_trace_out(T, M, G) :-
 
 %%
 
+%call(X^GOAL) :- !, call(GOAL).
 call(GOAL) :-
 	var(GOAL), throw(instantiation_error).
 call(GOAL) :-
