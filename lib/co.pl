@@ -3,14 +3,14 @@
 
 '$delay_goal'(VAR, PRIO, PTR, ARGS) :-
 	(var(VAR) -> foreign_call(delay_goal(VAR, PRIO, PTR, ARGS))
-	; '$call_predicate'(PTR, ARGS)
+	; '$call'(PTR, ARGS)
 	).
 
 '$freeze_goal'(VAR, PRIO, PTR, ARGS) :-
 	(var(VAR) ->
 	 '$predicate_address'('$freeze_goal'/4, PTR2),
-	 delay(VAR, '$call_predicate'(PTR2, [VAR, PRIO, PTR, ARGS]))
-	; '$call_predicate'(PTR, ARGS)
+	 delay(VAR, '$call'(PTR2, [VAR, PRIO, PTR, ARGS]))
+	; '$call'(PTR, ARGS)
 	).
 
 dif(X, Y) :-

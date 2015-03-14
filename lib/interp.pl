@@ -185,7 +185,7 @@ pi_system_predicate(catch, 3).
 pi_system_predicate(repeat, 0).
 pi_system_predicate('->', 2).
 pi_system_predicate('\\+', 1).
-pi_system_predicate('$call_predicate', 2).
+pi_system_predicate('$call', 2).
 pi_system_predicate(expand_term, 2).
 pi_system_predicate(delay, 2).
 pi_system_predicate(freeze, 2).
@@ -235,9 +235,9 @@ pi_call_primitive(expand_term, 2, TERM) :-
 	!, arg(1, TERM, X), arg(2, TERM, Y),
 	expand_term(X, Y).
 
-pi_call_primitive('$call_predicate', 2, TERM) :-
+pi_call_primitive('$call', 2, TERM) :-
 	!, arg(1, TERM, PTR), arg(2, TERM, ARGS),
-	'$call_predicate'(PTR, ARGS).
+	'$call'(PTR, ARGS).
 
 pi_call_primitive(delay, 2, TERM) :-
 	!, arg(1, TERM, VAR), arg(2, TERM, GOAL),

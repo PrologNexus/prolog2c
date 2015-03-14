@@ -9,7 +9,7 @@ main :-
 	pi_init(DIR),
 	command_line_arguments(ARGS),
 	'$predicate_address'(dcg_rule/2, ADR),
-	asserta((term_expansion((X --> Y), Z) :- '$call_predicate'(ADR, [(X --> Y), Z]))),
+	asserta((term_expansion((X --> Y), Z) :- '$call'(ADR, [(X --> Y), Z]))),
 	parse_arguments(ARGS),
 	!,
 	((recorded(pi_initialization_goal, G); recorded(pi_default_initialization_goal, G))
