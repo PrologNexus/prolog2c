@@ -175,13 +175,13 @@ assemble(final_call(NAME, RLIST, LABEL), S, S) :-
 	gen(LABEL, ');}\n', LABEL, ':{\nSET_WHERE(PREVIOUS_PINFO);\n').
 assemble(call_address(RADR, RARGS, LABEL), S, S) :-
 	gen('A=arg_top;\npush_argument_list(', RARGS, ');\n'),
-	gen('CALL(*((void*)slot_ref(deref(', RADR, '),0)),&&', LABEL, ');\n'),
-	gen(LABEL, ':\n').
+	gen('CALL(*((void*)slot_ref(deref(', RADR, '),0)),&&', LABEL, ');}\n'),
+	gen(LABEL, ':{\n').
 assemble(final_call_address(RADR, RARGS, LABEL), S, S) :-
 	gen('if(C==C0+1) POP_ARGUMENTS;\n'),
 	gen('A=arg_top;\npush_argument_list(', RARGS, ');\n'),
-	gen('FINAL_CALL(*((void*)slot_ref(deref(', RADR, '),0)),&&', LABEL, ');\n'),
-	gen(LABEL, ':\n').
+	gen('FINAL_CALL(*((void*)slot_ref(deref(', RADR, '),0)),&&', LABEL, ');}\n'),
+	gen(LABEL, ':{\n').
 
 assemble(tail_call(NAME, RLIST), S, S) :-
 	length(RLIST, ARITY),
