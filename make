@@ -307,6 +307,10 @@
   (pio)
   (run (./install)))
 
+(define (tags)
+  (run (etags -l prolog "`git ls-files -- *.pl lib/*.pl`"))
+  (run (emacsclient -e "'(visit-tags-table \"TAGS\")'")))
+
 
 ;;
 
