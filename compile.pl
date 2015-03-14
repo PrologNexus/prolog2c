@@ -139,13 +139,16 @@ compile_unification1(X, NS, _, B, B, S, S) :-
 compile_unification1(X, _, INDEX, BOUND, BOUND2, S1, S2) :-
 	indexed_variable(X, N),
 	gensym('T', T1, S1, S3),
-	(memberchk(N, BOUND) 	% already bound?
+	( memberchk(N, BOUND) 	% already bound?
 	-> (gensym('T', T2, S3, S2),
 	    BOUND2 = BOUND,
-	    emit(local(N, T1), argument(INDEX, T2), unify(T1, T2)))
-	; (S2 = S3,
-	   BOUND2 = [N|BOUND],
-	   emit(argument(INDEX, T1), assign(N, T1)))).
+	    emit(local(N, T1), argument(INDEX, T2), unify(T1, T2))
+	   )
+	; ( S2 = S3,
+	    BOUND2 = [N|BOUND],
+	    emit(argument(INDEX, T1), assign(N, T1))
+	  )
+	).
 compile_unification1(TERM, _, INDEX, BOUND1, BOUND2, S1, S2) :-
 	gensym('T', T1, S1, S3),
 	gensym('T', T2, S3, S4),
@@ -155,11 +158,14 @@ compile_unification1(TERM, _, INDEX, BOUND1, BOUND2, S1, S2) :-
 %% compile term, for unification, or for calls
 compile_term_for_unification(X, DEST, BOUND, BOUND2, S, S) :-
 	indexed_variable(X, N),
-	(member(N, BOUND)	% already bound?
-	-> (emit(local(N, DEST)),
-	    BOUND2 = BOUND)
-	; (BOUND2 = [N|BOUND],
-	   emit(make_variable(DEST), assign(N, DEST)))).
+	( member(N, BOUND)	% already bound?
+	-> ( emit(local(N, DEST)),
+	     BOUND2 = BOUND
+	   )
+	; ( BOUND2 = [N|BOUND],
+	    emit(make_variable(DEST), assign(N, DEST))
+	  )
+	).
 
 compile_term_for_unification(X, DEST, BOUND, BOUND, S1, S2) :-
 	ground_term(X), 	% literal term not containing variables?
