@@ -287,3 +287,7 @@ determinate_builtin(split_string, 4).
 
 determinate_builtin(NAME, ARITY) :-
 	recorded(determinate, NAME/ARITY).
+
+
+is_meta_predicate(NAME, ARITY, SIG) :-
+	recorded(meta_predicate_signature, m(NAME, ARITY, SIG)).

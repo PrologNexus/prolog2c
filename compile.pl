@@ -179,6 +179,21 @@ compile_term_for_unification(X, DEST, BOUND1, BOUND2, S1, S2) :-
 	compile_term_arguments(LIST, [], DLIST, BOUND1, BOUND2, S1, S2),
 	emit(make_term(DLIST, DEST)).
 
+compile_meta_term_for_unification(G, DEST, B1, B2, S1, S2) :-
+	gensym('$meta_call', P, S1, S3),
+	goals_and_variables(G, VLIST, G2, IARGS),
+	map_second(VLIST, VARGS),
+	HEAD =.. [P|VARGS],
+	functor(HEAD, _, LEN),
+	add_boilerplate(P, (HEAD :- G2)),
+	gensym('T', T1, S3, S4),
+	gensym('T', T2, S4, S5),
+	gensym('T', T3, S5, S6),
+	register_literal('$meta_call', NLIT, S6, S7), % functor-name
+	emit(literal(NLIT, T1, '$meta_call'), predicate_address(P, LEN, T2)), % predicate-ptr
+	compile_term_for_unification(IARGS, T3, B1, B2, S7, S2), % variable-list
+	emit(make_term([T1, T2, T3], DEST)).
+
 % compile list of arguments, putting elements into registers
 compile_term_arguments([], DL, RDL, B, B, S, S) :-
 	reverse(DL, RDL).
@@ -186,8 +201,19 @@ compile_term_arguments([X|MORE], DL1, DL2, B1, B2, S1, S2) :-
 	gensym('T', T, S1, S3),
 	compile_term_for_unification(X, T, B1, B3, S3, S4),
 	compile_term_arguments(MORE, [T|DL1], DL2, B3, B2, S4, S2).
-	
-			 
+
+% the same, but with signature of meta-predicate
+compile_meta_arguments([], _, DL, RDL, B, B, S, S) :-
+	reverse(DL, RDL).
+compile_meta_arguments([X|MORE], [SPEC|SIG], DL1, DL2, B1, B2, S1, S2) :-
+	gensym('T', T, S1, S3),
+	( memberchk(SPEC, [^, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+	-> compile_meta_term_for_unification(X, T, B1, B3, S3, S4)
+	; compile_term_for_unification(X, T, B1, B3, S3, S4)
+	),
+	compile_meta_arguments(MORE, SIG, [T|DL1], DL2, B3, B2, S4, S2).
+		       
+
 %% compile body
 
 compile_body(BODY, LAST, BOUND, S1, S2) :-
@@ -459,10 +485,12 @@ compile_body_expression(freeze(V, G), TAIL, D, D, B1, B2, S1, S2) :-
 % type-, order- or ordinary predicate call
 compile_body_expression(TERM, TAIL, D1, D2, B1, B2, S1, S2) :-
 	TERM =.. [NAME|ARGS],
-	compile_term_arguments(ARGS, [], DLIST, B1, B2, S1, S),
-	(compile_type_predicate(NAME, DLIST), S2 = S, D2 = D1
-	; DLIST = [X, Y], compile_order_predicate(NAME, X, Y), S2 = S, D2 = D1
-	; compile_ordinary_call(NAME, TAIL, DLIST, D1, D2, S, S2)
+	( compile_meta_predicate(NAME, ARGS, TAIL, D1, D2, B1, B2, S1, S2)
+	; compile_term_arguments(ARGS, [], DLIST, B1, B2, S1, S),
+	  (compile_type_predicate(NAME, DLIST), S2 = S, D2 = D1
+	  ; DLIST = [X, Y], compile_order_predicate(NAME, X, Y), S2 = S, D2 = D1
+	  ; compile_ordinary_call(NAME, TAIL, DLIST, D1, D2, S, S2)
+	  )
 	).
 
 % otherwise: error
@@ -501,8 +529,14 @@ compile_delayed_goal(INSTALLER, V, G, PRIO, TAIL, D, B1, B2, S1, S2) :-
 	compile_body_expression(DHEAD2, TAIL, D, _, B1, B2, S4, S2).
 
 
-%% compile calls (ordinary or type-/order-predicate)
+%% compile calls (meta-predicate-, ordinary or type-/order-predicate)
 
+compile_meta_predicate(NAME, ARGS, TAIL, D1, D2, B1, B2, S1, S2) :-
+	length(ARGS, ARITY),
+	is_meta_predicate(NAME, ARITY, SIG),
+	compile_meta_arguments(ARGS, SIG, [], DLIST, B1, B2, S1, S),
+	compile_ordinary_call(NAME, TAIL, DLIST, D1, D2, S, S2).
+	
 compile_ordinary_call(NAME, TAIL, DLIST, LAST/D1, D2, S1, S2) :-
 	length(DLIST, ARITY),
 	register_unresolved_call(NAME/ARITY),

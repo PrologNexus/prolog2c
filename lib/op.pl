@@ -20,6 +20,7 @@
 						  op(200,fy,'-'),
 						  op(500,yfx,'-'),
 						  op(1150,fx,('initialization')),
+						  op(1150,fx,('meta_predicate')),
 						  op(900,fy,'\\+'),
 						  op(700,xfx,'=:='),
 						  op(700,xfx,'=\\='),

@@ -142,8 +142,24 @@ process_directive(determinate(PI), S, S) :-
 
 process_directive(op(P, A, N), S, S) :- op(P, A, N).
 
+process_directive(meta_predicate(META), S, S) :-
+	register_meta_predicate(META).
+
 process_directive(DECL, STATE, STATE) :-
 	error(['unrecognized directive: ', DECL]).
+
+
+%% register comma-separated list of meta-predicates
+
+register_meta_predicate((X, Y)) :-
+	register_meta_predicate(X),
+	register_meta_predicate(Y).
+register_meta_predicate(X) :-
+	functor(X, NAME, ARITY),
+	X =.. [_|SIG],
+	recordz(meta_predicate_signature, m(NAME, ARITY, SIG)).
+register_meta_predicate(X) :-
+	error(['invalid meta_predicate declaration', X]).
 
 
 %% compile a block of clauses
