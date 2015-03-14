@@ -8,8 +8,13 @@
 (define opts '("-DPROFILE"))
 (define moreopts '())
 (define args (command-line-arguments))
+(define gprof #f)
 
 (match args
+  (("-gprof" . more)
+   (set! gprof #t)
+   (set! opts '("-pg"))
+   (pop! args))
   (("-M" . more)
    (set! opts '("-DPROFILE_MEMORY"))
    (pop! args))
@@ -26,9 +31,11 @@
 
 (run (gcc -std=gnu99 -I. -g ,@opts ,@moreopts ,cfile -o ,xfile -lm -lrt))
 
-(let* ((status (run* (,(string-append "./" xfile) ,@(cdr args))))
-       (pfile (capture (ls -t PROFILE.* "|" head -n1))))
-  (when (zero? status)
-    (run (cat ,pfile))
-    (delete-file pfile))
-  (exit status))
+(let ((status (run* (,(string-append "./" xfile) ,@(cdr args)))))
+  (if gprof
+      (run (gprof -b ,xfile))
+      (let ((pfile (capture (ls -t PROFILE.* "|" head -n1))))
+	(when (zero? status)
+	  (run (cat ,pfile))
+	  (delete-file pfile))
+	(exit status))))
