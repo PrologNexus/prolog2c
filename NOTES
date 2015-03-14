@@ -33,6 +33,10 @@ NOTES											              -*- Org -*-
    - atom_codes/2 could fail on full heap, force GC and retry,
      would need to be moved into file:lib/misc.pl
 ** Minor
+*** '$call' doesn not check argc nor whether argument is ptr
+    - needs to be safer, should it be exposed (or "meta_predicate"
+      is made official)
+*** pi: call/1 should probably handle X^Y terms (with quantifiers)
 *** split_string/4 does not retain empty strings
     - this is incompatible to SWIs version.
 *** TODO Eliminate redundant switch-operations
@@ -124,6 +128,30 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
+** User-defined meta-predicates
+   - which currently hard-wired control-structures could be implemented
+     in terms of this?
+     | '\+'/1    |                                   |
+     | once/1    |                                   |
+     | forall/2  |                                   |
+     | findall/3 |                                   |
+     | setof/3   | needs to handle quantifiers, etc. |
+     | bagof/4   | s.a.                              |
+     | catch/3   | also special                      |
+     | dif/2     |                                   |
+     | freeze/2  |                                   |
+     | delay/2   |                                   |
+   - sample implementation of forall/2:
+     #+BEGIN_SRC prolog
+     forall(X, Y) :-
+	     '$check_callable'(X),
+	     '$check_callable'(Y),
+	     arg(1, X, PTR1), arg(2, X, VARS1),
+	     arg(1, Y, PTR2), arg(2, Y, VARS2),
+	     '$call'(PTR1, VARS1),
+	     \+'$call'(PTR2, VARS2), !, fail.
+     forall(_, _).
+     #+END_SRC
 ** TODO Check if we can use file:lib/canon.pl for printing query results
 ** DONE if term_expansion/2 returns list, treat as separate (or no) terms
    - add this also to /pi-in-pc/
@@ -205,10 +233,11 @@ NOTES											              -*- Org -*-
 * Undocumented features
 ** Compiler
 *** '$predicate_address'/2
+*** "meta_predicate" directive and usage
 ** Builtins
 *** deref_term/4
 *** read1/2
-*** '$call_predicate'/2
+*** '$call'/2
 *** Single-element list in arithmetic expressions
 ** Interpreter
 *** expand_term/2 + term_expansion/2
