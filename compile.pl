@@ -49,7 +49,7 @@ compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, S1, S2) :-
 	compile_head(HEAD, NONSINGLETONS, BOUND, S1, S3),
 	gen_label(L1, S3, S4),
 	emit(call_triggered(L1)),
-	compile_body(BODY, LAST, BOUND, S4, S2).
+	compile_body(BODY, NAME/ARITY, LAST, BOUND, S4, S2).
 % fact
 compile_clause(HEAD, NA, I, M, S1, S2) :-
 	compile_clause((HEAD :- true), NA, I, M, S1, S2).
@@ -231,11 +231,14 @@ compile_meta_arguments([X|MORE], NA, [SPEC|SIG], DL1, DL2, B1, B2, S1, S2) :-
 
 %% compile body
 
-compile_body(BODY, LAST, BOUND, S1, S2) :-
+compile_body(BODY, N/A, LAST, BOUND, S1, S2) :-
 	(LAST == last -> DET = det; DET = nondet),
 	compile_body_expression(BODY, tail, LAST/DET, LD2, BOUND, _, S1, S3),
 	gen_label(L, S3, S2),
-	(LD2 = _/det -> emit(determinate_exit); emit(exit(L))).
+	( ( LD2 = _/det; determinate_builtin(N, A) )
+	-> emit(determinate_exit)
+	; emit(exit(L))
+	).
 
 
 %% compile expression occuring in clause body
