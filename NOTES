@@ -79,6 +79,8 @@ NOTES											              -*- Org -*-
     - at least as much as possible and sensible.
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
+** gprof reports very heavy use of make_var()
+   - force inlining? (check whether -O2 inlines it)
 ** Deref arguments in advance
 ** Use power-of-2 sized hash-tables 
    - use binary-and instead of mod operation.
@@ -128,30 +130,6 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
-** User-defined meta-predicates
-   - which currently hard-wired control-structures could be implemented
-     in terms of this?
-     | '\+'/1    |                                   |
-     | once/1    |                                   |
-     | forall/2  |                                   |
-     | findall/3 |                                   |
-     | setof/3   | needs to handle quantifiers, etc. |
-     | bagof/4   | s.a.                              |
-     | catch/3   | also special                      |
-     | dif/2     |                                   |
-     | freeze/2  |                                   |
-     | delay/2   |                                   |
-   - sample implementation of forall/2:
-     #+BEGIN_SRC prolog
-     forall(X, Y) :-
-	     '$check_callable'(X),
-	     '$check_callable'(Y),
-	     arg(1, X, PTR1), arg(2, X, VARS1),
-	     arg(1, Y, PTR2), arg(2, Y, VARS2),
-	     '$call'(PTR1, VARS1),
-	     \+'$call'(PTR2, VARS2), !, fail.
-     forall(_, _).
-     #+END_SRC
 ** TODO Check if we can use file:lib/canon.pl for printing query results
 ** DONE if term_expansion/2 returns list, treat as separate (or no) terms
    - add this also to /pi-in-pc/
