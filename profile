@@ -22,8 +22,8 @@
 
 (define file (car args))
 (define bfile (basename file))
-(define xfile (strip-suffix bfile))
-(define cfile (replace-suffix "c" bfile))
+(define xfile (string-append "tmp/" (strip-suffix bfile)))
+(define cfile (string-append "tmp/" (replace-suffix "c" bfile)))
 
 (let ((s (suffix file)))
   (unless (string=? "c" s)
