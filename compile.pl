@@ -179,13 +179,14 @@ compile_term_for_unification(X, DEST, BOUND1, BOUND2, S1, S2) :-
 	compile_term_arguments(LIST, [], DLIST, BOUND1, BOUND2, S1, S2),
 	emit(make_term(DLIST, DEST)).
 
-compile_meta_term_for_unification(G, DEST, B1, B2, S1, S2) :-
+compile_meta_term_for_unification(SPEC, NA, G, DEST, B1, B2, S1, S2) :-
 	gensym('$meta_call', P, S1, S3),
 	goals_and_variables(G, VLIST, G2, IARGS),
 	map_second(VLIST, VARGS),
 	HEAD =.. [P|VARGS],
-	functor(HEAD, _, LEN),
-	add_boilerplate(P, (HEAD :- G2)),
+	adjust_meta_call(SPEC, NA, HEAD, G2, HEAD2, G22),
+	functor(HEAD2, _, LEN),
+	add_boilerplate(P, (HEAD2 :- G22)),
 	gensym('T', T1, S3, S4),
 	gensym('T', T2, S4, S5),
 	gensym('T', T3, S5, S6),
@@ -193,6 +194,20 @@ compile_meta_term_for_unification(G, DEST, B1, B2, S1, S2) :-
 	emit(literal(NLIT, T1, '$meta_call'), predicate_address(P, LEN, T2)), % predicate-ptr
 	compile_term_for_unification(IARGS, T3, B1, B2, S7, S2), % variable-list
 	emit(make_term([T1, T2, T3], DEST)).
+
+% adjust synthesized meta-predicate and goal-invocation according to argument spec
+adjust_meta_call('^', _, H, _^G, H2, G2) :-
+	%% quantified variables are currently lost
+	adjust_meta_call('^', _, H, G, H2, G2).
+adjust_meta_call('^', _, H, G, H, G).
+adjust_meta_call(N, NA, H, G, H2, G2) :-
+	integer(N),
+	(N >= 0; error(['invalid meta-predicate argument specification ', N, ' for ', NA])),
+	length(VARS, N),
+	H =.. [HN|HARGS], G =.. [GN|GARGS],
+	append(HARGS, VARS, HARGS2), append(GARGS, VARS, GARGS2),
+	H2 =.. [HN|HARGS2], G2 =.. [GN|GARGS2].
+adjust_meta_call(_, _, H, G, H, G). % any other is ignored
 
 % compile list of arguments, putting elements into registers
 compile_term_arguments([], DL, RDL, B, B, S, S) :-
@@ -203,15 +218,15 @@ compile_term_arguments([X|MORE], DL1, DL2, B1, B2, S1, S2) :-
 	compile_term_arguments(MORE, [T|DL1], DL2, B3, B2, S4, S2).
 
 % the same, but with signature of meta-predicate
-compile_meta_arguments([], _, DL, RDL, B, B, S, S) :-
+compile_meta_arguments([], _, _, DL, RDL, B, B, S, S) :-
 	reverse(DL, RDL).
-compile_meta_arguments([X|MORE], [SPEC|SIG], DL1, DL2, B1, B2, S1, S2) :-
+compile_meta_arguments([X|MORE], NA, [SPEC|SIG], DL1, DL2, B1, B2, S1, S2) :-
 	gensym('T', T, S1, S3),
-	( memberchk(SPEC, [^, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-	-> compile_meta_term_for_unification(X, T, B1, B3, S3, S4)
+	( (integer(SPEC); SPEC == '^')
+	-> compile_meta_term_for_unification(SPEC, NA, X, T, B1, B3, S3, S4)
 	; compile_term_for_unification(X, T, B1, B3, S3, S4)
 	),
-	compile_meta_arguments(MORE, SIG, [T|DL1], DL2, B3, B2, S4, S2).
+	compile_meta_arguments(MORE, NA, SIG, [T|DL1], DL2, B3, B2, S4, S2).
 		       
 
 %% compile body
@@ -534,7 +549,7 @@ compile_delayed_goal(INSTALLER, V, G, PRIO, TAIL, D, B1, B2, S1, S2) :-
 compile_meta_predicate(NAME, ARGS, TAIL, D1, D2, B1, B2, S1, S2) :-
 	length(ARGS, ARITY),
 	is_meta_predicate(NAME, ARITY, SIG),
-	compile_meta_arguments(ARGS, SIG, [], DLIST, B1, B2, S1, S),
+	compile_meta_arguments(ARGS, NAME/ARITY, SIG, [], DLIST, B1, B2, S1, S),
 	compile_ordinary_call(NAME, TAIL, DLIST, D1, D2, S, S2).
 	
 compile_ordinary_call(NAME, TAIL, DLIST, LAST/D1, D2, S1, S2) :-
