@@ -18,6 +18,7 @@
 [200, fy, -]
 [500, yfx, -]
 [1150, fx, initialization]
+[1150, fx, public]
 [1150, fx, meta_predicate]
 [900, fy, \+]
 [700, xfx, =:=]
