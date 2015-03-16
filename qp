@@ -1,29 +1,48 @@
 #!/bin/bash
-### autocompile-script for pc
+### wrapper script for pc
 #
-# usage: pc-autocompile [-h] FILENAME ARGUMENT ...
+# usage: qp [OPTION ...] FILENAME ARGUMENT ...
 
 
 PC_PREFIX=
 PC_INCLUDEPATH=
-# define PC_AUTOCOMPILE_CACHE if ~/.autocompile-cache is not sufficient
+# define QP_AUTOCOMPILE_CACHE if ~/.autocompile-cache is not sufficient
 
 set -e
+
+if test -z "$1"; then
+    exec ${PC_PREFIX}pi
+fi
 
 PC_OPTIONS=
 C_OPTIONS=
 OPTFLAGS="-O2 -fomit-frame-pointer"
 PC_SOURCEFILE=
 
+CACHEDIR="$QP_AUTOCOMPILE_CACHE"
+
+if test -z "${CACHEDIR}"; then
+    CACHEDIR=~/.autocompile-cache
+fi
+
+if test -z "${TMPDIR}"; then
+    TMPDIR=/tmp
+fi
+
 while true; do
     case "$1" in
 	-h|-help|--help)
-	    echo "usage: pc-autocompile [-h] [OPTION ...] FILENAME ARGUMENT ..."
+	    echo "usage: qp [-h] [-v] [-version] [-purge] [-compress-facts] [-i] [-xref] [OPTION ...] [FILENAME ARGUMENT ...]"
 	    exit;;
+	-version)
+	    exec ${PC_PREFIX}pc -version;;
 	-C)
 	    shift
 	    C_OPTIONS="${C_OPTIONS} $1"
 	    shift;;
+	-purge)
+	    rm -f "${CACHEDIR}"/*
+	    exit;;
 	-O0)
 	    OPTFLAGS=
 	    shift;;
@@ -36,16 +55,6 @@ while true; do
 	    break;;
     esac
 done
-
-if test -z "${TMPDIR}"; then
-    TMPDIR=/tmp
-fi
-
-CACHEDIR="$PC_AUTOCOMPILE_CACHE"
-
-if test -z "${CACHEDIR}"; then
-    CACHEDIR=~/.autocompile-cache
-fi
 
 if test \! -d "${CACHEDIR}"; then
     mkdir "${CACHEDIR}"
