@@ -4,6 +4,7 @@
 compile_file(FILE) :-
 	initial_state(STATE),
 	see(FILE), !,
+	skip_shebang,
 	process_input([], [], _, STATE).
 compile_file(FILE) :-
 	error(['compilation of ', FILE, ' failed.']).

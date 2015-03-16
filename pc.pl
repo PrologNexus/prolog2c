@@ -20,4 +20,7 @@ show_version_and_exit :-
 	display(T), display(' version '), display(V), display(' - '),
 	display(C), nl, halt.
 
+skip_shebang :-
+	(\+peek_char('#'); read_line(_)).
+
 :- include('main.pl').
