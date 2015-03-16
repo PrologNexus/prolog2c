@@ -12,6 +12,7 @@ compile_file_finished(_) :-
 	recorded(xref_mode, yes),
 	!, emit_xref_information.
 compile_file_finished(STATE) :-
+	export_public_predicates,
 	process_boilerplate_code(STATE).
 compile_file_finished(STATE) :-
 	process_initialization_goals(STATE).
@@ -105,13 +106,13 @@ process_directive(DECL, _, _) :-
 	fail.
 
 process_directive(initialization(GOAL), STATE, STATE) :-
-	(recorded(initialization_goal, OLD, REF), erase(REF) ->
-	 recorda(initialization_goal, (OLD, GOAL))
+	( recorded(initialization_goal, OLD, REF), erase(REF) ->
+	  recorda(initialization_goal, (OLD, GOAL))
 	; recorda(initialization_goal, GOAL)).
 
 process_directive(pre_initialization(GOAL), STATE, STATE) :-
-	(recorded(pre_initialization_goal, OLD, REF), erase(REF) ->
-	 recorda(pre_initialization_goal, (OLD, GOAL))
+	( recorded(pre_initialization_goal, OLD, REF), erase(REF) ->
+	  recorda(pre_initialization_goal, (OLD, GOAL))
 	; recorda(pre_initialization_goal, GOAL)).
 
 process_directive(include(FNAME), STATE1, STATE2) :-
@@ -124,7 +125,7 @@ process_directive(include(FNAME), STATE1, STATE2) :-
 
 process_directive(ensure_loaded(FNAME), S1, S2) :-
 	locate_file(FNAME, REALNAME),
-	(recorded(included, REALNAME)
+	( recorded(included, REALNAME)
 	-> S2 = S1
 	; process_directive(include(REALNAME), S1, S2)
 	).
@@ -144,6 +145,9 @@ process_directive(op(P, A, N), S, S) :- op(P, A, N).
 
 process_directive(meta_predicate(META), S, S) :-
 	register_meta_predicate(META).
+
+process_directive(public(PI), S, S) :-
+	register_public_predicates(PI).
 
 process_directive(DECL, STATE, STATE) :-
 	error(['unrecognized directive: ', DECL]).
@@ -190,9 +194,10 @@ process_initialization_goals(STATE) :-
 	\+recorded(initialization_done, _),
 	(recorded(initialization_goal, GOAL); GOAL = main),
 	(recorded(pre_initialization_goal, IGOAL); IGOAL = true),
+	(recorded(public_predicate, _), PGOAL = '$init_public'; PGOAL = true),
 	recorda(initialization_done, true),
 	default_setting(entry_point, EP),
-	!, process_input([(EP :- IGOAL, GOAL)], [], _, STATE).
+	!, process_input([(EP :- IGOAL, PGOAL, GOAL)], [], _, STATE).
 
 
 %% list unresolved calls
@@ -222,3 +227,28 @@ declare_as_determinate(N) :-
 	declare_as_determinate(N/_).
 declare_as_determinate(N) :-
 	error(['invalid predicate indicator: ', N]).
+
+
+%% add initialization-code to record public predicates
+
+register_public_predicates((PI1, PI2)) :-
+	register_public_predicates(PI1),
+	register_public_predicates(PI2).
+register_public_predicates(PI) :-
+	(canonical_pi(PI, N/A); error(['invalid predicate-indicator: ', PI])),
+	recordz(public_predicate, N/A).
+
+export_public_predicates :-
+	recorded(public_predicate, NA),
+	\+recorded(defined, NA),
+	display(user_error, 'WARNING: public predicate was not defined: '),
+	writeq(user_error, NA),
+	nl(user_error),
+	fail.
+export_public_predicates :-
+	findall(INIT, (recorded(defined, N/A), % bind possibly unbound arity
+		       recorded(public_predicate, N/A),
+		       INIT = ('$predicate_address'(N/A, PTR), recordz('$public', p(N, A, PTR))) ),
+		INITS),
+	combine_comma_separated_goals(INITS, G),
+	add_boilerplate('$init_public', ('$init_public' :- G)).

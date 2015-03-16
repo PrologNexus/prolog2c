@@ -167,3 +167,21 @@ possibly_cyclic_unification(X = Y) :-
 	collect_indexed_variables(Y, YV),
 	intersection(XV, YV, [_|_]),
 	(indexed_variable(X, _); indexed_variable(Y, _)).
+
+
+%% canonicalize predicate-indicator
+
+canonical_pi(NAME/ARITY, NAME/ARITY) :-
+	atom(NAME), integer(ARITY), ARITY >= 0.
+canonical_pi(NAME, NAME/_) :-
+	atom(NAME).
+
+
+%% combine list of terms into comma-separated goal
+
+combine_comma_separated_goals([], true).
+combine_comma_separated_goals([G], G).
+combine_comma_separated_goals([G|R], (G, G2)) :-
+	combine_comma_separated_goals(R, G2).
+	
+	
