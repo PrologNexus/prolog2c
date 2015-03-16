@@ -356,6 +356,9 @@ default_setting/2                        C:    88   T:    14   E:     0   H:    
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
+** TODO Expose predicates to interp
+   - "public" declaration asserts wrappers that call exposed
+     predicates via '$call'.
 ** TODO Check if we can use file:lib/canon.pl for printing query results
 ** DONE if term_expansion/2 returns list, treat as separate (or no) terms
    - add this also to /pi-in-pc/
@@ -373,6 +376,10 @@ default_setting/2                        C:    88   T:    14   E:     0   H:    
      more)
    - different handling of put_code/put_byte, get_code/get_byte and
      peek_code/peek_byte
+* Tests
+** TODO Compile full WN-db (with -compress-facts)
+   - perhaps as server, reading queries from stdin.
+   - perhaps using "public" declarations, if implemented.
 * Documentation
 ** DONE News
    - current_prolog_flag/2 understands apple, windows, unix
@@ -409,9 +416,9 @@ default_setting/2                        C:    88   T:    14   E:     0   H:    
    | epsilon/0, pi/0, e/0           | arithmetic constants                      |
    | ^/2                            | integer exponentation (error on overflow) |
 * Tools
-** "pm": build utility
-   - takes a bunch of files and produces a wrapper and a makefile.
-   - detect .bind files and integrate.
+** "qp" driver program
+   - does the same as pc-autocompile.
+   - without args, exec's pi.
 * Diagnostics
 ** Detect singleton variables
 ** Report unused predicates
@@ -436,6 +443,9 @@ default_setting/2                        C:    88   T:    14   E:     0   H:    
 ** Compiler
 *** '$predicate_address'/2
 *** "meta_predicate" directive and usage
+    - see file:tests/0116-meta.pl
+*** "public" declaration
+    - see file:tests/0117-public.pl
 ** Builtins
 *** deref_term/4
 *** read1/2
