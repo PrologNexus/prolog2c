@@ -1240,6 +1240,11 @@ Builtin predicates
     where each substring may be preceded or followed by the characters
     in the string PADCHARS.
 
+        sub_atom(+ATOM, ?BEFORE, ?LENGTH, ?AFTER, ?SUBATOM)
+
+    Extracts the sub-atom of ATOM of length LENGTZH, with BEFORE and
+    AFTER characters before and after the extraction [ISO]
+
   - Predicates that are only available in the interpreter
 
         trace                             

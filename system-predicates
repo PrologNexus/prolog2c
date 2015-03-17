@@ -198,6 +198,7 @@ system_predicate(put_char(?X), 'lib/iso').
 system_predicate(put_char(?X, ?Y), 'lib/iso').
 system_predicate(atomic_list_concat(+X, -Y), 'str').
 system_predicate(split_string(+X, +Y, +Z, -L), 'str').
+system_predicate(sub_atom(+X, +Y, +Z, -L, +Q), 'str').
 
 arithmetic_operation(- X).
 arithmetic_operation(+ X).

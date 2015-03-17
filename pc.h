@@ -4993,6 +4993,21 @@ PRIMITIVE(os_type, X type) {
   return 0;
 }
 
+PRIMITIVE(sub_atom, X atom, X pos, X len, X result) {
+  //XXX check string-buffer length
+  check_type_SYMBOL(atom);
+  check_fixnum(pos);
+  check_fixnum(len);
+  X str = slot_ref(atom, 0);
+  int alen = string_length(str);
+  int offset = fixnum_to_word(pos);
+  int clen = fixnum_to_word(len);
+  ASSERT(offset + clen <= alen, "sub-atom out of range");
+  X res = STRING(clen);
+  memcpy(objdata(res), (XCHAR *)objdata(str) + offset, clen);
+  return unify(intern(res), result);
+}
+
 #endif
 
 #endif

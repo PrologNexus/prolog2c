@@ -84,6 +84,7 @@ auto_include(char_code, 2, 'misc').
 
 auto_include(atomic_list_concat, 2, 'str').
 auto_include(split_string, 4, 'str').
+auto_include(sub_atom, 5, 'str').
 
 auto_include(tab, 1, 'io').
 auto_include(skip, 1, 'io').

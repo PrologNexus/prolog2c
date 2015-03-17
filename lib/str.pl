@@ -46,3 +46,17 @@ split_string(STR, SEP, PAD, SUB) :-
 	memberchk(C, SET), !.
 'string_split_trim_tail'([C|R], SET, [C|R2]) :-
 	'string_split_trim_tail'(R, SET, R2).
+
+
+%% compute sub-atom
+
+sub_atom(X, _, _, _, _) :-
+	var(X), throw(instantiation_error).
+sub_atom(ATOM, BEFORE, LEN, AFTER, SATOM) :-
+	atom_length(ATOM, ALEN),
+	ALEN2 is ALEN - 1,
+	between(0, ALEN, BEFORE),
+	between(0, ALEN, AFTER),
+	LEN is ALEN - AFTER - BEFORE,
+	LEN >= 0,
+	foreign_call(sub_atom(ATOM, BEFORE, LEN, SATOM)).
