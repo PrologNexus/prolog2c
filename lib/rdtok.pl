@@ -112,10 +112,10 @@ read_tokens(46, Dict, Tokens) :- !,		% full stop
 	get0(NextCh),				% or possibly .=. &c
 	read_fullstop(NextCh, Dict, Tokens).
 read_tokens(34, Dict, [string(S)|Tokens]) :- !,	% "string"
-	read_string(S, 34, NextCh),
+	'$rdtok_read_string'(S, 34, NextCh),
 	read_tokens(NextCh, Dict, Tokens).
 read_tokens(39, Dict, [atom(A)|Tokens]) :- !,	% 'atom'
-	read_string(S, 39, NextCh),
+	'$rdtok_read_string'(S, 39, NextCh),
 	%% BUG: '0' = 0 unlike Dec-10 Prolog (FLW: fixed by replacing "name" with "atom_codes")
 	atom_codes(A, S),
 	read_after_atom(NextCh, Dict, Tokens).
@@ -178,7 +178,7 @@ read_after_atom(Ch, Dict, Tokens) :-
 
 
 
-%   read_string(Chars, Quote, NextCh)
+%   '$rdtok_read_string'(Chars, Quote, NextCh)
 %   reads the body of a string delimited by Quote characters.
 %   The result is a list of ASCII codes.  There are two complications.
 %   If we hit the end of the file inside the string this predicate FAILS.
@@ -192,28 +192,28 @@ read_after_atom(Ch, Dict, Tokens) :-
 %   the purpose of this module is not to present my ideal syntax but to
 %   present something which will read present-day Prolog programs.
 
-read_string(Chars, Quote, NextCh) :-
+'$rdtok_read_string'(Chars, Quote, NextCh) :-
 	get0(Ch),
-	read_string(Ch, Chars, Quote, NextCh).
+	'$rdtok_read_string'(Ch, Chars, Quote, NextCh).
 
 
-read_string(-1, _N, Quote, -1) :-
+'$rdtok_read_string'(-1, _N, Quote, -1) :-
 	display('! end of file in '), put(Quote),
 	display(token), put(Quote), nl,
 	!, fail.
-read_string(Quote, Chars, Quote, NextCh) :- !,
+'$rdtok_read_string'(Quote, Chars, Quote, NextCh) :- !,
 	get0(Ch),				% closing or doubled quote
 	more_string(Ch, Quote, Chars, NextCh).
-read_string(92, [Ch2|Chars], Quote, NextCh) :- % (flw) \C handling
+'$rdtok_read_string'(92, [Ch2|Chars], Quote, NextCh) :- % (flw) \C handling
 	!, get0(Ch),
-	(escaped_char(Ch, Ch2); read_string(-1, Chars, Quote, NextCh)),
-	read_string(Chars, Quote, NextCh).
-read_string(Char, [Char|Chars], Quote, NextCh) :-
-	read_string(Chars, Quote, NextCh).	% ordinary character
+	(escaped_char(Ch, Ch2); '$rdtok_read_string'(-1, Chars, Quote, NextCh)),
+	'$rdtok_read_string'(Chars, Quote, NextCh).
+'$rdtok_read_string'(Char, [Char|Chars], Quote, NextCh) :-
+	'$rdtok_read_string'(Chars, Quote, NextCh).	% ordinary character
 
 
 more_string(Quote, Quote, [Quote|Chars], NextCh) :- !,
-	read_string(Chars, Quote, NextCh).	% doubled quote
+	'$rdtok_read_string'(Chars, Quote, NextCh).	% doubled quote
 more_string(NextCh, _, [], NextCh).		% end
 
 escaped_char(-1, -1) :- !, fail.

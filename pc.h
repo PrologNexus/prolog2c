@@ -4763,8 +4763,8 @@ PRIMITIVE(atom_hash, X sym, X hash) {
   return(unify(slot_ref(sym, 2), hash));
 }
 
-PRIMITIVE(read_string, X len, X lst) {
-  FILE *fp = port_file(standard_input_port);
+PRIMITIVE(read_string, X s, X len, X lst) {
+  FILE *fp = get_input_port(s);
   XCHAR *ptr = string_buffer;
   int c, f = 1;
   int count;
@@ -4793,8 +4793,8 @@ PRIMITIVE(read_string, X len, X lst) {
   return unify(lst, string_to_list(string_buffer, slen));
 }
 
-PRIMITIVE(read_line, X lst) {
-  FILE *fp = port_file(standard_input_port);
+PRIMITIVE(read_line, X s, X lst) {
+  FILE *fp = get_input_port(s);
   XCHAR *ptr = string_buffer;
   int p = 0;
   int space = string_buffer_length;

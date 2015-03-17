@@ -561,20 +561,23 @@ Builtin predicates
     given and unifies it with X [ISO]
 
         read_string(+LEN, -X)
+        read_string(+STREAM, +LEN, -X)
 
-    Read up to LEN characters from the current input port and unify X
-    with an list composed of the character codes. If LEN is not an
-    integer, all remaining input will be read. X will contain less than
-    LEN character codes when fewer than that number of characters
-    remain in the input stream. On end-of-file, X will be the empty
-    list.
+    Read up to LEN characters from the current input port or STREAM
+    and unify X with an list composed of the character codes. If LEN
+    is not an integer, all remaining input will be read. X will
+    contain less than LEN character codes when fewer than that number
+    of characters remain in the input stream. On end-of-file, X will
+    be the empty list.
 
         read_line(-X)
+        read_line(+STREAM, -X)
 
-    Read one line from the current input port as a list of character
-    codes and unify it with X. If the end of file is reached, then X
-    is unified with the atom `end_of_file`. Any end-of-line character
-    terminating the line is not included in the returned atom.
+    Read one line from the current input port or STREAM as a list of
+    character codes and unify it with X. If the end of file is
+    reached, then X is unified with the atom `end_of_file`. Any
+    end-of-line character terminating the line is not included in the
+    returned atom.
 
         see(+X)
 

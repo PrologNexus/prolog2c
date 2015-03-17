@@ -99,7 +99,9 @@ auto_include(telling, 1, 'io').
 auto_include(open, 3, 'io').
 auto_include(open, 4, 'io').
 auto_include(read_string, 2, 'io').
+auto_include(read_string, 3, 'io').
 auto_include(read_line, 1, 'io').
+auto_include(read_line, 2, 'io').
 auto_include(flush_output, 0, 'io').
 auto_include(flush_output, 1, 'io').
 auto_include(at_end_of_stream, 0, 'io').
@@ -266,6 +268,8 @@ determinate_builtin(fwritef, 2).
 determinate_builtin(fwritef, 3).
 determinate_builtin(read_string, 2).
 determinate_builtin(read_line, 1).
+determinate_builtin(read_string, 3).
+determinate_builtin(read_line, 2).
 determinate_builtin(dif, 2).
 determinate_builtin(unify_with_occurs_check, 2).
 determinate_builtin(flush_output, 0).

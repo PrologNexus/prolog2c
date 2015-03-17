@@ -75,13 +75,17 @@ open(NAME, MODE, INPUT, MODE, [type(binary)|MORE], STREAM) :-
 open(NAME, MODE, INPUT, MODE, [_|MORE], STREAM) :-
 	open(NAME, MODE, INPUT, MODE, MORE, STREAM).
 
-read_string(LEN, ATM) :-
-	foreign_call(read_string(LEN, A1)),
+read_string(STREAM, LEN, ATM) :-
+	foreign_call(read_string(STREAM, LEN, A1)),
 	(A1 == 0 -> foreign_call(retry_string_to_list(ATM)); ATM = A1).
 
-read_line(ATM) :-
-	foreign_call(read_line(A1)),
+read_string(LEN, ATM) :- read_string(current_input, LEN, ATM).
+
+read_line(STREAM, ATM) :-
+	foreign_call(read_line(STREAM, A1)),
 	(A1 == 0 -> foreign_call(retry_string_to_list(ATM)); ATM = A1).
+
+read_line(ATM) :- read_line(current_input, ATM).
 
 set_input(S) :- foreign_call(set_current_input_stream(S)).
 set_output(S) :- foreign_call(set_current_output_stream(S)).
