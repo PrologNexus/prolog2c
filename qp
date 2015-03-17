@@ -4,9 +4,17 @@
 # usage: qp [OPTION ...] FILENAME ARGUMENT ...
 
 
+## Change these to your liking: ############################################
+
+# don't forget a trailing slash
 PC_PREFIX=
-PC_INCLUDEPATH=
-# define QP_AUTOCOMPILE_CACHE if ~/.autocompile-cache is not sufficient
+PC_INCLUDEPATH=.
+OPTFLAGS="-O2 -fomit-frame-pointer -DNDEBUG"
+CC=gcc
+# define QP_AUTOCOMPILE_CACHE if ~/.qp is not right
+
+############################################################################
+
 
 set -e
 
@@ -16,25 +24,37 @@ fi
 
 PC_OPTIONS=
 C_OPTIONS=
-OPTFLAGS="-O2 -fomit-frame-pointer"
+LIBRARY_DIR=
 PC_SOURCEFILE=
+OFILE=
 
 CACHEDIR="$QP_AUTOCOMPILE_CACHE"
 
 if test -z "${CACHEDIR}"; then
-    CACHEDIR=~/.autocompile-cache
+    CACHEDIR=~/.qp
 fi
 
 while true; do
     case "$1" in
 	-h|-help|--help)
-	    echo "usage: qp [-h] [-v] [-version] [-purge] [-compress-facts] [-i] [-xref] [OPTION ...] [FILENAME ARGUMENT ...]"
+	    echo -n "usage: qp [-h] [-v] [-version] [-purge] [-compress-facts] "
+	    echo "[-o OUTFILENAME] [-i] [-n] [-g] [-xref] [OPTION ...] [FILENAME ARGUMENT ...]"
 	    exit;;
 	-version)
 	    exec ${PC_PREFIX}pc -version;;
+	-g)
+	    C_OPTIONS="${C_OPTIONS} -DTRACE -g"
+	    shift;;
 	-C)
 	    shift
 	    C_OPTIONS="${C_OPTIONS} $1"
+	    shift;;
+	-xref)
+	    xref=1
+	    shift;;
+	-o) 
+	    shift
+	    OFILE="$1"
 	    shift;;
 	-purge)
 	    rm -f "${CACHEDIR}"/*
@@ -42,8 +62,11 @@ while true; do
 	-O0)
 	    OPTFLAGS=
 	    shift;;
-	-*)
+	-n|-compress-facts|-i)
 	    PC_OPTIONS="${PC_OPTIONS} $1"
+	    shift;;
+	-*)
+	    C_OPTIONS="${C_OPTIONS} $1"
 	    shift;;
 	*)
 	    PC_SOURCEFILE="$1"
@@ -51,6 +74,8 @@ while true; do
 	    break;;
     esac
 done
+
+test -n "$xref" && exec ${PC_PREFIX}pc -xref ${PC_OPTIONS} ${PC_SOURCEFILE}
 
 if test \! -d "${CACHEDIR}"; then
     mkdir "${CACHEDIR}"
@@ -70,7 +95,13 @@ fi
 PC_SOURCEFILE2=`basename "${PC_SOURCEFILE}"`
 CFILE=`mktemp --tmpdir qp-XXXXX.c`
 ${PC_PREFIX}pc -q "${PC_SOURCEFILE}" ${PC_OPTIONS} -o "${CFILE}"
-gcc -std=gnu99 ${OPTFLAGS} -fno-strict-aliasing -fwrapv -DTRACE -DNDEBUG \
-    ${C_OPTIONS} ${PC_INCLUDEPATH} -I. "${CFILE}" -o "${CACHEDIR}/${HASH}" \
+"$CC" -std=gnu99 ${OPTFLAGS} -fno-strict-aliasing -fwrapv \
+    ${C_OPTIONS} -I${PC_INCLUDEPATH} -I. "${CFILE}" -o "${CACHEDIR}/${HASH}" \
     -lm -lrt
-exec "${CACHEDIR}/${HASH}" "$@"
+rm -f "${CFILE}"
+
+if test -n "$OFILE"; then
+    cp "${CACHEDIR}/${HASH}" "$OFILE"
+else
+    exec "${CACHEDIR}/${HASH}" "$@"
+fi
