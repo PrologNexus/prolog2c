@@ -17,9 +17,6 @@ NOTES											              -*- Org -*-
 	execute(X) -> execute(Y). % parsed as (!, ...) -> execute(Y)
    - adding parens around last goal repaired the problem, but still
      this shouldn't happen.
-*** 0007-pi benchmark needs high memory/trail settings
-    - crashes with defaults, which is to be expected, but it would be
-      nice to catch this properly.
 *** 32-bit version can't tokenize fractional part of real if it doesn't fit into an integer
    - e.g.:
      main :- f(0.463647609000806).
@@ -29,10 +26,9 @@ NOTES											              -*- Org -*-
 *** If heap is insufficient deref_term/4 will loop endlessly
    - also recorded/X, retract/1 and clause/X, atom_codes/2,
      number_codes/2.
-*** name/2 and functor/3 (and others?) may exceed heap-reserve for large inputs
-   - atom_codes/2 could fail on full heap, force GC and retry,
-     would need to be moved into file:lib/misc.pl
+*** functor/3 (and others?) may exceed heap-reserve for large inputs
 ** Minor
+*** sub_atom/5 is possibly producing results in wrong order
 *** '$call' doesn not check argc nor whether argument is ptr
     - needs to be safer, should it be exposed (or "meta_predicate"
       is made official)
@@ -387,11 +383,12 @@ NOTES											              -*- Org -*-
    - current_prolog_flag/2 understands apple, windows, unix
    - Added builtins put/2, tab/2, skip/2, get/2, get0/2, is_list/1,
      exists_directory/1, atomic_list_concat/2, split_string/4,
-     terminal_stream/1
+     terminal_stream/1, sub_atom/5
    - Added support for stream aliases "current_input",
      "current-output", "user_input", "user_output" and "user_error".
    - Dropped peek/1
    - pi: Respects PC_LIBRARY_DIR.
+   - removed "-I" option, added "-n"
    - PC_INCLUDE_PATH has been renamed PC_LIBRARY_DIR and is only
      allowed to contain a single directory.
    - Filenames may now be "library(NAME)", refering to the current
@@ -401,7 +398,6 @@ NOTES											              -*- Org -*-
 ** Missing ISO predicates
    | Name                                         | Remarks                                        |
    |----------------------------------------------+------------------------------------------------|
-   | sub_atom/5                                   |                                                |
    | current_predicate/1                          | unimplemented                                  |
    | set_prolog_flag/2                            | unimplemented, as there are no changable flags |
    | call/1                                       | unimplemented                                  |
@@ -455,6 +451,8 @@ NOTES											              -*- Org -*-
 *** Single-element list in arithmetic expressions
 ** Interpreter
 *** expand_term/2 + term_expansion/2
+** Tools
+   - qp
 * Release steps
 ** Document changes
 ** make fullcheck
