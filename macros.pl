@@ -69,6 +69,7 @@ macro(TERM, TERM) :-
 %% auto-include definitions
 
 auto_include(length, 2, 'lists').
+auto_include(append, 2, 'lists').
 auto_include(append, 3, 'lists').
 auto_include(member, 2, 'lists').
 auto_include(reverse, 2, 'lists').

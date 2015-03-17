@@ -161,6 +161,7 @@ system_predicate(read_string(+X, -Y), 'io').
 system_predicate(read_line(-Y), 'io').
 system_predicate(abolish(+PI), 'cdb').
 system_predicate(append(?X, ?Y, ?Z), 'lists').
+system_predicate(append(+XX, ?Y), 'lists').
 system_predicate(is_list(?X), 'lists').
 system_predicate(union(+X, +Y, -Z), 'sets').
 system_predicate(symdiff(+X, +Y, -Z), 'sets').

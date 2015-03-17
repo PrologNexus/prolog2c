@@ -32,7 +32,7 @@ file_name_string(IFILE, IFILE).
 mangle_name(NAME, MNAME) :-
 	name(NAME, STRING),
 	findall(CS, (member(C, STRING), mangle_char(C, CS)), MSTRING),
-	concatenate(["___"|MSTRING], MSTRING2),
+	append(["___"|MSTRING], MSTRING2),
 	name(MNAME, MSTRING2).
 
 mangle_char(C, [C]) :- (C >= 97, C =< 122; C >= 48, C =< 57), !.
@@ -42,11 +42,6 @@ mangle_char(C1, [95, C2, C3]) :-
 
 hexdigit(N, M) :- N < 10, M is N + 48, !.
 hexdigit(N, M) :- M is N + 87.
-
-concatenate([], []).
-concatenate([X|Y], Z) :-
-	concatenate(Y, Z2),
-	append(X, Z2, Z).
 
 %% extract second arg of terms in list - this doesn't use findall/3,
 %% to avoid renaming

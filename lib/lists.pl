@@ -7,6 +7,11 @@ member(X, [_|R]) :- member(X, R).
 append([],X,X).
 append([X|Y],Z,[X|W]) :- append(Y,Z,W).
 
+append([], []).
+append([X|Y], Z) :-
+	append(Y, Z2),
+	append(X, Z2, Z).
+
 reverse(L, R) :- reverse(L, R, []).
 reverse([],Z,Z).
 reverse([H|T],Z,Acc) :- reverse(T,Z,[H|Acc]).

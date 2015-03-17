@@ -1119,6 +1119,10 @@ Builtin predicates
 
     Z is the list Y appended to the list X.
 
+        append(+LIST, ?RESULT)
+
+    Append all lists in LIST, producing RESULT.
+
         member(?X, ?Y)
 
     Unifies X with the members of the list Y.
