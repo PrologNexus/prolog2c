@@ -60,8 +60,8 @@ skip(S, C) :-
 
 open(NAME, MODE, STREAM) :- open(NAME, MODE, STREAM, []).
 
-open(NAME, write, STREAM, OPTIONS) :- open(NAME, MODE, 1, "w", OPTIONS, STREAM).
-open(NAME, read, STREAM, OPTIONS) :- open(NAME, MODE, 0, "r", OPTIONS, STREAM).
+open(NAME, write, STREAM, OPTIONS) :- open(NAME, MODE, 0, "w", OPTIONS, STREAM).
+open(NAME, read, STREAM, OPTIONS) :- open(NAME, MODE, 1, "r", OPTIONS, STREAM).
 open(NAME, append, STREAM, OPTIONS) :- open(NAME, MODE, 0, "a", OPTIONS, STREAM).
 
 open(NAME, MODE, INPUT, MODE, [], STREAM) :-
