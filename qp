@@ -1,5 +1,5 @@
 #!/bin/bash
-### wrapper script for pc
+### wrapper script for pc/pi
 #
 # usage: qp [OPTION ...] FILENAME ARGUMENT ...
 
@@ -23,10 +23,6 @@ CACHEDIR="$QP_AUTOCOMPILE_CACHE"
 
 if test -z "${CACHEDIR}"; then
     CACHEDIR=~/.autocompile-cache
-fi
-
-if test -z "${TMPDIR}"; then
-    TMPDIR=/tmp
 fi
 
 while true; do
@@ -72,8 +68,9 @@ if test -x "${CACHEDIR}/${HASH}"; then
 fi
 
 PC_SOURCEFILE2=`basename "${PC_SOURCEFILE}"`
-${PC_PREFIX}pc -q "${PC_SOURCEFILE}" ${PC_OPTIONS} -o "${TMPDIR}/${PC_SOURCEFILE2}.c"
+CFILE=`mktemp --tmpdir qp-XXXXX.c`
+${PC_PREFIX}pc -q "${PC_SOURCEFILE}" ${PC_OPTIONS} -o "${CFILE}"
 gcc -std=gnu99 ${OPTFLAGS} -fno-strict-aliasing -fwrapv -DTRACE -DNDEBUG \
-    ${C_OPTIONS} ${PC_INCLUDEPATH} -I. "${TMPDIR}/${PC_SOURCEFILE2}.c" -o "${CACHEDIR}/${HASH}" \
+    ${C_OPTIONS} ${PC_INCLUDEPATH} -I. "${CFILE}" -o "${CACHEDIR}/${HASH}" \
     -lm -lrt
 exec "${CACHEDIR}/${HASH}" "$@"
