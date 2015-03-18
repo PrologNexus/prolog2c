@@ -217,8 +217,7 @@ pi_system_predicate(bagof, 3).
 pi_system_predicate(setof, 3).
 pi_system_predicate(catch, 3).
 pi_system_predicate(repeat, 0).
-pi_system_predicate('->', 2).
-pi_system_predicate('\\+', 1).
+pi_system_predicate('\\+', 1).	% only specially handled in trace mode
 pi_system_predicate('$call', 2).
 pi_system_predicate(expand_term, 2).
 pi_system_predicate(delay, 2).
@@ -257,10 +256,6 @@ pi_call_primitive(catch, 3, TERM) :-
 	!,
 	arg(1, TERM, G), arg(2, TERM, B), arg(3, TERM, R),
 	catch(call(G), B, call(R)).
-pi_call_primitive('->', 2, TERM) :-
-	!,
-	arg(1, TERM, X), arg(2, TERM, Y),
-	(call(X) -> call(Y)).
 pi_call_primitive('\\+', 1, TERM) :-
 	!,
 	arg(1, TERM, X),
