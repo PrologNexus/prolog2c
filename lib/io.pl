@@ -39,7 +39,7 @@ append(NAME) :-
 
 tab(N) :- tab(current_output, N).
 
-tab(S, N) :- N > 0, !, put(32), N2 is N - 1, tab(N2).
+tab(S, N) :- N > 0, !, put(S, 32), N2 is N - 1, tab(S, N2).
 tab(_, _).
 
 get(C) :- get(current_input, C).
@@ -50,13 +50,13 @@ get(S, C) :-
 	; C2 =\= 32, C = C2
 	; get(S, C)).
 
-skip(C) :- skip(current_output, C).
+skip(C) :- skip(current_input, C).
 
 skip(S, C) :-
-	!, get0(C2),
+	!, get0(S, C2),
 	(C2 =:= -1
 	; C == C2
-	; skip(C)).
+	; skip(S, C)).
 
 open(NAME, MODE, STREAM) :- open(NAME, MODE, STREAM, []).
 
