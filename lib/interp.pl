@@ -31,7 +31,7 @@ pi_do_goal(Goal) :-
 	!,
 	call_system_predicate(Goal).
 pi_do_goal(Goal) :-
-	pi_clause(Goal, Body),	% <--- assume anything else is interpreted
+	pi_clause(Goal, Body),	% <--- assume everything else is interpreted
 	pi_do_body(Body, AfterCut, HadCut),
 	(   HadCut = yes,
 		!,
@@ -50,6 +50,14 @@ pi_do_body(Body) :-
 pi_do_body((Conj1,Conj2), AfterCut, HadCut) :- !,
 	pi_do_body(Conj1, Conj2, AfterCut, HadCut).
 pi_do_body(!, true, yes) :- !.
+pi_do_body((G1 -> G2; _), AfterCut, HadCut) :-
+	pi_do_goal(G1),
+	!, 
+	pi_do_body(G2, AfterCut, HadCut).
+pi_do_body((_ -> _; G3), AfterCut, HadCut) :- !,
+	pi_do_body(G3, AfterCut, HadCut).
+pi_do_body((G1 -> G2), AfterCut, HadCut) :- !,
+	pi_do_body((G1 -> G2; fail), AfterCut, HadCut).
 pi_do_body((Disj1;_), AfterCut, HadCut) :-
 	pi_do_body(Disj1, AfterCut, HadCut).
 pi_do_body((_;Disj2), AfterCut, HadCut) :- !,
@@ -62,6 +70,14 @@ pi_do_body(Goal, true, no) :-
 pi_do_body(!, AfterCut, AfterCut, yes) :- !.
 pi_do_body((A,B), Conj, AfterCut, HadCut) :- !,
 	pi_do_body(A, (B,Conj), AfterCut, HadCut).
+pi_do_body((G1 -> G2; _), Conj, AfterCut, HadCut) :-
+	pi_do_goal(G1),
+	!, 
+	pi_do_body(G2, Conj, AfterCut, HadCut).
+pi_do_body((_ -> _; G3), Conj, AfterCut, HadCut) :- !,
+	pi_do_body(G3, Conj, AfterCut, HadCut).
+pi_do_body((G1 -> G2), Conj, AfterCut, HadCut) :- !,
+	pi_do_body((G1 -> G2; fail), Conj, AfterCut, HadCut).
 pi_do_body((Disj1;_), Conj, AfterCut, HadCut) :-
 	pi_do_body(Disj1, Conj, AfterCut, HadCut).
 pi_do_body((_;Disj2), Conj, AfterCut, HadCut) :- !,
@@ -124,6 +140,14 @@ pi_tr_body(Body, Depth) :-
 pi_tr_body((Conj1,Conj2), Depth, AfterCut, HadCut) :- !,
 	pi_tr_body(Conj1, Conj2, Depth, AfterCut, HadCut).
 pi_tr_body(!, _, true, yes) :- !.
+pi_tr_body((G1 -> G2; _), Depth, AfterCut, HadCut) :-
+	pi_tr_goal(G1, Depth),
+	!, 
+	pi_tr_body(G2, Depth, AfterCut, HadCut).
+pi_tr_body((_ -> _; G3), Depth, AfterCut, HadCut) :- !,
+	pi_tr_body(G3, Depth, AfterCut, HadCut).
+pi_tr_body((G1 -> G2), Depth, AfterCut, HadCut) :- !,
+	pi_tr_body((G1 -> G2; fail), Depth, AfterCut, HadCut).
 pi_tr_body((Disj1;_), Depth, AfterCut, HadCut) :-
 	pi_tr_body(Disj1, Depth, AfterCut, HadCut).
 pi_tr_body((_;Disj2), Depth, AfterCut, HadCut) :- !,
@@ -135,6 +159,14 @@ pi_tr_body(Goal, Depth, true, no) :-
 pi_tr_body(!, AfterCut, _, AfterCut, yes) :- !.
 pi_tr_body((A,B), Conj, Depth, AfterCut, HadCut) :- !,
 	pi_tr_body(A, (B,Conj), Depth, AfterCut, HadCut).
+pi_tr_body((G1 -> G2; _), Conj, Depth, AfterCut, HadCut) :-
+	pi_tr_goal(G1, Depth),
+	!, 
+	pi_tr_body(G2, Conj, Depth, AfterCut, HadCut).
+pi_tr_body((_ -> _; G3), Conj, Depth, AfterCut, HadCut) :- !,
+	pi_tr_body(G3, Conj, Depth, AfterCut, HadCut).
+pi_tr_body((G1 -> G2), Conj, Depth, AfterCut, HadCut) :- !,
+	pi_tr_body((G1 -> G2; fail), Conj, Depth, AfterCut, HadCut).
 pi_tr_body((Disj1;_), Conj, Depth, AfterCut, HadCut) :-
 	pi_tr_body(Disj1, Conj, Depth, AfterCut, HadCut).
 pi_tr_body((_;Disj2), Conj, Depth, AfterCut, HadCut) :- !,
