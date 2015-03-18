@@ -1271,6 +1271,12 @@ Builtin predicates
     ".pl", then this extension may be omitted. In "pi", this may also
     be abbreviated as "[FILE, ...]", if given at the prompt.
 
+        ensure_loaded(+FILE)
+
+    The same as consult/1, but consults FILE only if it wasn't consulted
+    (or included) before. This predicate has the same semantics as
+    the ensure_loaded/1 directive.
+
 
 Precedence of builtin operators
 -------------------------------
