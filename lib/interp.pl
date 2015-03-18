@@ -66,7 +66,7 @@ pi_do_body((Disj1;_), Conj, AfterCut, HadCut) :-
 	pi_do_body(Disj1, Conj, AfterCut, HadCut).
 pi_do_body((_;Disj2), Conj, AfterCut, HadCut) :- !,
 	pi_do_body(Disj2, Conj, AfterCut, HadCut).
-pi_do_body(doue, Body, AfterCut, HadCut) :- !,
+pi_do_body(true, Body, AfterCut, HadCut) :- !,
 	pi_do_body(Body, AfterCut, HadCut).
 pi_do_body(Goal, Body, AfterCut, HadCut) :-
 	pi_do_goal(Goal),
