@@ -136,7 +136,7 @@ write_out(Atom, Style, _, Ci, Co) :-
 	!,
 	write_atom(Atom, Style, Ci, Co).
 write_out(X, _, _, _, alpha) :-
-	(stream(X); db_reference(X); foreign_pointer(X)),
+	(is_stream(X); db_reference(X); foreign_pointer(X)),
 	!,
 	display(X).
 write_out(Term, display, _, Ci, punct) :- !,

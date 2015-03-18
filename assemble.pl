@@ -250,7 +250,7 @@ assemble(atom(R), S, S) :- gen('if(!is_atom(deref(', R, '))) FAIL;\n').
 assemble(atomic(R), S, S) :- gen('if(!is_atomic(deref(', R, '))) FAIL;\n').
 assemble(compound(R), S, S) :- gen('if(!is_compound(deref(', R, '))) FAIL;\n').
 assemble(float(R), S, S) :- gen('if(!is_float(deref(', R, '))) FAIL;\n').
-assemble(stream(R), S, S) :- gen('if(!is_stream(deref(', R, '))) FAIL;\n').
+assemble(is_stream(R), S, S) :- gen('if(!is_stream(deref(', R, '))) FAIL;\n').
 assemble(db_reference(R), S, S) :- gen('if(!is_dbreference(deref(', R, '))) FAIL;\n').
 assemble(foreign_pointer(R), S, S) :- gen('if(!is_pointer(deref(', R, '))) FAIL;\n').
 

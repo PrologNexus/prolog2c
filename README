@@ -413,7 +413,7 @@ Builtin predicates
 
     True if X is a foreign-pointer object.
 
-        stream(+X)
+        is_stream(+X)
 
     True if X is an input/output stream.
 

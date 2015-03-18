@@ -75,7 +75,7 @@ system_predicate(number_codes(?X, ?Y), _, 'uses strtol(3)/strtod(3), so allows l
 system_predicate(put(+X)).
 system_predicate(put(+S, +X)).
 system_predicate(sleep(+X)).
-system_predicate(stream(+X)).
+system_predicate(is_stream(+X)).
 system_predicate(var(+X)).
 system_predicate(suspend(?X, ?Y)).
 system_predicate(acyclic_term(?X)).
