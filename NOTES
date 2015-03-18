@@ -5,7 +5,6 @@ NOTES											              -*- Org -*-
 ** Major
 *** TODO 0046-arithmetic test fails in 32-bit pc
 *** TODO Term-comparison doesn't handle cyclic structures, yet
-*** TODO Why is so much space accumulating on arg- and env-stacks?
 *** 0028-endless-tailcall crashes in pi
     - hits some limit, not sure which.
     - is in any case not keeping the memory-use constant.
@@ -28,7 +27,6 @@ NOTES											              -*- Org -*-
      number_codes/2.
 *** functor/3 (and others?) may exceed heap-reserve for large inputs
 ** Minor
-*** sub_atom/5 is possibly producing results in wrong order
 *** '$call' doesn not check argc nor whether argument is ptr
     - needs to be safer, should it be exposed (or "meta_predicate"
       is made official)
@@ -352,9 +350,7 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
-** TODO Expose predicates to interp
-   - "public" declaration asserts wrappers that call exposed
-     predicates via '$call'.
+** Allow serializing DB to and from file
 ** TODO Check if we can use file:lib/canon.pl for printing query results
 ** DONE if term_expansion/2 returns list, treat as separate (or no) terms
    - add this also to /pi-in-pc/
@@ -383,7 +379,8 @@ NOTES											              -*- Org -*-
    - current_prolog_flag/2 understands apple, windows, unix
    - Added builtins put/2, tab/2, skip/2, get/2, get0/2, is_list/1,
      exists_directory/1, atomic_list_concat/2, split_string/4,
-     terminal_stream/1, sub_atom/5
+     terminal_stream/1, sub_atom/5, append/2, read_line/2,
+     read_string/3
    - Added support for stream aliases "current_input",
      "current-output", "user_input", "user_output" and "user_error".
    - Dropped peek/1
