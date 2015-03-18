@@ -178,6 +178,7 @@ system(TERM) :-
 pi_system_predicate(trace, 0).
 pi_system_predicate(call, 1).
 pi_system_predicate(consult, 1).
+pi_system_predicate(ensure_loaded, 1).
 pi_system_predicate(forall, 2).
 pi_system_predicate(findall, 3).
 pi_system_predicate(bagof, 3).
@@ -209,6 +210,9 @@ pi_call_primitive(trace, 0, TERM) :-
 pi_call_primitive(consult, 1, TERM) :-
 	!,
 	arg(1, TERM, X), consult(X).
+pi_call_primitive(ensure_loaded, 1, TERM) :-
+	!,
+	arg(1, TERM, X), ensure_loaded(X).
 pi_call_primitive(forall, 2, TERM) :-
 	!,
 	arg(1, TERM, G), arg(2, TERM, A),
@@ -308,6 +312,10 @@ consult(FILE) :-
 	seen,
 	see(OLD).
 
+ensure_loaded(FILE) :-
+	pi_locate_file(FILE, FILE2),
+	(recorded(pi_loaded, FILE2); !, consult(FILE)).
+
 pi_consult_terms(PNA) :-
 	read(TERM),
 	TERM \== end_of_file,
@@ -362,8 +370,6 @@ pi_process_directive(initialization(G)) :-
 	-> erase(REF), recordz(pi_initialization_goal, (G1, G))
 	; recordz(pi_initialization_goal, G)
 	).
-pi_process_directive(ensure_loaded(FILE)) :-
-	(recorded(pi_loaded, FILE); pi_process_directive(include(FILE))).
 pi_process_directive(include(FILE)) :-
 	pi_locate_file(FILE, FILE2),
 	seeing(CURRENT),
