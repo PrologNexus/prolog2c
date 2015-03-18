@@ -52,11 +52,11 @@ split_string(STR, SEP, PAD, SUB) :-
 
 sub_atom(X, _, _, _, _) :-
 	var(X), throw(instantiation_error).
-sub_atom(ATOM, BEFORE, LEN, AFTER, SATOM) :-
+sub_atom(ATOM, BEFORE, LEN, A2, SATOM) :-
 	atom_length(ATOM, ALEN),
 	ALEN2 is ALEN - 1,
 	between(0, ALEN, BEFORE),
-	between(0, ALEN, AFTER),
-	LEN is ALEN - AFTER - BEFORE,
+	between(0, ALEN, AFTER), A2 is ALEN - AFTER,
+	LEN is ALEN - A2 - BEFORE,
 	LEN >= 0,
 	foreign_call(sub_atom(ATOM, BEFORE, LEN, SATOM)).
