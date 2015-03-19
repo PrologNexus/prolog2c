@@ -584,7 +584,7 @@ type_predicate(compound).
 type_predicate(float).
 type_predicate(var).
 type_predicate(nonvar).
-type_predicate(stream).
+type_predicate(is_stream).
 type_predicate(db_reference).
 type_predicate(foreign_pointer).
 
