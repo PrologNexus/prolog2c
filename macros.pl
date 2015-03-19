@@ -55,7 +55,7 @@ macro(atom_length(A, L), foreign_call(atom_length(A, L))).
 macro(ground(X), foreign_call(ground(X))).
 macro(rename_file(X, Y), foreign_call(rename_file(X, Y))).
 macro(delete_file(X), foreign_call(delete_file(X))).
-macro(terminal_stream(X), foreign_call(tty_stream(X))).
+macro(stream_property(S, P), '$stream_property'(P, S)). % to utilize indexing
 
 
 % nothing matches - tryi auto-include and finally, fail
@@ -108,6 +108,8 @@ auto_include(at_end_of_stream, 0, 'io').
 auto_include(at_end_of_stream, 1, 'io').
 auto_include(set_input, 0, 'io').
 auto_include(set_output, 1, 'io').
+auto_include(set_stream_position, 2, 'io').
+auto_include('$stream_property', 2, 'io').
 	     
 auto_include(op, 3, 'op').
 auto_include(current_op, 3, 'op').
