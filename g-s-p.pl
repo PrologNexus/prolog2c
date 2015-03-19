@@ -67,5 +67,4 @@ build_lists(I, [_|R] , T, (arg(I, T, X), VARS), [X|ARGS]) :-
 
 system_predicate_head(system_predicate(PRED), PRED).
 system_predicate_head(system_predicate(PRED, _), PRED).
-system_predicate_head(system_predicate(PRED, _, _), PRED).
 
