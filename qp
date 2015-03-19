@@ -15,7 +15,6 @@ CC=gcc
 
 ############################################################################
 
-
 set -e
 
 if test -z "$1"; then
@@ -34,11 +33,12 @@ if test -z "${CACHEDIR}"; then
     CACHEDIR=~/.qp
 fi
 
-while true; do
+while test -n "$1"; do
     case "$1" in
 	-h|-help|--help)
 	    echo -n "usage: qp [-h] [-v] [-version] [-purge] [-compress-facts] "
-	    echo "[-o OUTFILENAME] [-i] [-n] [-g] [-xref] [OPTION ...] [FILENAME ARGUMENT ...]"
+	    echo -n "[-o OUTFILENAME] [-C COPTION] [-i] [-n] [-g] [-xref] "
+	    echo "[OPTION ...] [FILENAME ARGUMENT ...]"
 	    exit;;
 	-version)
 	    exec ${PC_PREFIX}pc -version;;
@@ -70,8 +70,7 @@ while true; do
 	    shift;;
 	*)
 	    PC_SOURCEFILE="$1"
-	    shift
-	    break;;
+	    shift;;
     esac
 done
 
@@ -96,8 +95,8 @@ PC_SOURCEFILE2=`basename "${PC_SOURCEFILE}"`
 CFILE=`mktemp --tmpdir qp-XXXXX.c`
 ${PC_PREFIX}pc -q "${PC_SOURCEFILE}" ${PC_OPTIONS} -o "${CFILE}"
 "$CC" -std=gnu99 ${OPTFLAGS} -fno-strict-aliasing -fwrapv \
-    ${C_OPTIONS} -I${PC_INCLUDEPATH} -I. "${CFILE}" -o "${CACHEDIR}/${HASH}" \
-    -lm -lrt
+    -I${PC_INCLUDEPATH} -I. "${CFILE}" -o "${CACHEDIR}/${HASH}" \
+    -lm -lrt ${C_OPTIONS} 
 rm -f "${CFILE}"
 
 if test -n "$OFILE"; then
