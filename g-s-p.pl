@@ -41,7 +41,7 @@ gen_call_prim(DEF, CP) :-
 	build_lists(1, PARGS, TERM, ARGS, CALLARGS),
 	CALL =.. [NAME|CALLARGS],
 	tell(CP),		    
-	write((pi_call_primitive(NAME, ARITY, TERM) :- !, ARGS, CALL)),
+	writeq((pi_call_primitive(NAME, ARITY, TERM) :- !, ARGS, CALL)),
 	display('.\n').	
 gen_call_prim(_, _).
 
@@ -52,7 +52,7 @@ gen_eval_op(arithmetic_operation(OP), EO) :-
 	build_lists(1, PARGS, TERM, ARGS, CALLARGS),
 	EXPR =.. [NAME|CALLARGS],
 	tell(EO),
-	write((pi_evaluate_op(NAME, ARITY, TERM, R) :- !, ARGS, R is EXPR)),
+	writeq((pi_evaluate_op(NAME, ARITY, TERM, R) :- !, ARGS, R is EXPR)),
 	display('.\n').
 gen_eval_op(_, _).
 

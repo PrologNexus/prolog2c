@@ -102,7 +102,6 @@ system_predicate(put_code(+S, +X)).
 system_predicate(ground(?X)).
 system_predicate(rename_file(+X, +Y)).
 system_predicate(delete_file(+X)).
-system_predicate(terminal_stream(+X)).
 
 system_predicate(append(+X), 'io').
 system_predicate(compare(-X, ?X, ?Z), 'misc').
@@ -202,7 +201,7 @@ system_predicate(put_char(?X, ?Y), 'iso').
 system_predicate(atomic_list_concat(+X, -Y), 'str').
 system_predicate(split_string(+X, +Y, +Z, -L), 'str').
 system_predicate(sub_atom(+X, +Y, +Z, -L, +Q), 'str').
-system_predicate('$stream_property'(+X, ?Y), 'io').
+system_predicate(stream_property(+X, ?Y), 'io').
 system_predicate(set_stream_position(+X, +Y), 'io').
 
 arithmetic_operation(- X).
