@@ -5014,8 +5014,10 @@ PRIMITIVE(sub_atom, X atom, X pos, X len, X result) {
 PRIMITIVE(stream_position, X s, X result) {
   long pos = ftell(port_file(get_stream(s)));
 
-  if(pos == -1)
-    system_error(strerror(errno));
+  if(pos == -1) {
+    if(errno == EBADF) return 0;		/* not seekable? just fail */
+    else system_error(strerror(errno));
+  }
 
   return unify(result, word_to_fixnum(pos));
 }
