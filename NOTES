@@ -74,6 +74,40 @@ NOTES											              -*- Org -*-
     - at least as much as possible and sensible.
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
+** TODO Add macros for trivial lib predicates
+   | asserta/1                 | would need to introduce var |
+   | assertz/1                 | s.a.                        |
+   | clause/2                  | s.a.                        |
+   | $findall_start/0          |                             |
+   | seen/0                    |                             |
+   | told/0                    |                             |
+   | tab/1                     |                             |
+   | get/1                     |                             |
+   | skip/1                    |                             |
+   | open/3                    |                             |
+   | open/4                    |                             |
+   | read_string/2             |                             |
+   | read_line/1               |                             |
+   | set_input/1               |                             |
+   | set_output/2              |                             |
+   | flush_output/0            |                             |
+   | flush_output/1            |                             |
+   | at_end_of_stream/0        |                             |
+   | at_end_of_stream/1        |                             |
+   | put_char/1                | s.a.                        |
+   | put_char/2                |                             |
+   | is_list/1                 |                             |
+   | shell/1                   |                             |
+   | unify_with_occurs_check/2 |                             |
+   | char_code/2               |                             |
+   | list_to_ord_set/2         |                             |
+   | ord_seteq/2               |                             |
+   | recorded/2                | s.a.                        |
+   | recorda/2                 | s.a.                        |
+   | recordz/2                 | s.a.                        |
+   | keysort/2                 |                             |
+   | sort/2                    |                             |
+   | merge/3                   |                             |
 ** DONE Insert cuts for predicates that are declared as determine
    - on exit, needs testing.
    - probably not for calls, as non-tail-call may fail.
@@ -333,6 +367,8 @@ NOTES											              -*- Org -*-
    - rather complicated, first attempt at implementation ended in
      quite a mess and was abandoned.
 ** With some sort of type/groundness analysis many primitives could be optimized
+   - perform local flow-analysis before compiling list of clauses for
+     a predicate, collecting type/groundness info for each variable.
    - functor, arg, name, univ, etc.
    - rewrite to simpler forms.
 ** Perform first match in C when looking up DB-entry
@@ -354,18 +390,31 @@ NOTES											              -*- Org -*-
 ** TODO Check if we can use file:lib/canon.pl for printing query results
 ** DONE if term_expansion/2 returns list, treat as separate (or no) terms
    - add this also to /pi-in-pc/
-** handle arbitrary signals
+** Handle arbitrary signals
 ** dlopen, dlsym, to access primitives written in C
 ** Show warning for untriggered delayed goals with "-:d"
    - check trail-entries when unwinding trail and before exit.
+** Predicates
+   | for/3                 |                                          |
+   | stream_property/2     | props: file_no(INT), input, output,      |
+   |                       | type(T/B), mode(MODE)                    |
+   |                       | (position + tty are already implemented) |
+   | close/2               | ignore 2nd arg                           |
 ** Allow access to delay goals
    - frozen(VAR, PTRARGS) :: return ptr/args pairs,
         non-deterministically
 ** Unicode
    - arbitrary character codes in strings (UTF-8?)
-   - atom-length (string_length())
-   - extend name/2, get/1, get0/1, put/1, skip/1 (and probably many
-     more)
+   - pc.h: string_length(), to_string(), string_to_list()
+   - builtins that would have to be changed:
+     | atom_codes/2  |
+     | get/1         |
+     | get0/1        |
+     | put/1         |
+     | skip/1        |
+     | read_line/X   |
+     | read_string/X |
+     | sub_atom/5    |
    - different handling of put_code/put_byte, get_code/get_byte and
      peek_code/peek_byte
 * Tests
@@ -376,11 +425,12 @@ NOTES											              -*- Org -*-
 ** DONE News
    - the compiler skips the first line of the source-program if it
      starts with "#".
+   - added stream_property/2 (position + tty properties)
    - current_prolog_flag/2 understands apple, windows, unix
    - Added builtins put/2, tab/2, skip/2, get/2, get0/2, is_list/1,
      exists_directory/1, atomic_list_concat/2, split_string/4,
-     terminal_stream/1, sub_atom/5, append/2, read_line/2,
-     read_string/3
+     sub_atom/5, append/2, read_line/2, read_string/3,
+     set_stream_position/2
    - Added support for stream aliases "current_input",
      "current-output", "user_input", "user_output" and "user_error".
    - Dropped peek/1
@@ -448,8 +498,6 @@ NOTES											              -*- Org -*-
 *** Single-element list in arithmetic expressions
 ** Interpreter
 *** expand_term/2 + term_expansion/2
-** Tools
-   - qp
 * Release steps
 ** Document changes
 ** make fullcheck
