@@ -660,9 +660,19 @@ Builtin predicates
     Sets the current input or output stream to STREAM. You can pass
     the atom 'user' to select the standard input or output port [ISO]
 
-        terminal_stream(+STREAM)
+        set_stream_position(+STREAM, +POS)
 
-    Succeeds if STREAM refers to a terminal.
+    Sets the current position in STREAM to POS, which may be either
+    the atom "end" or an integer indicating the absolute position in
+    bytes.
+
+        stream_property(+STREAM, ?PROP)
+
+    Returns or enumerates properties of STREAM. Currently supported are
+    the following properties:
+
+        position(POS)    absolute current position in STREAM (in bytes)
+        tty(BOOL)        wether STREAM is connected to a terminal
 
     The following builtin stream aliases are available:
 

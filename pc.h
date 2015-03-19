@@ -5002,10 +5002,32 @@ PRIMITIVE(sub_atom, X atom, X pos, X len, X result) {
   int alen = string_length(str);
   int offset = fixnum_to_word(pos);
   int clen = fixnum_to_word(len);
-  ASSERT(offset + clen <= alen, "sub-atom out of range");
+  
+  if(offset + clen > alen)
+    system_error("sub-atom out of range");
+
   X res = STRING(clen);
   memcpy(objdata(res), (XCHAR *)objdata(str) + offset, clen);
   return unify(intern(res), result);
+}
+
+PRIMITIVE(stream_position, X s, X result) {
+  long pos = ftell(port_file(get_stream(s)));
+
+  if(pos == -1)
+    system_error(strerror(errno));
+
+  return unify(result, word_to_fixnum(pos));
+}
+
+PRIMITIVE(set_stream_position, X s, X pos) {
+  check_fixnum(pos);
+  long p = fixnum_to_word(pos);
+
+  if(fseek(port_file(get_stream(s)), p < 0 ? 0 : p, p < 0 ? SEEK_END : SEEK_SET) < 0)
+    system_error(strerror(errno));
+
+  return 1;
 }
 
 #endif

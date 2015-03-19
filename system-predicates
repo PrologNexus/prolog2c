@@ -5,8 +5,8 @@ control_structure((X; Y)).
 control_structure((X -> Y)).
 control_structure(!).
 control_structure(\+X).
-control_structure(findall(-X, Y, -Z), 'Y must be a callable term, uses library "findall.pl"').
-control_structure(forall(X, Y), 'X and Y must be callable terms').
+control_structure(findall(-X, Y, -Z)).
+control_structure(forall(X, Y)).
 control_structure(foreign_call(X)).
 control_structure(global_ref(+X, -Y)).
 control_structure(global_set(+X, +Y)).
@@ -49,29 +49,29 @@ system_predicate(atom_hash(+X, -Y)).
 system_predicate(atomic(+X)).
 system_predicate(clause(+X, ?Y)).
 system_predicate(clause(+X, ?Y, -Z)).
-system_predicate(command_line_arguments(-X), _, 'Filters out runtime-options ("-:..."), does not include program name').
+system_predicate(command_line_arguments(-X)).
 system_predicate(compound(+X)).
 system_predicate(db_reference(?X)).
 system_predicate(display(+X)).
 system_predicate(display(+S, +X)).
 system_predicate(enable_trace(+X)).
 system_predicate(erase(+X)).
-system_predicate(exists_file(+X), _, 'fails if nonexistent or not a regular file').
-system_predicate(exists_directory(+X), _, 'fails if nonexistent or not a directory').
+system_predicate(exists_file(+X)).
+system_predicate(exists_directory(+X)).
 system_predicate(float(+X)).
 system_predicate(foreign_pointer(+X)).
 system_predicate(functor(?X, ?Y, ?Z)).
-system_predicate(garbage_collect, _, 'GC is triggered on next entry to predicate').
-system_predicate(getenv(+X, -Y), _, 'fails if variable does not exist').
+system_predicate(garbage_collect).
+system_predicate(getenv(+X, -Y)).
 system_predicate(getpid(-X)).
-system_predicate(halt, _, 'exits with code 0').
+system_predicate(halt).
 system_predicate(halt(+X)).
 system_predicate(integer(+X)).
 system_predicate(nl).
 system_predicate(nl(+X)).
 system_predicate(nonvar(+X)).
 system_predicate(number(+X)).
-system_predicate(number_codes(?X, ?Y), _, 'uses strtol(3)/strtod(3), so allows leading space').
+system_predicate(number_codes(?X, ?Y)).
 system_predicate(put(+X)).
 system_predicate(put(+S, +X)).
 system_predicate(sleep(+X)).
@@ -132,9 +132,9 @@ system_predicate(ord_subtract(+X, +Y, -Z), 'ordset').
 system_predicate(ord_symdiff(+X, +Y, -Z), 'ordset').
 system_predicate(ord_union(+X, +Y, -Z), 'ordset').
 system_predicate(ord_memberchk(+X, +Y), 'ordset').
-system_predicate(read(-X), 'read', 'expands into read1/1, which is auto-included').
-system_predicate(read(+S, -X), 'read', 'expands into read1/1, which is auto-included').
-system_predicate(read1(-X, -Y), 'read', 'Y is unified with list of ATOM=VAR terms').
+system_predicate(read(-X), 'read').
+system_predicate(read(+S, -X), 'read').
+system_predicate(read1(-X, -Y), 'read').
 system_predicate(read_tokens(-X, -Y), 'rdtok').
 system_predicate(recorda(+X, -Y), 'rdb').
 system_predicate(recorda(+X, -Y, -Z), 'rdb').
@@ -144,19 +144,19 @@ system_predicate(recordz(+X, -Y), 'rdb').
 system_predicate(recordz(+X, -Y, -Z), 'rdb').
 system_predicate(retract(+X), 'cdb').
 system_predicate(reverse(?X, ?Y), 'lists').
-system_predicate(see(+X), 'io', 'may also pass stream (or "user")').
-system_predicate(seen, 'io', 'does nothing if stdin').
+system_predicate(see(+X), 'io').
+system_predicate(seen, 'io').
 system_predicate(select(?X, ?Y, ?Z), 'sets').
-system_predicate(shell(+X), 'misc', 'expects exit-status 0').
+system_predicate(shell(+X), 'misc').
 system_predicate(shell(+X, -Y), 'misc').
 system_predicate(skip(+X), 'io').
 system_predicate(sort(+X, -Y), 'sorts').
 system_predicate(subtract(+X, +Y, -Z), 'sets').
 system_predicate(tab(+X), 'io').
 system_predicate(tab(+S, +X), 'io').
-system_predicate(tell(+X), 'io', 'may also pass stream (or "user")').
+system_predicate(tell(+X), 'io').
 system_predicate(throw(+X), 'misc').
-system_predicate(told, 'io', 'does nothing if stdout or stderr').
+system_predicate(told, 'io').
 system_predicate(read_string(+X, -Y), 'io').
 system_predicate(read_line(-Y), 'io').
 system_predicate(read_string(+S, +X, -Y), 'io').
@@ -172,36 +172,38 @@ system_predicate(write(+X), 'write').
 system_predicate(writeq(+X), 'write').
 system_predicate(write(+S, +X), 'write').
 system_predicate(writeq(+S, +X), 'write').
-system_predicate(memberchk(?X, +Y), 'lib/lists').
-system_predicate(open(+X,+Y,-Z), 'lib/io').
-system_predicate(succ(?X,?Y), 'lib/arith').
-system_predicate(plus(?X,?Y,?Z), 'lib/arith').
-system_predicate(times(?X,?Y,?Z), 'lib/arith').
-system_predicate(divide(?X,?Y,?Z,?U), 'lib/arith').
-system_predicate(writef(+X), 'lib/writef').
-system_predicate(writef(+X,+Y), 'lib/writef').
-system_predicate(fwritef(+X,+Y), 'lib/writef').
-system_predicate(fwritef(+X,+Y,+Z), 'lib/writef').
-system_predicate(current_prolog_flag(+X,-Y), 'lib/flags').
-system_predicate(unify_with_occurs_check(?X, ?Y), 'lib/misc').
-system_predicate(set_input(+X), 'lib/io').
-system_predicate(set_output(+X), 'lib/io').
-system_predicate(flush_output, 'lib/io').
-system_predicate(flush_output(+X), 'lib/io').
-system_predicate(at_end_of_stream, 'lib/io').
-system_predicate(at_end_of_stream(+X), 'lib/io').
-system_predicate(atom_concat(?X, ?Y, ?Z), 'lib/iso').
-system_predicate(atom_chars(?X, ?Y), 'lib/iso').
-system_predicate(number_chars(?X, ?Y), 'lib/iso').
-system_predicate(get_char(?X), 'lib/iso').
-system_predicate(get_char(?X, ?Y), 'lib/iso').
-system_predicate(peek_char(?X), 'lib/iso').
-system_predicate(peek_char(?X, ?Y), 'lib/iso').
-system_predicate(put_char(?X), 'lib/iso').
-system_predicate(put_char(?X, ?Y), 'lib/iso').
+system_predicate(memberchk(?X, +Y), 'lists').
+system_predicate(open(+X,+Y,-Z), 'io').
+system_predicate(succ(?X,?Y), 'arith').
+system_predicate(plus(?X,?Y,?Z), 'arith').
+system_predicate(times(?X,?Y,?Z), 'arith').
+system_predicate(divide(?X,?Y,?Z,?U), 'arith').
+system_predicate(writef(+X), 'writef').
+system_predicate(writef(+X,+Y), 'writef').
+system_predicate(fwritef(+X,+Y), 'writef').
+system_predicate(fwritef(+X,+Y,+Z), 'writef').
+system_predicate(current_prolog_flag(+X,-Y), 'flags').
+system_predicate(unify_with_occurs_check(?X, ?Y), 'misc').
+system_predicate(set_input(+X), 'io').
+system_predicate(set_output(+X), 'io').
+system_predicate(flush_output, 'io').
+system_predicate(flush_output(+X), 'io').
+system_predicate(at_end_of_stream, 'io').
+system_predicate(at_end_of_stream(+X), 'io').
+system_predicate(atom_concat(?X, ?Y, ?Z), 'iso').
+system_predicate(atom_chars(?X, ?Y), 'iso').
+system_predicate(number_chars(?X, ?Y), 'iso').
+system_predicate(get_char(?X), 'iso').
+system_predicate(get_char(?X, ?Y), 'iso').
+system_predicate(peek_char(?X), 'iso').
+system_predicate(peek_char(?X, ?Y), 'iso').
+system_predicate(put_char(?X), 'iso').
+system_predicate(put_char(?X, ?Y), 'iso').
 system_predicate(atomic_list_concat(+X, -Y), 'str').
 system_predicate(split_string(+X, +Y, +Z, -L), 'str').
 system_predicate(sub_atom(+X, +Y, +Z, -L, +Q), 'str').
+system_predicate('$stream_property'(+X, ?Y), 'io').
+system_predicate(set_stream_position(+X, +Y), 'io').
 
 arithmetic_operation(- X).
 arithmetic_operation(+ X).
