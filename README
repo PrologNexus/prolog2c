@@ -134,6 +134,27 @@ Usage
   compiler. For development builds it is advisable to compile without
   optimization options, as this reduces compilation time.
 
+  For your convenience a helper script named "qp" is included in the
+  distribution that takes a Prolog source file and compiles and
+  executes the final executable. Enter "qp -help" for a list of
+  available options. "qp" will cache the binary in a directory
+  (default: "~/.qp") and only recompile it when the source code
+  changed. One use of this script is to automatically compile
+  a script containing Prolog source code:
+
+  % cat hello
+  #!/usr/bin/env qp
+  main :- display('Hello, World!'), nl.
+  % chmod +x hello
+  % ./hello
+  Hello, World!
+
+  Running "qp" without arguments just starts the interpreter ("pi").
+
+  To install this script, modify the set of variables at the start to
+  reflect the actual locations of "pc" and "pi" and copy it into some
+  directory in your PATH.
+
 
 Interpreter
 -----------

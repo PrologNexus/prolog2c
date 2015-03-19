@@ -62,6 +62,7 @@
 (define manifest
   `("Makefile"
     "README"
+    "qp"
     "lib/sorts.pl" "lib/ordset.pl" "lib/writef.pl" "lib/arith.pl" "lib/iso.pl" "lib/str.pl"
     "pc.c"
     "pc.h"

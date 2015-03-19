@@ -11,7 +11,7 @@ PC_PREFIX=
 PC_INCLUDEPATH=.
 OPTFLAGS="-O2 -fomit-frame-pointer -DNDEBUG"
 CC=gcc
-# define QP_AUTOCOMPILE_CACHE if ~/.qp is not right
+CACHEDIR="${HOME}/.qp"
 
 ############################################################################
 
@@ -27,37 +27,44 @@ LIBRARY_DIR=
 PC_SOURCEFILE=
 OFILE=
 
-CACHEDIR="$QP_AUTOCOMPILE_CACHE"
-
-if test -z "${CACHEDIR}"; then
-    CACHEDIR=~/.qp
-fi
-
 while test -n "$1"; do
     case "$1" in
 	-h|-help|--help)
-	    echo -n "usage: qp [-h] [-v] [-version] [-purge] [-compress-facts] "
-	    echo -n "[-o OUTFILENAME] [-C COPTION] [-i] [-n] [-g] [-xref] "
-	    echo "[OPTION ...] [FILENAME ARGUMENT ...]"
+	    echo "usage: qp -help"
+	    echo "       qp -version"
+	    echo -n "       qp [-v] [-compress-facts] [-o OUTFILENAME] [-C COPTION] [-O0] [-i] [-n] [-g] [-xref] "
+	    echo "[COPTION ...] [FILENAME ARGUMENT ...]"
+	    echo "       qp -purge [FILENAME ...]"
 	    exit;;
 	-version)
 	    exec ${PC_PREFIX}pc -version;;
 	-g)
 	    C_OPTIONS="${C_OPTIONS} -DTRACE -g"
+	    OPTFLAGS=
 	    shift;;
 	-C)
 	    shift
 	    C_OPTIONS="${C_OPTIONS} $1"
 	    shift;;
 	-xref)
-	    xref=1
+	    XREF=1
 	    shift;;
 	-o) 
 	    shift
 	    OFILE="$1"
 	    shift;;
 	-purge)
-	    rm -f "${CACHEDIR}"/*
+	    shift
+	    test -d "${CACHEDIR}" || exit
+	    if test -z "$1"; then
+		rm -f "${CACHEDIR}"/*
+	    else
+		while test -n "$1"; do
+		    HASH=`md5sum "${1}" | sed -e 's/^\([a-f0-9]\+\).*$/\1/'`
+		    rm -f "${CACHEDIR}/${HASH}"
+		    shift
+		done
+	    fi
 	    exit;;
 	-O0)
 	    OPTFLAGS=
@@ -65,7 +72,7 @@ while test -n "$1"; do
 	-n|-compress-facts|-i)
 	    PC_OPTIONS="${PC_OPTIONS} $1"
 	    shift;;
-	-*)
+	-*|*.o|-l*)
 	    C_OPTIONS="${C_OPTIONS} $1"
 	    shift;;
 	*)
@@ -74,7 +81,7 @@ while test -n "$1"; do
     esac
 done
 
-test -n "$xref" && exec ${PC_PREFIX}pc -xref ${PC_OPTIONS} ${PC_SOURCEFILE}
+test -n "$XREF" && exec ${PC_PREFIX}pc -xref ${PC_OPTIONS} ${PC_SOURCEFILE}
 
 if test \! -d "${CACHEDIR}"; then
     mkdir "${CACHEDIR}"
