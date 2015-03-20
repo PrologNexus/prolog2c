@@ -434,9 +434,9 @@ static X instantiation_error_atom, user_interrupt_atom, end_of_file_atom;
 static X user_input_atom, user_output_atom, user_error_atom;
 static X current_input_atom, current_output_atom, current_error_atom;
 
-static PORT_BLOCK default_input_port = { PORT_TAG|4, NULL, ONE, ONE, ZERO };
-static PORT_BLOCK default_output_port = { PORT_TAG|4, NULL, ZERO, ONE, ZERO };
-static PORT_BLOCK default_error_port = { PORT_TAG|4, NULL, ZERO, ONE, ZERO };
+static PORT_BLOCK default_input_port = { PORT_TAG|4, NULL, ONE, ONE, END_OF_LIST_VAL };
+static PORT_BLOCK default_output_port = { PORT_TAG|4, NULL, ZERO, ONE, END_OF_LIST_VAL };
+static PORT_BLOCK default_error_port = { PORT_TAG|4, NULL, ZERO, ONE, END_OF_LIST_VAL };
 
 static X standard_input_port;
 static X standard_output_port;
