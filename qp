@@ -111,12 +111,13 @@ while test -n "$1"; do
 	    PC_SOURCEFILE=`mktemp --tmpdir qp-XXXX.pl`
 	    cat >${PC_SOURCEFILE}
 	    shift;;
-	-*|*.o)
+	-*|*.o|*.c)
 	    C_OPTIONS="${C_OPTIONS} $1"
 	    shift;;
 	*)
 	    PC_SOURCEFILE="$1"
-	    shift;;
+	    shift
+	    break;;
     esac
 done
 
