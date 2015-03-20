@@ -4848,7 +4848,6 @@ PRIMITIVE(delay_goal, X var, X prio, X ptr, X args) {
   // on a variable, the order will automatically be reversed because
   // the entry of a delayed goal will invoke the next on the list (and so on)
   // ...
-  push_trail(C0, var);		/* to restore delayed-goals slot */
   X a2 = PAIR(ptr, args);
   X a1 = PAIR(prio, a2);
   X al = slot_ref(var, 3);
