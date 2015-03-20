@@ -27,6 +27,8 @@ NOTES											              -*- Org -*-
      number_codes/2.
 *** functor/3 (and others?) may exceed heap-reserve for large inputs
 ** Minor
+*** TODO standard-ports should have some initial data
+    - alias, type, mode.
 *** '$call' doesn not check argc nor whether argument is ptr
     - needs to be safer, should it be exposed (or "meta_predicate"
       is made official)
@@ -399,11 +401,6 @@ NOTES											              -*- Org -*-
 ** dlopen, dlsym, to access primitives written in C
 ** Show warning for untriggered delayed goals with "-:d"
    - check trail-entries when unwinding trail and before exit.
-** Predicates
-   | for/3             |                                     |
-   | stream_property/2 | missing props: input, output,       |
-   |                   | file_name(S), type(T/B), mode(MODE) |
-   | close/2           | ignore 2nd arg                      |
 ** Allow access to delay goals
    - frozen(VAR, PTRARGS) :: return ptr/args pairs,
         non-deterministically
