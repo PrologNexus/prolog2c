@@ -674,7 +674,10 @@ Builtin predicates
 
         position(POS)    absolute current position in STREAM (in bytes) [ISO]
         tty(BOOL)        wether STREAM is connected to a terminal
-	file_no(INT)     UNIX file-descriptor
+        file_no(INT)     UNIX file-descriptor
+        mode(MODE)       'read', 'write' or 'append'
+        input            if input-stream
+        output           if output-stream
 
     The following builtin stream aliases are available:
 
@@ -682,7 +685,8 @@ Builtin predicates
         current_output   these refer to the currently active I/O streams
         user_input      
         user_output
-        user_error       these refer to the initial I/O streams (i.e. console)
+        user_error       these refer to the initial I/O streams (i.e. the
+                         console)
 
     tell/1 and see/1 accept the stream-alias `user`, which has the
     same meaning as `user_output` and `user_input`, respectively.
