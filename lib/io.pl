@@ -112,6 +112,12 @@ set_stream_position(S, P) :-
 	(P == end -> P2 = -1; P2 = P),
 	foreign_call(set_stream_position(S, P2)).
 
-'$stream_property'(position(P), S) :- foreign_call(stream_position(S, P)).
-'$stream_property'(tty(B), S) :- (foreign_call(tty_stream(S)) -> B = true; B = false).
-'$stream_property'(file_no(N), S) :- foreign_call(stream_fileno(S, N)).
+'$stream_property'(position(P), S) :-
+	foreign_call(stream_position(S, P)).
+'$stream_property'(tty(B), S) :-
+	(foreign_call(tty_stream(S)) -> B = true; B = false).
+'$stream_property'(file_no(N), S) :-
+	foreign_call(stream_fileno(S, N)).
+'$stream_property'(P, S) :-
+	foreign_call(stream_data(S, DATA)),
+	member(P, DATA).
