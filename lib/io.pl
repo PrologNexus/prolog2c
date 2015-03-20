@@ -102,3 +102,4 @@ set_stream_position(S, P) :-
 
 '$stream_property'(position(P), S) :- foreign_call(stream_position(S, P)).
 '$stream_property'(tty(B), S) :- (foreign_call(tty_stream(S)) -> B = true; B = false).
+'$stream_property'(file_no(N), S) :- foreign_call(stream_fileno(S, N)).

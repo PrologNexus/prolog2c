@@ -455,11 +455,12 @@ Builtin predicates
     end [ISO]
 
         close(+STREAM)
+        close(+STREAM, +OPTIONS)
 
     Closes the given stream. If STREAM is the current input- or
     output- stream, then the default I/O stream becomes current,
     if STREAM refers to one of the default I/O streams, than nothing
-    is done [ISO]
+    is done. OPTIONS is currently ignored [ISO]
   
         current_input(-X)
         current_output(-X)
@@ -663,16 +664,17 @@ Builtin predicates
         set_stream_position(+STREAM, +POS)
 
     Sets the current position in STREAM to POS, which may be either
-    the atom "end" or an integer indicating the absolute position in
-    bytes.
+    the atom "end" or a positive integer indicating the absolute
+    position in bytes.
 
         stream_property(+STREAM, ?PROP)
 
     Returns or enumerates properties of STREAM. Currently supported are
     the following properties:
 
-        position(POS)    absolute current position in STREAM (in bytes)
+        position(POS)    absolute current position in STREAM (in bytes) [ISO]
         tty(BOOL)        wether STREAM is connected to a terminal
+	file_no(INT)     UNIX file-descriptor
 
     The following builtin stream aliases are available:
 

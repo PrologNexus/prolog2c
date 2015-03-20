@@ -5032,6 +5032,14 @@ PRIMITIVE(set_stream_position, X s, X pos) {
   return 1;
 }
 
+PRIMITIVE(stream_data, X s, X result) { 
+  return unify(result, slot_ref(get_stream(s), 3)); 
+}
+
+PRIMITIVE(stream_fileno, X s, X result) { 
+  return unify(result, word_to_fixnum(fileno(port_file(get_stream(s)))));
+}
+
 #endif
 
 #endif
