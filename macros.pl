@@ -189,6 +189,7 @@ auto_include(fwritef, 3, 'writef').
 auto_include('$delay_goal', 4, 'co').
 auto_include('$freeze_goal', 4, 'co').
 auto_include(dif, 2, 'co').
+auto_include(all_different, 1, 'co').
 
 auto_include(current_prolog_flag, 2, 'flags').
 

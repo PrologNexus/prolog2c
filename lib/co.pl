@@ -18,3 +18,8 @@ dif(X, Y) :-
 	!,
 	(var(V) -> delay(V, dif(X, Y), 2)).
 dif(_, _).
+
+all_different([_]).
+all_different([X|[Y|R]]) :-
+	dif(X, Y),
+	all_different([Y|R]).
