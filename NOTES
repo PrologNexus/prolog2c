@@ -386,6 +386,11 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
+** TODO Use stream-data slot to store stream-properties on open
+   - foreign_call(stream_data(S, DATA))
+   - file_name, type, mode, direction.
+** lib/pp: stub program for translating files
+   - processes source and applies term_expansion/2 + goal_expansion/2
 ** Allow serializing DB to and from file
 ** TODO Check if we can use file:lib/canon.pl for printing query results
 ** DONE if term_expansion/2 returns list, treat as separate (or no) terms
@@ -395,11 +400,10 @@ NOTES											              -*- Org -*-
 ** Show warning for untriggered delayed goals with "-:d"
    - check trail-entries when unwinding trail and before exit.
 ** Predicates
-   | for/3                 |                                          |
-   | stream_property/2     | props: file_no(INT), input, output,      |
-   |                       | type(T/B), mode(MODE)                    |
-   |                       | (position + tty are already implemented) |
-   | close/2               | ignore 2nd arg                           |
+   | for/3             |                                     |
+   | stream_property/2 | missing props: input, output,       |
+   |                   | file_name(S), type(T/B), mode(MODE) |
+   | close/2           | ignore 2nd arg                      |
 ** Allow access to delay goals
    - frozen(VAR, PTRARGS) :: return ptr/args pairs,
         non-deterministically
@@ -417,10 +421,6 @@ NOTES											              -*- Org -*-
      | sub_atom/5    |
    - different handling of put_code/put_byte, get_code/get_byte and
      peek_code/peek_byte
-* Tests
-** TODO Compile full WN-db (with -compress-facts)
-   - perhaps as server, reading queries from stdin.
-   - perhaps using "public" declarations, if implemented.
 * Documentation
 ** DONE News
    - the compiler skips the first line of the source-program if it
@@ -430,7 +430,7 @@ NOTES											              -*- Org -*-
    - Added builtins put/2, tab/2, skip/2, get/2, get0/2, is_list/1,
      exists_directory/1, atomic_list_concat/2, split_string/4,
      sub_atom/5, append/2, read_line/2, read_string/3,
-     set_stream_position/2
+     set_stream_position/2, close/2
    - Added support for stream aliases "current_input",
      "current-output", "user_input", "user_output" and "user_error".
    - Dropped peek/1
