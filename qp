@@ -27,14 +27,34 @@ LIBRARY_DIR=
 PC_SOURCEFILE=
 OFILE=
 
+function usage() {
+    echo "usage: qp [OPTION ...] [FILRNAME ARGUMENT ...]"
+    echo
+    echo "  -help             show this text"
+    echo "  -version          show version and exit"
+    echo "  -v                show clauses are they are compiled"
+    echo "  -i                show intermediate code instead of generating C"
+    echo "  -o FILENAME       override output file name (default: <SOURCE_FILE>.c)"
+    echo "                    and omit running executable"
+    echo "  -compress-facts   compress blocks of facts with ground arguments"
+    echo "  -xref             write cross-referencing information instead of"
+    echo "                    compiling program"
+    echo "  -n                ignore PC_LIBRARY_DIR"
+    echo "  -C OPTION         pass OPTION to the C compiler"
+    echo "  -O0               compile C code without any optimizations"
+    echo "  -g                enable debug-information and call-tracing"
+    echo "  -H                read source program from stdin"
+    echo "  -purge [FILENAME ...]  delete cached executables for given programs"
+    echo "  -key [FILENAME]   list cached executables for given programs"
+    echo
+    echo "  Other options and files ending in *.o or *.c are passed directly"
+    echo "  to the C compiler."
+}
+
 while test -n "$1"; do
     case "$1" in
 	-h|-help|--help)
-	    echo "usage: qp -help"
-	    echo "       qp -version"
-	    echo -n "       qp [-v] [-compress-facts] [-o OUTFILENAME] [-C COPTION] [-O0] [-i] [-n] [-g] [-xref] "
-	    echo "[COPTION ...] [FILENAME ARGUMENT ...]"
-	    echo "       qp -purge [FILENAME ...]"
+	    usage
 	    exit;;
 	-version)
 	    exec ${PC_PREFIX}pc -version;;
@@ -46,8 +66,8 @@ while test -n "$1"; do
 	    shift
 	    C_OPTIONS="${C_OPTIONS} $1"
 	    shift;;
-	-xref)
-	    XREF=1
+	-xref|-i)
+	    XREF=$1
 	    shift;;
 	-o) 
 	    shift
@@ -66,11 +86,30 @@ while test -n "$1"; do
 		done
 	    fi
 	    exit;;
+	-key)
+	    shift
+	    test -d "${CACHEDIR}" || exit
+	    if test -z "$1"; then
+		ls "${CACHEDIR}"
+	    else
+		while test -n "$1"; do
+		    HASH=`md5sum "${1}" | sed -e 's/^\([a-f0-9]\+\).*$/\1/'`
+		    if test -e "${CACHEDIR}/${HASH}"; then
+			echo ${HASH}
+		    fi
+		    shift
+		done
+	    fi
+	    exit;;	    
 	-O0)
 	    OPTFLAGS=
 	    shift;;
-	-n|-compress-facts|-i)
+	-n|-compress-facts)
 	    PC_OPTIONS="${PC_OPTIONS} $1"
+	    shift;;
+	-H)
+	    PC_SOURCEFILE=`mktemp --tmpdir qp-XXXX.pl`
+	    cat >${PC_SOURCEFILE}
 	    shift;;
 	-*|*.o)
 	    C_OPTIONS="${C_OPTIONS} $1"
@@ -81,7 +120,7 @@ while test -n "$1"; do
     esac
 done
 
-test -n "$XREF" && exec ${PC_PREFIX}pc -xref ${PC_OPTIONS} ${PC_SOURCEFILE}
+test -n "${XREF}" && exec ${PC_PREFIX}pc ${XREF} ${PC_OPTIONS} ${PC_SOURCEFILE}
 
 if test \! -d "${CACHEDIR}"; then
     mkdir "${CACHEDIR}"
