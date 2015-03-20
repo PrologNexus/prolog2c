@@ -7,10 +7,9 @@
 %   -h  -help  --help       show short usage description
 %   -i                      show intermediate code instead of generating C
 %   -o FILENAME             override output file name (default: <SOURCE_FILE>.c)
-%   -I FILENAME             add FILENAME to include-path
 %   -q                      disable any output
 %   -compress-facts         compress blocks of facts with ground arguments
-%   -xref                   write cross-referencing infromation to stdout
+%   -xref                   write cross-referencing information to stdout
 %   -n                      ignore PC_LIBRARY_DIR
 %
 % - The content of PC_INCLUDE_PATH are prepended to the default include-path.
