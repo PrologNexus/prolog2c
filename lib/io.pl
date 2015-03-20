@@ -60,20 +60,23 @@ skip(S, C) :-
 
 open(NAME, MODE, STREAM) :- open(NAME, MODE, STREAM, []).
 
-open(NAME, write, STREAM, OPTIONS) :- open(NAME, 0, "w", OPTIONS, STREAM).
-open(NAME, read, STREAM, OPTIONS) :- open(NAME, 1, "r", OPTIONS, STREAM).
-open(NAME, append, STREAM, OPTIONS) :- open(NAME, 0, "a", OPTIONS, STREAM).
+open(NAME, write, STREAM, OPTIONS) :-
+	open(NAME, 0, "w", OPTIONS, [output, mode(write)], STREAM).
+open(NAME, read, STREAM, OPTIONS) :-
+	open(NAME, 1, "r", OPTIONS, [input, mode(read)], STREAM).
+open(NAME, append, STREAM, OPTIONS) :-
+	open(NAME, 0, "a", OPTIONS, [output, mode(append)], STREAM).
 
-open(NAME, INPUT, MODE, [], STREAM) :-
+open(NAME, INPUT, MODE, [], DATA, STREAM) :-
 	name(M, MODE),
-	foreign_call(open_stream(NAME, INPUT, M, [], STREAM)).
-open(NAME, INPUT, MODE, [type(text)|MORE], STREAM) :-
-	open(NAME, INPUT, MODE, MORE, STREAM).
-open(NAME, INPUT, MODE, [type(binary)|MORE], STREAM) :-
+	foreign_call(open_stream(NAME, INPUT, M, [file_name(NAME)|DATA], STREAM)).
+open(NAME, INPUT, MODE, [type(text)|MORE], DATA, STREAM) :-
+	open(NAME, INPUT, MODE, MORE, [type(text)|DATA], STREAM).
+open(NAME, INPUT, MODE, [type(binary)|MORE], DATA, STREAM) :-
 	append(MODE, "b", MODE2),
-	open(NAME, INPUT, MODE2, MORE, STREAM).
-open(NAME, INPUT, MODE, [_|MORE], STREAM) :-
-	open(NAME, INPUT, MODE, MORE, STREAM).
+	open(NAME, INPUT, MODE2, MORE, [type(binary)|DATA], STREAM).
+open(NAME, INPUT, MODE, [_|MORE], DATA, STREAM) :-
+	open(NAME, INPUT, MODE, MORE, DATA, STREAM).
 
 read_string(STREAM, LEN, ATM) :-
 	foreign_call(read_string(STREAM, LEN, A1)),
