@@ -72,7 +72,7 @@ while test -n "$1"; do
 	-n|-compress-facts|-i)
 	    PC_OPTIONS="${PC_OPTIONS} $1"
 	    shift;;
-	-*|*.o|-l*)
+	-*|*.o)
 	    C_OPTIONS="${C_OPTIONS} $1"
 	    shift;;
 	*)
