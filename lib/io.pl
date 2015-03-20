@@ -96,7 +96,9 @@ flush_output(S) :- foreign_call(flush_output(S)).
 at_end_of_stream :- foreign_call(current_output_stream(S)), foreign_call(at_eof(S)).
 at_end_of_stream(S) :- foreign_call(at_eof(S)).
 
-set_stream_position(S, P) :- foreign_call(set_stream_position(S, P)).
+set_stream_position(S, P) :-
+	(P == end -> P2 = -1; P2 = P),
+	foreign_call(set_stream_position(S, P2)).
 
 '$stream_property'(position(P), S) :- foreign_call(stream_position(S, P)).
 '$stream_property'(tty(B), S) :- (foreign_call(tty_stream(S)) -> B = true; B = false).
