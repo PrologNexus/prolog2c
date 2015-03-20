@@ -150,6 +150,7 @@ Usage
   Hello, World!
 
   Running "qp" without arguments just starts the interpreter ("pi").
+  Enter "qp -help" to see a list of options.
 
   To install this script, modify the set of variables at the start to
   reflect the actual locations of "pc" and "pi" and copy it into some
