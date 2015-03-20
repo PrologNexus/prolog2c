@@ -88,16 +88,25 @@ read_line(STREAM, ATM) :-
 	foreign_call(read_line(STREAM, A1)),
 	(A1 == 0 -> foreign_call(retry_string_to_list(ATM)); ATM = A1).
 
-read_line(ATM) :- read_line(current_input, ATM).
+read_line(ATM) :-
+	read_line(current_input, ATM).
 
-set_input(S) :- foreign_call(set_current_input_stream(S)).
-set_output(S) :- foreign_call(set_current_output_stream(S)).
+set_input(S) :-
+	foreign_call(set_current_input_stream(S)).
+set_output(S) :-
+	foreign_call(set_current_output_stream(S)).
 
-flush_output :- foreign_call(current_output_stream(S)), foreign_call(flush_output(S)).
-flush_output(S) :- foreign_call(flush_output(S)).
+flush_output :-
+	foreign_call(current_output_stream(S)), foreign_call(flush_output(S)).
 
-at_end_of_stream :- foreign_call(current_output_stream(S)), foreign_call(at_eof(S)).
-at_end_of_stream(S) :- foreign_call(at_eof(S)).
+flush_output(S) :-
+	foreign_call(flush_output(S)).
+
+at_end_of_stream :-
+	foreign_call(current_output_stream(S)), foreign_call(at_eof(S)).
+
+at_end_of_stream(S) :-
+	foreign_call(at_eof(S)).
 
 set_stream_position(S, P) :-
 	(P == end -> P2 = -1; P2 = P),
