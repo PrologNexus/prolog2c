@@ -4506,7 +4506,7 @@ PRIMITIVE(peek_byte, X s, X c)
 
 PRIMITIVE(at_eof, X s) { return feof(port_file(get_input_port(s))); }
 
-PRIMITIVE(open_stream, X name, X input, X mode, X result)
+PRIMITIVE(open_stream, X name, X input, X mode, X data, X result)
 {
   int len;
   XCHAR *str = to_string(name, &len);
@@ -4530,7 +4530,7 @@ PRIMITIVE(open_stream, X name, X input, X mode, X result)
     }
   }
 
-  X port = PORT(fp, input, ONE, ZERO);
+  X port = PORT(fp, input, ONE, data);
   return unify(port, result);
 }
 

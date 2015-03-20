@@ -9,7 +9,7 @@ see(S) :-
 	!,
 	foreign_call(set_current_input_stream(S)).	
 see(NAME) :-
-	foreign_call(open_stream(NAME, 1, 'rb', S)),
+	foreign_call(open_stream(NAME, 1, 'rb', [], S)),
 	foreign_call(set_current_input_stream(S)).
 
 seen :-
@@ -26,7 +26,7 @@ tell(S) :-
 	!,
 	foreign_call(set_current_output_stream(S)).
 tell(NAME) :-
-	foreign_call(open_stream(NAME, 0, 'wb', S)),
+	foreign_call(open_stream(NAME, 0, 'wb', [], S)),
 	foreign_call(set_current_output_stream(S)).
 
 told :-
@@ -34,7 +34,7 @@ told :-
 	foreign_call(close_stream(S)).
 
 append(NAME) :-
-	foreign_call(open_stream(NAME, 0, 'ab', S)),
+	foreign_call(open_stream(NAME, 0, 'ab', [], S)),
 	foreign_call(set_current_output_stream(S)).
 
 tab(N) :- tab(current_output, N).
@@ -66,7 +66,7 @@ open(NAME, append, STREAM, OPTIONS) :- open(NAME, 0, "a", OPTIONS, STREAM).
 
 open(NAME, INPUT, MODE, [], STREAM) :-
 	name(M, MODE),
-	foreign_call(open_stream(NAME, INPUT, M, STREAM)).
+	foreign_call(open_stream(NAME, INPUT, M, [], STREAM)).
 open(NAME, INPUT, MODE, [type(text)|MORE], STREAM) :-
 	open(NAME, INPUT, MODE, MORE, STREAM).
 open(NAME, INPUT, MODE, [type(binary)|MORE], STREAM) :-
