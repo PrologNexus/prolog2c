@@ -51,6 +51,7 @@ macro(set_random_seed(SEED), foreign_call(set_random_seed(SEED))).
 macro(atom_hash(ATOM, HASH), foreign_call(atom_hash(ATOM, HASH))).
 macro(acyclic_term(X), foreign_call(acyclic_term(X))).
 macro(close(S), foreign_call(close_stream(S))).
+macro(close(S, _), close(S)).
 macro(atom_length(A, L), foreign_call(atom_length(A, L))).
 macro(ground(X), foreign_call(ground(X))).
 macro(rename_file(X, Y), foreign_call(rename_file(X, Y))).

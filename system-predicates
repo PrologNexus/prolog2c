@@ -80,6 +80,7 @@ system_predicate(var(+X)).
 system_predicate(suspend(?X, ?Y)).
 system_predicate(acyclic_term(?X)).
 system_predicate(close(+X)).
+system_predicate(close(+X, +Y)).
 system_predicate(char_code(?X, ?Y)).
 system_predicate(atom_length(?X, ?Y)).
 system_predicate(seeing(-X)).
