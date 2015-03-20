@@ -1,0 +1,10 @@
+#!/bin/bash
+### updates .expected files for listed tests
+#
+# usage: update-test-output TESTNUM ...
+
+for x in "$@"; do
+    printf -v INDEX "%04d" $x
+    file=`ls tmp/${INDEX}-*.out`
+    cp -v $file tests/${INDEX}-*.expected
+done
