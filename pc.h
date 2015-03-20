@@ -929,7 +929,7 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
       for(x = deref(slot_ref(x, 1)); 
 	  --len > 0 && !is_FIXNUM(x) && objtype(x) == PAIR_TYPE; 
 	  x = deref(slot_ref(x, 1))) {
-	fputs(", ", fp); 
+	fputc(',', fp); 
 	basic_write_term(fp, debug, limit, quote, deref(slot_ref(x, 0)));
       }
 
