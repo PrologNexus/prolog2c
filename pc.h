@@ -1710,7 +1710,6 @@ static int thaw_term_recursive(X *xp)
   else i = 0;
 
   *xp = (X)b;
-
 #ifdef NO_CHECK_CYCLES
   if(i >= size) return 1;
 
@@ -1735,7 +1734,6 @@ static int thaw_term_recursive(X *xp)
 #else
   POP_CYCLE_STACK;
 #endif
-
   return 1;
 }
 
