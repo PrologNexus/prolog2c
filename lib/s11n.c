@@ -325,7 +325,6 @@ static X deserialize_term(void *buffer, int *failed)
 PRIMITIVE(serialize, X x, X result)
 {
   void *end;
-  //XXX ensure string-buffer size
   serialize_term(x, &end, string_buffer, string_buffer + string_buffer_length);
   int len = (XWORD)end - (XWORD)string_buffer;
   X y = STRING(len);
