@@ -1063,6 +1063,15 @@ Builtin predicates
 
     Deletes the file designated by the atom or string NAME.
 
+        getcwd(-DIR)
+
+    Unifies DIR with an atom representing the current working
+    directory.
+
+        chdir(+DIR)
+
+    Set the current working directory to DIR (an atom or a string).
+
   - Set operations
 
         intersection(+SET1, +SET2, -SET3)

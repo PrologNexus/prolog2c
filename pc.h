@@ -5038,6 +5038,22 @@ PRIMITIVE(stream_fileno, X s, X result) {
   return unify(result, word_to_fixnum(fileno(port_file(get_stream(s)))));
 }
 
+PRIMITIVE(get_working_dir, X result) {
+  if(getcwd(string_buffer, string_buffer_length) == NULL)
+    system_error(strerror(errno));
+
+  return unify(result, intern(CSTRING(string_buffer)));
+} 
+
+PRIMITIVE(set_working_dir, X s) {
+  int len;
+
+  if(chdir(to_string(s, &len)) != 0)
+    system_error(strerror(errno));
+
+  return 1;
+}
+
 #endif
 
 #endif

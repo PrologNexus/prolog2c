@@ -57,6 +57,8 @@ macro(ground(X), foreign_call(ground(X))).
 macro(rename_file(X, Y), foreign_call(rename_file(X, Y))).
 macro(delete_file(X), foreign_call(delete_file(X))).
 macro(stream_property(S, P), '$stream_property'(P, S)). % to utilize indexing
+macro(getcwd(X), foreign_call(get_working_dir(X))).
+macro(chdir(X), foreign_call(set_working_dir(X))).
 
 
 % nothing matches - tryi auto-include and finally, fail
