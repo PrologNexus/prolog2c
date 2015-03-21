@@ -6,5 +6,10 @@
 for x in "$@"; do
     printf -v INDEX "%04d" $x
     file=`ls tmp/${INDEX}-*.out`
-    cp -v $file tests/${INDEX}-*.expected
+
+    if test -e "tests/${INDEX}-*.expected"; then
+	cp -v $file tests/${INDEX}-*.expected
+    else
+	cp -v $file tests/${INDEX}-*.expected-fail
+    fi
 done
