@@ -3807,6 +3807,20 @@ static int compare_terms(X x, X y)
 }
 
 
+static int ensure_string_buffer(int len)
+{
+  if(len >= string_buffer_length - 1) {
+    string_buffer = realloc(string_buffer, string_buffer_length *= 2);
+    ASSERT(string_buffer, 
+	   "out of memory - can not increase size of string-buffer to " XWORD_OUTPUT_FORMAT, 
+	   (XWORD)string_buffer_length);
+    return 1;
+  }
+
+  return 0;
+}
+
+
 // assumes x is deref'd, returns pointer to char that should not be modified
 static XCHAR *to_string(X x, int *size)
 {
@@ -3829,13 +3843,7 @@ static XCHAR *to_string(X x, int *size)
       XCHAR *ptr = string_buffer;
       
       while(!is_FIXNUM(x) && objtype(x) == PAIR_TYPE) {
-	if(len >= string_buffer_length - 1) {
-	  string_buffer = realloc(string_buffer, string_buffer_length *= 2);
-	  ASSERT(string_buffer, 
-		 "out of memory - can not increase size of string-buffer to " XWORD_OUTPUT_FORMAT, 
-		 (XWORD)string_buffer_length);
-	}
-
+	ensure_string_buffer(len);
 	X c = deref(slot_ref(x, 0));
 	check_fixnum(c);
 	*(ptr++) = fixnum_to_word(c);
@@ -4779,10 +4787,7 @@ PRIMITIVE(read_string, X s, X len, X lst) {
 
     if(ptr >= string_buffer + string_buffer_length + 1) {
       int here = ptr - string_buffer;
-      string_buffer = realloc(string_buffer, string_buffer_length *= 2);
-      ASSERT(string_buffer, 
-	     "out of memory - can not increase size of string-buffer to " XWORD_OUTPUT_FORMAT, 
-	     (XWORD)string_buffer_length);
+      ensure_string_buffer(string_buffer_length + 1); /* force */
       ptr = string_buffer + here;
     }
 
@@ -4815,10 +4820,7 @@ PRIMITIVE(read_line, X s, X lst) {
     space -= n;
 
     if(space <= 1) {
-      string_buffer = realloc(string_buffer, string_buffer_length *= 2);
-      ASSERT(string_buffer, 
-	     "out of memory - can not increase size of string-buffer to " XWORD_OUTPUT_FORMAT, 
-	     (XWORD)string_buffer_length);
+      ensure_string_buffer(string_buffer_length + 1); /* force */
       space = string_buffer_length - p;
     }
   }
