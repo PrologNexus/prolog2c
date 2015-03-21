@@ -138,6 +138,10 @@ if test -x "${CACHEDIR}/${HASH}"; then
     exec "${CACHEDIR}/${HASH}" "$@"
 fi
 
+if test -n "${PC_LIBRARY_DIR}"; then
+    OPTFLAGS="${OPTFLAGS} -I${PC_LIBRARY_DIR}"
+fi
+
 PC_SOURCEFILE2=`basename "${PC_SOURCEFILE}"`
 CFILE=`mktemp --tmpdir qp-XXXXX.c`
 ${PC_PREFIX}pc -q "${PC_SOURCEFILE}" ${PC_OPTIONS} -o "${CFILE}"
