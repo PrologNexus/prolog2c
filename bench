@@ -24,8 +24,8 @@
        (define (runonce)
 	 (run (/usr/bin/time -f %U -o ,tmp ,xtmp ,@(cdr args) >/dev/null))
 	 (with-input-from-file tmp read))
-       (run (./pc "-n" "." ,file -o ,ctmp -q))
-       (run (gcc -std=gnu99 -I. ,ctmp -o ,xtmp -lm -lrt ,@opts
+       (run (./pc "-n" ,file -o ,ctmp -q))
+       (run (gcc -std=gnu99 -Ilib -I. ,ctmp -o ,xtmp -lm -lrt ,@opts
 		 ,(if (file-exists? optfile)
 		      (read-all optfile)
 		      "")))

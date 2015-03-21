@@ -59,7 +59,7 @@
 
 (unless pi
   (run (,pc -n -q ,file -o ,cfile))
-  (run (gcc -std=gnu99 -I. ,cfile ,@opts ,@moreopts -o ,xfile -lm -lrt)))
+  (run (gcc -std=gnu99 -Ilib -I. ,cfile ,@opts ,@moreopts -o ,xfile -lm -lrt)))
 
 (define status
   (if pi
