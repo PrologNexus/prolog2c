@@ -8,7 +8,7 @@ file_no(1)
 file:
 position(0)
 tty(false)
-file_no(5)
+file_no(7)
 file_name('tests/0121-streamprops.pl')
 input
 mode(read)
