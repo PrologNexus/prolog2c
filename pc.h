@@ -1805,104 +1805,6 @@ static void delete_term(X x)
 }
 
 
-static int check_cycles_recursive(X x)
-{
-  if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return 0;
-
-  if(is_byteblock(x)) return 0;
-
-  for(X *ptr = cycle_stack; ptr < cycle_stack_top; ++ptr) {
-    if(*ptr == x) return 1;	/* value was already traversed */
-  }
-
-  if(is_VAR(x)) {
-    X y = slot_ref(x, 0);
-
-    if(x == y) return 0;
-
-    //XXX just set x to y and fall through?
-    ASSERT(cycle_stack_top + 1 < cycle_stack + CYCLE_STACK_SIZE,
-	   "cycle-stack overflow");
-    *(cycle_stack_top++) = y;
-    int r = check_cycles_recursive(y);
-    --cycle_stack_top;
-    return r;
-  }
-
-  ASSERT(cycle_stack_top + 1 < cycle_stack + CYCLE_STACK_SIZE,
-	 "cycle-stack overflow");
-  *(cycle_stack_top++) = x;
-  XWORD size = objsize(x);
-  XWORD i = 0;
-
-  if(is_specialblock(x)) i = 1;
-
-  while(i < size) {
-    if(check_cycles_recursive(slot_ref(x, i))) 
-      return 1;
-
-    ++i;
-  }  
-
-  --cycle_stack_top;
-  return 0;
-}
-
-
-static int check_cycles(X term)
-{
-  cycle_stack_top = cycle_stack;
-  return check_cycles_recursive(term);
-}
-
-
-static int check_ground_recursive(X x)
-{
-  if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return 1;
-
-  if(is_byteblock(x)) return 1;
-
-#ifndef NO_CHECK_CYCLES
-  for(X *ptr = cycle_stack; ptr < cycle_stack_top; ++ptr) {
-    if(*ptr == x) return 1;	/* value was already traversed */
-  }
-#endif
-
-  if(is_VAR(x)) {
-    X y = slot_ref(x, 0);
-
-    if(x == y) return 0;
-   
-    return check_ground_recursive(y);
-  }
-
-  CHECK_CYCLE_STACK;
-  PUSH_ON_CYCLE_STACK(x);
-  PUSH_ON_CYCLE_STACK(NULL);	/* not used */
-  XWORD size = objsize(x);
-  XWORD i = 0;
-
-  if(is_specialblock(x)) i = 1;
-
-  while(i < size) {
-    if(!check_ground_recursive(slot_ref(x, i))) 
-      return 0;
-
-    ++i;
-  }  
-
-  POP_CYCLE_STACK;
-  return 1;
-}
-
-
-static int check_ground(X term)
-{
-  INIT_CYCLE_STACK;
-  return check_ground_recursive(term);
-}
-
-
 static DB *create_db(char *name, int namelen, XWORD tablesize)
 {
   DB *db = malloc(sizeof(DB));
@@ -2067,6 +1969,108 @@ static void db_erase_item(DB_ITEM *item)
   item->next = item->previous = NULL;
   item->bucket = NULL;
   XFREE(item, sizeof(DB_ITEM));
+}
+
+
+/// cycle checking
+
+static int check_cycles_recursive(X x)
+{
+  if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return 0;
+
+  if(is_byteblock(x)) return 0;
+
+  for(X *ptr = cycle_stack; ptr < cycle_stack_top; ++ptr) {
+    if(*ptr == x) return 1;	/* value was already traversed */
+  }
+
+  if(is_VAR(x)) {
+    X y = slot_ref(x, 0);
+
+    if(x == y) return 0;
+
+    //XXX just set x to y and fall through?
+    ASSERT(cycle_stack_top + 1 < cycle_stack + CYCLE_STACK_SIZE,
+	   "cycle-stack overflow");
+    *(cycle_stack_top++) = y;
+    int r = check_cycles_recursive(y);
+    --cycle_stack_top;
+    return r;
+  }
+
+  ASSERT(cycle_stack_top + 1 < cycle_stack + CYCLE_STACK_SIZE,
+	 "cycle-stack overflow");
+  *(cycle_stack_top++) = x;
+  XWORD size = objsize(x);
+  XWORD i = 0;
+
+  if(is_specialblock(x)) i = 1;
+
+  while(i < size) {
+    if(check_cycles_recursive(slot_ref(x, i))) 
+      return 1;
+
+    ++i;
+  }  
+
+  --cycle_stack_top;
+  return 0;
+}
+
+
+static int check_cycles(X term)
+{
+  cycle_stack_top = cycle_stack;
+  return check_cycles_recursive(term);
+}
+
+
+/// groundness checking
+
+static int check_ground_recursive(X x)
+{
+  if(is_FIXNUM(x) || x == END_OF_LIST_VAL) return 1;
+
+  if(is_byteblock(x)) return 1;
+
+#ifndef NO_CHECK_CYCLES
+  for(X *ptr = cycle_stack; ptr < cycle_stack_top; ++ptr) {
+    if(*ptr == x) return 1;	/* value was already traversed */
+  }
+#endif
+
+  if(is_VAR(x)) {
+    X y = slot_ref(x, 0);
+
+    if(x == y) return 0;
+   
+    return check_ground_recursive(y);
+  }
+
+  CHECK_CYCLE_STACK;
+  PUSH_ON_CYCLE_STACK(x);
+  PUSH_ON_CYCLE_STACK(NULL);	/* not used */
+  XWORD size = objsize(x);
+  XWORD i = 0;
+
+  if(is_specialblock(x)) i = 1;
+
+  while(i < size) {
+    if(!check_ground_recursive(slot_ref(x, i))) 
+      return 0;
+
+    ++i;
+  }  
+
+  POP_CYCLE_STACK;
+  return 1;
+}
+
+
+static int check_ground(X term)
+{
+  INIT_CYCLE_STACK;
+  return check_ground_recursive(term);
 }
 
 
