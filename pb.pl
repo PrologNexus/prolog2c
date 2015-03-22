@@ -340,7 +340,7 @@ function_wrapper(NAME, RTYPE, ARGTYPES) :-
 	gen('R)).\n'), !.
 
 
-%% value conversion from and to C
+%% value conversion from C to Prolog
 
 p_value(const(T), REF) :- p_value(T, REF).
 p_value(unsigned(T), REF) :- p_value(T, REF).
@@ -354,8 +354,11 @@ p_value(ITYPE, REF) :-
 p_value(FTYPE, REF) :-
 	memberchk(FTYPE, [float, double]),
 	gen('FLONUM(', REF, ')').
-p_value(TYPE, _) :-
-	error('No C->Prolog conversion for type', TYPE).
+p_value(TYPE, REF) :-
+	gen('BLOB(&', REF, ',sizeof(', REF, '))').
+
+
+%% value conversion from Prolog to C
 
 c_value(const(T), REF) :- c_value(T, REF).
 c_value(unsigned(T), REF) :- c_value(T, REF).
@@ -373,8 +376,8 @@ c_value(FTYPE, REF) :-
 	memberchk(FTYPE, [float, double]),
 	gen('(is_FIXNUM(', REF, ')?fixnum_to_float(', REF),
 	gen('):flonum_to_float(check_type_FLONUM(', REF, ')))').
-c_value(TYPE, _) :-
-	error('No Prolog->C conversion for type', TYPE).
+c_value(TYPE, REF) :-
+	gen('(*((', TYPE, '*)objdata(', REF, ')))').
 
 
 %% utilities
