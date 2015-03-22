@@ -6,19 +6,19 @@
 #define FAKE_END_OF_LIST_VAL     ((X)2)
 
 
-static void evict_term_recursive(X x, X *dest, void *base, void *(*alloc)(size_t))
+static int evict_term_recursive(X x, X *dest, void *base, void *(*alloc)(size_t))
 {
  restart:
   x = deref(x);
 
   if(is_FIXNUM(x)) {
     *dest = x;
-    return;
+    return 1;
   }
 
   if(x == END_OF_LIST_VAL) {
     *dest = FAKE_END_OF_LIST_VAL;
-    return;
+    return 1;
   }
 
   if(is_VAR(x)) {
@@ -26,12 +26,14 @@ static void evict_term_recursive(X x, X *dest, void *base, void *(*alloc)(size_t
 
     if(*tp != NULL) {
       *dest = tp[ 1 ];
-      return;
+      return 1;
     }
 
     *tp = x;
     BLOCK *newvar = (BLOCK *)alloc(sizeof(XWORD) * (VAR_SIZE + 1));
-    ASSERT(newvar, "out of memory - can not evict variable");
+
+    if(!newvar) return 0;
+
     newvar->h = VAR_TAG | VAR_SIZE;
     newvar->d[ 0 ] = (X)newvar;
     newvar->d[ 1 ] = word_to_fixnum(variable_counter++);
@@ -43,7 +45,7 @@ static void evict_term_recursive(X x, X *dest, void *base, void *(*alloc)(size_t
     dest = &(newvar->d[ 3 ]);
     goto restart;
 #endif
-    return;
+    return 1;
   }
 
   ASSERT(!is_DBREFERENCE(x), "db-references can not be evicted");
@@ -51,11 +53,13 @@ static void evict_term_recursive(X x, X *dest, void *base, void *(*alloc)(size_t
   if(is_byteblock(x)) {
     XWORD size = objsize(x);
     BYTEBLOCK *b = (BYTEBLOCK *)alloc(sizeof(XWORD) + size);
-    ASSERT(b, "out of memory - can not evict byteblock");
+
+    if(!b) return 0;
+
     b->h = objbits(x);
     memcpy(b->d, objdata(x), size);
     *dest = relative_to(b, base);
-    return;
+    return 1;
   }
 
   if(is_SYMBOL(x)) {
@@ -65,20 +69,23 @@ static void evict_term_recursive(X x, X *dest, void *base, void *(*alloc)(size_t
 
     if(*tp != NULL) {
       *dest = tp[ 1 ];
-      return;
+      return 1;
     }
 
     *tp = x;
-    evict_term_recursive(str, &(tp[ 1 ]), base, alloc);
+
+    if(!evict_term_recursive(str, &(tp[ 1 ]), base, alloc))
+      return 0;
+
     *dest = tp[ 1 ];
-    return;
+    return 1;
   }
 
 #ifndef NO_CHECK_CYCLES
   for(X *ptr = cycle_stack; ptr < cycle_stack_top; ptr += 2) {	
     if(*ptr == x) {
       *dest = ptr[ 1 ];
-      return;
+      return 1;
     }
   }			
 #endif
@@ -88,7 +95,9 @@ static void evict_term_recursive(X x, X *dest, void *base, void *(*alloc)(size_t
   XWORD size = objsize(x);
   XWORD i = 0;
   BLOCK *b = (BLOCK *)alloc(sizeof(XWORD) * (size + 1));
-  ASSERT(b, "out of memory - can not evict block");
+
+  if(!b) return 0;
+
   b->h = objbits(x);
   PUSH_ON_CYCLE_STACK(relative_to(b, base));
 
@@ -100,13 +109,15 @@ static void evict_term_recursive(X x, X *dest, void *base, void *(*alloc)(size_t
   *dest = relative_to(b, base);
 
 #ifdef NO_CHECK_CYCLES
-  if(i >= size) return;
+  if(i >= size) return 1;
 
   --size;
 #endif
 
   while(i < size) {
-    evict_term_recursive(slot_ref(x, i), &(b->d[ i ]), base, alloc);
+    if(!evict_term_recursive(slot_ref(x, i), &(b->d[ i ]), base, alloc))
+      return 0;
+
     ++i;
   }
 
@@ -116,6 +127,7 @@ static void evict_term_recursive(X x, X *dest, void *base, void *(*alloc)(size_t
   goto restart;
 #else
   POP_CYCLE_STACK;
+  return 1;
 #endif
 }
 
@@ -129,14 +141,7 @@ static void *serialize_alloc(size_t size)
   XWORD adr = ALIGN((XWORD)serialization_ptr);
   XWORD adr2 = adr + size;
 
-  if(adr2 > (XWORD)serialization_limit) {
-    XWORD offset = (XWORD)serialization_ptr - (XWORD)string_buffer;
-    ensure_string_buffer(string_buffer_length + 1);
-    serialization_ptr = (void *)((XWORD)string_buffer + offset);
-    serialization_limit = string_buffer + string_buffer_length;
-    adr = ALIGN((XWORD)serialization_ptr);
-    adr2 = adr + size;
-  }
+  if(adr2 > (XWORD)serialization_limit) return NULL;
 
   serialization_ptr = (void *)adr2;
   return (void *)adr;
@@ -145,15 +150,23 @@ static void *serialize_alloc(size_t size)
 
 static void *serialize_term(X x, void **end, void *buffer, void *limit)
 {
-  INIT_CYCLE_STACK;
-  X y;
-  void *ptr = buffer;
-  serialization_ptr = buffer;
-  serialization_limit = limit;
-  evict_term_recursive(x, &y, buffer, serialize_alloc);
-  clear_shared_term_table();
-  *end = serialization_ptr;
-  return ptr;
+  for(;;) {
+    INIT_CYCLE_STACK;
+    X y;
+    void *ptr = buffer;
+    serialization_ptr = buffer;
+    serialization_limit = limit;
+
+    if(!evict_term_recursive(x, &y, buffer, serialize_alloc))
+      ensure_string_buffer(string_buffer_length + 1); /* force resizing */
+    else {
+      clear_shared_term_table();
+      *end = serialization_ptr;
+      return ptr;
+    }
+      
+    clear_shared_term_table();
+  }
 }
 
 
