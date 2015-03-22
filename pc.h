@@ -782,6 +782,7 @@ static inline int is_pointer(X x)
 #define CSYMBOL(str)  CSYMBOL1(alloc_top, str)
 #define STRUCTURE(functor, arity)  STRUCTURE1(alloc_top, functor, arity)
 #define POINTER(ptr)  POINTER1(alloc_top, ptr)
+#define BLOB(ptr, len)  ({ XWORD len_ = (len); X x_ = STRING(len_); memcpy(objdata(x_), (ptr), len_); intern(x_); })
 
 
 /// Hook called when the system terminates
