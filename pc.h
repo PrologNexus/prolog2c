@@ -912,7 +912,7 @@ static void basic_write_term(FILE *fp, int debug, int limit, int quote, X x) {
 
 	fputc('\'', fp);
       }
-      else fputs(name, fp);
+      else fwrite(name, sizeof(XCHAR), len, fp);
 
       break;
     }
@@ -4322,7 +4322,7 @@ PRIMITIVE(put_string, X s, X str)
 {
   int len;
   XCHAR *ptr = to_string(str, &len);
-  fputs(ptr, get_output_port(s));
+  fwrite(ptr, sizeof(XCHAR), len, get_output_port(s));
   return 1;
 }
 
