@@ -1683,8 +1683,8 @@ Automatic generation of wrapper-code
   of the C function will be interpreted as a boolean indicating success
   or failure (and not as an additional "output" argument).
 
-  TYPE is a basic type, optionally decorated with one or more "const",
-  "unsigned" or "*" qualifiers. Basic types are
+  TYPE is a basic type or opaque type, optionally decorated with one
+  or more "const", "unsigned" or "*" qualifiers. Basic types are
   
     void
     char
@@ -1693,6 +1693,9 @@ Automatic generation of wrapper-code
     long
     float
     double
+
+  An opaque type will be stored in as a byte-sequence in an atom and
+  extracted from such an atom when passed as an argument.
 
   For every variable-definition, a Prolog predicate with one argument
   is created for setting and getting the variables value, so a
@@ -1728,6 +1731,7 @@ Automatic generation of wrapper-code
     float, double                   float
     char *                          atom (zero-terminated)
     <any> *                         foreign-pointer
+    <opaque>                        atom
     X                               <any>
 
   Arguments of type "char *" and "X" are only valid until the next
