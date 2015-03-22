@@ -271,9 +271,9 @@ gen_out_results(I, [_|R]) :-
 generate_wrapper_file(FNAME, HNAME) :-
 	tell(FNAME),
 	name(HFILE, HNAME),
-	(\+recorded(include_source, yes)
+	( \+recorded(include_source, yes)
 	; recorded(source_file, FN),
-	 gen(':- verbatim(\'#include \"', FN, '\"\').\n')
+	  gen(':- verbatim(\'#include \"', FN, '\"\').\n')
 	),
 	gen(':- verbatim(\'#include "', HFILE, '"\').\n'),
 	generate_wrappers,
