@@ -4,7 +4,7 @@
 canonical_path(IN, OUT) :-
 	absolute_pathname(IN, ALST),
 	split_string(ALST, "/", "", OUTLST),
-	canonicalize(OUTLST, CLST),
+	canonicalize_pathname(OUTLST, CLST),
 	append(CLST, LST),
 	atom_codes(OUT, LST).
 
