@@ -4429,7 +4429,7 @@ PRIMITIVE(db_find_bucket, X dbr, X prev, X key, X ref)
   bucket = db_enumerate_buckets(db, bucket);
 
   if(bucket) {
-    X str = STRING(bucket->keylen + 1);
+    X str = STRING(bucket->keylen);
     memcpy(objdata(str), bucket->key, bucket->keylen + 1); /* including 0-terminator */
     X bkey = intern(str);
     DB_ITEM *item = bucket->firstitem;
