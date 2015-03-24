@@ -78,6 +78,7 @@ auto_include(member, 2, 'lists').
 auto_include(reverse, 2, 'lists').
 auto_include(memberchk, 2, 'lists').
 auto_include(is_list, 1, 'lists').
+auto_include(slice, 4, 'lists').
 
 auto_include(compare, 3, 'misc').
 auto_include(shell, 1, 'misc').
