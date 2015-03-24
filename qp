@@ -134,21 +134,19 @@ if test -z "${HASH}"; then
     exit 1
 fi
 
-if test -x "${CACHEDIR}/${HASH}"; then
-    exec "${CACHEDIR}/${HASH}" "$@"
-fi
+if test \! -x "${CACHEDIR}/${HASH}"; then
+    if test -n "${PC_LIBRARY_DIR}"; then
+	OPTFLAGS="${OPTFLAGS} -I${PC_LIBRARY_DIR}"
+    fi
 
-if test -n "${PC_LIBRARY_DIR}"; then
-    OPTFLAGS="${OPTFLAGS} -I${PC_LIBRARY_DIR}"
+    PC_SOURCEFILE2=`basename "${PC_SOURCEFILE}"`
+    CFILE=`mktemp --tmpdir qp-XXXXX.c`
+    ${PC_PREFIX}pc -q "${PC_SOURCEFILE}" ${PC_OPTIONS} -o "${CFILE}"
+    "$CC" -std=gnu99 ${OPTFLAGS} -fno-strict-aliasing -fwrapv \
+	-I${PC_INCLUDEPATH} -I. "${CFILE}" -o "${CACHEDIR}/${HASH}" \
+	-lm -lrt ${C_OPTIONS} 
+    rm -f "${CFILE}"
 fi
-
-PC_SOURCEFILE2=`basename "${PC_SOURCEFILE}"`
-CFILE=`mktemp --tmpdir qp-XXXXX.c`
-${PC_PREFIX}pc -q "${PC_SOURCEFILE}" ${PC_OPTIONS} -o "${CFILE}"
-"$CC" -std=gnu99 ${OPTFLAGS} -fno-strict-aliasing -fwrapv \
-    -I${PC_INCLUDEPATH} -I. "${CFILE}" -o "${CACHEDIR}/${HASH}" \
-    -lm -lrt ${C_OPTIONS} 
-rm -f "${CFILE}"
 
 if test -n "$OFILE"; then
     cp "${CACHEDIR}/${HASH}" "$OFILE"
