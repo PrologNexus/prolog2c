@@ -3,6 +3,9 @@ NOTES											              -*- Org -*-
 
 * Issues
 ** Major
+*** TODO embedded test fails on [z]
+    - exit_code doesn't seem to be initialized.
+    - is TERMINATE(..., EXIT_SUCCESS) called?
 *** TODO 0046-arithmetic test fails in 32-bit pc
 *** TODO Term-comparison doesn't handle cyclic structures, yet
 *** 0028-endless-tailcall crashes in pi
@@ -49,7 +52,6 @@ NOTES											              -*- Org -*-
 *** Fresh checkout often leaves file:g-s-p.pl uncompiled
     - only rebuilds g-s-p.c, but that might not be sufficient.
     - but "make clean" should be sufficient.
-*** pb should understand "volatile"
 *** Failure in term_expansion/2 will simply be ignored
 *** The output of TRACE_TAILCALL() is somewhat confusing
     - Not sure if arguments output reflects the correct state.
@@ -401,6 +403,8 @@ NOTES											              -*- Org -*-
 ** dlopen, dlsym, to access primitives written in C
 ** Show warning for untriggered delayed goals with "-:d"
    - check trail-entries when unwinding trail and before exit.
+** pb extensions
+*** TODO pb should understand "volatile"
 ** Allow access to delay goals
    - frozen(VAR, PTRARGS) :: return ptr/args pairs,
         non-deterministically
@@ -420,6 +424,7 @@ NOTES											              -*- Org -*-
      peek_code/peek_byte
 * Documentation
 ** DONE News
+   - pb: handles "fail" mode (opposite of "success").
    - the compiler skips the first line of the source-program if it
      starts with "#".
    - added stream_property/2 (position + tty properties)
@@ -427,7 +432,7 @@ NOTES											              -*- Org -*-
    - Added builtins put/2, tab/2, skip/2, get/2, get0/2, is_list/1,
      exists_directory/1, atomic_list_concat/2, split_string/4,
      sub_atom/5, append/2, read_line/2, read_string/3,
-     set_stream_position/2, close/2
+     set_stream_position/2, close/2, chdir/1, getcwd/1
    - Added support for stream aliases "current_input",
      "current-output", "user_input", "user_output" and "user_error".
    - Dropped peek/1
@@ -457,6 +462,8 @@ NOTES											              -*- Org -*-
    | log/2, atan/2, asin/1, acos/1, | arithmetic expressions                    |
    | epsilon/0, pi/0, e/0           | arithmetic constants                      |
    | ^/2                            | integer exponentation (error on overflow) |
+* Tests
+** TODO 32-bit tests are unnecessary on 32-bit platform
 * Tools
 ** "qp" driver program
    - does the same as pc-autocompile.
@@ -489,6 +496,7 @@ NOTES											              -*- Org -*-
 *** "public" declaration
     - see file:tests/0117-public.pl
 ** Builtins
+*** slice/4
 *** deref_term/4
 *** read1/2
 *** '$call'/2
