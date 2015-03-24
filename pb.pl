@@ -370,8 +370,7 @@ c_value(pointer(_), REF) :-
 c_value('X', REF) :- gen(REF).
 c_value(ITYPE, REF) :-
 	memberchk(ITYPE, [char, int, long, short]),
-	gen('(is_FIXNUM(', REF, ')?fixnum_to_word(', REF),
-	gen('):flonum_to_float(check_type_FLONUM(', REF, ')))').
+	gen('fixnum_to_word(check_fixnum(', REF, '))').
 c_value(FTYPE, REF) :-
 	memberchk(FTYPE, [float, double]),
 	gen('(is_FIXNUM(', REF, ')?fixnum_to_float(', REF),
