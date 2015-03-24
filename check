@@ -7,7 +7,7 @@
 ;(run-verbose #t)
 
 (define args (command-line-arguments))
-(define opts '("-g" "-save-temps=obj" "-DTRACE" "-DDEBUG_GC"))
+(define opts '("-g" "-DTRACE" "-DDEBUG_GC"))
 (define moreopts '())
 (define pi #f)
 

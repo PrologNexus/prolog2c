@@ -33,5 +33,5 @@ clean:
 
 
 check: all
-	./pcpc.pl -o pc2.c
+	./pc pc.pl -o pc2.c
 	cmp pc.c pc2.c

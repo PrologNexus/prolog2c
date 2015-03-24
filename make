@@ -130,6 +130,7 @@
   (let ((tests (string-split (capture (ls tests/*.pl)) "\n"))
 	(ok 0)
 	(not-ok 0))
+    (run (mkdir -p tmp))
     (pb)
     (for-each
      (lambda (fname)
