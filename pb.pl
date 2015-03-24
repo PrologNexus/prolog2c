@@ -44,16 +44,20 @@ parse_suffix(RTYPE, RTYPE, ARGTYPES) --> arguments(ARGTYPES).
 parse_suffix(RTYPE, RTYPE, none) --> [].
 
 storage --> ("extern"; "static").
-	     
+
+%% whitespace without comments
 ws0([C|R], OUT) :- memberchk(C, [32, 13, 9]), !, ws0(R, OUT).
 ws0 --> "".
 
+%% whitespace with line-comments
 ws1([C|R], OUT) :- memberchk(C, [32, 10, 13, 9]), !, ws1(R, OUT).
 ws1 --> "//", skip_line, !, ws1.
 ws1 --> [].
 
+%% any type of whitespace
 ws --> ws1, (ws2; "").
 
+%% block comment
 ws2 --> "/*", skip_comment, !, ws.
 
 skip_line --> [10], !.
