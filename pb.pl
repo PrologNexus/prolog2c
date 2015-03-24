@@ -26,6 +26,7 @@ parse_definition(NAME, REALNAME, RTYPE, ARGTYPES) -->
 	ws, next_definition(RTYPE).
 
 definition_prefix(RTYPE) --> ws, storage, ws1, result_type(RTYPE).
+definition_prefix(RTYPE) --> ws1, result_type(RTYPE).
 definition_prefix(RTYPE) --> ws, result_type(RTYPE).
 
 next_definition(RTYPE1) -->
