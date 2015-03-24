@@ -10,7 +10,7 @@
 % TYPE = ["const"] BASETYPE ("const" | "*") ...
 % STORAGE = "extern" | "static"
 % DIRECTION = "/*" ("in" | "out") "*/"
-% MODE = "/*" "success" "*/"
+% MODE = "/*" ("success" | "fail") "*/"
 % BASETYPE = ["unsigned"] ("int" | "char" | "short" | "long" | "float" | "double" | "void") 
 
 
@@ -65,6 +65,7 @@ skip_comment --> [_], !, skip_comment.
 eof(IN) :- ws(IN, []).
 
 result_type(success(RTYPE)) --> "/*", ws1, "success", ws1, "*/", ws, type(RTYPE).
+result_type(fail(RTYPE)) --> "/*", ws1, "fail", ws1, "*/", ws, type(RTYPE).
 result_type(TYPE) --> type(TYPE).
 
 identifier(ID, [C|IN], OUT) :-
@@ -201,15 +202,20 @@ function_primitive(NAME, REALNAME, RTYPE, ARGTYPES) :-
 	gen('){\n'),
 	gen_out_vars(1, ARGTYPES),
 	gen_call(RTYPE, NAME, ARGTYPES, 'x'),
-	(RTYPE \= success(_); gen('if(!x) return 0;\n')),
+	gen_exit_or_fail(RTYPE),
 	gen_out_results(1, ARGTYPES),
 	gen_return(RTYPE), gen('}\n'), !.
 
+gen_exit_or_fail(success(_)) :- gen('if(!x) return 0;\n').
+gen_exit_or_fail(fail(_)) :- gen('if(x) return 0;\n').
+
 gen_return(void) :- gen('return 1;\n').
 gen_return(success(_)) :- gen('return 1;\n').
+gen_return(fail(_)) :- gen('return 1;\n').
 gen_return(RTYPE) :- gen('return unify('), p_value(RTYPE, 'x'), gen(',r);\n').
 
 gen_result_arg(success(_)).
+gen_result_arg(fail(_)).
 gen_result_arg(void).
 gen_result_arg(_) :- gen(',X r').
 	       
@@ -217,6 +223,7 @@ gen_type(pointer(T)) :- !, gen_type(T), gen('*').
 gen_type(const(T)) :- !, gen('const '), gen_type(T).
 gen_type(unsigned(T)) :- !, gen('unsigned '), gen_type(T).
 gen_type(success(T)) :- !, gen_type(T).
+gen_type(fail(T)) :- !, gen_type(T).
 gen_type(T) :- gen(T).
 
 gen_call(RTYPE, NAME, ARGTYPES, RESULT) :-
@@ -314,10 +321,14 @@ function_wrapper(NAME, void, ARGTYPES) :-
 	gen(') :- foreign_call(f_', NAME, '('),
 	gen_list(VARS),
 	gen(')).\n'), !.
-function_wrapper(NAME, success(RTYPE), []) :-
+function_wrapper(NAME, RTYPE, []) :-
+	RTYPE =.. [SF, _],
+	memberchk(SF, [success, fail]),
 	gen(':- determinate(', NAME, '/0).\n'),
 	gen(NAME, ' :- foreign_call(f_', NAME, ').\n'), !.
-function_wrapper(NAME, success(RTYPE), ARGTYPES) :-
+function_wrapper(NAME, RTYPE, ARGTYPES) :-
+	RTYPE =.. [SF, _],
+	memberchk(SF, [success, fail]),
 	findall(_, member(_, ARGTYPES), VARS),
 	length(VARS, N),
 	gen(':- determinate(', NAME, '/', N, ').\n'),
