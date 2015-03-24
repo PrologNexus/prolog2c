@@ -206,6 +206,7 @@ system_predicate(split_string(+X, +Y, +Z, -L), 'str').
 system_predicate(sub_atom(+X, +Y, +Z, -L, +Q), 'str').
 system_predicate(stream_property(+X, ?Y), 'io').
 system_predicate(set_stream_position(+X, +Y), 'io').
+system_predicate(slice(?X, +Y, +Z, ?Q), 'lists').
 
 arithmetic_operation(- X).
 arithmetic_operation(+ X).
