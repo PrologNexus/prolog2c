@@ -73,7 +73,6 @@
     "pi.pl" "lib/interp.pl" "pi_call_primitive.pl" "pi_evaluate_op.pl" "pi_system_predicate.pl"
     ,@source-files))
 
-
 (define (all) 
   (pc1)
   (pi)
@@ -161,10 +160,12 @@
     (check)))
 
 (define (check-pc32)			; implies check-m32
-  (pc32)
-  (fluid-let ((check-pc "./pc32")
-	      (check-options '("-m32")))
-    (check)))
+  (cond ((string-ci=? "x86_64" (capture (uname -m)))
+	 (pc32)
+	 (fluid-let ((check-pc "./pc32")
+		     (check-options '("-m32")))
+	   (check)))
+	(else #t)))
 
 (define (check-dist)
   (dist)
