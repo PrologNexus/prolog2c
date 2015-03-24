@@ -213,6 +213,7 @@ function_primitive(NAME, REALNAME, RTYPE, ARGTYPES) :-
 
 gen_exit_or_fail(success(_)) :- gen('if(!x) return 0;\n').
 gen_exit_or_fail(fail(_)) :- gen('if(x) return 0;\n').
+gen_exit_or_fail(_).
 
 gen_return(void) :- gen('return 1;\n').
 gen_return(success(_)) :- gen('return 1;\n').
