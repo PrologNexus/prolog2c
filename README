@@ -1679,9 +1679,10 @@ Automatic generation of wrapper-code
   name and may be followed by `/* => REALNAME */`, which will result
   in REALNAME being chosen for the Prolog wrapper.
 
-  If MODE is given and of the form "/* success */", then the result
-  of the C function will be interpreted as a boolean indicating success
-  or failure (and not as an additional "output" argument).
+  If MODE is given and of the form "/* success */", then the result of
+  the C function will be interpreted as a boolean indicating success
+  or failure (and not as an additional "output" argument). "/* fail
+  */" means the opposite: a non-null results indicates failure.
 
   TYPE is a basic type or opaque type, optionally decorated with one
   or more "const", "unsigned" or "*" qualifiers. Basic types are
