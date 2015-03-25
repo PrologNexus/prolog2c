@@ -6,7 +6,7 @@
 :- include('state.pl').
 :- include('terms.pl').
 :- include('index.pl').
-:- include('dcg.pl').
+:- include('lib/dcg.pl').
 :- include('macros.pl').
 :- include('process.pl').
 :- include('compile.pl').

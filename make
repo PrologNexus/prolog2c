@@ -11,7 +11,7 @@
     "support.pl"
     "state.pl"
     "terms.pl"
-    "dcg.pl"
+    "lib/dcg.pl"
     "index.pl"
     "macros.pl"
     "process.pl"
