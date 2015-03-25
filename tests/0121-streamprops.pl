@@ -6,5 +6,7 @@ main :-
 	close(S).
 
 props(S) :-
-	stream_property(S, P), writeq(P), nl, fail.
+	stream_property(S, P),
+	(P = file_no(N), N > 2 -> writeq(file_no('?')); writeq(P)),
+	nl, fail.
 props(_).
