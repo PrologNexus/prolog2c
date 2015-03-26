@@ -3,6 +3,11 @@ NOTES											              -*- Org -*-
 
 * Issues
 ** Major
+*** TODO discontiguous doesn't work with "wildcard" PI
+    - e.g. ":- discontiguous bar." with defs for bar/0 and bar/1.
+    - matching of N/A when collecting clauses for one of the two
+      functors seems to get confused.
+    - not completely sure whether ISO allows PI without arity.
 *** TODO embedded test fails on [z]
     - exit_code doesn't seem to be initialized.
     - is TERMINATE(..., EXIT_SUCCESS) called?
@@ -30,9 +35,12 @@ NOTES											              -*- Org -*-
      number_codes/2.
 *** functor/3 (and others?) may exceed heap-reserve for large inputs
 ** Minor
+*** TODO lib/pp: handle declared meta-predicates
+    - do goal-expansion for arguments declared with signature 0.
+*** TODO discontiguous/1 is not available in the interpreter
 *** TODO standard-ports should have some initial data
     - alias, type, mode.
-*** '$call' doesn not check argc nor whether argument is ptr
+*** '$call' doesn't check argc nor whether argument is ptr
     - needs to be safer, should it be exposed (or "meta_predicate"
       is made official)
 *** pi: call/1 should probably handle X^Y terms (with quantifiers)
@@ -390,11 +398,7 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
-** TODO Use stream-data slot to store stream-properties on open
-   - foreign_call(stream_data(S, DATA))
-   - file_name, type, mode, direction.
-** lib/pp: stub program for translating files
-   - processes source and applies term_expansion/2 + goal_expansion/2
+** TODO qp: add "-pp" option
 ** Allow serializing DB to and from file
 ** TODO Check if we can use file:lib/canon.pl for printing query results
 ** DONE if term_expansion/2 returns list, treat as separate (or no) terms
@@ -424,6 +428,7 @@ NOTES											              -*- Org -*-
      peek_code/peek_byte
 * Documentation
 ** DONE News
+   - added support for "discontiguous" directive.
    - pb: handles "fail" mode (opposite of "success").
    - the compiler skips the first line of the source-program if it
      starts with "#".
@@ -463,6 +468,7 @@ NOTES											              -*- Org -*-
    | epsilon/0, pi/0, e/0           | arithmetic constants                      |
    | ^/2                            | integer exponentation (error on overflow) |
 * Tests
+** TODO port file:broken-tests/r6rs-sem.pl
 ** TODO 32-bit tests are unnecessary on 32-bit platform
 * Tools
 ** "qp" driver program
