@@ -1686,7 +1686,10 @@ Automatic generation of wrapper-code
   If MODE is given and of the form "/* success */", then the result of
   the C function will be interpreted as a boolean indicating success
   or failure (and not as an additional "output" argument). "/* fail
-  */" means the opposite: a non-null results indicates failure.
+  */" means the opposite: a non-null results indicates failure.  "/*
+  fail: VARIABLE */" is the same as "fail", but sets the global
+  variable VARIABLE to the result (use another definition to access
+  this variable.)
 
   TYPE is a basic type or opaque type, optionally decorated with one
   or more "const", "unsigned" or "*" qualifiers. Basic types are
