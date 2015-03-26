@@ -183,5 +183,9 @@ combine_comma_separated_goals([], true).
 combine_comma_separated_goals([G], G).
 combine_comma_separated_goals([G|R], (G, G2)) :-
 	combine_comma_separated_goals(R, G2).
-	
-	
+
+
+%% extract functor from general clause
+
+clause_functor((HEAD :- _), N, A) :- functor(HEAD, N, A).
+clause_functor(HEAD, N, A) :- functor(HEAD, N, A).
