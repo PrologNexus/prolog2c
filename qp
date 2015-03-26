@@ -26,6 +26,7 @@ C_OPTIONS=
 LIBRARY_DIR=
 PC_SOURCEFILE=
 OFILE=
+PP=
 
 function usage() {
     echo "usage: qp [OPTION ...] [FILRNAME ARGUMENT ...]"
@@ -46,6 +47,7 @@ function usage() {
     echo "  -H                read source program from stdin"
     echo "  -purge [FILENAME ...]  delete cached executables for given programs"
     echo "  -key [FILENAME]   list cached executables for given programs"
+    echo "  -pp PROGRAM       run PROGRAM as preprocessor"
     echo
     echo "  Other options and files ending in *.o or *.c are passed directly"
     echo "  to the C compiler."
@@ -101,6 +103,10 @@ while test -n "$1"; do
 		done
 	    fi
 	    exit;;	    
+	-pp)
+	    shift
+	    PP="$1"
+	    shift;;
 	-O0)
 	    OPTFLAGS=
 	    shift;;
@@ -130,22 +136,31 @@ fi
 HASH=`md5sum "${PC_SOURCEFILE}" | sed -e 's/^\([a-f0-9]\+\).*$/\1/'`
 
 if test -z "${HASH}"; then
-    echo "invalid ${PC_SOURCEFILE}" >2
+    echo "invalid ${PC_SOURCEFILE}" 1>&2
     exit 1
 fi
 
 if test \! -x "${CACHEDIR}/${HASH}"; then
+    if test -n "${PP}"; then
+	NEWFILE=`mktemp --tmpdir qp-pp-XXXXXX.pl`
+	"$PP" <"${PC_SOURCEFILE}" >"${NEWFILE}"
+	PC_SOURCEFILE="${NEWFILE}"
+    fi
+
     if test -n "${PC_LIBRARY_DIR}"; then
 	OPTFLAGS="${OPTFLAGS} -I${PC_LIBRARY_DIR}"
     fi
 
-    PC_SOURCEFILE2=`basename "${PC_SOURCEFILE}"`
-    CFILE=`mktemp --tmpdir qp-XXXXX.c`
+    CFILE=`mktemp --tmpdir qp-XXXXXXX.c`
     ${PC_PREFIX}pc -q "${PC_SOURCEFILE}" ${PC_OPTIONS} -o "${CFILE}"
     "$CC" -std=gnu99 ${OPTFLAGS} -fno-strict-aliasing -fwrapv \
 	-I${PC_INCLUDEPATH} -I. "${CFILE}" -o "${CACHEDIR}/${HASH}" \
 	-lm -lrt ${C_OPTIONS} 
     rm -f "${CFILE}"
+
+    if test -n "${PP}"; then
+	rm -f "${NEWFILE}"
+    fi
 fi
 
 if test -n "$OFILE"; then
