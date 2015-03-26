@@ -2,10 +2,7 @@
 
 /* these are currently missing and SWI-specific (and some are undocumented)
    
-  reduce_star/2
-  obs/2
   format/2
-  bif_v/2
   char_type/2
   format/1
   gensym/2
@@ -19,7 +16,8 @@
 ip([ip, N]) :- number(N), !.
 mp([mp, N]) :- number(N), !.
 
-s(X, Y) :- reduce_star(X, Z), obs(Z, Y).
+%% this one doesn't seem to be implemented
+%% s(X, Y) :- reduce_star(X, Z), obs(Z, Y).
 
 p_cal([unknown, _]) :- !.
 p_cal([uncaught_exception, V]) :- v(V), !.
@@ -992,7 +990,7 @@ bir_v(X, [begin, E1, E2|Es]) :-
 bir_v(X, [begin, E]) :-
   e(E), bir_v(X, E), !.
 bir_v(X, [E|Es]) :-
-  e(E), e_s(es), bif_v(X, [begin | [E|Es]]), !.
+  e(E), e_s(es), bir_v(X, [begin | [E|Es]]), !.
 bir_v(X, [if, E1, E2, E3]) :-
   e(E1), e(E2), e(E3),
   bir_v_3(X, [E1, E2, E3]), !.
