@@ -13,6 +13,8 @@ compile_file_finished(_) :-
 	recorded(xref_mode, yes),
 	!, emit_xref_information.
 compile_file_finished(STATE) :-
+	process_discontiguous_code(STATE).
+compile_file_finished(STATE) :-
 	export_public_predicates,
 	process_boilerplate_code(STATE).
 compile_file_finished(STATE) :-
@@ -49,6 +51,18 @@ process_input([end_of_file], BLOCK, NA, STATE1) :-
 process_input([(HEAD --> BODY)|MORE], BLOCK, NA, STATE) :-
         dcg_rule((HEAD --> BODY), EXPANSION),
 	!, process_input([EXPANSION|MORE], BLOCK, NA, STATE).
+
+% marked as discontiguous? just record
+process_input([CLAUSE|MORE], BLOCK, NA, STATE) :-
+	clause_functor(CLAUSE, CN, CA),
+	recorded(discontiguous_predicate, CN/CA),
+	recordz(discontiguous_clause, CLAUSE),
+	( BLOCK \== []
+	-> compile_block(NA, BLOCK, STATE, STATE2)
+	; STATE2 = STATE
+	),
+	!,
+	process_input(MORE, [], _, STATE2).
 
 % matches N/A? add and continue
 process_input([(HEAD :- BODY)|MORE], BLOCK, NAME/ARITY, STATE) :-
@@ -139,8 +153,7 @@ process_directive(verbatim(STR), S, S) :-
 	recordz(verbatim_code, STR).
 
 process_directive(determinate(PI), S, S) :-
-	(PI = [_|_] -> PIL = PI; PIL = [PI]),
-	forall(member(P, PIL), declare_as_determinate(P)).
+	register_determinate_predicates(PI).
 
 process_directive(op(P, A, N), S, S) :- op(P, A, N).
 
@@ -149,6 +162,9 @@ process_directive(meta_predicate(META), S, S) :-
 
 process_directive(public(PI), S, S) :-
 	register_public_predicates(PI).
+
+process_directive(discontiguous(PI), S, S) :-
+	register_discontiguous_predicates(PI).
 
 process_directive(DECL, STATE, STATE) :-
 	error(['unrecognized directive: ', DECL]).
@@ -167,6 +183,26 @@ register_meta_predicate(X) :-
 	error(['invalid meta_predicate declaration', X]).
 
 
+%% mark discontiguous predicates
+
+register_discontiguous_predicates((X, Y)) :-
+	register_discontiguous_predicates(X),
+	register_discontiguous_predicates(Y).
+register_discontiguous_predicates(PI) :-
+	(canonical_pi(PI, N/A); error(['invalid predicate-indicator: ', PI])),
+	recordz(discontiguous_predicate, N/A).
+
+
+%% register determinate predicates
+
+register_determinate_predicates((X, Y)) :-
+	register_determinate_predicates(X),
+	register_determinate_predicates(Y).
+register_determinate_predicates(PI) :-
+	(canonical_pi(PI, N/A); error(['invalid predicate-indicator: ', PI])),
+	recordz(determinate_predicate, N/A).
+
+
 %% compile a block of clauses
 
 compile_block(NA, BLOCK, STATE1, STATE2) :-
@@ -181,6 +217,20 @@ show_intermediate_code :-
 	writeq(OP), put(46), nl,
 	fail.
 show_intermediate_code.
+
+
+%% add discontiguous predicates
+
+process_discontiguous_code(STATE) :-
+	recorded(discontiguous_clause, CLAUSE),
+	clause_functor(CLAUSE, N, A),
+	recorded(discontiguous_predicate, N/A, REF),
+	erase(REF),		% or this loops!
+	findall(C, (recorded(discontiguous_clause, C, R),
+		    clause_functor(C, N, A),
+		    erase(R)),
+		CLAUSES),
+	!, process_input(CLAUSES, [], _, STATE).
 
 
 %% add clauses for boilerplate code and (pre-)initialization goals
@@ -217,17 +267,6 @@ report_unresolved_calls :-
 	nl(user_error),
 	halt(1).
 report_unresolved_calls.
-
-
-%% add "determinate" declaration for a list of PIs
-
-declare_as_determinate(N/A) :-
-	recordz(determinate, N/A).
-declare_as_determinate(N) :-
-	atom(N),
-	declare_as_determinate(N/_).
-declare_as_determinate(N) :-
-	error(['invalid predicate indicator: ', N]).
 
 
 %% add initialization-code to record public predicates

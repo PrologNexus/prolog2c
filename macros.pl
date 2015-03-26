@@ -299,7 +299,7 @@ determinate_builtin(atomic_list_concat, 2).
 determinate_builtin(split_string, 4).
 
 determinate_builtin(NAME, ARITY) :-
-	recorded(determinate, NAME/ARITY).
+	recorded(determinate_predicate, NAME/ARITY).
 
 
 is_meta_predicate(NAME, ARITY, SIG) :-

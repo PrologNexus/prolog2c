@@ -22,6 +22,8 @@
 						  op(1150,fx,('initialization')),
 						  op(1150,fx,('public')),
 						  op(1150,fx,('meta_predicate')),
+						  op(1150,fx,('discontiguous')),
+						  op(1150,fx,('determinate')),
 						  op(900,fy,'\\+'),
 						  op(700,xfx,'=:='),
 						  op(700,xfx,'=\\='),
