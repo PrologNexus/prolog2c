@@ -1398,19 +1398,23 @@ Directives
   the "initialization" directive, but pre-initialization goals are run
   before all normal initialization goals.
 
-       determinate(PI)                          [compiler]
+       determinate PI, ...                      [compiler]
 
   Declares the predicates specified in PI as being determinate, which
   gives more opportunities for tail-call optimization. PI should be of
-  the form "<predicate-name>/<arity>", "<predicate-name>" or a list of
-  such indicators.
+  the form "<predicate-name>/<arity>" or "<predicate-name>".
+
+       discontiguous PI, ...                    [compiler]
+
+  Allows the clauses of the predicates indicated by PI to be
+  discontiguous in the source program [ISO]
 
        include(FILENAME)                        [compiler, interpreter]
 
   Include the contents of FILENAME at the current position in the
   source-code that contains this clause. If the file exists and has
   the extension ".pl", then the extension may be omitted in the
-  directive. FILENAME may be of the form "library(ATOM)".
+  directive. FILENAME may be of the form "library(ATOM)" [ISO]
  
        initialization GOAL                      [compiler, interpreter]
 
@@ -1418,20 +1422,20 @@ Directives
   a compiled program is started or when a file given to the
   interpreter on the command-line has been consulted.  Several
   initialization goals may be declared and are invoked in the order in
-  which they appear in the source code.
+  which they appear in the source code [ISO]
 
   In compiled code, the default initialization goal is main/0.
                              
       op(P, A, N)                               [compiler, interpreter]
 
   Declares an operator - identical to op/3, but done before reading
-  any further clauses.
+  any further clauses [ISO]
 
       ensure_loaded(FILENAME)                   [compiler, interpreter]
 
   Similar to "include", but only includes FILENAME if it has not been
   earlier included using "ensure_loaded" or "include" (or "consult" in
-  the interpreter.) FILENAME may be of the form "library(ATOM)".
+  the interpreter.) FILENAME may be of the form "library(ATOM)" [ISO]
 
 
 Performance tips
