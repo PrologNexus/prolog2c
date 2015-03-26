@@ -238,7 +238,7 @@ process_discontiguous_code(STATE) :-
 process_boilerplate_code(STATE) :-
 	emit(trace_off),
 	findall(B, (recorded(boilerplate, B, REF), erase(REF)), BOILERPLATE),
-	BOILERPLATE \= [],
+	BOILERPLATE \== [],
 	!, process_input(BOILERPLATE, [], _, STATE).
 
 process_initialization_goals(STATE) :-
