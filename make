@@ -233,10 +233,10 @@
 			 (list "pi.pl"
 			       "lib/flags.pl"
 			       "lib/interp.pl"
-			       "dcg.pl"
+			       "lib/dcg.pl"
 			       "pi_system_predicate.pl"
 			       "pi_call_primitive.pl" 
-			       "pi_evaluate_op.pl" "dcg.pl")
+			       "pi_evaluate_op.pl")
 			 (lambda ()
 			   (run (./pc -n pi.pl -o pi.c)))))))
 

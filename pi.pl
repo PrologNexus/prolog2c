@@ -2,7 +2,7 @@
 
 
 :- include('lib/interp.pl').
-:- include('dcg.pl').
+:- include('lib/dcg.pl').
 
 main :-
 	get_library_dir(DIR),
