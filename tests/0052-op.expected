@@ -20,6 +20,8 @@
 [1150,fx,initialization]
 [1150,fx,public]
 [1150,fx,meta_predicate]
+[1150,fx,discontiguous]
+[1150,fx,determinate]
 [900,fy,\+]
 [700,xfx,=:=]
 [700,xfx,=\=]
