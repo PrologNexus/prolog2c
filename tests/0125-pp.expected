@@ -1,0 +1,10 @@
+rule :- a,\+b,c -> d,e.
+
+rule :- x -> y.
+
+foo(_8959,_9039) :- bar(_8959,_8999),_8999 = [baz|_9039].
+
+declare(abc/def).
+
+add(abc,def).
+
