@@ -1,7 +1,7 @@
 %%%% s11n - prolog part
 
 :- verbatim('#include "s11n.c"').
-:- determinate([serialize_term/2, deserlaize_term/2]).
+:- determinate serialize_term/2, deserialize_term/2.
 
 
 serialize_term(X, S) :- foreign_call(serialize(X, S)).
