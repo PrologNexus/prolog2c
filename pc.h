@@ -2510,7 +2510,7 @@ static void initialize(int argc, char *argv[])
   for(int i = argc - 1; i > 0; --i) {
     char *arg = argv[ i ];
 
-    if(arg[ 1 ] == ':') {
+    if(*arg == '-' && arg[ 1 ] == ':') {
       switch(arg[ 2 ]) {
       case 'h':
 	heap_size = numeric_arg(arg + 3);
@@ -4355,7 +4355,7 @@ PRIMITIVE(command_line_arguments, X var)
   // build argument-list for "command-line-arguments"
   for(int i = global_argc - 1; i > 0; --i) {
     // ignore runtime options
-    if(global_argv[ i ][ 1 ] != ':') {
+    if(global_argv[ i ][ 0 ] != '-' || global_argv[ i ][ 1 ] != ':') {
       X str = CSTRING(global_argv[ i ]);
       X sym = intern(str);
       X pr = PAIR(sym, lst);
