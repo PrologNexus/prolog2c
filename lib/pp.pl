@@ -30,42 +30,47 @@ expand_term_list([X|R1], [Y|R2]) :-
 	expand_term(X, Y),
 	expand_term_list(R1, R2).
 
-
 expand_goal(X, Y) :-
 	goal_expansion(X, Y1),
 	!,
 	(X == Y1 -> Y = X; expand_goal(Y1, Y)).
 expand_goal(X, Y) :-
 	functor(X, NAME, ARITY),
-	expand_meta_goal(NAME/ARITY, X, Y).
+	X =.. [_|ARGS],
+	( pp_meta_predicate(NAME, ARITY, SIG)
+	; recorded(pp_meta_predicate_signature, m(NAME, ARITY, SIG))
+	),
+	expand_meta_goal(ARGS, SIG, XARGS),
+	Y =.. [NAME|XARGS].
 expand_goal(X, X).
 
-expand_meta_goal(catch/3, catch(X, B, Y), catch(X1, B, Y1)) :-
-	expand_goal(X, X1),
-	expand_goal(Y, Y1).
-expand_meta_goal(N/3, X, Y) :-
-	memberchk(N, [findall, setof, bagof]),
-	!,
-	X =.. [_, A, G, C],
-	expand_goal(G, XG),
-	Y =.. [N, A, XG, C].
-expand_meta_goal(N/2, X, Y) :-
-	memberchk(N, [delay, freeze]),
-	!,
-	X =.. [_, V, G],
-	expand_goal(G, XG),
-	Y =.. [N, V, XG].
-expand_meta_goal(NA, X, Y) :-
-	memberchk(NA, [','/2, ';'/2, '->'/2, forall/2, once/1, '/'('\\+', 1)]),
-	!,
-	X =.. [N|ARGS],
-	expand_goal_list(ARGS, XARGS),
-	Y =.. [N|XARGS].
+expand_meta_goal([], _, []).
+expand_meta_goal([A|AR], [], [A|AR2]) :-
+	expand_meta_goal(AR, [], AR2).
+expand_meta_goal([A|AR], [0|SR], [XA|AR2]) :-
+	expand_goal(A, XA),
+	expand_meta_goal(AR, SR, AR2).
+expand_meta_goal([A|AR], [_|SR], [A|AR2]) :-
+	expand_goal(A, XA),
+	expand_meta_goal(AR, SR, AR2).
+
+pp_meta_predicate(catch, 3, [0, +, 0]).
+pp_meta_predicate(findall, 3, [+, 0, +]).
+pp_meta_predicate(setof, 3, [+, 0, +]).
+pp_meta_predicate(bagof, 3, [+, 0, +]).
+pp_meta_predicate(delay, 2, [+, 0]).
+pp_meta_predicate(freeze, 2, [+, 0]).
+pp_meta_predicate(',', 2, [0, 0]).
+pp_meta_predicate(';', 2, [0, 0]).
+pp_meta_predicate('->', 2, [0, 0]).
+pp_meta_predicate(forall, 2, [0, 0]).
+pp_meta_predicate(once, 1, [0]).
+pp_meta_predicate('\\+', 1, [0]).
 
 expand_goal_list([], []).
 expand_goal_list([X|R], [Y|R2]) :-
 	expand_goal(X, Y),
-	expand_goal_list(R, R2).
+	!, expand_goal_list(R, R2).
 
 
 %% entry-point - reads current_input and writes expansions to current_output
@@ -90,8 +95,29 @@ process_expanded_term((HEAD --> BODY)) :-
 process_expanded_term((X :- Y)) :-
         expand_goal(Y, Y1),
 	output_expanded_term((X :- Y1)).
+process_expanded_term((:- DECL)) :-
+        process_expanded_directive(DECL),
+	output_expanded_term((X :- Y1)).
 process_expanded_term(TERM) :-
         output_expanded_term(TERM).
 
 output_expanded_term(TERM) :-
 	writeq(TERM), display('.\n\n').
+
+process_expanded_directive((X, Y)) :-
+	process_expanded_directive(X),
+	process_expanded_directive(Y).
+process_expanded_directive(op(A, B, C)) :-
+	op(A, B, C).
+process_expanded_directive(meta_predicate(PI)) :-
+	process_expanded_meta_predicate(PI).
+
+process_expanded_meta_predicate((X, Y)) :-
+	process_expanded_meta_predicate(X),
+	process_expanded_meta_predicate(Y).
+process_expanded_meta_predicate(X) :-
+	functor(X, NAME, ARITY),
+	X =.. [_|SIG],
+	recordz(pp_meta_predicate_signature, m(NAME, ARITY, SIG)).
+register_meta_predicate(X) :-
+	throw(syntax_error('invalid meta_predicate declaration')).
