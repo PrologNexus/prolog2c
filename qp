@@ -114,7 +114,8 @@ while test -n "$1"; do
 	    PC_OPTIONS="${PC_OPTIONS} $1"
 	    shift;;
 	-H)
-	    PC_SOURCEFILE=`mktemp --tmpdir qp-XXXX.pl`
+	    TMP1=`mktemp --tmpdir qp-XXXXXX`
+	    PC_SOURCEFILE="${TMP1}.pl"
 	    cat >${PC_SOURCEFILE}
 	    shift;;
 	-*|*.o|*.c)
@@ -142,7 +143,8 @@ fi
 
 if test \! -x "${CACHEDIR}/${HASH}"; then
     if test -n "${PP}"; then
-	NEWFILE=`mktemp --tmpdir qp-pp-XXXXXX.pl`
+	TMP1=`mktemp --tmpdir qp-pp-XXXXXX`
+	NEWFILE="${TMP}.pl"
 	"$PP" <"${PC_SOURCEFILE}" >"${NEWFILE}"
 	PC_SOURCEFILE="${NEWFILE}"
     fi
@@ -151,7 +153,8 @@ if test \! -x "${CACHEDIR}/${HASH}"; then
 	OPTFLAGS="${OPTFLAGS} -I${PC_LIBRARY_DIR}"
     fi
 
-    CFILE=`mktemp --tmpdir qp-XXXXXXX.c`
+    TMP1=`mktemp --tmpdir qp-XXXXXX`
+    CFILE="${TMP1}.c"
     ${PC_PREFIX}pc -q "${PC_SOURCEFILE}" ${PC_OPTIONS} -o "${CFILE}"
     "$CC" -std=gnu99 ${OPTFLAGS} -fno-strict-aliasing -fwrapv \
 	-I${PC_INCLUDEPATH} -I. "${CFILE}" -o "${CACHEDIR}/${HASH}" \
