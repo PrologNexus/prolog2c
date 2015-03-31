@@ -58,3 +58,15 @@ skip_items(N, [_|R], R2) :-
 
 receive(process(_, FDIN, _), LEN, BYTES) :-
 	foreign_call(raw_read(FDIN, LEN, BYTES)).
+
+
+%% wait for I/O on file-descriptors
+
+wait(READY) :-
+	wait(READY, -1).
+
+wait(READY, TIMEOUT) :-
+	recorded(spawned_children, PS),
+	findall(FDIN, member(process(_, FDIN, _), PS), WL),
+	foreign_call(poll_fds(WL, TIMEOUT, RL)),
+	findall(P, (member(FD, RL), member(P, PS), P = process(_, FD, _)), READY).

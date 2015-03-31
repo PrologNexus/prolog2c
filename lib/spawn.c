@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <poll.h>
 
 
 static int handling_sigchld = 0;
@@ -140,4 +141,35 @@ PRIMITIVE(raw_write, X fd, X bytes, X written)
     system_error(strerror(errno));
 
   return unify(written, word_to_fixnum(total));
+}
+
+
+PRIMITIVE(poll_fds, X fdlist, X timeout, X rdylist)
+{
+  static struct pollfd fds[ 256 ];	/* max */
+  int n = 0;
+
+  while(fdlist != END_OF_LIST_VAL) {
+    fds[ n ].fd = fixnum_to_word(check_fixnum(deref(slot_ref(fdlist, 0))));
+    fds[ n ].events = POLLIN | POLLOUT;
+    fdlist = deref(slot_ref(fdlist, 1));
+    ++n;
+  }
+
+  int rn = poll(fds, n, fixnum_to_word(check_fixnum(timeout)));
+
+  if(rn == -1)
+    system_error(strerror(errno));
+
+  //XXX does not check for full heap
+  X lst = END_OF_LIST_VAL;
+
+  for(int i = 0; n > 0; ++i) {
+    if((fds[ i ].revents & (POLLERR | POLLIN | POLLOUT)) != 0)
+      lst = PAIR(word_to_fixnum(fds[ i ].fd), lst);
+
+    --n;
+  }
+
+  return unify(rdylist, lst);
 }
