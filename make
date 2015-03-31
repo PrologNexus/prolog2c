@@ -99,7 +99,7 @@
 (define (pc1o)
   (pc1.c)
   (make (("pc1o" ("pc1.c" "pc.h")
-	  (run (time gcc ,@gcc-optimized-compile-options pc1.c -lm -lrt -o pc1o
+	  (run (/usr/bin/time gcc ,@gcc-optimized-compile-options pc1.c -lm -lrt -o pc1o
 		    ,@pc-compile-options))))))
 
 (define (pc2.c)
@@ -254,7 +254,7 @@
 (define (pio)
   (pi.c)
   (make (("pio" ("pi.c" "pc.h")
-	  (run (time gcc ,@gcc-optimized-compile-options pi.c -lm -lrt -o pio ,@pi-compile-options))))))
+	  (run (/usr/bin/time gcc ,@gcc-optimized-compile-options pi.c -lm -lrt -o pio ,@pi-compile-options))))))
 
 (define (pb)
   (fluid-let ((gcc-compile-options (append gcc-compile-options pi-compile-options)))
