@@ -5057,6 +5057,14 @@ PRIMITIVE(set_working_dir, X s) {
   return 1;
 }
 
+PRIMITIVE(word_size, X n) { 
+#ifdef SIXTYFOUR
+  return unify(n, word_to_fixnum(64));
+#else
+  return unify(n, word_to_fixnum(32));
+#endif
+}
+
 #endif
 
 #endif

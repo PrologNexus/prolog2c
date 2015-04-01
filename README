@@ -1266,6 +1266,7 @@ Builtin predicates
         apple                         true or false
         unix                          true or false
         windows                       true or false
+        address_bits                  32 or 64
 
     No flags are changable, so there is no set_prolog_flag/2.
 

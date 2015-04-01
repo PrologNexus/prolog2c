@@ -13,5 +13,4 @@ current_prolog_flag(unknown, error).
 current_prolog_flag(unix, F) :- (foreign_call(os_type(0)) -> F = true; F = false).
 current_prolog_flag(windows, F) :- (foreign_call(os_type(1)) -> F = true; F = false).
 current_prolog_flag(apple, F) :- (foreign_call(os_type(2)) -> F = true; F = false).
-
-
+current_prolog_flag(address_bits, N) :- foreign_call(word_size(N)).
