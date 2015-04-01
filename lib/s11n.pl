@@ -4,6 +4,9 @@
 :- determinate serialize_term/2, deserialize_term/2.
 
 
-serialize_term(X, S) :- foreign_call(serialize(X, S)).
+serialize_term(X, S) :-
+	\+integer(X),		% needs to have a location
+	foreign_call(serialize(X, S)).
 
-deserialize_term(S, X) :- foreign_call(deserialize(S, X)).
+deserialize_term(S, X) :-
+	foreign_call(deserialize(S, X)).
