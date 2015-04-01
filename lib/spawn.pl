@@ -15,16 +15,23 @@ spawn(CMD, ARGS, P) :-
 	!, recordz(spawned_children, [P|PS]).
 
 
+%% disconnect from child process orderly
+
+disconnect(process(PID, FDIN, FDOUT)) :-
+	recorded(spawned_children, PS, REF),
+	select(process(PID, FDIN, FDOUT), PS, NEWPS), % may fail, if process is already disconnected
+	erase(REF),
+	foreign_call(close_fd(FDIN)),
+	foreign_call(close_fd(FDOUT)),
+	recordz(spawned_children, NEWPS).
+disconnect(_).
+
+
 %% call this periodically to reap zombie children
 
 reap_children :-
 	foreign_call(reap_children(PID)),
-	recorded(spawned_children, PS, REF),
-	select(process(PID, FDIN, FDOUT), PS, NEWPS), % may fail, if unregistered process terminates
-	erase(REF),
-	foreign_call(close_fd(FDIN)),
-	foreign_call(close_fd(FDOUT)),
-	recordz(spawned_children, NEWPS),
+	disconnect(process(PID, _, _)).
 	reap_children.
 reap_children.
 
@@ -54,7 +61,7 @@ skip_items(N, [_|R], R2) :-
 
 %% read string from subprocess, may read fewer than LEN bytes
 %
-% will return [] on EOF
+% will return [] on EOF, and block after that
 
 receive(process(_, FDIN, _), LEN, BYTES) :-
 	foreign_call(raw_read(FDIN, LEN, BYTES)).
