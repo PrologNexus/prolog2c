@@ -14,13 +14,16 @@ main :-
 process_arguments([]).
 process_arguments(['-f', FILENAME|MORE]) :-
 	processes_from_file(FILENAME),
-	!, process_arguments(MORE).
+	!,
+	process_arguments(MORE).
 process_arguments(['-v'|MORE]) :-
 	recordz(boss_verbose, yes),
-	!, process_arguments(MORE).
+	!,
+	process_arguments(MORE).
 process_arguments(['-p', PROG|MORE]) :-
 	recordz(subprocess, PROG),
-	!, process_arguments(MORE).
+	!,
+	process_arguments(MORE).
 process_arguments(['--'|REST]) :-
 	recordz('arguments&1', arguments(REST)).
 process_arguments([HELP|MORE]) :-
@@ -31,13 +34,13 @@ process_arguments([OPT|_]) :-
 	atom_concat('-', _, OPT),
 	usage,
 	halt(1).
+
 usage :-
-	display(user_error,
-		'usage: ensemble [-h] [-v] [-f FILENAME] [-p PROGRAM] [--] ...\n').
+	display(user_error, 'usage: ensemble [-h] [-v] [-f FILENAME] [-p PROGRAM] [--] ...\n').
 
 spawn_processes :-
 	recorded(subprocess, PROG, REF),
-	log_event("spawning program %d", PROG),
+	log_event("spawning program %s", [PROG]),
 	spawn(PROG, [], _),
 	erase(REF),
 	fail.
@@ -47,7 +50,12 @@ processes_from_file(FILENAME) :-
 	see(FILENAME),
 	repeat,
 	read_line(LINE),
-	( LINE == end_of_file
-	-> seen
-	; recordz(subprocess, LINE), fail
-	).
+	register_process(LINE),
+	seen.
+
+register_process(end_of_file).
+register_process([35|_]) :- !, fail.
+register_process([]) :- !, fail.
+register_process(LINE) :-
+	recordz(subprocess, LINE),
+	fail.
