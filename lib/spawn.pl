@@ -2,6 +2,7 @@
 
 
 :- verbatim('#include "spawn.c"').
+:- ensure_loaded(library(fd)).
 
 
 %% run subprocess CMD, with list of arguments (not including command)
@@ -21,8 +22,8 @@ disconnect(process(PID, FDIN, FDOUT)) :-
 	recorded(spawned_children, PS, REF),
 	select(process(PID, FDIN, FDOUT), PS, NEWPS), % may fail, if process is already disconnected
 	erase(REF),
-	foreign_call(close_fd(FDIN)),
-	foreign_call(close_fd(FDOUT)),
+	close_fd(FDIN),
+	close_fd(FDOUT),
 	recordz(spawned_children, NEWPS).
 disconnect(_).
 
@@ -44,19 +45,10 @@ send(P, DATA) :-
 	name(DATA, LST),
 	send(P, LST).
 send(process(_, _, FDOUT), DATA) :-
-	send_block(FDOUT, DATA).
+	write_bytes(FDOUT, DATA).
 
-send_block(_, []) :- !.
 send_block(FD, DATA) :-
-	foreign_call(raw_write(FD, DATA, N)),
-	skip_items(N, DATA, REST),
-	!, send_block(FD, REST).
-
-%% probably generally useful, find out how this is usually called
-skip_items(0, _, []).
-skip_items(N, [_|R], R2) :-
-	N2 is N - 1,
-	!, skip_items(N2, R, R2).
+	write_bytes(FD, DATA).
 
 
 %% read string from subprocess, may read fewer than LEN bytes
@@ -64,16 +56,4 @@ skip_items(N, [_|R], R2) :-
 % will return [] on EOF, and block after that
 
 receive(process(_, FDIN, _), LEN, BYTES) :-
-	foreign_call(raw_read(FDIN, LEN, BYTES)).
-
-
-%% wait for I/O on file-descriptors
-
-wait(READY) :-
-	wait(READY, -1).
-
-wait(READY, TIMEOUT) :-
-	recorded(spawned_children, PS),
-	findall(FDIN, member(process(_, FDIN, _), PS), WL),
-	foreign_call(poll_fds(WL, TIMEOUT, RL)),
-	findall(P, (member(FD, RL), member(P, PS), P = process(_, FD, _)), READY).
+	read_bytes(FDIN, LEN, BYTES).

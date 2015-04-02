@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <signal.h>
-#include <poll.h>
 
 
 static int handling_sigchld = 0;
@@ -104,72 +103,4 @@ PRIMITIVE(reap_children, X pid)
   }
 
   return 0;
-}
-
-
-PRIMITIVE(close_fd, X fd) 
-{
-  if(close(fixnum_to_word(fd)) == -1)
-    system_error(strerror(errno));
-
-  return 1;
-}
-
-
-PRIMITIVE(raw_read, X fd, X count, X bytes)
-{
-  int fno = fixnum_to_word(check_fixnum(fd));
-  XWORD n = fixnum_to_word(check_fixnum(count));
-  ensure_string_buffer(n);
-  size_t total = read(fno, string_buffer, n);
-
-  if(total == -1)
-    system_error(strerror(errno));
-
-  return unify(bytes, string_to_list(string_buffer, total));
-}
-
-
-PRIMITIVE(raw_write, X fd, X bytes, X written)
-{
-  int fno = fixnum_to_word(check_fixnum(fd));
-  int len;
-  XCHAR *ptr = to_string(bytes, &len);
-  size_t total = write(fno, string_buffer, len);
-
-  if(total == -1)
-    system_error(strerror(errno));
-
-  return unify(written, word_to_fixnum(total));
-}
-
-
-PRIMITIVE(poll_fds, X fdlist, X timeout, X rdylist)
-{
-  static struct pollfd fds[ 256 ];	/* max */
-  int n = 0;
-
-  while(fdlist != END_OF_LIST_VAL) {
-    fds[ n ].fd = fixnum_to_word(check_fixnum(deref(slot_ref(fdlist, 0))));
-    fds[ n ].events = POLLIN | POLLOUT;
-    fdlist = deref(slot_ref(fdlist, 1));
-    ++n;
-  }
-
-  int rn = poll(fds, n, fixnum_to_word(check_fixnum(timeout)));
-
-  if(rn == -1)
-    system_error(strerror(errno));
-
-  //XXX does not check for full heap
-  X lst = END_OF_LIST_VAL;
-
-  for(int i = 0; n > 0; ++i) {
-    if((fds[ i ].revents & (POLLERR | POLLIN | POLLOUT)) != 0)
-      lst = PAIR(word_to_fixnum(fds[ i ].fd), lst);
-
-    --n;
-  }
-
-  return unify(rdylist, lst);
 }
