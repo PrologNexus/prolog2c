@@ -12,8 +12,11 @@
 spawn(CMD, ARGS, P) :-
 	foreign_call(spawn(CMD, ARGS, PID, FDIN, FDOUT)),
 	P = process(PID, FDIN, FDOUT),
-	(recorded(spawned_children, PS, REF), erase(REF); PS = []),
-	!, recordz(spawned_children, [P|PS]).
+	( recorded(spawned_children, PS, REF)
+	-> erase(REF)
+	; PS = []
+	),
+	recordz(spawned_children, [P|PS]).
 
 
 %% disconnect from child process orderly
