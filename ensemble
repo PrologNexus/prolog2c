@@ -1,5 +1,5 @@
 #!/usr/bin/env qp
-%%% run list of processes as "ensemble"
+%%% run list of processes as "ensemble" -*- Prolog -*-
 
 
 :- ensure_loaded(library(boss)).
@@ -8,15 +8,21 @@
 main :-
 	command_line_arguments(ARGS),
 	process_arguments(ARGS),
+	spawn_processes,
 	process_requests.
 
 process_arguments([]).
 process_arguments(['-f', FILENAME|MORE]) :-
-	spawn_processes_from_file(FILENAME),
-	process_arguments(MORE).
+	processes_from_file(FILENAME),
+	!, process_arguments(MORE).
 process_arguments(['-v'|MORE]) :-
 	recordz(boss_verbose, yes),
-	process_arguments(MORE).
+	!, process_arguments(MORE).
+process_arguments(['-p', PROG|MORE]) :-
+	recordz(subprocess, PROG),
+	!, process_arguments(MORE).
+process_arguments(['--'|REST]) :-
+	recordz('arguments&1', arguments(REST)).
 process_arguments([HELP|MORE]) :-
 	memberchk(HELP, ['-h', '-help', '--help']),
 	usage,
@@ -25,20 +31,26 @@ process_arguments([OPT|_]) :-
 	atom_concat('-', _, OPT),
 	usage,
 	halt(1).
-process_arguments([PROG|MORE]) :-
-	start_process(PROG),
-	process_arguments(MORE).
-
 usage :-
-	display(user_error, 'usage: ensemble [-h] [-v] [-f FILENAME] PROGRAM ...\n').
+	display(user_error,
+		'usage: ensemble [-h] [-v] [-f FILENAME] [-p PROGRAM] [--] ...\n').
 
-start_process(PROG) :-
+spawn_processes :-
+	recorded(subprocess, PROG),
 	log_event("spawning program %d", PROG),
-	spawn(PROG, [], _).
+	spawn(PROG, [], _),
+	fail.
+spawn_processes.
 
-spawn_processes_from_file(FILENAME) :-
+processes_from_file(FILENAME) :-
 	see(FILENAME),
-	forall(read_line(LINE), start_process(LINE)).
+	repeat,
+	read_line(LINE),
+	( LINE == end_of_file
+	-> seen
+	; recordz(subprocess, LINE)),
+	fail.
+
 
 
 				      
