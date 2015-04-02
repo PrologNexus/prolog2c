@@ -1,0 +1,44 @@
+#!/usr/bin/env qp
+%%% run list of processes as "ensemble"
+
+
+:- ensure_loaded(library(boss)).
+
+
+main :-
+	command_line_arguments(ARGS),
+	process_arguments(ARGS),
+	process_requests.
+
+process_arguments([]).
+process_arguments(['-f', FILENAME|MORE]) :-
+	spawn_processes_from_file(FILENAME),
+	process_arguments(MORE).
+process_arguments(['-v'|MORE]) :-
+	recordz(boss_verbose, yes),
+	process_arguments(MORE).
+process_arguments([HELP|MORE]) :-
+	memberchk(HELP, ['-h', '-help', '--help']),
+	usage,
+	halt.
+process_arguments([OPT|_]) :-
+	atom_concat('-', _, OPT),
+	usage,
+	halt(1).
+process_arguments([PROG|MORE]) :-
+	start_process(PROG),
+	process_arguments(MORE).
+
+usage :-
+	display(user_error, 'usage: ensemble [-h] [-v] [-f FILENAME] PROGRAM ...\n').
+
+start_process(PROG) :-
+	log_event("spawning program %d", PROG),
+	spawn(PROG, [], _).
+
+spawn_processes_from_file(FILENAME) :-
+	see(FILENAME),
+	forall(read_line(LINE), start_process(LINE)).
+
+
+				      

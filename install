@@ -2,8 +2,9 @@
 set -x -e
 mkdir -p ~/share/prolog/lib
 cp lib/*.pl ~/share/prolog/lib
-rm -f ~/bin/pi ~/bin/pc ~/bin/qp ~/bin/pb
+rm -f ~/bin/pi ~/bin/pc ~/bin/qp ~/bin/pb ~/bin/ensemble
 cp qp pb ~/bin
 cp pc1o ~/bin/pc
 cp pio ~/bin/pi
 cp pc.h ~/include
+cp ensemble ~/bin
