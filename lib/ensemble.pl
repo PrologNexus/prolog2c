@@ -35,3 +35,18 @@ mreadp(TERM) :-
 
 mterminate :-
 	write_message(1, mterminate).
+
+mremove(TERM) :-
+	write_message(1, mremove(TERM)).
+
+mforward(MSG) :-
+	write_message(1, MSG).
+
+mregister_relay :-
+	write_message(1, mregister_relay).
+
+mderegister_relay :-
+	write_message(1, mderegister_relay).
+
+mreceive(MSG) :-
+	read_message(0, MSG).
