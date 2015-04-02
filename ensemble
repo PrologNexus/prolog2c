@@ -36,9 +36,10 @@ usage :-
 		'usage: ensemble [-h] [-v] [-f FILENAME] [-p PROGRAM] [--] ...\n').
 
 spawn_processes :-
-	recorded(subprocess, PROG),
+	recorded(subprocess, PROG, REF),
 	log_event("spawning program %d", PROG),
 	spawn(PROG, [], _),
+	erase(REF),
 	fail.
 spawn_processes.
 
@@ -48,9 +49,5 @@ processes_from_file(FILENAME) :-
 	read_line(LINE),
 	( LINE == end_of_file
 	-> seen
-	; recordz(subprocess, LINE)),
-	fail.
-
-
-
-				      
+	; recordz(subprocess, LINE), fail
+	).
