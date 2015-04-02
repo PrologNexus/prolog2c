@@ -110,8 +110,12 @@ while test -n "$1"; do
 	-O0)
 	    OPTFLAGS=
 	    shift;;
-	-n|-compress-facts)
+	-compress-facts)
 	    PC_OPTIONS="${PC_OPTIONS} $1"
+	    shift;;
+	-n)
+	    PC_OPTIONS="${PC_OPTIONS} $1"
+	    OPTFLAGS="${OPTFLAGS} -Ilib"
 	    shift;;
 	-H)
 	    TMP1=`mktemp --tmpdir qp-XXXXXX`
