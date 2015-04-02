@@ -33,5 +33,5 @@ mreadp(TERM) :-
 	!,
 	REPLY = TERM.
 
-terminate :-
-	write_message(1, terminate).
+mterminate :-
+	write_message(1, mterminate).

@@ -42,7 +42,7 @@ process_message(mreadp(TERM), PID, FDOUT) :-
 	-> write_response(FDOUT, PID, TERM)
 	; write_response(FDOUT, PID, term_not_found)
 	).
-process_message(terminate, PID, _) :-
+process_message(mterminate, PID, _) :-
 	log_event("process %d terminated", [PID]),
 	disconnect(process(PID, _, _)).
 
