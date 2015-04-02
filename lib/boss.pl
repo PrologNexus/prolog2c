@@ -26,6 +26,8 @@ handle_request(process(PID, FDIN, FDOUT)) :-
 	log_event("process %d sends request: %q", [PID, MSG]),
 	process_message(MSG, PID, FDOUT).
 
+%% Note: mwrite will not be relayed if there is a process already
+%%       blocked for a matching read.
 process_message(mwrite(TERM), PID, _) :-
 	term_key(TERM, WKEY, RKEY),
 	( unblock_process(RKEY, TERM)
