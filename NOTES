@@ -35,6 +35,8 @@ NOTES											              -*- Org -*-
      number_codes/2.
 *** functor/3 (and others?) may exceed heap-reserve for large inputs
 ** Minor
+*** TODO ensemble: prefix msgs with special byte
+    - to detect invalid output of subprocesses.
 *** TODO lib/pp: handle declared meta-predicates
     - do goal-expansion for arguments declared with signature 0.
 *** TODO discontiguous/1 is not available in the interpreter
@@ -86,6 +88,9 @@ NOTES											              -*- Org -*-
     - at least as much as possible and sensible.
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
+** TODO use foreign_call put_string for printing strings in file:lib/writef.pl
+   - padout/1 can be replaced
+** TODO gcc docs suggest -fno-gcse when computed gotos are used
 ** TODO Add macros for trivial lib predicates
    | asserta/1                 | would need to introduce var |
    | assertz/1                 | s.a.                        |
@@ -398,12 +403,6 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
-** TODO implement lib/ensemble
-   - run list of processes (cmdline or from file) via lib/spawn.
-   - children can access rdb of "boss" process
-     erecorda, erecordz, eerase, eerase_all, erecorded.
-   - boss polls fds an performs requests.
-   - communication is via serialized terms (+ length).
 ** Allow serializing DB to and from file
 ** TODO Check if we can use file:lib/canon.pl for printing query results
 ** DONE if term_expansion/2 returns list, treat as separate (or no) terms
@@ -434,6 +433,7 @@ NOTES											              -*- Org -*-
 * Documentation
 ** TODO List differences to ISO in file:README
 ** DONE News
+   - current_prolog_flag: address_bits(N)
    - added support for "discontiguous" directive, changed
      "determinate" into an operator.
    - pb: handles "fail" mode (opposite of "success").
@@ -446,7 +446,7 @@ NOTES											              -*- Org -*-
      sub_atom/5, append/2, read_line/2, read_string/3,
      set_stream_position/2, close/2, chdir/1, getcwd/1
    - Added support for stream aliases "current_input",
-     "current-output", "user_input", "user_output" and "user_error".
+     "current_output", "user_input", "user_output" and "user_error".
    - Dropped peek/1
    - pi: Respects PC_LIBRARY_DIR.
    - removed "-I" option, added "-n"
@@ -477,6 +477,43 @@ NOTES											              -*- Org -*-
 * Tests
 ** TODO port file:broken-tests/r6rs-sem.pl
 ** TODO 32-bit tests are unnecessary on 32-bit platform
+** Examples for ensemble:
+   #+BEGIN_SRC prolog
+%%% producer example for ensemble -*- Prolog -*-
+
+:- ensure_loaded(library(ensemble)).
+
+main :-
+	between(1, 10, I),
+	sleep(1),
+	fwritef(user_error, "producer: %d\n", [I]),
+	mwrite(counter(I)),
+	fail.
+main :-
+	mterminate.
+
+%%% consumer example for ensemble -*- Prolog -*-
+
+:- ensure_loaded(library(ensemble)).
+
+main :-
+	repeat,
+	mread(counter(I)),
+	fwritef(user_error, "consumer: %d\n", [I]),
+	fail.
+
+%%% listener (relay) example for ensemble -*- Prolog -*-
+
+:- ensure_loaded(library(ensemble)).
+
+main :-
+	tell(yyy),
+	mregister_relay,
+	repeat,
+	mreceive(MSG),
+	writef("%q.\n", [MSG]),
+	fail.
+   #+END_SRC
 * Tools
 ** "qp" driver program
    - does the same as pc-autocompile.
@@ -485,6 +522,15 @@ NOTES											              -*- Org -*-
 ** Detect singleton variables
 ** Report unused predicates
 * Experimental
+** TODO investigate C compiler options
+   - check out ACOVEA: 
+     - http://merlin.fit.vutbr.cz/wiki/index.php/Acovea_tutorial
+     - http://www.gentoo-wiki.info/Acovea
+     - debian package acovea, use with "runacovea"
+   - compare settings with regard to speed, size and compile-time.
+   - find Feeley's genetic algorithm.
+   - check options used in gambit (as this also generates large
+     functions)
 ** DONE /pi-in-pc/ (make interpreter available in compiler)
    - use of term_expansion/2 is awkward, but handy.
    - allows arbitrary latent goals.
