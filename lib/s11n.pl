@@ -5,7 +5,7 @@
 
 
 serialize_term(X, S) :-
-	\+integer(X),		% needs to have a location
+	\+integer(X), X \= [],		% needs to have a location
 	foreign_call(serialize(X, S)).
 
 deserialize_term(S, X) :-
