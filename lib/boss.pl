@@ -26,20 +26,16 @@ handle_request(process(PID, FDIN, FDOUT)) :-
 	log_event("process %d sends request: %q", [PID, MSG]),
 	process_message(MSG, PID, FDOUT).
 
-%% Note: mwrite will not be relayed if there is a process already
-%%       blocked for a matching read.
 process_message(mwrite(TERM), PID, _) :-
 	term_key(TERM, WKEY, RKEY),
 	( unblock_process(RKEY, TERM)
-	; store_term(WKEY, PID, TERM),
-	  relay_message(mwrite(TERM))
+	; store_term(WKEY, PID, TERM)
 	).
 process_message(mread(TERM), PID, FDOUT) :-
 	term_key(TERM, WKEY, RKEY),
 	( recorded(WKEY, TERM, REF)
 	-> erase(REF),
 	  write_response(FDOUT, PID, TERM),
-	  relay_message(mremove(TERM))
 	; block_process(RKEY, TERM, PID, FDOUT)
 	).
 process_message(mreadp(TERM), PID, FDOUT) :-
@@ -55,18 +51,6 @@ process_message(mremove(TERM), PID, _) :-
 	term_key(TERM, WKEY, _),
 	( recorded(WKEY, TERM, REF),
 	  log_event("process %d removes term: %q", [PID, TERM]),
-	  erase(REF),
-	  relay_message(mremove(TERM))
-	; true
-	).
-process_message(mregister_relay, PID, FDOUT) :-
-	( recorded(relay, PID/_)
-	; log_event("process %d registers as relay", [PID]),
-	  recordz(relay, PID/FDOUT)
-	).
-process_message(mderegister_relay, PID, _) :-
-	( recorded(relay, PID/_, REF),
-	  log_event("process %d deregisters as relay", [PID]),
 	  erase(REF)
 	; true
 	).
@@ -104,10 +88,3 @@ log_event(STR, ARGS) :-
 	fwritef(user_error, STR, ARGS),
 	nl(user_error).
 log_event(_, _).
-
-relay_message(MSG) :-
-	recorded(relay, PID/FDOUT),
-	log_event("message relayed to process %d: %q", [PID, MSG]),
-	write_message(FDOUT, MSG),
-	fail.
-relay_message(_).

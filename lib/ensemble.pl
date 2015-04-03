@@ -7,6 +7,13 @@
 
 write_message(FD, MSG) :-
 	serialize_term(MSG, DATA),
+	write_raw_message(FD, DATA).
+
+read_message(FD, MSG) :-
+	read_raw_message(FD, DATA),
+	deserialize_term(DATA, MSG).
+
+write_raw_message(FD, DATA) :-
 	atom_length(DATA, LEN),
 	C1 is LEN >> 16,
 	C2 is (LEN >> 8) /\ 255,
@@ -14,11 +21,10 @@ write_message(FD, MSG) :-
 	write_bytes(FD, [C1, C2, C3]),
 	write_bytes(FD, DATA).
 
-read_message(FD, MSG) :-
+read_raw_message(FD, DATA) :-
 	read_bytes(FD, 3, [C1, C2, C3]),
 	LEN is (C1 << 24) \/ (C2 << 16) \/ C3,
-	read_bytes(FD, LEN, DATA),
-	deserialize_term(DATA, MSG).
+	read_bytes(FD, LEN, DATA).
 
 mwrite(TERM) :-
 	write_message(1, mwrite(TERM)).
@@ -35,18 +41,3 @@ mreadp(TERM) :-
 
 mterminate :-
 	write_message(1, mterminate).
-
-mremove(TERM) :-
-	write_message(1, mremove(TERM)).
-
-mforward(MSG) :-
-	write_message(1, MSG).
-
-mregister_relay :-
-	write_message(1, mregister_relay).
-
-mderegister_relay :-
-	write_message(1, mderegister_relay).
-
-mreceive(MSG) :-
-	read_message(0, MSG).
