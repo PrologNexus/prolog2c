@@ -27,6 +27,7 @@ LIBRARY_DIR=
 PC_SOURCEFILE=
 OFILE=
 PP=
+FORCE=
 
 function usage() {
     echo "usage: qp [OPTION ...] [FILRNAME ARGUMENT ...]"
@@ -45,6 +46,7 @@ function usage() {
     echo "  -O0               compile C code without any optimizations"
     echo "  -g                enable debug-information and call-tracing"
     echo "  -H                read source program from stdin"
+    echo "  -f                force recompilation"
     echo "  -purge [FILENAME ...]  delete cached executables for given programs"
     echo "  -key [FILENAME]   list cached executables for given programs"
     echo "  -pp PROGRAM       run PROGRAM as preprocessor"
@@ -74,6 +76,9 @@ while test -n "$1"; do
 	-o) 
 	    shift
 	    OFILE="$1"
+	    shift;;
+	-f)
+	    FORCE=1
 	    shift;;
 	-purge)
 	    shift
@@ -141,8 +146,12 @@ fi
 HASH=`md5sum "${PC_SOURCEFILE}" | sed -e 's/^\([a-f0-9]\+\).*$/\1/'`
 
 if test -z "${HASH}"; then
-    echo "invalid ${PC_SOURCEFILE}" 1>&2
+    echo "invalid source file: ${PC_SOURCEFILE}" 1>&2
     exit 1
+fi
+
+if test -n "$FORCE"; then
+    rm -f "${CACHEDIR}/${HASH}"
 fi
 
 if test \! -x "${CACHEDIR}/${HASH}"; then
