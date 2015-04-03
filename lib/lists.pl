@@ -24,7 +24,6 @@ memberchk(X, [_|R]) :- memberchk(X, R).
 
 is_list(List) :- nonvar(List), (List == []; List = [_|_]).
 
-
 %% from: https://sites.google.com/site/prologsite/home
 
 % 1.18 (**):  Extract a slice from a list
