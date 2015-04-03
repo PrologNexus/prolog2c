@@ -1,34 +1,32 @@
-#!/bin/scheme /grass/17/boot
-;;;; compile + run program -*- Scheme -*-
+#!/usr/bin/env tclsh
+### compile + run program -*- Tcl -*-
 
+set opts "-g -DTRACE -DDEBUG_GC"
+set moreopts ""
+set filename ""
+set args ""
+set i 0
 
-(require 'sh 'match)
+foreach x $argv {
+    switch $x {
+	-O {set opts "-O3 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -DUNSAFE"}
+	-m32 {set moreopts "$moreopts -m32"}
+	default {
+	    set filename $x
+	    set args [lrange $argv [expr $i + 1] $argc] 
+	    break
+	}
+    }
+    set i [expr $i + 1]
+}
 
-;(run-verbose #t)
-(define opts '("-g" "-DTRACE" "-DEBUG_GC"))
-(define moreopts '())
-(define args (command-line-arguments))
+set bfile [file tail $filename]
+set xfile [file rootname $bfile]
+set cfile "${xfile}.c"
 
-(let loop ()
-  (match args
-    (("-O" . _)
-     (pop! args)
-     (set! opts '("-O3" "-fomit-frame-pointer" "-fno-strict-aliasing" "-fwrapv" "-DUNSAFE"))
-     (loop))
-    (("-m32" . _)
-     (pop! args)
-     (push! "-m32" moreopts)
-     (loop))
-    (_ #f)))
+if {[file extension $filename] != ".c"} {
+    exec ./pc -q -n $filename -o $cfile >@ stdout
+}
 
-(define file (car args))
-(define bfile (basename file))
-(define xfile (strip-suffix bfile))
-(define cfile (replace-suffix "c" bfile))
-
-(let ((s (suffix file)))
-  (unless (string=? "c" s)
-    (run (./pc -n -q ,file -o ,cfile))))
-
-(run (gcc -std=gnu99 -Ilib -I. ,@opts ,@moreopts ,cfile -o ,xfile -lm -lrt))
-(exit (run* (,(string-append "./" xfile) ,@(cdr args))))
+eval exec gcc -std=gnu99 -Ilib -I. $opts $moreopts $cfile -o $xfile -lm -lrt >@ stdout
+eval exec "./${xfile}" $args >@ stdout
