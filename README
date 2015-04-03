@@ -1187,7 +1187,8 @@ Builtin predicates
 
         nth(?INDEX, +LIST, ?ELEM)
 
-    True if ELEM is the INDEXth element of LIST.
+    True if ELEM is the INDEXth element of LIST, counting starts at 1.
+    This predicate can be used to select or enumerate elements.
 
   - Calling code written in other languages
 
