@@ -3,7 +3,7 @@
 
 set opts "-g -DTRACE -DDEBUG_GC"
 set moreopts ""
-set filename ""
+set filename 0
 set args ""
 set i 0
 
@@ -18,6 +18,11 @@ foreach x $argv {
 	}
     }
     set i [expr $i + 1]
+}
+
+if {$filename == 0} {
+    puts "missing filename"
+    exit 1
 }
 
 set bfile [file tail $filename]
