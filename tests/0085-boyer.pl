@@ -196,7 +196,7 @@ equal(  not(P),
         ).
 equal(  nth(A,B),
         C
-        ) :- nth(A,B,C).
+        ) :- xnth(A,B,C).
 equal(  numberp(greatest_factor(X,Y)),
         not(and(or(zerop(Y),equal(Y,1)),
                 not(numberp(X))))            
@@ -336,9 +336,9 @@ mymember(X,append(A,B),or(member(X,A),member(X,B))) :- !.
 mymember(X,reverse(Y),member(X,Y)) :- !.
 mymember(A,intersect(B,C),and(member(A,B),member(A,C))).
 
-nth(zero,_,zero).
-nth([],I,if(zerop(I),[],zero)).
-nth(append(A,B),I,append(nth(A,I),nth(B,difference(I,length(A))))).
+xnth(zero,_,zero).
+xnth([],I,if(zerop(I),[],zero)).
+xnth(append(A,B),I,append(nth(A,I),nth(B,difference(I,length(A))))).
 
 xplus(xplus(X,Y),Z,
      xplus(X,xplus(Y,Z))) :- !.
