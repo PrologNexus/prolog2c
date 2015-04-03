@@ -47,7 +47,7 @@ macro(read(S, T), read2(S, T)).
 macro(enable_trace(F), foreign_call(enable_trace(F))).
 macro(getpid(PID), foreign_call(get_process_id(PID))).
 macro(sleep(SECS), foreign_call(sleep_for_seconds(SECS))).
-macro(set_random_seed(SEED), foreign_call(set_random_seed(SEED))).
+macro(set_random_state(SEED), foreign_call(set_random_seed(SEED))).
 macro(atom_hash(ATOM, HASH), foreign_call(atom_hash(ATOM, HASH))).
 macro(acyclic_term(X), foreign_call(acyclic_term(X))).
 macro(close(S), foreign_call(close_stream(S))).

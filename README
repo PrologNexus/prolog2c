@@ -1304,6 +1304,10 @@ Builtin predicates
     Extracts the sub-atom of ATOM of length LENGTZH, with BEFORE and
     AFTER characters before and after the extraction [ISO]
 
+        set_random_state(+INTEGER)
+
+    Sets the seed for the random/1 arithmetic expression.
+
   - Predicates that are only available in the interpreter
 
         trace                             

@@ -105,6 +105,7 @@ system_predicate(rename_file(+X, +Y)).
 system_predicate(delete_file(+X)).
 system_predicate(chdir(+X)).
 system_predicate(getcwd(-X)).
+system_predicate(set_random_state(+X)).
 
 system_predicate(append(+X), 'io').
 system_predicate(compare(-X, ?X, ?Z), 'misc').
