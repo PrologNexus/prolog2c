@@ -1185,6 +1185,10 @@ Builtin predicates
 
     True, if X is a list.
 
+        nth(?INDEX, +LIST, ?ELEM)
+
+    True if ELEM is the INDEXth element of LIST.
+
   - Calling code written in other languages
 
         foreign_call(CALL)

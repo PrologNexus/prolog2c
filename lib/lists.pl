@@ -43,3 +43,14 @@ slice([_|Xs],I,K,Ys) :-
 	I1 is I - 1,
 	K1 is K - 1,
 	slice(Xs,I1,K1,Ys).
+
+%   nth(Elem, List, Index) Possible Calling Sequences
+%   nth(+,+,-) or nth(-,+,+) or nth(-,+,-).
+%   True when Elem is the Indexth member of List.
+%   It may be used to select a particular element, or to find where some
+%   given element occurs, or to enumerate the elements and indices togther.
+
+nth(1, [Elem|_], Elem).
+nth(N, [_|List], Elem) :-
+	nth(M, List, Elem),
+	N is M+1.
