@@ -17,7 +17,7 @@ skip_shebang :-
 
 main :-
 	recordz(source_file, 'pc.pl'),
-	recordz(library_dir, ['.']),
+	recordz(library_dir, 'lib'),
 	recordz(output_file, '/dev/null'),
 	recordz(silent, yes),
 	compile_file('pc.pl').
