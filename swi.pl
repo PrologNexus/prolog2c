@@ -19,7 +19,7 @@ atom_hash(A, H) :-
 	atom_codes(A, AL),
 	atom_hash(0, AL, 0, H).
 atom_hash(I, AL, H, H) :-
-	(I > 100; AL == []), !.
+	(I >= 100; AL == []), !.
 atom_hash(I, [C|R], H1, H2) :-
 	H is (H1 xor ((H1 << 6) + (H1 >> 2) + C)) /\ 1073741823,
 	I2 is I + 1,
