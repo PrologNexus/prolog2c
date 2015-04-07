@@ -9,8 +9,14 @@ set xfile [file rootname $bfile]
 set cfile "${xfile}.c"
 
 if {[file extension $filename] != ".c"} {
-    exec ./pc -q -n $filename -o $cfile >@ stdout
+    if {[catch {exec ./pc -q -n $filename -o $cfile >@ stdout} result]} {
+	puts stderr $result
+	exit 1
+    }
 }
 
 eval exec gcc -std=gnu99 -Ilib -I. $opts $cfile -o $xfile -lm -lrt >@ stdout
-eval exec "./${xfile}" -:v -:d $args >@ stdout 2>@ stdout
+
+catch {eval exec "./${xfile}" -:v -:d $args >@ stdout 2>@ stdout} result
+puts $result
+

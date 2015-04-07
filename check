@@ -22,6 +22,11 @@ foreach x $argv {
     set i [expr $i + 1]
 }
 
+if {! [file exists $filename]} {
+    puts stderr "no such file"
+    exit 1
+}
+
 set bfile [file tail $filename]
 set rfile [file rootname $bfile]
 set xfile "tmp/${rfile}"
