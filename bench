@@ -1,35 +1,62 @@
-#!/bin/scheme /grass/17/boot
-;;;; run benchmark -*- Scheme -*-
+#!/usr/bin/env tclsh
+### run benchmark -*- Tcl -*-
+
+set opts "-O3 -DUNSAFE -fomit-frame-pointer -fno-strict-aliasing -fwrapv"
+set filename [lindex $argv 0]
+set args [lrange $argv 1 [llength $argv]]
+
+if {$filename == 0} {
+    puts "missing filename"
+    exit 1
+}
+
+if {![file exists $filename]} {
+    puts "no such file"
+    exit 1
+}
+
+set cfile "[exec mktemp --tmpdir bench-XXXXXX].c"
+set rfile [file rootname $filename]
+set optfile "${rfile}.opts"
+set xfile [exec mktemp --tmpdir bench-XXXXXX]
+set rtmp [exec mktemp --tmpdir bench-XXXXXX]
 
 
-(require 'sh 'match 'sort 'list-of)
+proc RunOnce {} {
+    global args xfile rtmp
+
+    if {[catch {eval exec /usr/bin/time -f %U -o $rtmp $xfile $args > /dev/null} result]} {
+	puts stderr $result
+	exit 1
+    }
+
+    set f [open $rtmp r]
+    set tm [read -nonewline $f]
+    close $f
+    file delete $rtmp
+    return $tm
+}
 
 
-(define args (command-line-arguments))
-(define opts '("-O3" "-DUNSAFE" "-fomit-frame-pointer" "-fno-strict-aliasing" "-fwrapv"))
-(define file (car args))
-(define bfile (basename file))
-(define xfile (strip-suffix bfile))
-(define cfile (replace-suffix "c" bfile))
-(define optfile (replace-suffix "opts" file))
+if {[catch {exec ./pc -q -n $filename -o $cfile >&@ stdout} result]} {
+    puts stderr $result
+    exit 1
+}
 
-;(run-verbose #t)
+if {[file exists $optfile]} {
+    set f [open $optfile r]
+    eval lappend opts [read -nonewline $f]
+    close $f
+}
 
-(define (bench)
-  (with-temporary-files
-   (lambda ()
-     (let ((tmp (temporary-file))
-	   (ctmp (temporary-file "tmp" "c"))
-	   (xtmp (temporary-file)))
-       (define (runonce)
-	 (run (/usr/bin/time -f %U -o ,tmp ,xtmp ,@(cdr args) >/dev/null))
-	 (with-input-from-file tmp read))
-       (run (./pc "-n" ,file -o ,ctmp -q))
-       (run (gcc -std=gnu99 -Ilib -I. ,ctmp -o ,xtmp -lm -lrt ,@opts
-		 ,(if (file-exists? optfile)
-		      (read-all optfile)
-		      "")))
-       (print (/ (apply + (butlast (cdr (sort (list-of (runonce) (i range 0 5)) <)))) 3))))))
+eval exec gcc -std=gnu99 -Ilib -I. $opts $cfile -o $xfile -lm -lrt >@ stdout
 
-(bench)
+set results {}
 
+for {set i 0} {$i < 5} {incr i} {
+    set r [RunOnce]
+    lappend results $r
+}
+
+set results [lsort -real $results]
+puts [expr ([lindex $results 1] + [lindex $results 2] + [lindex $results 3]) / 3]
