@@ -65,8 +65,12 @@ if {[file exists $expfile] == 0} {
 }
 
 if {$pi == 0} {
-    exec $pc -n -q $filename -o $cfile >@ stdout
-    eval exec gcc -std=gnu99 -Ilib -I. $cfile $opts $moreopts -o $xfile -lm -lrt >@ stdout
+    if {[catch {exec $pc -n -q $filename -o $cfile >&@ stdout} result]} {
+	puts stderr $result
+	exit 1
+    }
+
+    eval exec gcc -std=gnu99 -Ilib -I. $cfile $opts $moreopts -o $xfile -lm -lrt >&@ stdout
 }
 
 if {$pi} {

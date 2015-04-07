@@ -35,7 +35,7 @@ set xfile [file rootname $bfile]
 set cfile "${xfile}.c"
 
 if {[file extension $filename] != ".c"} {
-    if {[catch {exec ./pc -q -n $filename -o $cfile >@ stdout} result]} {
+    if {[catch {exec ./pc -q -n $filename -o $cfile >&@ stdout} result]} {
 	puts stderr $result
 	exit 1
     }
