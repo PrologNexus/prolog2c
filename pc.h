@@ -3808,13 +3808,20 @@ static int compare_terms(X x, X y)
 }
 
 
-static int ensure_string_buffer(int len)
+static int ensure_string_buffer(int len, XCHAR **ptr)
 {
   if(len >= string_buffer_length - 1) {
+    XWORD offset;
+
+    if(ptr) offset = *ptr - string_buffer;
+
     string_buffer = realloc(string_buffer, string_buffer_length *= 2);
     ASSERT(string_buffer, 
 	   "out of memory - can not increase size of string-buffer to " XWORD_OUTPUT_FORMAT, 
 	   (XWORD)string_buffer_length);
+
+    if(ptr) *ptr = (XCHAR *)(string_buffer + offset);
+
     return 1;
   }
 
@@ -3844,7 +3851,7 @@ static XCHAR *to_string(X x, int *size)
       XCHAR *ptr = string_buffer;
       
       while(!is_FIXNUM(x) && objtype(x) == PAIR_TYPE) {
-	ensure_string_buffer(len);
+	ensure_string_buffer(len, &ptr);
 	X c = deref(slot_ref(x, 0));
 	check_fixnum(c);
 	*(ptr++) = fixnum_to_word(c);
@@ -4787,9 +4794,7 @@ PRIMITIVE(read_string, X s, X len, X lst) {
     if((c = fgetc(fp)) == EOF) break;
 
     if(ptr >= string_buffer + string_buffer_length + 1) {
-      int here = ptr - string_buffer;
-      ensure_string_buffer(string_buffer_length + 1); /* force */
-      ptr = string_buffer + here;
+      ensure_string_buffer(string_buffer_length + 1, &ptr); /* force */
     }
 
     *(ptr++) = c;
@@ -4821,7 +4826,7 @@ PRIMITIVE(read_line, X s, X lst) {
     space -= n;
 
     if(space <= 1) {
-      ensure_string_buffer(string_buffer_length + 1); /* force */
+      ensure_string_buffer(string_buffer_length + 1, NULL); /* force */
       space = string_buffer_length - p;
     }
   }
