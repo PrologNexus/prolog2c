@@ -260,20 +260,24 @@
   (fluid-let ((gcc-compile-options (append gcc-compile-options pi-compile-options)))
     (make-program "pb.pl" "pb" "lib/flags.pl")))
 
-(define (bench)
-  (let ((tests (string-split (capture (ls benchmarks/*.pl)) "\n")))
+(define (bench . args)
+  (let ((tests (string-split (capture (ls benchmarks/*.pl)) "\n"))
+	(ct (optional args "")))
     (with-temporary-files
      (lambda ()
        (let ((out (temporary-file)))
 	 (for-each
 	  (lambda (fname)
 	    (run (echo ,fname >> ,out))
-	    (run (./bench ,fname "2>&1" "|" tee -a ,out)))
+	    (run (./bench ,ct ,fname "2>&1" "|" tee -a ,out)))
 	  tests)
-	 (run (echo "----------------------------------------" >> benchmarks/benchmarks.txt))
-	 (run (date >> benchmarks/benchmarks.txt))
-	 (run (git rev-parse --short HEAD >> benchmarks/benchmarks.txt))
-	 (run (cat ,out >> benchmarks/benchmarks.txt)))))))
+	 (run (echo "----------------------------------------" >> benchmarks/benchmarks-ct.txt))
+	 (run (date >> benchmarks/benchmarks-ct.txt))
+	 (run (git rev-parse --short HEAD >> benchmarks/benchmarks-ct.txt))
+	 (run (cat ,out >> benchmarks/benchmarks-ct.txt)))))))
+
+(define (bench-compile-times)
+  (bench "-c"))
 
 (define (clean)
   (run (rm -f pi_system_predicate.pl pi_call_primitive.pl pi_evaluate_op.pl pi pc1 pc2.c pc1.c pc1o
