@@ -7,27 +7,27 @@
 ## Change these to your liking: ############################################
 
 # don't forget a trailing slash
-PC_PREFIX=
+pc_prefix=
 PC_INCLUDEPATH=.
-OPTFLAGS="-O2 -fomit-frame-pointer -DNDEBUG"
-CC=gcc
-CACHEDIR="${HOME}/.qp"
+optflags="-O2 -fomit-frame-pointer -DNDEBUG"
+cc=gcc
+cachedir="${HOME}/.qp"
 
 ############################################################################
 
 set -e
 
 if test -z "$1"; then
-    exec ${PC_PREFIX}pi
+    exec ${pc_prefix}pi
 fi
 
-PC_OPTIONS=
-C_OPTIONS=
-LIBRARY_DIR=
-PC_SOURCEFILE=
-OFILE=
-PP=
-FORCE=
+pc_options=
+c_options=
+library_dir=
+pc_sourcefile=
+ofile=
+pp=
+force=
 
 function usage() {
     echo "usage: qp [OPTION ...] [FILRNAME ARGUMENT ...]"
@@ -41,7 +41,7 @@ function usage() {
     echo "  -compress-facts   compress blocks of facts with ground arguments"
     echo "  -xref             write cross-referencing information instead of"
     echo "                    compiling program"
-    echo "  -n                ignore PC_LIBRARY_DIR"
+    echo "  -n                ignore PC_library_dir"
     echo "  -C OPTION         pass OPTION to the C compiler"
     echo "  -O0               compile C code without any optimizations"
     echo "  -g                enable debug-information and call-tracing"
@@ -61,48 +61,48 @@ while test -n "$1"; do
 	    usage
 	    exit;;
 	-version)
-	    exec ${PC_PREFIX}pc -version;;
+	    exec ${pc_prefix}pc -version;;
 	-g)
-	    C_OPTIONS="${C_OPTIONS} -DTRACE -g"
-	    OPTFLAGS=
+	    c_options="${c_options} -DTRACE -g"
+	    optflags=
 	    shift;;
 	-C)
 	    shift
-	    C_OPTIONS="${C_OPTIONS} $1"
+	    c_options="${c_options} $1"
 	    shift;;
 	-xref|-i)
-	    XREF=$1
+	    xref=$1
 	    shift;;
 	-o) 
 	    shift
-	    OFILE="$1"
+	    ofile="$1"
 	    shift;;
 	-f)
-	    FORCE=1
+	    force=1
 	    shift;;
 	-purge)
 	    shift
-	    test -d "${CACHEDIR}" || exit
+	    test -d "${cachedir}" || exit
 	    if test -z "$1"; then
-		rm -f "${CACHEDIR}"/*
+		rm -f "${cachedir}"/*
 	    else
 		while test -n "$1"; do
-		    HASH=`md5sum "${1}" | sed -e 's/^\([a-f0-9]\+\).*$/\1/'`
-		    rm -f "${CACHEDIR}/${HASH}"
+		    hashcode=`md5sum "${1}" | sed -e 's/^\([a-f0-9]\+\).*$/\1/'`
+		    rm -f "${cachedir}/${hashcode}"
 		    shift
 		done
 	    fi
 	    exit;;
 	-key)
 	    shift
-	    test -d "${CACHEDIR}" || exit
+	    test -d "${cachedir}" || exit
 	    if test -z "$1"; then
-		ls "${CACHEDIR}"
+		ls "${cachedir}"
 	    else
 		while test -n "$1"; do
-		    HASH=`md5sum "${1}" | sed -e 's/^\([a-f0-9]\+\).*$/\1/'`
-		    if test -e "${CACHEDIR}/${HASH}"; then
-			echo ${HASH}
+		    hashcode=`md5sum "${1}" | sed -e 's/^\([a-f0-9]\+\).*$/\1/'`
+		    if test -e "${cachedir}/${hashcode}"; then
+			echo ${hashcode}
 		    fi
 		    shift
 		done
@@ -110,77 +110,77 @@ while test -n "$1"; do
 	    exit;;	    
 	-pp)
 	    shift
-	    PP="$1"
+	    pp="$1"
 	    shift;;
 	-O0)
-	    OPTFLAGS=
+	    optflags=
 	    shift;;
 	-compress-facts)
-	    PC_OPTIONS="${PC_OPTIONS} $1"
+	    pc_options="${pc_options} $1"
 	    shift;;
 	-n)
-	    PC_OPTIONS="${PC_OPTIONS} $1"
-	    OPTFLAGS="${OPTFLAGS} -Ilib"
+	    pc_options="${pc_options} $1"
+	    optflags="${optflags} -Ilib"
 	    shift;;
 	-H)
-	    TMP1=`mktemp --tmpdir qp-XXXXXX`
-	    PC_SOURCEFILE="${TMP1}.pl"
-	    cat >${PC_SOURCEFILE}
+	    tmp1=`mktemp --tmpdir qp-XXXXXX`
+	    pc_sourcefile="${tmp1}.pl"
+	    cat >${pc_sourcefile}
 	    shift;;
 	-*|*.o|*.c)
-	    C_OPTIONS="${C_OPTIONS} $1"
+	    c_options="${c_options} $1"
 	    shift;;
 	*)
-	    PC_SOURCEFILE="$1"
+	    pc_sourcefile="$1"
 	    shift
 	    break;;
     esac
 done
 
-test -n "${XREF}" && exec ${PC_PREFIX}pc ${XREF} ${PC_OPTIONS} ${PC_SOURCEFILE}
+test -n "${xref}" && exec ${pc_prefix}pc ${xref} ${pc_options} ${pc_sourcefile}
 
-if test \! -d "${CACHEDIR}"; then
-    mkdir "${CACHEDIR}"
+if test \! -d "${cachedir}"; then
+    mkdir "${cachedir}"
 fi
 
-HASH=`md5sum "${PC_SOURCEFILE}" | sed -e 's/^\([a-f0-9]\+\).*$/\1/'`
+hashcode=`md5sum "${pc_sourcefile}" | sed -e 's/^\([a-f0-9]\+\).*$/\1/'`
 
-if test -z "${HASH}"; then
-    echo "invalid source file: ${PC_SOURCEFILE}" 1>&2
+if test -z "${hashcode}"; then
+    echo "invalid source file: ${pc_sourcefile}" 1>&2
     exit 1
 fi
 
-if test -n "$FORCE"; then
-    rm -f "${CACHEDIR}/${HASH}"
+if test -n "$force"; then
+    rm -f "${cachedir}/${hashcode}"
 fi
 
-if test \! -x "${CACHEDIR}/${HASH}"; then
-    if test -n "${PP}"; then
-	TMP1=`mktemp --tmpdir qp-pp-XXXXXX`
-	NEWFILE="${TMP}.pl"
-	"$PP" <"${PC_SOURCEFILE}" >"${NEWFILE}"
-	PC_SOURCEFILE="${NEWFILE}"
+if test \! -x "${cachedir}/${hashcode}"; then
+    if test -n "${pp}"; then
+	tmp1=`mktemp --tmpdir qp-pp-XXXXXX`
+	newfile="${TMP}.pl"
+	"$pp" <"${pc_sourcefile}" >"${newfile}"
+	pc_sourcefile="${newfile}"
     fi
 
-    if test -n "${PC_LIBRARY_DIR}"; then
-	OPTFLAGS="${OPTFLAGS} -I${PC_LIBRARY_DIR}"
+    if test -n "${PC_library_dir}"; then
+	optflags="${optflags} -I${PC_library_dir}"
     fi
 
-    TMP1=`mktemp --tmpdir qp-XXXXXX`
-    CFILE="${TMP1}.c"
-    ${PC_PREFIX}pc -q "${PC_SOURCEFILE}" ${PC_OPTIONS} -o "${CFILE}"
-    "$CC" -std=gnu99 ${OPTFLAGS} -fno-strict-aliasing -fwrapv \
-	-I${PC_INCLUDEPATH} -I. "${CFILE}" -o "${CACHEDIR}/${HASH}" \
-	-lm -lrt ${C_OPTIONS} 
-    rm -f "${CFILE}"
+    tmp1=`mktemp --tmpdir qp-XXXXXX`
+    cfile="${tmp1}.c"
+    ${pc_prefix}pc -q "${pc_sourcefile}" ${pc_options} -o "${cfile}"
+    "$cc" -std=gnu99 ${optflags} -fno-strict-aliasing -fwrapv \
+	-I${PC_INCLUDEPATH} -I. "${cfile}" -o "${cachedir}/${hashcode}" \
+	-lm -lrt ${c_options} 
+    rm -f "${cfile}"
 
-    if test -n "${PP}"; then
-	rm -f "${NEWFILE}"
+    if test -n "${pp}"; then
+	rm -f "${newfile}"
     fi
 fi
 
-if test -n "$OFILE"; then
-    cp "${CACHEDIR}/${HASH}" "$OFILE"
+if test -n "$ofile"; then
+    cp "${cachedir}/${hashcode}" "$ofile"
 else
-    exec "${CACHEDIR}/${HASH}" "$@"
+    exec "${cachedir}/${hashcode}" "$@"
 fi
