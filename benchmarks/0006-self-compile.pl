@@ -3,7 +3,7 @@
 :- include('state.pl').
 :- include('terms.pl').
 :- include('index.pl').
-:- include('dcg.pl').
+:- include('lib/dcg.pl').
 :- include('macros.pl').
 :- include('process.pl').
 :- include('compile.pl').
@@ -11,6 +11,9 @@
 :- include('xref.pl').
 
 :- initialization(main).
+
+skip_shebang :-
+	(\+peek_char('#'); read_line(_)).
 
 main :-
 	recordz(source_file, 'pc.pl'),
