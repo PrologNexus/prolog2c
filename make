@@ -262,18 +262,19 @@
 	(ct (optional args "")))
     (with-temporary-files
      (lambda ()
-       (let ((out (temporary-file)))
+       (let ((out (temporary-file))
+	     (bfile (string-append "benchmarks/benchmarks" ct ".txt")))
 	 (for-each
 	  (lambda (fname)
 	    (run (echo ,fname >> ,out))
 	    (run (./bench ,ct ,fname "2>&1" "|" tee -a ,out)))
 	  tests)
-	 (run (echo "----------------------------------------" >> benchmarks/benchmarks-ct.txt))
-	 (run (date >> benchmarks/benchmarks-ct.txt))
-	 (run (git rev-parse --short HEAD >> benchmarks/benchmarks-ct.txt))
-	 (run (cat ,out >> benchmarks/benchmarks-ct.txt)))))))
+	 (run (echo "----------------------------------------" >> ,bfile))
+	 (run (date >> ,bfile))
+	 (run (git rev-parse --short HEAD >> ,bfile))
+	 (run (cat ,out >> ,bfile)))))))
 
-(define (bench-compile-times)
+(define (bench-compile-time)
   (bench "-c"))
 
 (define (clean)
