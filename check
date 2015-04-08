@@ -5,11 +5,17 @@ set opts "-g -DTRACE -DDEBUG_GC"
 set moreopts ""
 set filename ""
 set args ""
+set check_pc "./pc"
 set pi 0
-set i 0
 
-foreach x $argv {
+
+for {set i 0} {$i < $argc} {incr i} {
+    set x [lindex $argv $i]
     switch $x {
+	-pc {
+	    incr i
+	    set check_pc [lindex $argv $i]
+	}
 	-O {set opts "-O3 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -DUNSAFE"}
 	-m32 {set moreopts "$moreopts -m32"}
 	-i {set pi 1}
@@ -19,7 +25,6 @@ foreach x $argv {
 	    break
 	}
     }
-    set i [expr $i + 1]
 }
 
 if {! [file exists $filename]} {
@@ -44,10 +49,6 @@ if {[file exists "${file1}.timeout"]} {
 
 set expstatus 0
 set message "terminated with non-zero exit status"
-set pc "./pc"
-
-if {[info exists env(CHECK_PC)]} {set pc $env(CHECK_PC)}
-
 set expfile "${file1}.expected"
 
 if {[file exists $expfile] == 0} {
@@ -65,7 +66,7 @@ if {[file exists $expfile] == 0} {
 }
 
 if {$pi == 0} {
-    if {[catch {exec $pc -n -q $filename -o $cfile >&@ stdout} result]} {
+    if {[catch {exec $check_pc -n -q $filename -o $cfile >&@ stdout} result]} {
 	puts stderr $result
 	exit 1
     }

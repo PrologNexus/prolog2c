@@ -2,14 +2,16 @@
 ### run benchmark -*- Tcl -*-
 
 
-set opts "-DUNSAFE -fomit-frame-pointer -fno-strict-aliasing -fwrapv -O1 -fschedule-insns2 -fno-trapping-math -fno-math-errno"
+set opts "-DUNSAFE -O3 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -fno-trapping-math"
 set filename [lindex $argv 0]
 set args [lrange $argv 1 [llength $argv]]
 set bench_compile_times 0
 
-if {$filename == "-c"} {
+if {$filename == "-ct"} {
     set bench_compile_times 1
     set filename [lindex $args 0]
+    # uses options that are used in Makefile and qp
+    set opts "-DUNSAFE -fomit-frame-pointer -fno-strict-aliasing -fwrapv -fno-trapping-math -fschedule-insns2"
     set args [lrange $args 1 [llength $args]]
 }
 
@@ -41,13 +43,14 @@ proc RunOnce {} {
     set f [open $rtmp r]
     set tm [read -nonewline $f]
     close $f
-    file delete $rtmp
+    file delete -force $rtmp $xfile $cfile
     return $tm
 }
 
 
 if {[catch {exec ./pc -q -n $filename -o $cfile >&@ stdout} result]} {
     puts stderr $result
+    file delete -force $rtmp $xfile $cfile
     exit 1
 }
 
@@ -59,6 +62,7 @@ if {[file exists $optfile]} {
 
 if {$bench_compile_times} {
     eval exec /usr/bin/time -f %U gcc -std=gnu99 -Ilib -I. $opts $cfile -o $xfile -lm -lrt >&@ stdout
+    file delete -force $rtmp $xfile $cfile
     exit
 } else {
     eval exec gcc -std=gnu99 -Ilib -I. $opts $cfile -o $xfile -lm -lrt >&@ stdout
@@ -73,3 +77,4 @@ for {set i 0} {$i < 5} {incr i} {
 
 set results [lsort -real $results]
 puts [expr ([lindex $results 1] + [lindex $results 2] + [lindex $results 3]) / 3]
+file delete -force $rtmp $xfile $cfile
