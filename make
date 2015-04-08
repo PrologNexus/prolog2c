@@ -54,10 +54,7 @@
   '("-std=gnu99" "-I." "-fno-strict-aliasing" "-fwrapv" "-DPROFILE"))
 
 (define gcc-optimized-compile-options
-  '("-std=gnu99" "-I." "-fno-strict-aliasing" "-fwrapv" "-O2" "-fomit-frame-pointer"))
-
-(define gcc-reckless-compile-options
-  '("-std=gnu99" "-I." "-fno-strict-aliasing" "-fwrapv" "-O3" "-fomit-frame-pointer" "-DUNSAFE"))
+  '("-std=gnu99" "-I." "-fno-strict-aliasing" "-fwrapv" "-O1" "-fomit-frame-pointer" "-fschedule-insns2" "-fno-trapping-math"))
 
 (define manifest
   `("Makefile"

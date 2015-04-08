@@ -2,7 +2,7 @@
 ### run benchmark -*- Tcl -*-
 
 
-set opts "-O3 -DUNSAFE -fomit-frame-pointer -fno-strict-aliasing -fwrapv"
+set opts "-DUNSAFE -fomit-frame-pointer -fno-strict-aliasing -fwrapv -O1 -fschedule-insns2 -fno-trapping-math -fno-math-errno"
 set filename [lindex $argv 0]
 set args [lrange $argv 1 [llength $argv]]
 set bench_compile_times 0

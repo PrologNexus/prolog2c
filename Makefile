@@ -3,7 +3,7 @@
 
 CC = gcc
 CFLAGS = -std=gnu99 -I. -fno-strict-aliasing -fwrapv
-OPTFLAGS = -O2 -fomit-frame-pointer
+OPTFLAGS = -O1 -fomit-frame-pointer -fschedule-insns2 -fno-trapping-math
 SETTINGS = -DTRAIL_STACK_SIZE=10000000 -DCHOICE_POINT_STACK_SIZE=20000000 \
 	-DENVIRONMENT_STACK_SIZE=10000000 -DHEAP_SIZE=100000000
 LIBS = -lm

@@ -9,7 +9,7 @@
 # don't forget a trailing slash
 pc_prefix=
 PC_INCLUDEPATH=.
-optflags="-O2 -fomit-frame-pointer -DNDEBUG"
+optflags="-O1 -fomit-frame-pointer -DNDEBUG -fschedule-insns2 -fno-trapping-math"
 cc=gcc
 cachedir="${HOME}/.qp"
 
