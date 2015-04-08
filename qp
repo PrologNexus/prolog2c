@@ -29,6 +29,14 @@ ofile=
 pp=
 force=
 
+function compute_md5() {
+    if test `uname` == Darwin; then
+	hashcode=`md5 -q "$1"`
+    else
+	hashcode=`md5sum "${1}" | sed -e 's/^\([a-f0-9]\+\).*$/\1/'`
+    fi
+}
+
 function usage() {
     echo "usage: qp [OPTION ...] [FILRNAME ARGUMENT ...]"
     echo
@@ -87,7 +95,7 @@ while test -n "$1"; do
 		rm -f "${cachedir}"/*
 	    else
 		while test -n "$1"; do
-		    hashcode=`md5sum "${1}" | sed -e 's/^\([a-f0-9]\+\).*$/\1/'`
+		    compute_md5 "${1}"
 		    rm -f "${cachedir}/${hashcode}"
 		    shift
 		done
@@ -100,7 +108,7 @@ while test -n "$1"; do
 		ls "${cachedir}"
 	    else
 		while test -n "$1"; do
-		    hashcode=`md5sum "${1}" | sed -e 's/^\([a-f0-9]\+\).*$/\1/'`
+		    compute_md5 ${1}
 		    if test -e "${cachedir}/${hashcode}"; then
 			echo ${hashcode}
 		    fi
@@ -143,7 +151,7 @@ if test \! -d "${cachedir}"; then
     mkdir "${cachedir}"
 fi
 
-hashcode=`md5sum "${pc_sourcefile}" | sed -e 's/^\([a-f0-9]\+\).*$/\1/'`
+compute_md5 "${pc_sourcefile}"
 
 if test -z "${hashcode}"; then
     echo "invalid source file: ${pc_sourcefile}" 1>&2
