@@ -90,7 +90,6 @@ NOTES											              -*- Org -*-
 * Optimization opportunities
 ** TODO use foreign_call put_string for printing strings in file:lib/writef.pl
    - padout/1 can be replaced
-** TODO gcc docs suggest -fno-gcse when computed gotos are used
 ** TODO Add macros for trivial lib predicates
    | asserta/1                 | would need to introduce var |
    | assertz/1                 | s.a.                        |
@@ -444,7 +443,7 @@ NOTES											              -*- Org -*-
    - Added builtins put/2, tab/2, skip/2, get/2, get0/2, is_list/1,
      exists_directory/1, atomic_list_concat/2, split_string/4,
      sub_atom/5, append/2, read_line/2, read_string/3,
-     set_stream_position/2, close/2, chdir/1, getcwd/1
+     set_stream_position/2, close/2, chdir/1, getcwd/1, nth/3
    - Added support for stream aliases "current_input",
      "current_output", "user_input", "user_output" and "user_error".
    - Dropped peek/1
@@ -515,9 +514,7 @@ main :-
 	fail.
    #+END_SRC
 * Tools
-** "qp" driver program
-   - does the same as pc-autocompile.
-   - without args, exec's pi.
+** TODO Convert file:make to makefile, or use TCL
 * Diagnostics
 ** Detect singleton variables
 ** Report unused predicates
