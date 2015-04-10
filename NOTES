@@ -88,8 +88,7 @@ NOTES											              -*- Org -*-
     - at least as much as possible and sensible.
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
-** TODO use foreign_call put_string for printing strings in file:lib/writef.pl
-   - padout/1 can be replaced
+** TODO Check whether -fwhole-program makes a difference (or works at all)
 ** TODO Add macros for trivial lib predicates
    | asserta/1                 | would need to introduce var |
    | assertz/1                 | s.a.                        |
@@ -124,7 +123,7 @@ NOTES											              -*- Org -*-
    | keysort/2                 |                             |
    | sort/2                    |                             |
    | merge/3                   |                             |
-** DONE Insert cuts for predicates that are declared as determine
+** DONE Insert cuts for predicates that are declared as determinate
    - on exit, needs testing.
    - probably not for calls, as non-tail-call may fail.
 ** Results of memory profile for pc, compiling itself 
@@ -402,6 +401,7 @@ NOTES											              -*- Org -*-
    - perform determinacy-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
+** TODO add numbervars/3 (library predicate)
 ** Allow serializing DB to and from file
 ** TODO Check if we can use file:lib/canon.pl for printing query results
 ** DONE if term_expansion/2 returns list, treat as separate (or no) terms
@@ -412,7 +412,7 @@ NOTES											              -*- Org -*-
    - check trail-entries when unwinding trail and before exit.
 ** pb extensions
 *** TODO pb should understand "volatile"
-** Allow access to delay goals
+** Allow access to delayed goals
    - frozen(VAR, PTRARGS) :: return ptr/args pairs,
         non-deterministically
 ** Unicode
@@ -513,8 +513,6 @@ main :-
 	writef("%q.\n", [MSG]),
 	fail.
    #+END_SRC
-* Tools
-** TODO Convert file:make to makefile, or use TCL
 * Diagnostics
 ** Detect singleton variables
 ** Report unused predicates
