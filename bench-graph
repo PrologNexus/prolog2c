@@ -1,13 +1,14 @@
 #!/usr/bin/env bltwish
-### show graph of benchmark results
+### show graph of benchmark results -*- Tcl -*-
+
 
 package require BLT
 
-blt::graph .g
+
+blt::barchart .g
 
 set programs {}
 set modes {}
-
 
 set f [open [lindex $argv 0] r]
 set prg 0
@@ -92,11 +93,21 @@ set c 0
 foreach mode $modes {
     upvar 0 counts_$mode counts
     set color [lindex $colors $c]
-    .g element create $mode -label $mode -xdata $xdata -ydata $counts -color $color -fill $color
+    .g element create $mode -label $mode -xdata $xdata -ydata $counts -foreground $color
     incr c
 }
 
 bind . <Escape> exit
 pack .g
 pack configure .g -expand 1 -fill both
-.g xaxis configure -showticks 0
+
+proc ProgramName {bc tick} {
+    global programs
+    return [lindex $programs $tick]
+}
+
+.g configure -barmode aligned
+.g legend configure -position plotarea -anchor nw
+.g yaxis configure -title "Time (s)" -titlefont fixed-16 -subdivisions 10
+.g xaxis configure -rotate 90 -title Programs -command ProgramName -tickfont fixed-12 -titlefont fixed-16 \
+    -subdivisions 0
