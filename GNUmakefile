@@ -156,11 +156,12 @@ pb: pb.pl lib/flags.pl
 bench:
 	@rm -f tmp/bench.out
 	@for x in `ls benchmarks/*.pl`; do \
-	  echo $$x >> tmp/bench.out; \
+	  echo $$x | tee -a tmp/bench.out; \
 	  ./bench $(CT) $$x 2>&1 | tee -a tmp/bench.out; \
 	done
 	echo "----------------------------------------" >>benchmarks/benchmarks$(CT).txt
 	date >>benchmarks/benchmarks$(CT).txt
+	git rev-parse --short HEAD >>benchmarks/benchmarks$(CT).txt
 	cat tmp/bench.out >>benchmarks/benchmarks$(CT).txt
 
 bench-ct:
