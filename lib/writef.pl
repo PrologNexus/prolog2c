@@ -315,7 +315,7 @@ wf_act(114, [Thing,Times|Tail],Tail) :-	%   Repeatedly
 	writelots(Times, Thing).
 
 wf_act(115, [Head|Tail], Tail) :-	%   String
-	padout(Head).
+	foreign_call(put_string(current_output, Head)).
 
 wf_act(116, [Head|Tail], Tail) :-	%   Term
 	write(Head).
@@ -409,7 +409,7 @@ padout(String, Size, Just) :-
 	length(String, Length),
 	padout(Just, Size, Length, Left, Right),
 	tab(Left),
-	padout(String),
+	foreign_call(put_string(current_output, String)),
 	tab(Right).
 
 				%   padout(Just,Size,Length,Left,Right)
@@ -435,13 +435,3 @@ padout(c, Size, Length, Left, Right) :-
 
 getpad(A, B, A) :- A >= B, !.
 getpad(_, B, B).
-
-
-				%   padout(Str) writes a string.
-
-padout([Head|Tail]) :-
-	put(Head), !,
-	padout(Tail).
-padout([]).
-
-
