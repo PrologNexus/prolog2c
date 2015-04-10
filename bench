@@ -29,11 +29,11 @@ set cfile "[exec mktemp --tmpdir bench-XXXXXX].c"
 set rfile [file rootname $filename]
 set optfile "${rfile}.opts"
 set xfile [exec mktemp --tmpdir bench-XXXXXX]
-set rtmp [exec mktemp --tmpdir bench-XXXXXX]
+set rtmp "[exec mktemp --tmpdir bench-XXXXXX].out"
 
 
 proc RunOnce {} {
-    global args xfile rtmp
+    global args xfile rtmp cfile
 
     if {[catch {eval exec /usr/bin/time -f %U -o $rtmp $xfile $args > /dev/null} result]} {
 	puts stderr $result
@@ -43,14 +43,13 @@ proc RunOnce {} {
     set f [open $rtmp r]
     set tm [read -nonewline $f]
     close $f
-    file delete -force $rtmp $xfile $cfile
+    file delete -force $rtmp
     return $tm
 }
 
-
 if {[catch {exec ./pc -q -n $filename -o $cfile >&@ stdout} result]} {
     puts stderr $result
-    file delete -force $rtmp $xfile $cfile
+    file delete -force $rtmp $cfile
     exit 1
 }
 
