@@ -1430,6 +1430,14 @@ Directives
   Allows the clauses of the predicates indicated by PI to be
   discontiguous in the source program [ISO]
 
+       mode PREDICATE(MODE, ...), ...           [compiler]
+
+  Declares that one or more predicates are always called with certain
+  types of arguments. MODE should be one of the atoms `+`, `-` or `?`
+  and indicates whether the argument will always be instantiated,
+  non-instantiated or of unknown type. This allows the compiler to
+  produce somewhat more efficient code in certain situations.
+
        include(FILENAME)                        [compiler, interpreter]
 
   Include the contents of FILENAME at the current position in the
