@@ -1320,6 +1320,13 @@ Builtin predicates
 
     Sets the seed for the random/1 arithmetic expression.
 
+        numbervars(?TERM, +START, -END)
+
+    Replaces unbound variables in TERM with structures of the form
+    `$VAR'(INDEX), where INDEX is a numeric index, starting at START.
+    END will be bound to the next available index after numbering all
+    variables in TERM [ISO]
+
   - Predicates that are only available in the interpreter
 
         trace                             
