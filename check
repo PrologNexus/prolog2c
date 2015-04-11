@@ -16,7 +16,7 @@ for {set i 0} {$i < $argc} {incr i} {
 	    incr i
 	    set check_pc [lindex $argv $i]
 	}
-	-O {set opts "-O3 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -DUNSAFE"}
+	-O {set opts "-O1 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -fschedule-insns2"}
 	-m32 {set moreopts "$moreopts -m32"}
 	-i {set pi 1}
 	default {
