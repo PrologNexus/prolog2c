@@ -50,6 +50,11 @@ map_second([T|MORE], [V|REST]) :-
 	arg(2, T, V),
 	map_second(MORE, REST).
 
+make_list(0, _, []).
+make_list(N, X, [X|R]) :-
+	N2 is N - 1,
+	!,
+	make_list(N2, X, R).
 
 %%% locating files
 
@@ -60,3 +65,4 @@ locate_file(library(FN), RNAME) :-
 locate_file(NAME, RNAME) :- atom_concat(NAME, '.pl', RNAME), exists_file(RNAME), !.
 locate_file(NAME, NAME) :- exists_file(NAME), !.
 locate_file(NAME, _) :- error(['file not found: ', NAME]).
+
