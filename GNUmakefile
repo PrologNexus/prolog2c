@@ -131,7 +131,7 @@ embedded.c: embedded.pl pc1
 	./pc1 -n embedded.pl -o embedded.c
 
 
-pi_system-predicates.pl: g-s-p system-predicates
+pi_system_predicate.pl: g-s-p system-predicates
 	./g-s-p <system-predicates
 
 g-s-p: g-s-p.pl
