@@ -207,6 +207,8 @@ auto_include(peek_char, 2, 'iso').
 auto_include(put_char, 1, 'iso').
 auto_include(put_char, 2, 'iso').
 
+auto_include(numbervars, 3, 'numvars').
+
 auto_include(_, _, _) :- fail.
 
 
@@ -298,6 +300,7 @@ determinate_builtin(number_codes, 2).
 determinate_builtin(is_list, 1).
 determinate_builtin(atomic_list_concat, 2).
 determinate_builtin(split_string, 4).
+determinate_builtin(numbervars, 3).
 
 determinate_builtin(NAME, ARITY) :-
 	recorded(determinate_predicate, NAME/ARITY).
