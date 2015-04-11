@@ -22,6 +22,7 @@
 [1150,fx,meta_predicate]
 [1150,fx,discontiguous]
 [1150,fx,determinate]
+[1150,fx,mode]
 [900,fy,\+]
 [700,xfx,=:=]
 [700,xfx,=\=]

@@ -9,6 +9,6 @@ file:
 position(0)
 tty(false)
 file_no(?)
-file_name('tests/0121-streamprops.pl')
+file_name(tests/0121-streamprops.pl)
 input
 mode(read)
