@@ -25,7 +25,7 @@ benchmarks/0011-atom-index.pl
 3.76
 ----------------------------------------
   Sat Apr 11 17:31:56 CEST 2015
-  6af06f8 (sues always_inline)
+  6af06f8 (uses always_inline)
   benchmarks/0001-ecrc-call.pl
   5.823333333333333
   benchmarks/0002-ecrc-cp+backtrack.pl
