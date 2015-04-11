@@ -376,7 +376,7 @@ benchmarks/0011-atom-index.pl
 1.96
 ----------------------------------------
   Sat Apr 11 17:15:57 CEST 2015
-  611257f (-ffast-math and always_inline)
+  611257f (-ffast-math, temporarily used always_inline)
   benchmarks/0001-ecrc-call.pl
   0.66
   benchmarks/0002-ecrc-cp+backtrack.pl
