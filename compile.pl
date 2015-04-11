@@ -121,16 +121,69 @@ compile_head(HEAD, _, [], S1, S2) :-
 	register_literals(ARGS, LS, S1, S3),
 	gen_label(LBL, S3, S2),
 	emit(unify_args(LBL, LS)).	
-compile_head(HEAD, NS, BOUND, S1, S2) :-	
+compile_head(HEAD, NS, BOUND, S1, S2) :-
+	functor(HEAD, NAME, ARITY),
 	HEAD =.. [_|ARGS],
-	compile_unification(ARGS, NS, 0, [], BOUND, S1, S2).
+	get_head_modes(NAME, ARITY, MODES),
+	compile_unification(ARGS, MODES, NS, 0, [], BOUND, S1, S2).
 
-%% compile unification of argument
-compile_unification([], _, _, BOUND, BOUND, S, S).
-compile_unification([ARG|MORE], NS, INDEX, BOUND1, BOUND2, S1, S2) :-
+get_head_modes(NAME, ARITY, MODES) :-
+	recorded(mode_declaration, info(NAME, ARITY, MODES)).
+get_head_modes(_, ARITY, MODES) :-
+	make_list(ARITY, '?', MODES).
+
+	       
+%% compile unification of head-argument
+
+compile_unification([], _, _, _, BOUND, BOUND, S, S).
+compile_unification([ARG|MORE], ['+'|MODES], NS, INDEX, BOUND1, BOUND2, S1, S2) :-
+	\+atomic(ARG),
+	\+indexed_variable(ARG, _),
+	compile_ground_unification(ARG, NS, INDEX, BOUND1, BOUND, S1, S),
+	INDEX2 is INDEX + 1,
+	!,
+	compile_unification(MORE, MODES, NS, INDEX2, BOUND, BOUND2, S, S2).
+compile_unification([ARG|MORE], [_|MODES], NS, INDEX, BOUND1, BOUND2, S1, S2) :-
 	compile_unification1(ARG, NS, INDEX, BOUND1, BOUND, S1, S),
 	INDEX2 is INDEX + 1,
-	compile_unification(MORE, NS, INDEX2, BOUND, BOUND2, S, S2).
+	!,
+	compile_unification(MORE, MODES, NS, INDEX2, BOUND, BOUND2, S, S2).
+
+
+%% compile unification of non-atomic, non-var head-argument that is known
+%% (declared) to be ground
+
+compile_ground_unification(X, NS, I, B1, B2, S1, S2) :-
+	functor(X, NAME, ARITY),
+	X =.. [_|ARGS],
+	gensym('T', T1, S1, S3),
+	emit(argument(I, T1), check_nonvar(T1)),
+	( NAME == '.'
+	-> emit(pair(T1)),
+	  I1 = 0,		% start index
+	  S4 = S3
+	; register_literal(NAME, N, S3, S4),
+	  emit(structure(T1, N, ARITY, NAME/ARITY)),
+	  I1 = 1		% skip functor name
+	),
+	compile_argument_unifications(ARGS, I1, T1, NS, B1, B2, S4, S2).
+
+compile_argument_unifications([], _, _, _, B, B, S, S).
+compile_argument_unifications([ARG|MORE], I, T, NS, B1, B2, S1, S2) :-
+	indexed_variable(ARG, N),
+	\+memberchk(N, NS),	% singleton? then do nothing
+	I2 is I + 1,
+	compile_argument_unifications(MORE, I2, T, NS, B1, B2, S1, S2).
+compile_argument_unifications([ARG|MORE], I, T, NS, B1, B2, S1, S2) :-
+	gensym('T', TA, S1, S3),
+	gensym('T', TB, S3, S4),
+	emit(arg(T, I, TA)),
+	compile_term_for_unification(ARG, TB, B1, B3, S4, S5),
+	emit(unify(TA, TB)),
+	I2 is I + 1,
+	!,
+	compile_argument_unifications(MORE, I2, T, NS, B3, B2, S5, S2).
+
 
 %% distinguish cases: singleton or bound/unbound variable or term (either constant or containing variable)
 compile_unification1(X, NS, _, B, B, S, S) :-
@@ -166,7 +219,6 @@ compile_term_for_unification(X, DEST, BOUND, BOUND2, S, S) :-
 	    emit(make_variable(DEST), assign(N, DEST))
 	  )
 	).
-
 compile_term_for_unification(X, DEST, BOUND, BOUND, S1, S2) :-
 	ground_term(X), 	% literal term not containing variables?
 	register_literal(X, N, S1, S2),

@@ -24,6 +24,7 @@
 						  op(1150,fx,('meta_predicate')),
 						  op(1150,fx,('discontiguous')),
 						  op(1150,fx,('determinate')),
+						  op(1150,fx,('mode')),
 						  op(900,fy,'\\+'),
 						  op(700,xfx,'=:='),
 						  op(700,xfx,'=\\='),
