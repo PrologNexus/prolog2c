@@ -65,6 +65,16 @@ if {[file exists $expfile] == 0} {
     }
 }
 
+set setupfile "${file1}.setup"
+
+if {[file exists $setupfile]} {
+    # called with testname, pc and C optimizations and whether pi is used
+    if {[catch {exec bash $setupfile $check_pc "$opts $moreopts" $pi} result]} {
+	puts stderr $result
+	exit 1
+    }
+}
+
 if {$pi == 0} {
     if {[catch {exec $check_pc -n -q $filename -o $cfile >&@ stdout} result]} {
 	puts stderr $result
