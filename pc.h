@@ -1288,6 +1288,22 @@ static inline X check_output_port(X x)
 }
 
 
+static void check_nonvar_failed(XCHAR *name, int arity) 
+{
+  CRASH("%s/%d: mode declaration violated", name, arity);
+}
+
+
+#ifdef UNSAFE
+# define CHECK_NONVAR(x)
+#else
+# define CHECK_NONVAR(x)					\
+    { X x_ = (x);						\
+    if(!is_FIXNUM(x_) && is_VAR(x_))				\
+      check_nonvar_failed(CURRENT_NAME, CURRENT_ARITY); }
+#endif
+
+
 /// Management of the "shared term table"
 
 static void clear_shared_term_table()
