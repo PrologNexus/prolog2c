@@ -77,7 +77,7 @@ ifeq ($(MACHINE),x86_64)
 check-m32: pb
 	./run-checks -m32 -pc $(PC)
 
-check-pc32: pb
+check-pc32: pc32 pb
 	./run-checks -m32 -pc ./pc32
 else
 check-m32:
