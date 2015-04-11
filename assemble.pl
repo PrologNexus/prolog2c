@@ -248,11 +248,25 @@ assemble(var(R), S, S) :- gen('if(!is_variable(deref(', R, '))) FAIL;\n').
 assemble(nonvar(R), S, S) :- gen('if(is_variable(deref(', R, '))) FAIL;\n').
 assemble(atom(R), S, S) :- gen('if(!is_atom(deref(', R, '))) FAIL;\n').
 assemble(atomic(R), S, S) :- gen('if(!is_atomic(deref(', R, '))) FAIL;\n').
+assemble(pair(R), S, S) :- gen('if(!is_pair(deref(', R, '))) FAIL;\n').
 assemble(compound(R), S, S) :- gen('if(!is_compound(deref(', R, '))) FAIL;\n').
 assemble(float(R), S, S) :- gen('if(!is_float(deref(', R, '))) FAIL;\n').
 assemble(is_stream(R), S, S) :- gen('if(!is_stream(deref(', R, '))) FAIL;\n').
 assemble(db_reference(R), S, S) :- gen('if(!is_dbreference(deref(', R, '))) FAIL;\n').
 assemble(foreign_pointer(R), S, S) :- gen('if(!is_pointer(deref(', R, '))) FAIL;\n').
+
+assemble(check_nonvar(R), S, S) :- gen('CHECK_NONVAR(', R, ');\n').
+
+assemble(structure(R, N, A, _), S1, S2) :-
+	gensym('T', T, S1, S2),
+	gen('X ', T, '=deref(', R, ');\n'), % deref just once
+	gen('if(!is_structure(', T, ')||objsize(', T, ')!='),
+	gen(A, '||slot_ref(', T, ',0)!=literal_', N),
+	gen(') FAIL;\n').
+
+assemble(arg(R1, I, R2), S, S) :-
+	gen('X ', R2, '=slot_ref(', R1),
+	gen(',', I, ');\n').
 
 assemble(term_less(R1, R2), S, S) :- gen('if(compare_terms(deref(', R1, '),deref(', R2, ')) <= 0) FAIL;\n').
 assemble(term_not_less(R1, R2), S, S) :- gen('if(compare_terms(deref(', R1, '),deref(', R2, ')) > 0) FAIL;\n').
