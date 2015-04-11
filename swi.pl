@@ -3,6 +3,7 @@
 
 :- op(400,yfx,'\\\\').
 :- op(1150,fx,determinate).
+:- op(1150,fx,mode).
 
 command_line_arguments(ARGS) :-
 	current_prolog_flag(argv, X),
