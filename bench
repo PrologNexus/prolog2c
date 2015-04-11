@@ -2,20 +2,33 @@
 ### run benchmark -*- Tcl -*-
 
 
-set opts "-DUNSAFE -O3 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -fno-trapping-math"
-set filename [lindex $argv 0]
-set args [lrange $argv 1 [llength $argv]]
+set opts "-fomit-frame-pointer -fno-strict-aliasing -fwrapv -fno-trapping-math -fschedule-insns2"
+set fast_opts "-DUNSAFE -O3 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -fno-trapping-math -ffast-math"
+set filename ""
+set args {}
 set bench_compile_times 0
 
-if {$filename == "-ct"} {
-    set bench_compile_times 1
-    set filename [lindex $args 0]
-    # uses options that are used in Makefile and qp
-    set opts "-DUNSAFE -fomit-frame-pointer -fno-strict-aliasing -fwrapv -fno-trapping-math -fschedule-insns2"
-    set args [lrange $args 1 [llength $args]]
+
+proc Usage {} {
+    puts stderr "usage: bench [-ct] [-fast] FILENAME [ARGUMENT ...]"
+    exit
 }
 
-if {$filename == 0} {
+for {set i 0} {$i < $argc} {incr i} {
+    set arg [lindex $argv $i]
+
+    switch -- $arg {
+	-h Usage
+	-ct { set bench_compile_times 1 }
+	-fast { set opts $fast_opts }
+	default {
+	    set filename $arg
+	    set args [lrange $argv $i end]
+	    break
+	}
+}
+
+if {$filename == ""} {
     puts "missing filename"
     exit 1
 }

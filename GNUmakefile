@@ -167,6 +167,9 @@ bench:
 bench-ct:
 	$(MAKE) CT=-ct bench
 
+bench-fast:
+	$(MAKE) CT=-fast bench
+
 
 clean:
 	rm -f pi_system_predicate.pl pi_call_primitive.pl pi_evaluate_op.pl pi pc1 pc2.c pc1.c pc1o tmp/*.c
