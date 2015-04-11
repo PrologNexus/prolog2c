@@ -3,9 +3,9 @@
 #
 
 
-.PHONY: all clean bench bench-ct dist check-dist check check-pc1 check-pi tags check-m32 check-pc32 \
-	check-optimized check-pc1-optimized check-self-compile check-embedded full-check html upload \
-	install
+.PHONY: all clean bench bench-ct dist check-dist check check-pc1 check-pi tags check-m32 \
+	check-pc32 check-optimized check-pc1-optimized check-self-compile check-embedded \
+	full-check html upload install
 
 
 MACHINE := $(shell uname -m)
@@ -16,15 +16,16 @@ CT =
 
 LIBS = -lm -lrt
 
-PC_SOURCE_FILES = settings.pl support.pl state.pl terms.pl lib/dcg.pl index.pl macros.pl process.pl \
-	compile.pl assemble.pl main.pl xref.pl lib/flags.pl lib/lists.pl lib/misc.pl lib/write.pl \
-	lib/rdtok.pl lib/op.pl lib/rdb.pl lib/io.pl lib/findall.pl lib/sets.pl lib/read.pl lib/cdb.pl \
-	main.pl pc.pl
+PC_SOURCE_FILES = settings.pl support.pl state.pl terms.pl lib/dcg.pl index.pl macros.pl \
+	process.pl compile.pl assemble.pl main.pl xref.pl lib/flags.pl lib/lists.pl \
+	lib/misc.pl lib/write.pl lib/rdtok.pl lib/op.pl lib/rdb.pl lib/io.pl \
+	lib/findall.pl lib/sets.pl lib/read.pl lib/cdb.pl main.pl pc.pl
 PI_SOURCE_FILES = pi.pl lib/flags.pl lib/interp.pl lib/dcg.pl pi_system_predicate.pl \
 	pi_call_primitive.pl pi_evaluate_op.pl
 
-PC_COMPILE_OPTIONS = -DNO_CHECK_CYCLES -DTRAIL_STACK_SIZE=10000000 -DCHOICE_POINT_STACK_SIZE=20000000 \
-	-DENVIRONMENT_STACK_SIZE=10000000 -DHEAP_SIZE=100000000
+PC_COMPILE_OPTIONS = -DNO_CHECK_CYCLES -DTRAIL_STACK_SIZE=10000000 \
+	-DCHOICE_POINT_STACK_SIZE=20000000 -DENVIRONMENT_STACK_SIZE=10000000 \
+	-DHEAP_SIZE=100000000
 PI_COMPILE_OPTIONS = -DTRAIL_STACK_SIZE=10000000 -DCHOICE_POINT_STACK_SIZE=20000000 \
 	-DENVIRONMENT_STACK_SIZE=10000000 -DHEAP_SIZE=100000000
 #XXX probably overkill
@@ -32,11 +33,12 @@ PB_COMPILE_OPTIONS = -DTRAIL_STACK_SIZE=10000000 -DCHOICE_POINT_STACK_SIZE=20000
 	-DENVIRONMENT_STACK_SIZE=10000000 -DHEAP_SIZE=100000000
 CC_COMPILE_OPTIONS = -std=gnu99 -g -I. -fno-strict-aliasing -fwrapv -DTRACE -DDEBUG_GC
 CC_PROFILE_COMPILE_OPTIONS = -std=gnu99 -I. -fno-strict-aliasing -fwrapv -DPROFILE
-CC_OPTIMIZED_COMPILE_OPTIONS = -std=gnu99 -I. -fno-strict-aliasing -fwrapv -O1 -fomit-frame-pointer \
-	-fschedule-insns2 -fno-trapping-math
-MANIFEST = README qp lib/sorts.pl lib/ordset.pl lib/writef.pl lib/arith.pl lib/iso.pl lib/str.pl \
-	pc.c pc.h pi.c pb.c g-s-p.pl system-predicates pb.pl pi.pl lib/flags.pl lib/interp.pl \
-	pi_system_predicate.pl pi_call_primitive.pl pi_evaluate_op.pl Makefile $(PC_SOURCE_FILES)
+CC_OPTIMIZED_COMPILE_OPTIONS = -std=gnu99 -I. -fno-strict-aliasing -fwrapv -O1 \
+	-fomit-frame-pointer -fschedule-insns2 -fno-trapping-math
+MANIFEST = README qp lib/sorts.pl lib/ordset.pl lib/writef.pl lib/arith.pl lib/iso.pl \
+	lib/str.pl lib/numvars.pl pc.c pc.h pi.c pb.c g-s-p.pl system-predicates pb.pl \
+	pi.pl lib/flags.pl lib/interp.pl pi_system_predicate.pl pi_call_primitive.pl \
+	pi_evaluate_op.pl Makefile $(PC_SOURCE_FILES)
 
 
 all: pc1 pi pb
