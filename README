@@ -126,13 +126,15 @@ Usage
   It is advisable to add some optimization options to improve the
   performance of the compiled executables, recommended are typically
   
-    -O2 -fomit-frame-pointer -fno-strict-aliasing -fwrapv
+    -O1 -fomit-frame-pointer -fno-strict-aliasing -fwrapv
 
   The latter two will prevent the C compiler from taking advantage of
   some unintuitive interpretations of the C language and should be
   used when optimizations are enabled for code produced by the Prolog
   compiler. For development builds it is advisable to compile without
-  optimization options, as this reduces compilation time.
+  optimization options, as this reduces compilation time. If
+  performance is important, use -O3, but compiling will take much
+  longer.
 
   For your convenience a helper script named "qp" is included in the
   distribution that takes a Prolog source file and compiles and
