@@ -71,7 +71,11 @@ if {$pi == 0} {
 	exit 1
     }
 
-    eval exec gcc -std=gnu99 -Ilib -I. $cfile $opts $moreopts -o $xfile -lm -lrt >&@ stdout
+    if {[catch {eval exec gcc -std=gnu99 -Ilib -I. $cfile $opts $moreopts \
+		    -o $xfile -lm -lrt >&@ stdout} result] } {
+	puts stderr $result
+	exit 1
+    }
 }
 
 if {$pi} {
