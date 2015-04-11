@@ -17,7 +17,7 @@ PRIMITIVE(raw_read, X fd, X count, X bytes)
 {
   int fno = fixnum_to_word(check_fixnum(fd));
   XWORD n = fixnum_to_word(check_fixnum(count));
-  ensure_string_buffer(n);
+  ensure_string_buffer(n, NULL);
   size_t total = read(fno, string_buffer, n);
 
   if(total == -1)
