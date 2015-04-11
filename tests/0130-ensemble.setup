@@ -1,0 +1,11 @@
+#!/bin/bash
+### setup-script for 0130-ensemble test
+
+pc=$1
+cflags=$2
+
+$pc -n -q tests/consumer.pl -o tmp/consumer.c
+gcc -std=gnu99 $cflags -I. -Ilib tmp/consumer.c -o tmp/consumer -lrt -lm
+
+$pc -n -q tests/producer.pl -o tmp/producer.c
+gcc -std=gnu99 $cflags -I. -Ilib tmp/producer.c -o tmp/producer -lrt -lm
