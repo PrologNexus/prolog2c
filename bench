@@ -26,6 +26,7 @@ for {set i 0} {$i < $argc} {incr i} {
 	    set args [lrange $argv $i end]
 	    break
 	}
+    }
 }
 
 if {$filename == ""} {
