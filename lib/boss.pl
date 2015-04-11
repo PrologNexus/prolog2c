@@ -35,7 +35,7 @@ process_message(mread(TERM), PID, FDOUT) :-
 	term_key(TERM, WKEY, RKEY),
 	( recorded(WKEY, TERM, REF)
 	-> erase(REF),
-	  write_response(FDOUT, PID, TERM),
+	  write_response(FDOUT, PID, TERM)
 	; block_process(RKEY, TERM, PID, FDOUT)
 	).
 process_message(mreadp(TERM), PID, FDOUT) :-
