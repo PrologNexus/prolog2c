@@ -43,6 +43,10 @@ if {[file extension $filename] != ".c"} {
 
 eval exec gcc -std=gnu99 -Ilib -I. $opts $moreopts $cfile -o $xfile -lm -lrt >@ stdout
 
-catch {eval exec "./${xfile}" $args >@ stdout} result
+if {[catch {eval exec "./${xfile}" $args >@ stdout} result]} {
+    puts stderr $result
+    exit 1
+}
+
 puts $result
 
