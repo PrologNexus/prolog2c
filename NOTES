@@ -3,6 +3,8 @@ NOTES											              -*- Org -*-
 
 * Issues
 ** Major
+*** TODO ensemble: SIGCHLD from terminating child may cause EINTR
+    - specifically in poll(2), but just re-polling 
 *** TODO discontiguous doesn't work with "wildcard" PI
     - e.g. ":- discontiguous bar." with defs for bar/0 and bar/1.
     - matching of N/A when collecting clauses for one of the two
@@ -357,8 +359,10 @@ NOTES											              -*- Org -*-
 ** gprof reports very heavy use of make_var()
    - force inlining? (check whether -O2 inlines it)
 ** Deref arguments in advance
-** Use power-of-2 sized hash-tables for indexing
+** Use power-of-2 sized hash-tables everywhere
    - use binary-and instead of mod operation, supposed to be faster.
+   - symbol- and structure-dispatch tables, block-dispatch-tables (in
+     unify_block()), shared-term table
 ** If clause contains a single tail-call, CP-creation could be avoided
    - saves little, though.
 ** Remove unused predicates
@@ -488,44 +492,6 @@ NOTES											              -*- Org -*-
 * Tests
 ** TODO add edcg test, using lib/pp
 ** TODO port file:broken-tests/r6rs-sem.pl
-** TODO 32-bit tests are unnecessary on 32-bit platform
-** Examples for ensemble:
-   #+BEGIN_SRC prolog
-%%% producer example for ensemble -*- Prolog -*-
-
-:- ensure_loaded(library(ensemble)).
-
-main :-
-	between(1, 10, I),
-	sleep(1),
-	fwritef(user_error, "producer: %d\n", [I]),
-	mwrite(counter(I)),
-	fail.
-main :-
-	mterminate.
-
-%%% consumer example for ensemble -*- Prolog -*-
-
-:- ensure_loaded(library(ensemble)).
-
-main :-
-	repeat,
-	mread(counter(I)),
-	fwritef(user_error, "consumer: %d\n", [I]),
-	fail.
-
-%%% listener (relay) example for ensemble -*- Prolog -*-
-
-:- ensure_loaded(library(ensemble)).
-
-main :-
-	tell(yyy),
-	mregister_relay,
-	repeat,
-	mreceive(MSG),
-	writef("%q.\n", [MSG]),
-	fail.
-   #+END_SRC
 * Diagnostics
 ** Detect singleton variables
 ** Report unused predicates
