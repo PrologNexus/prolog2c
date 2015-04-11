@@ -56,8 +56,8 @@ pc32: pc1.c pc.h
 pc1o: pc1.c pc.h
 	$(CC) $(CC_OPTIMIZED_COMPILE_OPTIONS) $(PC_COMPILE_OPTIONS) pc1.c $(LIBS) -o $@
 
-pc2.c: pc1 pc2.c pc.h $(PC_SOURCE_FILES)
-	$(PC) -q pc.pl -o $@
+pc2.c: pc1 pc.h $(PC_SOURCE_FILES)
+	$(PC) -q -n pc.pl -o $@
 
 
 tags:
