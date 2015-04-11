@@ -374,3 +374,28 @@ benchmarks/0010-int-index.pl
 0.7533333333333333
 benchmarks/0011-atom-index.pl
 1.96
+----------------------------------------
+Sat Apr 11 17:15:57 CEST 2015
+611257f (-ffast-math and ALWAYS_INLINE)
+benchmarks/0001-ecrc-call.pl
+0.66
+benchmarks/0002-ecrc-cp+backtrack.pl
+1.7233333333333334
+benchmarks/0003-ecrc-index.pl
+2.47
+benchmarks/0004-ecrc-deref.pl
+0.18333333333333335
+benchmarks/0005-ecrc-cut.pl
+4.756666666666667
+benchmarks/0006-self-compile.pl
+11.086666666666666
+benchmarks/0007-pi.pl
+2.6366666666666667
+benchmarks/0008-ecrc-envs.pl
+3.4600000000000004
+benchmarks/0009-ecrc-unify.pl
+0.036666666666666674
+benchmarks/0010-int-index.pl
+0.75
+benchmarks/0011-atom-index.pl
+1.9066666666666665

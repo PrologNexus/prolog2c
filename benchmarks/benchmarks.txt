@@ -1,0 +1,50 @@
+----------------------------------------
+Sat Apr 11 17:25:08 CEST 2015
+611257f
+benchmarks/0001-ecrc-call.pl
+5.596666666666667
+benchmarks/0002-ecrc-cp+backtrack.pl
+3.97
+benchmarks/0003-ecrc-index.pl
+5.373333333333334
+benchmarks/0004-ecrc-deref.pl
+0.29666666666666663
+benchmarks/0005-ecrc-cut.pl
+11.1
+benchmarks/0006-self-compile.pl
+13.346666666666666
+benchmarks/0007-pi.pl
+5.19
+benchmarks/0008-ecrc-envs.pl
+10.623333333333333
+benchmarks/0009-ecrc-unify.pl
+0.09000000000000001
+benchmarks/0010-int-index.pl
+1.3266666666666669
+benchmarks/0011-atom-index.pl
+3.76
+----------------------------------------
+  Sat Apr 11 17:31:56 CEST 2015
+  6af06f8 (sues always_inline)
+  benchmarks/0001-ecrc-call.pl
+  5.823333333333333
+  benchmarks/0002-ecrc-cp+backtrack.pl
+  3.9766666666666666
+  benchmarks/0003-ecrc-index.pl
+  5.306666666666667
+  benchmarks/0004-ecrc-deref.pl
+  0.29
+  benchmarks/0005-ecrc-cut.pl
+  10.823333333333332
+  benchmarks/0006-self-compile.pl
+  13.043333333333331
+  benchmarks/0007-pi.pl
+  5.1499999999999995
+  benchmarks/0008-ecrc-envs.pl
+  10.796666666666667
+  benchmarks/0009-ecrc-unify.pl
+  0.09000000000000001
+  benchmarks/0010-int-index.pl
+  1.346666666666667
+  benchmarks/0011-atom-index.pl
+  3.8266666666666667
