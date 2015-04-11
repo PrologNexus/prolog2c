@@ -17,7 +17,7 @@ for {set i 0} {$i < $argc} {incr i} {
     }
 }
 
-set files [lsort -dictionary [glob tests/*.pl]]
+set files [lsort -dictionary [glob {tests/[0-9]*.pl}]]
 set ok 0
 set not_ok 0
 
