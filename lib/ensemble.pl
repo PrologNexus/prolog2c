@@ -41,3 +41,6 @@ mreadp(TERM) :-
 
 mterminate :-
 	write_message(1, mterminate).
+
+mhalt :-
+	write_message(1, mhalt).

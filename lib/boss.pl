@@ -54,7 +54,10 @@ process_message(mremove(TERM), PID, _) :-
 	  erase(REF)
 	; true
 	).
-
+process_message(mhalt, PID, _) :-
+	log_even("process %d requests halt", [PID]),
+	halt.
+		
 term_key(TERM, WKEY, RKEY) :-	
 	functor(TERM, N, A),
 	atomic_list_concat([N, '&', A], WKEY),
