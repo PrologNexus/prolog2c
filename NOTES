@@ -12,11 +12,12 @@ NOTES											              -*- Org -*-
     - exit_code doesn't seem to be initialized.
     - is TERMINATE(..., EXIT_SUCCESS) called?
 *** TODO 0046-arithmetic test fails in 32-bit pc
+    - seems to be a parsing problem.
 *** TODO Term-comparison doesn't handle cyclic structures, yet
 *** 0028-endless-tailcall crashes in pi
     - hits some limit, not sure which.
     - is in any case not keeping the memory-use constant.
-*** TODO [#B] Implementation of if-then-else seems to be broken
+*** Implementation of if-then-else seems to be broken
    - if-then stack gets out of balance, found here:
      call_primitive('->', 2, TERM) :-
 	!,
@@ -24,12 +25,18 @@ NOTES											              -*- Org -*-
 	execute(X) -> execute(Y). % parsed as (!, ...) -> execute(Y)
    - adding parens around last goal repaired the problem, but still
      this shouldn't happen.
+   - didn't occur lately, not sure if this is still relevant.
 *** 32-bit version can't tokenize fractional part of real if it doesn't fit into an integer
    - e.g.:
      main :- f(0.463647609000806).
 *** Everything is still rather slow and uses too much memory
    - see file:broken-tests/
-*** Once trail-stack reserve is reached, GC will loop if the trail can't be reduced
+*** TODO Once trail-stack reserve is reached, GC will loop if the trail can't be reduced
+    - remember trail_top when trailing triggers GC and avoid another
+      trailing-induced GC if the trail_top is not significantly below
+      the remembered one.
+    - still indicates insufficient trail-stack, show warning in
+      verbose mode.
 *** If heap is insufficient deref_term/4 will loop endlessly
    - also recorded/X, retract/1 and clause/X, atom_codes/2,
      number_codes/2.
@@ -37,15 +44,15 @@ NOTES											              -*- Org -*-
 ** Minor
 *** TODO ensemble: prefix msgs with special byte
     - to detect invalid output of subprocesses.
-*** TODO lib/pp: handle declared meta-predicates
-    - do goal-expansion for arguments declared with signature 0.
-*** TODO discontiguous/1 is not available in the interpreter
+*** TODO The interpreter should accept but ignore some compiler-specific directives
+    - determinate, mode, meta_predicate
+*** discontiguous/1 is not available in the interpreter
 *** TODO standard-ports should have some initial data
     - alias, type, mode.
 *** '$call' doesn't check argc nor whether argument is ptr
     - needs to be safer, should it be exposed (or "meta_predicate"
       is made official)
-*** pi: call/1 should probably handle X^Y terms (with quantifiers)
+*** pi: call/1 should probably handle X^Y terms (quantified)
 *** split_string/4 does not retain empty strings
     - this is incompatible to SWIs version.
 *** TODO Eliminate redundant switch-operations
@@ -62,11 +69,11 @@ NOTES											              -*- Org -*-
 *** Fresh checkout often leaves file:g-s-p.pl uncompiled
     - only rebuilds g-s-p.c, but that might not be sufficient.
     - but "make clean" should be sufficient.
-*** Failure in term_expansion/2 will simply be ignored
+    - still the case?
 *** The output of TRACE_TAILCALL() is somewhat confusing
     - Not sure if arguments output reflects the correct state.
     - can we get rid of this?
-*** Erasing a db-entry that is already marked is currently ignored
+*** Erasing a db-entry that is already marked as erased is currently ignored
    - actual deletion will happen on next GC.
    - should we throw an error?
    - note that 0069-cdb deletes twice: first the retract of hello(X)
@@ -88,6 +95,7 @@ NOTES											              -*- Org -*-
     - at least as much as possible and sensible.
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
+** TODO Find a more efficient way of compiling unifications
 ** TODO Check whether -fwhole-program makes a difference (or works at all)
 ** TODO Add macros for trivial lib predicates
    | asserta/1                 | would need to introduce var |
@@ -123,9 +131,7 @@ NOTES											              -*- Org -*-
    | keysort/2                 |                             |
    | sort/2                    |                             |
    | merge/3                   |                             |
-** DONE Insert cuts for predicates that are declared as determinate
-   - on exit, needs testing.
-   - probably not for calls, as non-tail-call may fail.
+** TODO Add mode-declarations for internally used predicates
 ** Results of memory profile for pc, compiling itself 
    - commit f254da345c8df3997b56c3d84dd1e35cdfe12e0d
    $start/0                                 C:    88   T:     0   E:     8   H:    56 
@@ -351,8 +357,8 @@ NOTES											              -*- Org -*-
 ** gprof reports very heavy use of make_var()
    - force inlining? (check whether -O2 inlines it)
 ** Deref arguments in advance
-** Use power-of-2 sized hash-tables 
-   - use binary-and instead of mod operation.
+** Use power-of-2 sized hash-tables for indexing
+   - use binary-and instead of mod operation, supposed to be faster.
 ** If clause contains a single tail-call, CP-creation could be avoided
    - saves little, though.
 ** Remove unused predicates
@@ -363,18 +369,21 @@ NOTES											              -*- Org -*-
      - add pseudo-instructions for marking start + end of predicate
        definition.
 ** Peephole optimization of pseudo-instructions
+   - needs thorough analysis of occurring patterns.
 ** Environment trimming
    - sort variables by lifetime (reversed) and trim env_top after last use.
    - may only be applicable when env_top didn't change.
 ** Add "determinate" declarations and green cuts in library code
    - profile to find suitable points of improvement.
 ** Special-case calls of primitives that are known to always succeed
+   - avoids test for failure.
 ** DONE Take advantage of timestamps when binding vars in unify()
    - implemented in branch /bind-younger/ and seems to work, but trail
      is not slightly smaller.
 ** writeq/1 could use foreign_call(basic_writeq(X)) for atoms
-   - but the name needs to be classified anyway, because of the possibly
-     required space in front of it.
+   - but the name needs to be classified anyway, because of the
+     possibly required space in front of it (or embedded quotes, which
+     must be doubled)
 ** Arithmetic
    - deref all vars just once at start.
    - track types, use unboxed math.
@@ -393,15 +402,14 @@ NOTES											              -*- Org -*-
 ** current_op/3 needs fast path when operator name is known
    - could use single-bucket db, with unififcation inside
      db_find/db_next (provided, we implement matching in file:pc.h)
-** Deterministic goal in condition of if-then-else can drop some of the CP dance
+** Determinate goal in condition of if-then-else can drop some of the CP dance
    - same for '\\+'/2, once/1
    - fail could actually just perform a jump, perhaps redefine FAIL
      temporarily (or use intermediate macro).
 ** Analyze program before compiling to pseudo-instructions
-   - perform determinacy-analysis for all code.
+   - perform determinateness-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
-** TODO add numbervars/3 (library predicate)
 ** Allow serializing DB to and from file
 ** TODO Check if we can use file:lib/canon.pl for printing query results
 ** DONE if term_expansion/2 returns list, treat as separate (or no) terms
@@ -430,6 +438,11 @@ NOTES											              -*- Org -*-
    - different handling of put_code/put_byte, get_code/get_byte and
      peek_code/peek_byte
 * Documentation
+** TODO Document non-autoload libraries
+   - only roughly, not in detail.
+   - libs: arrays, assoc, bits, canon, heaps, logarr, map, path, pp,
+     queues, rbtrees, s11n, tree23, numvars
+   - explain usage, mention autoloads.
 ** TODO List differences to ISO in file:README
 ** DONE News
    - current_prolog_flag: address_bits(N)
@@ -469,11 +482,11 @@ NOTES											              -*- Org -*-
    | write_canonical/1, write_canonical/2         |                                                |
    | write_term/2, write_term/3                   |                                                |
 ** ISO-extensions ISO DTR 13211-1:2006
-   | numbervars/3                   |                                           |
    | log/2, atan/2, asin/1, acos/1, | arithmetic expressions                    |
    | epsilon/0, pi/0, e/0           | arithmetic constants                      |
    | ^/2                            | integer exponentation (error on overflow) |
 * Tests
+** TODO add edcg test, using lib/pp
 ** TODO port file:broken-tests/r6rs-sem.pl
 ** TODO 32-bit tests are unnecessary on 32-bit platform
 ** Examples for ensemble:
