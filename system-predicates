@@ -209,7 +209,7 @@ system_predicate(stream_property(+X, ?Y), 'io').
 system_predicate(set_stream_position(+X, +Y), 'io').
 system_predicate(slice(?X, +Y, +Z, ?Q), 'lists').
 system_predicate(nth(?X, +Y, ?Z), 'lists').
-system_predicate(numvars(?X, +Y, -Z), 'numvars').
+system_predicate(numbervars(?X, +Y, -Z), 'numvars').
 
 arithmetic_operation(- X).
 arithmetic_operation(+ X).
