@@ -182,7 +182,7 @@ Interpreter
   Files consulted or included are located relative to the current
   working directory. File-references of the form `library(NAME)` are
   converted into a path relative to the current library directory,
-  which is either `lib` or the value of the environment variable
+  which is either `./lib` or the value of the environment variable
   "PC\_LIBRARY\_DIR", if it is defined.
 
   In contrast to the compiler, the clause-database represents the
@@ -202,8 +202,8 @@ Debugging and error messages
   writes information about predicate-calls, -exits, -fails and redo's
   during execution to stderr. You can enable this trace mode by
   compiling the generated C code with the "-DTRACE" option given to
-  the C compiler. Once compiled in trace mode you can run the
-  executable with "-:d" to produce actual the execution-trace.
+  the C compiler. Once compiled in trace mode you can run the binary
+  with "-:d" to produce a trace on stderr as the program is executing.
 
   The compiler does very little error-reporting, mostly to simplify
   the implementation. Syntactical errors will produce a parser error,
@@ -212,10 +212,21 @@ Debugging and error messages
   caught by user code using catch/3. 
 
 
+Support syntax
+--------------
+
+  ?-Prolog fully supports the ISO Prolog syntax. Naked variables in
+  goals are not automatically converted to `call(VAR)`, and will
+  result in a compiler error if used.
+
+  DCG rules, including semicontext notation, are fully supported.
+
+
 Builtin predicates
 ------------------
 
-  DCG rules, including semicontext notation, are supported.
+  All predicates listed here are either built-in or provided in
+  "auto-included" libraries in the current library directory.
 
   - Control structures
 
