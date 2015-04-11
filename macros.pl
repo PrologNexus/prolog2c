@@ -304,4 +304,4 @@ determinate_builtin(NAME, ARITY) :-
 
 
 is_meta_predicate(NAME, ARITY, SIG) :-
-	recorded(meta_predicate_signature, m(NAME, ARITY, SIG)).
+	recorded(meta_signature, info(NAME, ARITY, SIG)).

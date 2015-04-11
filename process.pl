@@ -153,54 +153,47 @@ process_directive(verbatim(STR), S, S) :-
 	recordz(verbatim_code, STR).
 
 process_directive(determinate(PI), S, S) :-
-	register_determinate_predicates(PI).
+	register_predicate_annotation(PI, determinate_predicate).
 
 process_directive(op(P, A, N), S, S) :- op(P, A, N).
 
 process_directive(meta_predicate(META), S, S) :-
-	register_meta_predicate(META).
+	register_predicate_annotation(META, meta_signature).
 
 process_directive(public(PI), S, S) :-
-	register_public_predicates(PI).
+	mark_predicate_indicators(PI, public_predicate).
 
 process_directive(discontiguous(PI), S, S) :-
-	register_discontiguous_predicates(PI).
+	mark_predicate_indicators(PI, discontiguous_predicate).
+
+process_directive(mode(MODES), S, S) :-
+	register_predicate_annotation(MODES, mode_declaration).
 
 process_directive(DECL, STATE, STATE) :-
 	error(['unrecognized directive: ', DECL]).
 
 
-%% register comma-separated list of meta-predicates
+%% register comma-separated list of predicates with annotated arguments
 
-register_meta_predicate((X, Y)) :-
-	register_meta_predicate(X),
-	register_meta_predicate(Y).
-register_meta_predicate(X) :-
+register_predicate_annotation((X, Y), LABEL) :-
+	register_predicate_annotation(X, LABEL),
+	register_predicate_annotation(Y, LABEL).
+register_predicate_annotation(X, LABEL) :-
 	functor(X, NAME, ARITY),
-	X =.. [_|SIG],
-	recordz(meta_predicate_signature, m(NAME, ARITY, SIG)).
-register_meta_predicate(X) :-
-	error(['invalid meta_predicate declaration', X]).
+	X =.. [_|ANN],
+	recordz(LABEL, info(NAME, ARITY, ANN)).
+register_predicate_annotation(X) :-
+	error(['invalid predicate annotation: ', X]).
 
 
-%% mark discontiguous predicates
+%% register list of predicate-indicators with some mark
 
-register_discontiguous_predicates((X, Y)) :-
-	register_discontiguous_predicates(X),
-	register_discontiguous_predicates(Y).
-register_discontiguous_predicates(PI) :-
+mark_predicate_indicators((X, Y), MARK) :-
+	mark_predicate_indicators(X, MARK),
+	mark_predicate_indicators(Y, MARK).
+mark_predicate_indicators(PI, MARK) :-
 	(canonical_pi(PI, N/A); error(['invalid predicate-indicator: ', PI])),
-	recordz(discontiguous_predicate, N/A).
-
-
-%% register determinate predicates
-
-register_determinate_predicates((X, Y)) :-
-	register_determinate_predicates(X),
-	register_determinate_predicates(Y).
-register_determinate_predicates(PI) :-
-	(canonical_pi(PI, N/A); error(['invalid predicate-indicator: ', PI])),
-	recordz(determinate_predicate, N/A).
+	recordz(MARK, N/A).
 
 
 %% compile a block of clauses
@@ -270,13 +263,6 @@ report_unresolved_calls.
 
 
 %% add initialization-code to record public predicates
-
-register_public_predicates((PI1, PI2)) :-
-	register_public_predicates(PI1),
-	register_public_predicates(PI2).
-register_public_predicates(PI) :-
-	(canonical_pi(PI, N/A); error(['invalid predicate-indicator: ', PI])),
-	recordz(public_predicate, N/A).
 
 export_public_predicates :-
 	recorded(public_predicate, NA),
