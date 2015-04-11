@@ -33,6 +33,7 @@ foreach test $files {
 	if {[catch {exec ./pb -q $bindfile -o tmp/$testname >@ stdout} result]} {
 	    puts stderr $result
 	    set skip 1
+	    incr not_ok
 	}
     }
 
@@ -48,3 +49,5 @@ foreach test $files {
 	}
     }
 }
+
+exit $not_ok
