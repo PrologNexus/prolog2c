@@ -125,6 +125,12 @@
 
 #define EXIT_EXCEPTION   (-1)
 
+#if defined(__GNUC__) || defined(__clang__)
+# define ALWAYS_INLINE     static __attribute__((always_inline))
+#else
+# define ALWAYS_INLINE     static inline
+#endif
+
 
 /// types
 
@@ -629,61 +635,74 @@ static XCHAR *type_names[] = {
 #define port_file(p)  (((PORT_BLOCK *)(p))->fp)
 
 
-static inline int is_number(X x)
+ALWAYS_INLINE int is_number(X x)
 {
   return is_FIXNUM(x) || is_FLONUM(x);
 }
 
 
-static inline int is_compound(X x)
+ALWAYS_INLINE int is_compound(X x)
 {
   return !is_FIXNUM(x) && (is_PAIR(x) || is_STRUCTURE(x));
 }
 
 
-static inline int is_in_fixnum_range(XWORD n) {
+ALWAYS_INLINE int is_in_fixnum_range(XWORD n) {
   return (n & XWORD_SIGN_BIT) == ((n & XWORD_TOP_BIT) << 1);
 }
 
 
-static inline int is_atom(X x)
+ALWAYS_INLINE int is_atom(X x)
 {
   return !is_FIXNUM(x) && (is_END_OF_LIST(x) || is_SYMBOL(x));
 }
 
 
-static inline int is_atomic(X x)
+ALWAYS_INLINE int is_atomic(X x)
 {
   return is_FIXNUM(x) || is_END_OF_LIST(x) || is_FLONUM(x) || is_SYMBOL(x) || is_PORT(x);
 }
 
 
-static inline int is_variable(X x)
+ALWAYS_INLINE int is_variable(X x)
 {
   return !is_FIXNUM(x) && is_VAR(x);
 }
 
 
-static inline int is_stream(X x)
+ALWAYS_INLINE int is_pair(X x)
+{
+  return !is_FIXNUM(x) && is_PAIR(x);
+}
+
+
+ALWAYS_INLINE int is_stream(X x)
 {
   return !is_FIXNUM(x) && is_PORT(x);
 }
 
 
-static inline int is_float(X x)
+ALWAYS_INLINE int is_float(X x)
 {
   return !is_FIXNUM(x) && is_FLONUM(x);
 }
 
 
-static inline int is_dbreference(X x)
+ALWAYS_INLINE int is_dbreference(X x)
 {
   return !is_FIXNUM(x) && is_DBREFERENCE(x);
 }
 
-static inline int is_pointer(X x)
+
+ALWAYS_INLINE int is_pointer(X x)
 {
   return !is_FIXNUM(x) && is_POINTER(x);
+}
+
+
+ALWAYS_INLINE int is_structure(X x)
+{
+  return !is_FIXNUM(x) && is_STRUCTURE(x);
 }
 
 
@@ -1152,7 +1171,7 @@ static void check_type_failed(XWORD t, X x)
 }
 
 
-static inline X check_type(XWORD t, X x)
+ALWAYS_INLINE X check_type(XWORD t, X x)
 {
 #ifndef UNSAFE
   if(is_FIXNUM(x) || objtype(x) != t)
@@ -1163,7 +1182,7 @@ static inline X check_type(XWORD t, X x)
 }
 
 
-static inline X check_fixnum(X x)
+ALWAYS_INLINE X check_fixnum(X x)
 {
 #ifndef UNSAFE
   if(!is_FIXNUM(x))
@@ -1183,7 +1202,7 @@ static void check_number_failed(X x)
 }
 
 
-static inline X check_number(X x)
+ALWAYS_INLINE X check_number(X x)
 {
 #ifndef UNSAFE
   if(!is_FIXNUM(x) && objtype(x) != FLONUM_TYPE)
@@ -1234,7 +1253,7 @@ static void check_atomic_failed(X x)
 }
 
 
-static inline X check_atomic(X x)
+ALWAYS_INLINE X check_atomic(X x)
 {
 #ifndef UNSAFE
   if(!is_FIXNUM(x) && !is_atomic(x))
@@ -1256,13 +1275,13 @@ static inline X check_atomic(X x)
 #define check_type_POINTER(x)  check_type(POINTER_TYPE, (x))
 
 
-static inline int is_port_and_direction(X x, X d)
+ALWAYS_INLINE int is_port_and_direction(X x, X d)
 {
   return !is_FIXNUM(x) && is_PORT(x) && slot_ref(x, 1) == d;
 }
 
 
-static inline X check_input_port(X x)
+ALWAYS_INLINE X check_input_port(X x)
 {
 #ifndef UNSAFE
   check_type_PORT(x);
@@ -1275,7 +1294,7 @@ static inline X check_input_port(X x)
 }
 
 
-static inline X check_output_port(X x)
+ALWAYS_INLINE X check_output_port(X x)
 {
 #ifndef UNSAFE
   check_type_PORT(x);
@@ -1346,7 +1365,7 @@ static X *lookup_shared_term(X x, int addnew)
 
 /// Variable + trail handling
 
-static inline X make_var()
+ALWAYS_INLINE X make_var()
 {
   ALLOCATE_BLOCK(BLOCK *v, VAR_TYPE, VAR_SIZE);
   v->d[ 0 ] = (X)v;
@@ -3665,7 +3684,7 @@ static int is_recursively_identical(X x, X y)
 }
 
 
-static inline int is_identical(X x, X y)
+ALWAYS_INLINE int is_identical(X x, X y)
 {
   if(x == y) return 1;
   
@@ -3955,8 +3974,8 @@ static X get_output_stream(X s)
 }
 
 
-static inline FILE *get_input_port(X s) { return port_file(get_input_stream(s)); }
-static inline FILE *get_output_port(X s) { return port_file(get_output_stream(s)); }
+ALWAYS_INLINE FILE *get_input_port(X s) { return port_file(get_input_stream(s)); }
+ALWAYS_INLINE FILE *get_output_port(X s) { return port_file(get_output_stream(s)); }
 
 
 /// VM operations
