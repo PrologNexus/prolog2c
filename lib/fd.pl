@@ -31,6 +31,30 @@ skip_bytes(N, [_|R], R2) :-
 	!, skip_bytes(N2, R, R2).
 
 
+%% open file-descriptor
+
+open_fd(FD, MODE, STREAM) :-
+	open_fd(FD, MODE, STREAM, []).
+
+open_fd(FD, write, STREAM, OPTIONS) :-
+	open_fd(FD, 1, "w", OPTIONS, [output, mode(write)], STREAM).
+open_fd(FD, read, STREAM, OPTIONS) :-
+	open_fd(FD, 0, "r", OPTIONS, [input, mode(read)], STREAM).
+open_fd(FD, append, STREAM, OPTIONS) :-
+	open_fd(FD, 0, "a", OPTIONS, [output, mode(append)], STREAM).
+
+open_fd(FD, INPUT, MODE, [], DATA, STREAM) :-
+	name(M, MODE),
+	foreign_call(open_fd(FD, INPUT, M, [file_no(FD)|DATA], STREAM)).
+open_fd(FD, INPUT, MODE, [type(text)|MORE], DATA, STREAM) :-
+	open_fd(FD, INPUT, MODE, MORE, [type(text)|DATA], STREAM).
+open_fd(FD, INPUT, MODE, [type(binary)|MORE], DATA, STREAM) :-
+	append(MODE, "b", MODE2),
+	open_fd(FD, INPUT, MODE2, MORE, [type(binary)|DATA], STREAM).
+open_fd(FD, INPUT, MODE, [_|MORE], DATA, STREAM) :-
+	open_fd(FD, INPUT, MODE, MORE, DATA, STREAM).
+
+
 %% close file-descriptor
 
 close_fd(FD) :-

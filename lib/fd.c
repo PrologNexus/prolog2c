@@ -4,6 +4,15 @@
 #include <poll.h>
 
 
+PRIMITIVE(open_fd, X fd, X input, X mode, X data, X result) 
+{
+  int len;
+  FILE *fp = fdopen(fixnum_to_word(fd), to_string(mode, &len));
+  X port = PORT(fp, input, ONE, data);
+  return unify(port, result);
+}
+
+
 PRIMITIVE(close_fd, X fd) 
 {
   if(close(fixnum_to_word(fd)) == -1)
@@ -73,13 +82,4 @@ PRIMITIVE(poll_fds, X fdlist, X timeout, X rdylist)
   }
 
   return unify(rdylist, lst);
-}
-
-
-PRIMITIVE(open_fd, X fd, X input, X mode, X data, X result) 
-{
-  int len;
-  FILE *fp = fdopen(fixnum_to_word(fd), to_string(mode, &len));
-  X port = PORT(fp, input, ONE, data);
-  return unify(port, result);
 }
