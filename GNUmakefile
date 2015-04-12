@@ -65,20 +65,20 @@ tags:
 
 
 check: pb
-	./run-checks -pc $(PC) 
+	./run-checks -pc $(PC) || touch tmp/check-failed
 
 check-pc1: pb
-	./run-checks -pc ./pc1
+	./run-checks -pc ./pc1 || touch tmp/check-failed
 
 check-pi: pb
-	./run-checks -i
+	./run-checks -i || touch tmp/check-failed
 
 ifeq ($(MACHINE),x86_64)
 check-m32: pb
-	./run-checks -m32 -pc $(PC)
+	./run-checks -m32 -pc $(PC) || touch tmp/check-failed
 
 check-pc32: pc32 pb
-	./run-checks -m32 -pc ./pc32
+	./run-checks -m32 -pc ./pc32 || touch tmp/check-failed
 else
 check-m32:
 	true
@@ -95,23 +95,23 @@ check-dist: dist
 	$(MAKE) -C tmp/pc-* all check
 
 check-optimized: pb
-	./run-checks -O -pc $(PC)
+	./run-checks -O -pc $(PC) || touch tmp/check-failed
 
 check-pc1-optimized: pb
-	./run-checks -O -pc ./pc1
+	./run-checks -O -pc ./pc1 || touch tmp/check-failed
 
 check-self-compile: pc2.c
 	cmp pc1.c pc2.c
 
 check-embedded: pc1 tmp/embed
-	tmp/embed
+	tmp/embed || touch tmp/check-failed
 
 full-check: check-self-compile 
 	rm -f tmp/check-failed
-	$(MAKE)	check-pc1 || touch tmp/check-failed
-	$(MAKE)	check-pc1-optimized || touch tmp/check-failed
-	$(MAKE)	check-pc32 || touch tmp/check-failed
-	$(MAKE)	check-embedded || touch tmp/check-failed
+	$(MAKE)	check-pc1
+	$(MAKE)	check-pc1-optimized
+	$(MAKE)	check-pc32
+	$(MAKE)	check-embedded
 	@echo
 	@echo ------------------------------------------------------------
 	@if test -e tmp/check-failed; then \
