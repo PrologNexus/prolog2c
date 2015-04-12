@@ -130,6 +130,10 @@ NOTES											              -*- Org -*-
    | sort/2                    |                             |
    | merge/3                   |                             |
 ** TODO Add mode-declarations for internally used predicates
+   - libs:
+     s11n.pl, interp.pl, sets.pl, io.pl, rdb.pl, sorts.pl, iso.pl, op.pl,
+     rdtok.pl, str.pl, lists.pl, ordset.pl, read.pl, cdb.pl, findall.pl,
+     co.pl, writef.pl, misc.pl, write.pl
 ** Results of memory profile for pc, compiling itself 
    - commit f254da345c8df3997b56c3d84dd1e35cdfe12e0d
    $start/0                                 C:    88   T:     0   E:     8   H:    56 
@@ -410,6 +414,7 @@ NOTES											              -*- Org -*-
    - perform determinateness-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
+** TODO Catch unbound variables as '+' args to predicates with declared mode
 ** Allow serializing DB to and from file
 ** TODO Check if we can use file:lib/canon.pl for printing query results
 ** DONE if term_expansion/2 returns list, treat as separate (or no) terms
