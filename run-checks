@@ -27,7 +27,7 @@ foreach test $files {
     set testname [file tail [file rootname $test]]
     set bindfile [file rootname $test].bind
     set skip 0
-    puts "$pc  $check_options  $test"
+    puts "$pc $check_options $test"
 
     if {[file exists $bindfile]} {
 	if {[catch {exec ./pb -q $bindfile -o tmp/$testname >@ stdout} result]} {
