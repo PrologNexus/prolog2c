@@ -19,9 +19,6 @@ process_requests_loop :-
 	!,
 	process_requests_loop.
 process_requests_loop :-
-	findall(PID, recorded(RKEY, blocked(TERM, PID, FDOUT)), BPS),
-	length(BPS, N),
-	log_event("no more requests - %d processes blocked", [N]),
 	log_event("stop").
 
 handle_request(process(PID, FDIN, FDOUT)) :-
