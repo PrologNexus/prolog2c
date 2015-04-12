@@ -34,7 +34,7 @@ PB_COMPILE_OPTIONS = -DTRAIL_STACK_SIZE=10000000 -DCHOICE_POINT_STACK_SIZE=20000
 CC_COMPILE_OPTIONS = -std=gnu99 -g -I. -fno-strict-aliasing -fwrapv -DTRACE -DDEBUG_GC
 CC_PROFILE_COMPILE_OPTIONS = -std=gnu99 -I. -fno-strict-aliasing -fwrapv -DPROFILE
 CC_OPTIMIZED_COMPILE_OPTIONS = -std=gnu99 -I. -fno-strict-aliasing -fwrapv -O1 \
-	-fomit-frame-pointer -fschedule-insns2 -fno-trapping-math
+	-fomit-frame-pointer
 MANIFEST = README qp lib/sorts.pl lib/ordset.pl lib/writef.pl lib/arith.pl lib/iso.pl \
 	lib/str.pl lib/numvars.pl pc.c pc.h pi.c pb.c g-s-p.pl system-predicates pb.pl \
 	pi.pl lib/flags.pl lib/interp.pl pi_system_predicate.pl pi_call_primitive.pl \
