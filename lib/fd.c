@@ -55,8 +55,12 @@ PRIMITIVE(poll_fds, X fdlist, X timeout, X rdylist)
 
   int rn = poll(fds, n, fixnum_to_word(check_fixnum(timeout)));
 
-  if(rn == -1)
+  if(rn == -1) {
+    if(errno == EINTR)
+      return unify(rdylist, END_OF_LIST_VAL);
+
     system_error(strerror(errno));
+  }
 
   //XXX does not check for full heap
   X lst = END_OF_LIST_VAL;
@@ -69,4 +73,13 @@ PRIMITIVE(poll_fds, X fdlist, X timeout, X rdylist)
   }
 
   return unify(rdylist, lst);
+}
+
+
+PRIMITIVE(open_fd, X fd, X input, X mode, X data, X result) 
+{
+  int len;
+  FILE *fp = fdopen(fixnum_to_word(fd), to_string(mode, &len));
+  X port = PORT(fp, input, ONE, data);
+  return unify(port, result);
 }
