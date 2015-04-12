@@ -3,8 +3,6 @@ NOTES											              -*- Org -*-
 
 * Issues
 ** Major
-*** TODO ensemble: SIGCHLD from terminating child may cause EINTR
-    - specifically in poll(2), but just re-polling 
 *** TODO discontiguous doesn't work with "wildcard" PI
     - e.g. ":- discontiguous bar." with defs for bar/0 and bar/1.
     - matching of N/A when collecting clauses for one of the two
@@ -44,8 +42,6 @@ NOTES											              -*- Org -*-
      number_codes/2.
 *** functor/3 (and others?) may exceed heap-reserve for large inputs
 ** Minor
-*** TODO ensemble: prefix msgs with special byte
-    - to detect invalid output of subprocesses.
 *** TODO The interpreter should accept but ignore some compiler-specific directives
     - determinate, mode, meta_predicate
 *** discontiguous/1 is not available in the interpreter
