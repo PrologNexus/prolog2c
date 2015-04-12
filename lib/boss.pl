@@ -19,6 +19,9 @@ process_requests_loop :-
 	!,
 	process_requests_loop.
 process_requests_loop :-
+	findall(PID, recorded(RKEY, blocked(TERM, PID, FDOUT)), BPS),
+	length(BPS, N),
+	log_event("no more requests - %d processes blocked", [N]),
 	log_event("stop").
 
 handle_request(process(PID, FDIN, FDOUT)) :-
@@ -55,8 +58,12 @@ process_message(mremove(TERM), PID, _) :-
 	; true
 	).
 process_message(mhalt, PID, _) :-
-	log_even("process %d requests halt", [PID]),
+	log_event("process %d requests halt", [PID]),
 	halt.
+process_message(mlog(MSG, ARGS), PID, _) :-
+	log_event("log-message from process %d", [PID]),
+	writef(MSG, ARGS),
+	flush_output.
 		
 term_key(TERM, WKEY, RKEY) :-	
 	functor(TERM, N, A),

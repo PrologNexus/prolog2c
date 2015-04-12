@@ -44,3 +44,8 @@ mterminate :-
 
 mhalt :-
 	write_message(1, mhalt).
+
+mlog(MSG) :-
+	mlog(MSG, []).
+mlog(MSG, ARGS) :-
+	write_message(1, mlog(MSG, ARGS)).
