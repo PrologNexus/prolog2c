@@ -77,17 +77,6 @@ PRIMITIVE(spawn, X cmd, X args, X rpid, X rfdin, X rfdout)
 }
 
 
-/*
-PRIMITIVE(open_fd, X fd, X input, X mode, X data, X result) 
-{
-  int len;
-  FILE *fp = fdopen(fixnum_to_word(fd), to_string(mode, &len));
-  X port = PORT(fp, input, ONE, data);
-  return unify(port, result);
-}
-*/
-
-
 PRIMITIVE(reap_children, X pid)
 {
   if(sigchld_occurred) {
