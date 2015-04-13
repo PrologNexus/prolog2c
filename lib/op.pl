@@ -1,6 +1,8 @@
 %%% operator definitions
 
 
+:- mode op(+, +, +).
+
 :- global_variable(operator_table).
 :- pre_initialization(global_set(operator_table, [op(700,xfx,'@=<'),
 						  op(1100,xfy,';'),
@@ -50,6 +52,7 @@
 						  op(400,yfx,'\\\\'),
 						  op(400,yfx,'rem')])).
 
+						  
 current_op(P, A, N) :-
 	global_ref(operator_table, OT),
 	member(op(P, A, N), OT).

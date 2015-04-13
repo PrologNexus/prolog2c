@@ -39,6 +39,16 @@
     but what do you want from one evening's work?
 */    
 
+
+:- mode read_tokens(+, -, -),
+	read_after_atom(+, -, -),
+	'$rdtok_read_string'(+, -, +, -),
+	escaped_char(+, -),
+	read_solidus(+, -, -),
+	read_solidus(+, -),
+	read_fullstop(+, -, -).
+
+	
 %   read_tokens(TokenList, Dictionary)
 %   returns a list of tokens.  It is needed to "prime" read_tokens/2
 %   with the initial blank, and to check for end of file.  The

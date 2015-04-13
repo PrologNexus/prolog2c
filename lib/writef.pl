@@ -151,6 +151,27 @@
 %
 
 
+:- mode fwritef(+,+),
+	fwritef(+,+,+),
+	writef(+),
+	writef(+,+),
+		wf_act(+,+,-),
+		getcode(-,+,-),
+		getdigits(+,-,+,-),
+		getpad(+,-),
+		getpad(+,+,-),
+		getpad(-,-,+,-),
+		padout(+),
+		padout(+,+,+),
+		padout(+,+,+,-,-),
+		praggl(+,+,+,+),
+		wf_char(+,-),
+		writelots(?,+),
+		writef_nonlist(+,-),
+		writefs(+,+).
+
+
+
 			% Print a list, one element per line
 
 prlist([]) :- !.

@@ -15,6 +15,30 @@
 %   unchanged.  The main difficulty with the ordered representation is
 %   remembering to use it!
 
+
+:- mode
+	list_to_ord_set(+, ?),
+	ord_disjoint(+, +),
+	    ord_disjoint(+, +, +, +, +),
+	ord_insert(+, +, ?),
+	    ord_insert(+, +, +, +, ?),
+	ord_intersect(+, +),
+	    ord_intersect(+, +, +, +, +),
+	ord_intersect(+, +, ?),
+	    ord_intersect(+, +, +, +, +, ?),
+	ord_seteq(+, +),
+	ord_subset(+, +),
+	    ord_subset(+, +, +, +, +),
+	ord_subtract(+, +, ?), 
+	    ord_subtract(+, +, +, +, +, ?),
+	ord_symdiff(+, +, ?),
+	    ord_symdiff(+, +, +, +, +, ?),
+	ord_union(+, +, ?),
+	    ord_union(+, +, +, +, +, ?),
+	ord_memberchk(+, +),
+	    ord_memberchk(+, +, ?, ?).
+
+
 %   list_to_ord_set(+List, ?Set)
 %   is true when Set is the ordered representation of the set represented
 %   by the unordered representation List.  The only reason for giving it

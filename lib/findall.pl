@@ -1,6 +1,15 @@
 %%% support code for findall/3
 
 
+:- mode '$findall_collect'(+, +, -),
+	'$unbound_variables'(+, -),
+	'$bagof_list_instances'(+, +, +, +, -),
+	'$bagof_replace_key_variables'(+, +, +),
+	'$concordant_subset'(+, +, -),
+	'$concordant_subset'(+, +, -, -),
+	'$concordant_subset'(+, +, +, +, -).
+
+
 :- global_variable(findall_solutions).
 :- global_variable(bagof_info).
 :- pre_initialization(global_set(findall_solutions, [])).

@@ -17,6 +17,26 @@
 
 %% ... but heavily modified.
 
+
+:- mode pi_do_body(+, -, -),
+	pi_do_body(+, +, -, -),
+	pi_tr_goal(+, +),
+	pi_tr_body(+, +),
+	pi_tr_body(+, +, -, -),
+	pi_tr_body(+, +, +, -, -),
+	pi_system_predicate(+, +),
+	pi_call_primitive(+, +, +),
+	pi_evaluate(+, -),
+	pi_locate_file(+, -),
+	pi_process_directive(+),
+	pi_add_clause(+, +, +, +, +),
+	pi_drop_qualifiers(+, -),
+	pi_free_variables(+, +, +, +, -),
+	pi_explicit_binding(+, +, -, -),
+	pi_term_is_free_of(+, +, +),
+	pi_list_is_free_of(+, +).
+		   
+
 :- global_variable(pi_trace_depth).
 :- pre_initialization(global_set(pi_trace_depth, none)).
 

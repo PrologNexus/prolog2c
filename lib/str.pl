@@ -1,6 +1,13 @@
 %%%% string- and atom utilities
 
 
+:- mode '$atomic_list_concat'(+, -),
+	'$split_string_split'(+, +, -),
+	'$split_string_trim'(+, +, -),
+	'$split_string_trim_head'(+, +, -),
+	'$split_string_trim_tail'(+, +, -).
+			      
+
 %% join atomics
 
 atomic_list_concat(LST, ATM) :-

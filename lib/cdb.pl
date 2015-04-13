@@ -1,6 +1,11 @@
 %%% clause database operations
 
 
+:- mode '$assert'(+, +, +, -),
+	'$clause_check_term'(+, -, -),
+	abolish(+, +).
+	
+
 :- global_variable(clause_db).
 :- pre_initialization((foreign_call(db_create(clause_db, 3001, DB)),
 		       global_set(clause_db, DB))).

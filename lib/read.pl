@@ -16,6 +16,22 @@
 */
 
 
+:- mode all_read(+),
+	expect(-, +, -),
+	read(+, +, -, -),
+	read(+, +, +, -, -),
+	read_args(+, -, -),
+	read_list(+, -, -),
+	peepop(+, +),
+	prefix_is_atom(+, +),
+	exprtl0(+, +, +, -, -),
+	can_follow_expr(+, -),
+	exprtl(+, +, +, +, -, -),
+	display_list(+),
+	display_list(+, +),
+	display_token(+).
+	
+
 read1(Answer) :- read1(Answer, _).
 
 %% this corresponds to ISO read/2

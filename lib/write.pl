@@ -34,6 +34,21 @@
     its name.
 */
 
+
+:- mode write_out(?, +, +, +, -),
+	maybe_paren(+, +, +, +, -),
+	maybe_space(+, +),
+	put_string(+, +),
+	write_oper(+, +, +, +, -),
+	write_atom(+, +, +, -),
+	classify_name(+, -),
+	classify_alpha_tail(+),
+	classify_other_tail(+),
+	is_opchar(+),
+	write_args(+, +, +, +, +),
+	write_tail(+, +).
+	
+
 /*
 print(Term) :-
 	write_out(Term, print, 1200, punct, _).
