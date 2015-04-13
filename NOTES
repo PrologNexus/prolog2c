@@ -93,8 +93,6 @@ NOTES											              -*- Org -*-
     - at least as much as possible and sensible.
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
-** TODO Add mode-declarations for internally used predicates
-   - libs to check: interp.pl, rdtok.pl
 ** TODO Find a more efficient way of compiling unifications
 ** TODO Add macros for trivial lib predicates
    | asserta/1                 | would need to introduce var |
@@ -446,6 +444,7 @@ NOTES											              -*- Org -*-
    - explain usage, mention autoloads.
 ** TODO List differences to ISO in file:README
 ** DONE News
+   - added mode/1 directive.
    - current_prolog_flag: address_bits(N)
    - added support for "discontiguous" directive, changed
      "determinate" into an operator.
