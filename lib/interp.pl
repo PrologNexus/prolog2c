@@ -29,7 +29,7 @@ pi_init(LDIR) :-
 pi_do_goal(Goal) :-
 	system(Goal),		% <--- check for a built in predicate
 	!,
-	call_system_predicate(Goal).
+	pi_call_system_predicate(Goal).
 pi_do_goal(Goal) :-
 	pi_clause(Goal, Body),	% <--- assume everything else is interpreted
 	pi_do_body(Body, AfterCut, HadCut),
@@ -115,7 +115,7 @@ pi_tr_call(Goal, Depth) :-
 	system(Goal),
 	!,
 	global_set(pi_trace_depth, Depth),
-	call_system_predicate(Goal).
+	pi_call_system_predicate(Goal).
 pi_tr_call(Goal, Depth) :-
 	pi_clause(Goal, Body),
 	pi_tr_body(Body, Depth, AfterCut, HadCut),
@@ -225,7 +225,7 @@ pi_system_predicate(freeze, 2).
 pi_system_predicate(dif, 2).
 pi_system_predicate(once, 1).
 
-call_system_predicate(TERM) :-
+pi_call_system_predicate(TERM) :-
 	!,
 	functor(TERM, NAME, ARITY),
 	pi_call_primitive(NAME, ARITY, TERM).
@@ -361,7 +361,7 @@ pi_consult_terms(PNA) :-
 pi_consult_terms(_).
 
 
-%% a copy of incfile.pl
+%%
 
 pi_locate_file(library(FN), RNAME) :-
 	recorded(pi_library_dir, DIR),
