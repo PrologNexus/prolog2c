@@ -377,8 +377,9 @@ NOTES											              -*- Org -*-
 ** Special-case calls of primitives that are known to always succeed
    - avoids test for failure.
 ** DONE Take advantage of timestamps when binding vars in unify()
-   - implemented in branch /bind-younger/ and seems to work, but trail
-     is not slightly smaller.
+   - see comment in file:pc.h (unify2), seems to work, but trail
+     is only slightly smaller.
+   - benchmark.
 ** writeq/1 could use foreign_call(basic_writeq(X)) for atoms
    - but the name needs to be classified anyway, because of the
      possibly required space in front of it (or embedded quotes, which
