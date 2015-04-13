@@ -125,7 +125,7 @@ read_tokens(Ch, Dict, [var(Var,Name)|Tokens]) :-
 	read_name(Ch, S, NextCh),
 	(  S = "_", Name = '_'			% anonymous variable
 	;  name(Name, S),			% construct name
-	   read_lookup(Dict, Name=Var)		% lookup/enter in dictionary
+	   memberchk(Name=Var, Dict)		% lookup/enter in dictionary
 	), !,
 	read_tokens(NextCh, Dict, Tokens).
 read_tokens(Ch, Dict, Tokens) :-
@@ -342,12 +342,3 @@ read_digits(Digit, SoFar, Base, Value, NextCh) :-
 	Next is SoFar*Base-48+Digit,
 	read_digits(Next, Base, Value, NextCh).
 read_digits(LastCh, Value, _, Value, LastCh).
-
-
-
-%   read_lookup is identical to member except for argument order and
-%   mode declaration..
-
-read_lookup([X|_], X) :- !.
-read_lookup([_M|T], X) :-
-	read_lookup(T, X). 
