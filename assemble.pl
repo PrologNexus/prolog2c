@@ -266,8 +266,8 @@ assemble(structure(R, N, A, _), S1, S2) :-
 	gen(') FAIL;\n').
 
 assemble(arg(R1, I, R2), S, S) :-
-	gen('X ', R2, '=slot_ref(', R1),
-	gen(',', I, ');\n').
+	gen('X ', R2, '=slot_ref(deref(', R1),
+	gen('),', I, ');\n').
 
 assemble(term_less(R1, R2), S, S) :- gen('if(compare_terms(deref(', R1, '),deref(', R2, ')) <= 0) FAIL;\n').
 assemble(term_not_less(R1, R2), S, S) :- gen('if(compare_terms(deref(', R1, '),deref(', R2, ')) > 0) FAIL;\n').
