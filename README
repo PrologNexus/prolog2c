@@ -1935,8 +1935,9 @@ Version history
       larger terms.
     - SIGINT is handled and produces an exception (user\_interrupt),
       if the platform supports it.
-    - Renamed read\_atom/2 to read\_string/2. read\_atom/2 and read\_line/1
-      return now character-code lists instead of atoms.
+    - Renamed read\_atom/2 to read\_string/2.
+    - read\_string/2 and read\_line/1 return now character-code lists 
+      instead of atoms.
     - New library predicates and builtins:
       char\_code/2, atom\_concat/3, atom\_chars/2, atom\_length/2,
       current\_input/1, current\_output/1, number\_chars/2, nl/1,
