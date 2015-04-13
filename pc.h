@@ -1311,7 +1311,7 @@ static void check_nonvar_failed(XCHAR *name, int arity)
 # define CHECK_NONVAR(x)
 #else
 # define CHECK_NONVAR(x)					\
-    { X x_ = (x);						\
+    { X x_ = deref(x);						\
     if(!is_FIXNUM(x_) && is_VAR(x_))				\
       check_nonvar_failed(CURRENT_NAME, CURRENT_ARITY); }
 #endif
