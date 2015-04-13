@@ -1,3 +1,6 @@
+#!/usr/bin/env qp
+%% EDCG-preprocessor -*- Prolog -*-
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Copyright (C) 1989 Regents of the University of California.
 % All rights reserved.  This program may be freely used and modified for
@@ -16,8 +19,34 @@
 %	Berkeley, CA 94720
 % E-mail: vanroy@bellatrix.berkeley.edu
 
+:- ensure_loaded(library(pp)).
+
 :- op(1200, xfx, ['-->>']).   % Same as ':-'.
 :- op( 850, xfx, [':']).      % Slightly tighter than ',' and '\+'.
+
+:- initialization 
+	op(1200, xfx, ['-->>']),
+	op( 850, xfx, [':']),
+	main.
+
+
+%% transformations
+
+term_expansion((A -->> B), X) :-
+        expand_edcg((A -->> B), X).
+term_expansion(acc_info(A, B, C, D, E), []) :-
+	recordz(edcg_acc_info, acc_info(A, B, C, D, E)).
+term_expansion(acc_info(A, B, C, D, E, F, G), []) :-
+	recordz(edcg_acc_info, acc_info(A, B, C, D, E, F, G)).
+term_expansion(pass_info(A), []) :-
+	recordz(edcg_pass_info, pass_info(A)).
+term_expansion(pass_info(A, B), []) :-
+	recordz(edcg_pass_info, pass_info(A, B)).
+term_expansion(pred_info(A, B, C), []) :-
+	recordz(edcg_pred_info, pred_info(A, B, C)).
+
+
+%% edcg-expander
 
 expand_edcg((H-->>B), (TH:-FTB)) :-
 	functor(H, Na, Ar),
@@ -184,7 +213,7 @@ expand_edcg((H-->>B), (TH:-FTB)) :-
 
 % Give a list of G's hidden parameters:
 '_has_hidden'(G, GList) :-
-	functor(G, GName, GArity), 
+	functor(G, GName, GArity),
 	recorded(edcg_pred_info, pred_info(GName, GArity, GList)).
 '_has_hidden'(G, []) :-
 	functor(G, GName, GArity), 
@@ -252,17 +281,6 @@ expand_edcg((H-->>B), (TH:-FTB)) :-
 	member(NewA, AList), !.
 '_replace_default'(A, NewA, _) :-      % Use default initial values.
 	A=NewA.
-
-
-%%% dynamic declaration of accumulators and predicates
-
-pass_info(X) :- recordz(edcg_pass_info, pass_info(X)).
-pass_info(X, Y) :- recordz(edcg_pass_info, pass_info(X, Y)).
-
-acc_info(X, Y, Z, U, V) :- recordz(edcg_acc_info, acc_info(X, Y, Z, U, V)).
-acc_info(X, Y, Z, U, V, I, J) :- recordz(edcg_acc_info, pass_info(X, Y, Z, U, V, I, J)).
-
-pred_info(X, Y, Z) :- recordz(edcg_pred_info, pred_info(X, Y, Z)).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
