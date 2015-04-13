@@ -7,4 +7,3 @@ cp qp pb ~/bin
 cp pc1o ~/bin/pc
 cp pio ~/bin/pi
 cp pc.h ~/include
-cp ensemble ~/bin
