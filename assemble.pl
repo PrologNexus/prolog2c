@@ -149,6 +149,7 @@ assemble(make_pair(CAR, CDR, R), S, S) :-
 assemble(jump(LABEL), S, S) :- gen('goto ', LABEL, ';\n').
 assemble(remove_choice_points, S, S) :- gen('CLEARCP;\n').
 assemble(fail, S, S) :- gen('FAIL;\n').
+assemble(eq(R1, R2), S, S) :- gen('if(deref(', R1, ')!=deref(', R2, ')) FAIL;\n').
 assemble(identical(R1, R2), S, S) :- gen('if(!is_identical(', R1, ',', R2, ')) FAIL;\n').
 assemble(not_identical(R1, R2), S, S) :- gen('if(is_identical(', R1, ',', R2, ')) FAIL;\n').
 assemble(numerically_equal(R1, R2), S, S) :- gen('if(!is_num_eq(', R1, ',', R2, ')) FAIL;\n').

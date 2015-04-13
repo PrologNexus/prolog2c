@@ -94,7 +94,6 @@ NOTES											              -*- Org -*-
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
 ** TODO Find a more efficient way of compiling unifications
-** TODO Check whether -fwhole-program makes a difference (or works at all)
 ** TODO Add macros for trivial lib predicates
    | asserta/1                 | would need to introduce var |
    | assertz/1                 | s.a.                        |
@@ -358,6 +357,7 @@ NOTES											              -*- Org -*-
    <system>                                 C:     0   T:     0   E:     0   H:     1K
 ** gprof reports very heavy use of make_var()
    - force inlining? (check whether -O2 inlines it)
+   - check once again with new optimization options (-O1)
 ** Deref arguments in advance
 ** Use power-of-2 sized hash-tables everywhere
    - use binary-and instead of mod operation, supposed to be faster.
@@ -414,7 +414,8 @@ NOTES											              -*- Org -*-
    - perform determinateness-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
-** TODO Catch unbound variables as '+' args to predicates with declared mode
+** Catch unbound variables as '+' args to predicates with declared mode
+   - possibly, but needs a lot of changes and slows down compilation.
 ** Allow serializing DB to and from file
 ** TODO Check if we can use file:lib/canon.pl for printing query results
 ** DONE if term_expansion/2 returns list, treat as separate (or no) terms
@@ -491,7 +492,6 @@ NOTES											              -*- Org -*-
    | epsilon/0, pi/0, e/0           | arithmetic constants                      |
    | ^/2                            | integer exponentation (error on overflow) |
 * Tests
-** TODO add edcg test, using lib/pp
 ** TODO port file:broken-tests/r6rs-sem.pl
 * Diagnostics
 ** Detect singleton variables

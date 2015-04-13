@@ -69,7 +69,7 @@ set setupfile "${file1}.setup"
 
 if {[file exists $setupfile]} {
     # called with testname, pc and C optimizations and whether pi is used
-    if {[catch {exec bash $setupfile $check_pc "$opts $moreopts" $pi} result]} {
+    if {[catch {exec bash $setupfile $rfile $check_pc "-std=gnu99 -I. -Ilib $opts $moreopts" $pi} result]} {
 	puts stderr $result
 	exit 1
     }

@@ -129,31 +129,43 @@ compile_head(HEAD, NS, BOUND, S1, S2) :-
 
 get_head_modes(NAME, ARITY, MODES) :-
 	recorded(mode_declaration, info(NAME, ARITY, MODES)).
-get_head_modes(_, ARITY, MODES) :-
-	make_list(ARITY, '?', MODES).
+get_head_modes(_, _, none).
 
 	       
 %% compile unification of head-argument
 
 compile_unification([], _, _, _, BOUND, BOUND, S, S).
 compile_unification([ARG|MORE], ['+'|MODES], NS, INDEX, BOUND1, BOUND2, S1, S2) :-
-	\+atomic(ARG),
-	\+indexed_variable(ARG, _),
 	compile_ground_unification(ARG, NS, INDEX, BOUND1, BOUND, S1, S),
 	INDEX2 is INDEX + 1,
 	!,
 	compile_unification(MORE, MODES, NS, INDEX2, BOUND, BOUND2, S, S2).
-compile_unification([ARG|MORE], [_|MODES], NS, INDEX, BOUND1, BOUND2, S1, S2) :-
+compile_unification([ARG|MORE], MODES, NS, INDEX, BOUND1, BOUND2, S1, S2) :-
+	get_next_head_modes(MODES, MODES2),
 	compile_unification1(ARG, NS, INDEX, BOUND1, BOUND, S1, S),
 	INDEX2 is INDEX + 1,
 	!,
-	compile_unification(MORE, MODES, NS, INDEX2, BOUND, BOUND2, S, S2).
+	compile_unification(MORE, MODES2, NS, INDEX2, BOUND, BOUND2, S, S2).
+
+get_next_head_modes([_|MODES], MODES).
+get_next_head_modes(MODES, MODES).
 
 
-%% compile unification of non-atomic, non-var head-argument that is known
+%% compile unification of non-var head-argument that is known
 %% (declared) to be ground
 
+compile_ground_unification(X, _, I, B, B, S1, S2) :-
+	atomic(X),
+	gensym('T', T1, S1, S3),
+	gensym('T', T2, S3, S4),
+	register_literal(X, LIT, S4, S2),
+	emit(argument(I, T1), check_nonvar(T1), literal(LIT, T2, X)),
+	( (integer(X); atom(X))
+	-> emit(eq(T1, T2))
+	; emit(identical(T1, T2))
+	).
 compile_ground_unification(X, NS, I, B1, B2, S1, S2) :-
+	\+indexed_variable(X, _),
 	functor(X, NAME, ARITY),
 	X =.. [_|ARGS],
 	gensym('T', T1, S1, S3),
