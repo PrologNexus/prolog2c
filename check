@@ -101,7 +101,7 @@ if {[catch $cmd]} {
 }
 
 if {$status != $expstatus} {
-    exec cat $outfile
+    exec cat $outfile >@ stdout
     puts $message
     exit 1
 }
