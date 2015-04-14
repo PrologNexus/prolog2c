@@ -180,8 +180,10 @@ dist: pc2.c pi pb
 	cp pc2.c pc.c
 	ddir=pc-`date +%Y-%m-%d`; \
 	rm -fr $$ddir pc.tar.gz; \
-	mkdir -p $ddir/lib; \
-	cp $(MANIFEST) $ddir; \
+	mkdir -p $$ddir/lib; \
+	for x in $(MANIFEST); do \
+	  cp -v $$x $$ddir/`dirname $$x`; \
+	done; \
 	tar cfz pc.tar.gz $$ddir; \
 	rm -fr $$ddir
 
