@@ -262,7 +262,8 @@ assemble(structure(R, N, A, _), S1, S2) :-
 	gensym('T', T, S1, S2),
 	gen('X ', T, '=deref(', R, ');\n'), % deref just once
 	gen('if(!is_structure(', T, ')||objsize(', T, ')!='),
-	gen(A, '||slot_ref(', T, ',0)!=literal_', N),
+	A2 is A + 1,		% add functor name
+	gen(A2, '||slot_ref(', T, ',0)!=literal_', N),
 	gen(') FAIL;\n').
 
 assemble(arg(R1, I, R2), S, S) :-
