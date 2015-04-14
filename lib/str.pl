@@ -42,10 +42,12 @@ split_string(STR, SEP, PAD, SUB) :-
 '$split_string_trim_head'(R, _, R).
 
 'string_split_trim_tail'("", _, "").
-'string_split_trim_tail'([C], SET, "") :-
-	memberchk(C, SET), !.
-'string_split_trim_tail'([C|R], SET, [C|R2]) :-
-	'string_split_trim_tail'(R, SET, R2).
+'string_split_trim_tail'([C|R1], SET, R) :-
+	'string_split_trim_tail'(R1, SET, R2),
+	( R2 == "", memberchk(C, SET)
+	-> R = ""
+	; R = [C|R2]
+	).
 
 
 %% compute sub-atom
