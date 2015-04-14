@@ -39,6 +39,7 @@ foreach test $files {
 
     if {!$skip} {
 	if {[catch {eval exec ./check -pc $pc $check_options $test >@ stdout} result]} {
+	    puts stderr $result
 	    incr not_ok
 	} else {
 	    incr ok
