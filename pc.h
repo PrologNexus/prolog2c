@@ -132,10 +132,10 @@ typedef void *X;
 
 #if defined(__LLP64__) || defined(_WIN64)
 typedef long long XWORD;
-typedef unsigned long long UXWORD;
+typedef unsigned long long XUWORD;
 #else
 typedef long XWORD;
-typedef unsigned long UXWORD;
+typedef unsigned long XUWORD;
 #endif
 
 typedef double XFLOAT;
@@ -1332,7 +1332,7 @@ static void clear_shared_term_table()
 
 static X *lookup_shared_term(X x, int addnew)
 {
-  XWORD key = (UXWORD)x % shared_term_table_size;
+  XWORD key = (XUWORD)x % shared_term_table_size;
   int f = 0;
   key *= 2;
 
