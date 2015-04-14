@@ -22,15 +22,15 @@
 	read(+, +, +, -, -),
 	read_args(+, -, -),
 	read_list(+, -, -),
-	peepop(+, +),
+	peepop(+, -),
 	prefix_is_atom(+, +),
 	exprtl0(+, +, +, -, -),
-	can_follow_expr(+, -),
+	cant_follow_expr(+, -),
 	exprtl(+, +, +, +, -, -),
 	display_list(+),
 	display_list(+, +),
 	display_token(+).
-	
+
 
 read1(Answer) :- read1(Answer, _).
 
