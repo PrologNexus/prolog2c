@@ -399,3 +399,53 @@ benchmarks/0011-atom-index.pl
   0.75
   benchmarks/0011-atom-index.pl
   1.9066666666666665
+----------------------------------------
+Tue Apr 14 23:27:31 CEST 2015
+389cded (disabled mode-based optimizations)
+benchmarks/0001-ecrc-call.pl
+0.77
+benchmarks/0002-ecrc-cp+backtrack.pl
+1.7466666666666668
+benchmarks/0003-ecrc-index.pl
+2.48
+benchmarks/0004-ecrc-deref.pl
+0.17666666666666667
+benchmarks/0005-ecrc-cut.pl
+4.923333333333333
+benchmarks/0006-self-compile.pl
+11.646666666666667
+benchmarks/0007-pi.pl
+2.6599999999999997
+benchmarks/0008-ecrc-envs.pl
+3.47
+benchmarks/0009-ecrc-unify.pl
+0.04
+benchmarks/0010-int-index.pl
+0.7600000000000001
+benchmarks/0011-atom-index.pl
+1.8999999999999997
+----------------------------------------
+Tue Apr 14 23:53:27 CEST 2015
+389cded (with mode-based opts.)
+benchmarks/0001-ecrc-call.pl
+0.8066666666666666
+benchmarks/0002-ecrc-cp+backtrack.pl
+1.7666666666666666
+benchmarks/0003-ecrc-index.pl
+2.3533333333333335
+benchmarks/0004-ecrc-deref.pl
+0.18333333333333335
+benchmarks/0005-ecrc-cut.pl
+4.886666666666667
+benchmarks/0006-self-compile.pl
+11.956666666666669
+benchmarks/0007-pi.pl
+2.42
+benchmarks/0008-ecrc-envs.pl
+3.5700000000000003
+benchmarks/0009-ecrc-unify.pl
+0.03333333333333333
+benchmarks/0010-int-index.pl
+0.7433333333333333
+benchmarks/0011-atom-index.pl
+1.9400000000000002
