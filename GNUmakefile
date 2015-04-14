@@ -19,7 +19,7 @@ LIBS = -lm -lrt
 PC_SOURCE_FILES = settings.pl support.pl state.pl terms.pl lib/dcg.pl index.pl macros.pl \
 	process.pl compile.pl assemble.pl main.pl xref.pl lib/flags.pl lib/lists.pl \
 	lib/misc.pl lib/write.pl lib/rdtok.pl lib/op.pl lib/rdb.pl lib/io.pl \
-	lib/findall.pl lib/sets.pl lib/read.pl lib/cdb.pl main.pl pc.pl
+	lib/findall.pl lib/sets.pl lib/read.pl lib/cdb.pl pc.pl
 PI_SOURCE_FILES = pi.pl lib/flags.pl lib/interp.pl lib/dcg.pl pi_system_predicate.pl \
 	pi_call_primitive.pl pi_evaluate_op.pl
 
@@ -37,7 +37,7 @@ CC_OPTIMIZED_COMPILE_OPTIONS = -std=gnu99 -I. -fno-strict-aliasing -fwrapv -O1 \
 	-fomit-frame-pointer
 MANIFEST = README qp lib/sorts.pl lib/ordset.pl lib/writef.pl lib/arith.pl lib/iso.pl \
 	lib/str.pl lib/numvars.pl pc.c pc.h pi.c pb.c g-s-p.pl system-predicates pb.pl \
-	pi.pl lib/flags.pl lib/interp.pl pi_system_predicate.pl pi_call_primitive.pl \
+	pi.pl lib/interp.pl pi_system_predicate.pl pi_call_primitive.pl \
 	pi_evaluate_op.pl Makefile $(PC_SOURCE_FILES)
 
 
