@@ -64,7 +64,9 @@
 
 '$unbound_variables'([], []).
 '$unbound_variables'([X|R], [X|R2]) :-
-	var(X), !, '$unbound_variables'(R, R2).
+	var(X),
+	!,
+	'$unbound_variables'(R, R2).
 '$unbound_variables'([_|R], R2) :-
 	'$unbound_variables'(R, R2).
 
