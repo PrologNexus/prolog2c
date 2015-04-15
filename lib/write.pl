@@ -46,7 +46,7 @@
 	classify_other_tail(+),
 	is_opchar(+),
 	write_args(+, +, +, +, +),
-	write_tail(+, +).
+	write_tail(?, +).
 	
 
 /*

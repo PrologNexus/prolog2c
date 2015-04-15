@@ -24,9 +24,9 @@
 	read_list(+, -, -),
 	peepop(+, -),
 	prefix_is_atom(+, +),
-	exprtl0(+, +, +, -, -),
+	exprtl0(+, ?, +, -, -),
 	cant_follow_expr(+, -),
-	exprtl(+, +, +, +, -, -),
+	exprtl(+, +, ?, +, -, -),
 	display_list(+),
 	display_list(+, +),
 	display_token(+).
@@ -123,8 +123,7 @@ read([], _, _, _) :-
 read(var(Variable,_), ['('|S1], Precedence, Answer, S) :- !,
 	read(S1, 999, Arg1, S2),
 	read_args(S2, RestArgs, S3), !,
-	exprtl0(S3, apply(Variable,[Arg1|RestArgs]), Precedence, 
-	    Answer, S).
+	exprtl0(S3, apply(Variable,[Arg1|RestArgs]), Precedence, Answer, S).
 
 read(var(Variable,_), S0, Precedence, Answer, S) :- !,
 	exprtl0(S0, Variable, Precedence, Answer, S).
