@@ -93,7 +93,8 @@ NOTES											              -*- Org -*-
     - at least as much as possible and sensible.
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
-** TODO memberchk/2 could stillbe implemented as primitive
+** Var-test in clause-indexing can be omitted if argument has mode '+'
+** TODO memberchk/2 could still be implemented as primitive
    - wrap into trivial predicate to ensure argument vars are
      trailed/detrailed.
 ** Run benchmarks with NO_CHECK_CYCLES?
