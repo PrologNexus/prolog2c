@@ -10,7 +10,7 @@ set bench_compile_times 0
 
 
 proc Usage {} {
-    puts stderr "usage: bench [-ct] [-fast] FILENAME [ARGUMENT ...]"
+    puts stderr "usage: bench [-h] [-ct] [-fast] FILENAME [ARGUMENT ...]"
     exit
 }
 
