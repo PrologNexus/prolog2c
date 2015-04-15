@@ -5118,6 +5118,22 @@ PRIMITIVE(word_size, X n) {
 #endif
 }
 
+PRIMITIVE(memberchk, X e, X lst) {
+  X *tt = trail_top;
+
+  while(lst != END_OF_LIST_VAL) {
+    check_type_PAIR(lst);
+
+    if(unify(e, slot_ref(lst, 0))) return 1;
+
+    unwind_trail(tt);
+    lst = deref(slot_ref(lst, 1));
+  }
+
+  return 0;
+}
+
+
 #endif
 
 #endif

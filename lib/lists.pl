@@ -24,8 +24,8 @@ reverse([H|T],Z,Acc) :- reverse(T,Z,[H|Acc]).
 length([], 0).
 length([_|X], N) :- length(X, N2), N is N2 + 1.
 
-memberchk(X, [X|_]) :- !.
-memberchk(X, [_|R]) :- memberchk(X, R).
+%% needs to be wrapped into predicate, otherwise vars bound are not trailed properly
+memberchk(X, Y) :- foreign_call(memberchk(X, Y)).
 
 is_list(List) :- nonvar(List), (List == []; List = [_|_]).
 
