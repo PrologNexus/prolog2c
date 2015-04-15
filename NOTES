@@ -97,6 +97,52 @@ NOTES											              -*- Org -*-
 ** TODO memberchk/2 could still be implemented as primitive
    - wrap into trivial predicate to ensure argument vars are
      trailed/detrailed.
+   - seems to give a slight improvement, but not sure whether this is worth it.
+   - diff:
+     #+BEGIN_SRC
+     diff --git a/lib/lists.pl b/lib/lists.pl
+     index f7bd16a..3fb2c28 100644
+     --- a/lib/lists.pl
+     +++ b/lib/lists.pl
+     @@ -24,8 +24,8 @@ reverse([H|T],Z,Acc) :- reverse(T,Z,[H|Acc]).
+      length([], 0).
+      length([_|X], N) :- length(X, N2), N is N2 + 1.
+
+     -memberchk(X, [X|_]) :- !.
+     -memberchk(X, [_|R]) :- memberchk(X, R).
+     +%% needs to be wrapped into predicate, otherwise vars bound are not trailed properly
+     +memberchk(X, Y) :- foreign_call(memberchk(X, Y)).
+
+      is_list(List) :- nonvar(List), (List == []; List = [_|_]).
+
+     diff --git a/pc.h b/pc.h
+     index aa2d035..3c28b7d 100644
+     --- a/pc.h
+     +++ b/pc.h
+     @@ -5118,6 +5118,22 @@ PRIMITIVE(word_size, X n) {
+      #endif
+      }
+
+     +PRIMITIVE(memberchk, X e, X lst) {
+     +  X *tt = trail_top;
+     +
+     +  while(lst != END_OF_LIST_VAL) {
+     +    check_type_PAIR(lst);
+     +
+     +    if(unify(e, slot_ref(lst, 0))) return 1;
+     +
+     +    unwind_trail(tt);
+     +    lst = deref(slot_ref(lst, 1));
+     +  }
+     +
+     +  return 0;
+     +}
+     +
+     +
+      #endif
+
+      #endif
+     #+END_SRC
 ** Run benchmarks with NO_CHECK_CYCLES?
 ** TODO Find a more efficient way of compiling unifications
 ** TODO Add macros for trivial lib predicates
@@ -404,9 +450,9 @@ NOTES											              -*- Org -*-
    - full unification may not trail properly due to timestamp issues.
    - could at least perform a simple match without binding variables.
    - must pass term to match in first-lookup and lookup for next item.
-** current_op/3 needs fast path when operator name is known
-   - could use single-bucket db, with unififcation inside
-     db_find/db_next (provided, we implement matching in file:pc.h)
+** TODO current_op/3 needs fast path when operator name is known
+   - use something different that plain list, or store as list keyed
+     by operator name and search in C.
 ** Determinate goal in condition of if-then-else can drop some of the CP dance
    - same for '\\+'/2, once/1
    - fail could actually just perform a jump, perhaps redefine FAIL
