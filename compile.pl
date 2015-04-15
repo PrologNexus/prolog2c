@@ -320,9 +320,27 @@ compile_body_expression(TERM, TAIL, D1, D2, B1, B2, S1, S2) :-
 % conjunction
 compile_body_expression((X, Y), TAIL, D1, D2, B1, B2, S1, S2) :-
 	compile_body_expression(X, nontail, D1, D, B1, B, S1, S),
-	!, compile_body_expression(Y, TAIL, D, D2, B, B2, S, S2).
+	!,
+	compile_body_expression(Y, TAIL, D, D2, B, B2, S, S2).
 
 % if-then-else
+compile_body_expression((X -> Y; Z), TAIL, D1, D2, B1, B2, S1, S2) :-
+	simple_test(X),
+	gen_label(L1, S1, S3),
+	gen_label(L2, S3, S4),
+	emit(simple_test(L1)),
+	compile_body_expression(X, nontail, D1, _, B1, B3, S4, S5),
+	emit(end_simple_test),
+	collect_indexed_variables(Y, BY1), subtract(BY1, B3, BY),
+	collect_indexed_variables(Z, BZ1), subtract(BZ1, B3, BZ),
+	compile_body_expression(Y, TAIL, D1, D4, B3, B4, S5, S6),
+	make_unbound_vars(BY, BZ, S6, S7),
+	emit(jump(L2), label(L1)),
+	compile_body_expression(Z, TAIL, D1, D5, B3, B5, S7, S8),
+	make_unbound_vars(BZ, BY, S8, S2),
+	emit(label(L2)),
+	union(B4, B5, B2),
+	both_determinate(D4, D5, D2).	
 compile_body_expression((X -> Y; Z), TAIL, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
@@ -341,6 +359,21 @@ compile_body_expression((X -> Y; Z), TAIL, D1, D2, B1, B2, S1, S2) :-
 	both_determinate(D4, D5, D2).
 
 % disjunction
+compile_body_expression((X; Y), TAIL, D1, D2, B1, B2, S1, S2) :-
+	simple_test(X),
+	gen_label(L1, S1, S3),
+	gen_label(L2, S3, S4),
+	collect_indexed_variables(X, BX1), subtract(BX1, B1, BX),
+	collect_indexed_variables(Y, BY1), subtract(BY1, B1, BY),
+	emit(simple_test(L1)),
+	compile_body_expression(X, nontail, D1, D3, B1, B3, S4, S5),
+	make_unbound_vars(BX, BY, S5, S6),
+	emit(end_simple_test, jump(L2), label(L1)),
+	compile_body_expression(Y, TAIL, D1, D4, B1, B4, S6, S7),
+	make_unbound_vars(BY, BX, S7, S2),
+	emit(label(L2)),
+	union(B3, B4, B2),
+	both_determinate(D3, D4, D2).
 compile_body_expression((X; Y), TAIL, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
@@ -376,6 +409,12 @@ compile_body_expression(repeat, _, D, D, B, B, S1, S2) :-
 	
 % not
 compile_body_expression(\+X, _, D, D, B1, B2, S1, S2) :-
+	simple_test(X),
+	gen_label(L1, S1, S3),
+	emit(simple_test(L1)),
+	compile_body_expression(X, nontail, D, _, B1, B2, S3, S2),
+	emit(end_simple_test, fail, label(L1)).
+compile_body_expression(\+X, _, D, D, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	emit(save_choice_points, push_choice_point(L1)),
 	compile_body_expression(X, nontail, D, _, B1, B2, S3, S2),
@@ -383,6 +422,7 @@ compile_body_expression(\+X, _, D, D, B1, B2, S1, S2) :-
 
 % once
 compile_body_expression(once(X), _, D, D, B1, B2, S1, S2) :-
+	%% doesn't check for simple_test - that's ok
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
 	emit(save_choice_points, push_choice_point(L1)),
