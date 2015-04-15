@@ -280,6 +280,11 @@ assemble(global_set(NAME, R), S, S) :-
 	mangle_name(NAME, MNAME),
 	gen('GLOBAL_SET(', MNAME, ',', R, ');\n').
 
+assemble(simple_test(L), S, S) :-
+	gen('#undef FAIL\n#define FAIL QUASI_FAILURE(', L, ')\n').
+assemble(end_simple_test, S, S) :-
+	gen('#undef FAIL\n#define FAIL FAILURE\n').
+
 assemble(trace_off, S, S) :-
 	gen('#define debugging 0\n').
 
