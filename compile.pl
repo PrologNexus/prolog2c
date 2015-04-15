@@ -643,19 +643,6 @@ compile_type_predicate(NAME, [VAL]) :-
 	CALL =.. [NAME, VAL],
 	emit(CALL).
 
-type_predicate(number).
-type_predicate(atomic).
-type_predicate(atom).
-type_predicate(number).
-type_predicate(integer).
-type_predicate(compound).
-type_predicate(float).
-type_predicate(var).
-type_predicate(nonvar).
-type_predicate(is_stream).
-type_predicate(db_reference).
-type_predicate(foreign_pointer).
-
 compile_order_predicate('@<', X, Y) :- emit(term_less(X, Y)).
 compile_order_predicate('@>', X, Y) :- emit(term_less(Y, X)).
 compile_order_predicate('@>=', X, Y) :- emit(term_not_less(X, Y)).

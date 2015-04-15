@@ -306,5 +306,51 @@ determinate_builtin(NAME, ARITY) :-
 	recorded(determinate_predicate, NAME/ARITY).
 
 
+%% check if N/A refers to registered meta-predicate
+
 is_meta_predicate(NAME, ARITY, SIG) :-
 	recorded(meta_signature, info(NAME, ARITY, SIG)).
+
+
+%% is expression a simple determinate test?
+
+simple_test(P) :-
+	functor(P, N, A),
+	( A == 1, type_predicate(N)
+	; A == 2, comparison_predicate(N)
+	).
+simple_test(foreign_call(_)).
+simple_test((X, Y)) :-
+	simple_test(X),
+	simple_test(Y).
+
+
+%% classifications for some builtin predicates
+
+type_predicate(number).
+type_predicate(atomic).
+type_predicate(atom).
+type_predicate(number).
+type_predicate(integer).
+type_predicate(compound).
+type_predicate(float).
+type_predicate(var).
+type_predicate(nonvar).
+type_predicate(is_stream).
+type_predicate(db_reference).
+type_predicate(foreign_pointer).
+
+comparison_predicate('@>').
+comparison_predicate('@<').
+comparison_predicate('@>=').
+comparison_predicate('@=<').
+comparison_predicate('=:=').
+comparison_predicate('=\\=').
+comparison_predicate('>').
+comparison_predicate('<').
+comparison_predicate('>=').
+comparison_predicate('=<').
+comparison_predicate('=').
+comparison_predicate('\\=').
+comparison_predicate('==').
+comparison_predicate('\\==').
