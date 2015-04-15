@@ -1301,19 +1301,19 @@ static inline X check_output_port(X x)
 }
 
 
-static void check_nonvar_failed(XCHAR *name, int arity) 
+static void check_nonvar_failed(XCHAR *name, int arity, int arg) 
 {
-  CRASH("%s/%d: mode declaration violated", name, arity);
+  CRASH("%s/%d: mode declaration violated for argument %d", name, arity, arg + 1);
 }
 
 
 #ifdef UNSAFE
-# define CHECK_NONVAR(x)
+# define CHECK_NONVAR(i)
 #else
-# define CHECK_NONVAR(x)					\
-    { X x_ = deref(x);						\
-    if(!is_FIXNUM(x_) && is_VAR(x_))				\
-      check_nonvar_failed(CURRENT_NAME, CURRENT_ARITY); }
+# define CHECK_NONVAR(i)						\
+  { X x_ = deref(A[ i ]);						\
+    if(!is_FIXNUM(x_) && is_VAR(x_))					\
+      check_nonvar_failed(CURRENT_NAME, CURRENT_ARITY, i); }
 #endif
 
 

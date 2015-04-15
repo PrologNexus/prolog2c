@@ -6,6 +6,7 @@
 compile_clauses(NAME/ARITY, CLAUSES, S1, S2) :-
 	gen_label(L1, S1, S3),
 	emit(enter(NAME, ARITY, L1)),
+	compile_mode_checks(NAME, ARITY),
 	register_defined_predicate(NAME/ARITY),
 	build_index_to_type_map(CLAUSES, 1, MAP),
 	( ARITY > 0,
@@ -159,7 +160,7 @@ compile_ground_unification(X, _, I, B, B, S1, S2) :-
 	gensym('T', T1, S1, S3),
 	gensym('T', T2, S3, S4),
 	register_literal(X, LIT, S4, S2),
-	emit(argument(I, T1), check_nonvar(T1), literal(LIT, T2, X)),
+	emit(argument(I, T1), literal(LIT, T2, X)),
 	( (integer(X); atom(X))
 	-> emit(eq(T1, T2))
 	; emit(identical(T1, T2))
@@ -169,7 +170,7 @@ compile_ground_unification(X, NS, I, B1, B2, S1, S2) :-
 	functor(X, NAME, ARITY),
 	X =.. [_|ARGS],
 	gensym('T', T1, S1, S3),
-	emit(argument(I, T1), check_nonvar(T1)),
+	emit(argument(I, T1)),
 	( NAME == '.'
 	-> emit(pair(T1)),
 	  I1 = 0,		% start index
@@ -191,7 +192,10 @@ compile_argument_unifications([ARG|MORE], I, T, NS, B1, B2, S1, S2) :-
 	gensym('T', TB, S3, S4),
 	emit(arg(T, I, TA)),
 	compile_term_for_unification(ARG, TB, B1, B3, S4, S5),
-	emit(unify(TA, TB)),
+	%% very subtle: switching TA and TB will break bagof/setof,
+	%% due to order of binding - it is important that '$unbound_variables'/2
+	%% in lib/findall.pl returns the original variables!
+	emit(unify(TB, TA)),
 	I2 is I + 1,
 	!,
 	compile_argument_unifications(MORE, I2, T, NS, B3, B2, S5, S2).
@@ -819,3 +823,22 @@ compile_setof(T, G, L, VARS, TAIL, D1, D2, B1, B2, S1, S2) :-
 	add_boilerplate(P2, (HEAD :- '$bagof_finish'(TMP), sort(TMP, L2))),
 	HEAD2 =.. [P|IARGS],
 	compile_body_expression(HEAD2, TAIL, D1, D2, B1, B2, S4, S2).
+
+
+%% emit checks that '+'-moded arguments are instantiated
+
+compile_mode_checks(N, A) :-
+	get_head_modes(N, A, MODES),
+	MODES \== none,
+	emit_instantiation_checks(MODES, 0).
+compile_mode_checks(_, _).
+
+emit_instantiation_checks([], _).
+emit_instantiation_checks(['+'|MODES], I) :-
+	emit(check_nonvar(I)),
+	I2 is I + 1,
+	!,
+	emit_instantiation_checks(MODES, I2).
+emit_instantiation_checks([_|MODES], I) :-
+	I2 is I + 1,
+	emit_instantiation_checks(MODES, I2).

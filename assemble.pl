@@ -256,7 +256,7 @@ assemble(is_stream(R), S, S) :- gen('if(!is_stream(deref(', R, '))) FAIL;\n').
 assemble(db_reference(R), S, S) :- gen('if(!is_dbreference(deref(', R, '))) FAIL;\n').
 assemble(foreign_pointer(R), S, S) :- gen('if(!is_pointer(deref(', R, '))) FAIL;\n').
 
-assemble(check_nonvar(R), S, S) :- gen('CHECK_NONVAR(', R, ');\n').
+assemble(check_nonvar(I), S, S) :- gen('CHECK_NONVAR(', I, ');\n').
 
 assemble(structure(R, N, A, _), S1, S2) :-
 	gensym('T', T, S1, S2),
