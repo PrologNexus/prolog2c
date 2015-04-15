@@ -5133,6 +5133,21 @@ PRIMITIVE(memberchk, X e, X lst) {
   return 0;
 }
 
+PRIMITIVE(fast_assq, X key, X lst, X arg, X result) {
+  int i = fixnum_to_word(arg);
+
+  while(lst != END_OF_LIST_VAL) {
+    X item = deref(slot_ref(lst, 0));
+
+    if(slot_ref(item, i) == key)
+      return unify(result, lst);
+
+    lst = deref(slot_ref(lst, 1));
+  }
+
+  return 0;
+}
+
 
 #endif
 
