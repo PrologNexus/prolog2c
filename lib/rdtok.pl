@@ -35,7 +35,7 @@
     It uses a hash table.  Another difference is the way characters are
     classified: the Dec-10 tokeniser and WLIST have a table which maps
     ASCII codes to character classes, and don't do all this comparison
-    and and memberchking.  We could do that without leaving standard Prolog,
+    and memberchking.  We could do that without leaving standard Prolog,
     but what do you want from one evening's work?
 */    
 
