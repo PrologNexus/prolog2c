@@ -4118,8 +4118,11 @@ static inline FILE *get_output_port(X s) { return port_file(get_output_stream(s)
 # define CALL_TRIGGERED(lbl)
 #endif
 
-#define FAIL     { TRACE_FAIL(CURRENT_NAME, CURRENT_ARITY); goto fail; }
-#define REDO     TRACE_REDO(CURRENT_NAME, CURRENT_ARITY)
+#define FAILURE             { TRACE_FAIL(CURRENT_NAME, CURRENT_ARITY); goto fail; }
+#define QUASI_FAILURE(lbl)  goto lbl
+
+#define FAIL  FAILURE
+#define REDO  TRACE_REDO(CURRENT_NAME, CURRENT_ARITY)
 
 #define POP_ARGUMENTS   arg_top = C0->arg_top - CURRENT_ARITY
 
