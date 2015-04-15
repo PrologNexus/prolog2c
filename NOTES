@@ -42,6 +42,8 @@ NOTES											              -*- Org -*-
      number_codes/2.
 *** functor/3 (and others?) may exceed heap-reserve for large inputs
 ** Minor
+*** TODO Rename file:macros.pl to something more sensible
+    - perhaps "classes.pl"
 *** TODO The interpreter should accept but ignore some compiler-specific directives
     - determinate, mode, meta_predicate
 *** discontiguous/1 is not available in the interpreter
@@ -455,9 +457,7 @@ NOTES											              -*- Org -*-
      by operator name and search in C.
 ** TODO Determinate goal in condition of if-then-else can drop some of the CP dance
    - same for '\\+'/2, once/1, ';'/2 (?)
-   - fail could actually just perform a jump, perhaps redefine FAIL
-     temporarily (or use intermediate macro).
-   - applies especially to simple tests (i.e. "var(X) -> ...")
+   - done for simple tests.
 ** Analyze program before compiling to pseudo-instructions
    - perform determinateness-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
