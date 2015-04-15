@@ -453,10 +453,11 @@ NOTES											              -*- Org -*-
 ** TODO current_op/3 needs fast path when operator name is known
    - use something different that plain list, or store as list keyed
      by operator name and search in C.
-** Determinate goal in condition of if-then-else can drop some of the CP dance
-   - same for '\\+'/2, once/1
+** TODO Determinate goal in condition of if-then-else can drop some of the CP dance
+   - same for '\\+'/2, once/1, ';'/2 (?)
    - fail could actually just perform a jump, perhaps redefine FAIL
      temporarily (or use intermediate macro).
+   - applies especially to simple tests (i.e. "var(X) -> ...")
 ** Analyze program before compiling to pseudo-instructions
    - perform determinateness-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
