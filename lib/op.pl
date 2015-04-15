@@ -1,7 +1,8 @@
 %%% operator definitions
 
 
-:- mode op(+, +, +).
+:- mode op(+, +, +),
+	current_op(+, ?, ?, +).
 
 :- global_variable(operator_table).
 :- pre_initialization(global_set(operator_table, [op(700,xfx,'@=<'),
@@ -54,7 +55,15 @@
 						  
 current_op(P, A, N) :-
 	global_ref(operator_table, OT),
-	member(op(P, A, N), OT).
+	( var(N)
+	-> member(op(P, A, N), OT)
+	; foreign_call(fast_assq(N, OT, 3, FOUND)),
+	  current_op(FOUND, P, A, N)
+	).
+current_op([op(P, A, N)|_], P, A, N).
+current_op([_|MORE], P, A, N) :-
+	foreign_call(fast_assq(N, MORE, 3, FOUND)),
+	current_op(FOUND, P, A, N).
 
 op(P, A, []) :- !.
 op(P, A, [N|R]) :-
