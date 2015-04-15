@@ -3014,6 +3014,9 @@ static int unify2(CHOICE_POINT *C0, X x, X y)
 #endif
 
     /*
+      //XXX Careful! order of binding will influence bagof/setof - see comment
+      //    in compile.pl (compile_argument_unification/8)
+
       if(yt == VAR_TYPE) {
         // bind younger variable in the hope that it doesn't need to be trailed
         if(fixnum_to_word(slot_ref(x, 2)) > fixnum_to_word(slot_ref(y, 2))) {
