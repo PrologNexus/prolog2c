@@ -1411,6 +1411,15 @@ Directives
   available only in compiled code, some only in interpreted code and
   some in both:
 
+       compress_facts                           [compiler]
+
+  Equivalent to the `-compress-facts` compiler option.
+
+       trace_libraries                          [compiler]
+
+  Enable tracing for all code, including auto-included
+  libraries. Normally only the code of the user program is traced.
+
        global_variable(NAME)                    [compiler]
 
   Declares NAME as a global variable, accessible with global_set/2 and
