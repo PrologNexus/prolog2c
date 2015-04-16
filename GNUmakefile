@@ -91,7 +91,7 @@ check-dist: dist
 	mkdir -p tmp
 	rm -fr tmp/pc-*
 	cp pc.tar.gz tmp
-	cd tmp; tar xft pc.tar.gz
+	cd tmp; tar xfz pc.tar.gz
 	$(MAKE) -C tmp/pc-* all check
 
 check-optimized: pb
