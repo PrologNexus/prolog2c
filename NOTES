@@ -495,25 +495,15 @@ NOTES											              -*- Org -*-
 ** Detect singleton variables
 ** Report unused predicates
 * Experimental
-** TODO Semi-native memberchk/2
-   - see stash "seminative memberchk"
+** DONE /fast-memberchk/ (semi-native memberchk)
    - gives little, mainly in compiler (which is the only heavy use of
      it.)
-** TODO Speeding up current_op/3 by doing search of known op-name in C
+   - test and merge.
+** DONE Speeding up current_op/3 by doing search of known op-name in C
    - see stash "faster current_op"
    - seems to work, but needs more testing.
-** TODO /quasi-fail/ (simpler code for control-structure with simple-tests)
+** DONE /quasi-fail/ (simpler code for control-structure with simple-tests)
    - test.
-** DONE /pi-in-pc/ (make interpreter available in compiler)
-   - use of term_expansion/2 is awkward, but handy.
-   - allows arbitrary latent goals.
-   - compare file-size + compile overhead in optimized mode.
-   - would allow conditional compilation.
-** DONE /intmath/ (integer-only math)
-   - lib/rdtok returns end_of_file when reading flonum (which makes pi
-     terminate, for example)
-   - would have to disable flonum-parsing in rdtok, which needs
-     conditional, depending on variant (with flonums or without)
 * Runtime
 ** TODO Use macro to check for exceeded heap-limit
 * Test suites
