@@ -39,11 +39,12 @@ if {![file exists $filename]} {
     exit 1
 }
 
-set cfile "[exec mktemp --tmpdir bench-XXXXXX].c"
+set tmpname [exec mktemp --tmpdir bench-XXXXXX]
+set cfile "$tmpname.c"
 set rfile [file rootname $filename]
 set optfile "${rfile}.opts"
-set xfile [exec mktemp --tmpdir bench-XXXXXX]
-set rtmp "[exec mktemp --tmpdir bench-XXXXXX].out"
+set xfile $tmpname
+set rtmp "$tmpname.out"
 
 
 proc RunOnce {} {
@@ -75,7 +76,7 @@ if {[file exists $optfile]} {
 
 if {$bench_compile_times} {
     eval exec /usr/bin/time -f %U gcc -std=gnu99 -Ilib -I. $opts $cfile -o $xfile -lm -lrt >&@ stdout
-    file delete -force $rtmp $xfile $cfile
+    file delete -force $rtmp $tmpnamee $cfile
     exit
 } else {
     eval exec gcc -std=gnu99 -Ilib -I. $opts $cfile -o $xfile -lm -lrt >&@ stdout
@@ -90,4 +91,4 @@ for {set i 0} {$i < 5} {incr i} {
 
 set results [lsort -real $results]
 puts [expr ([lindex $results 1] + [lindex $results 2] + [lindex $results 3]) / 3]
-file delete -force $rtmp $xfile $cfile
+file delete -force $rtmp $tmpname $cfile
