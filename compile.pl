@@ -360,21 +360,6 @@ compile_body_expression((X -> Y; Z), TAIL, D1, D2, B1, B2, S1, S2) :-
 
 % disjunction
 compile_body_expression((X; Y), TAIL, D1, D2, B1, B2, S1, S2) :-
-	simple_test(X),
-	gen_label(L1, S1, S3),
-	gen_label(L2, S3, S4),
-	collect_indexed_variables(X, BX1), subtract(BX1, B1, BX),
-	collect_indexed_variables(Y, BY1), subtract(BY1, B1, BY),
-	emit(simple_test(L1)),
-	compile_body_expression(X, nontail, D1, D3, B1, B3, S4, S5),
-	make_unbound_vars(BX, BY, S5, S6),
-	emit(end_simple_test, jump(L2), label(L1)),
-	compile_body_expression(Y, TAIL, D1, D4, B1, B4, S6, S7),
-	make_unbound_vars(BY, BX, S7, S2),
-	emit(label(L2)),
-	union(B3, B4, B2),
-	both_determinate(D3, D4, D2).
-compile_body_expression((X; Y), TAIL, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
 	emit(copy_choice_point(L1)),
