@@ -112,6 +112,7 @@ full-check: check-self-compile
 	$(MAKE)	check-pc1-optimized
 	$(MAKE)	check-pc32
 	$(MAKE)	check-embedded
+	$(MAKE) check-dist
 	@echo
 	@echo ------------------------------------------------------------
 	@if test -e tmp/check-failed; then \
