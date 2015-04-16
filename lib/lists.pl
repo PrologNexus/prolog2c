@@ -1,8 +1,7 @@
 %%% list processing operations
 
 
-:- mode memberchk(?, +),
-	slice(?, +, +, ?),
+:- mode slice(?, +, +, ?),
 	nth(?, +, ?).
 
 
