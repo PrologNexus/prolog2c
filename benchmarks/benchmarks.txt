@@ -125,7 +125,7 @@ benchmarks/0011-atom-index.pl
 2.14
 ----------------------------------------
 Thu Apr 16 10:47:02 CEST 2015
-7baccef
+7baccef (seminative memberchk/2)
 benchmarks/0001-ecrc-call.pl
 0.7433333333333333
 benchmarks/0002-ecrc-cp+backtrack.pl
@@ -150,3 +150,30 @@ benchmarks/0011-atom-index.pl
 2.17
 benchmarks/0012-read.pl
 13.366666666666667
+----------------------------------------
+Thu Apr 16 11:03:56 CEST 2015
+b028796 (native lookup in current_op)
+benchmarks/0001-ecrc-call.pl
+0.7566666666666667
+benchmarks/0002-ecrc-cp+backtrack.pl
+1.9366666666666665
+benchmarks/0003-ecrc-index.pl
+2.8833333333333333
+benchmarks/0004-ecrc-deref.pl
+0.19333333333333336
+benchmarks/0005-ecrc-cut.pl
+5.586666666666666
+benchmarks/0006-self-compile.pl
+5.016666666666667
+benchmarks/0007-pi.pl
+2.4833333333333334
+benchmarks/0008-ecrc-envs.pl
+3.8200000000000003
+benchmarks/0009-ecrc-unify.pl
+0.04
+benchmarks/0010-int-index.pl
+1.03
+benchmarks/0011-atom-index.pl
+2.17
+benchmarks/0012-read.pl
+4.196666666666666
