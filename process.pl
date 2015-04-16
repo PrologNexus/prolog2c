@@ -114,22 +114,18 @@ process_input([EXPR|_], _, _, _) :-
 process_directive((DECL1, DECL2), S1, S2) :-
 	process_directive(DECL1, S1, S),
 	process_directive(DECL2, S, S2).
-
 process_directive(DECL, _, _) :-
 	recorded(xref_mode, yes),
 	recordz(directive, DECL),
 	fail.
-
 process_directive(initialization(GOAL), STATE, STATE) :-
 	( recorded(initialization_goal, OLD, REF), erase(REF) ->
 	  recorda(initialization_goal, (OLD, GOAL))
 	; recorda(initialization_goal, GOAL)).
-
 process_directive(pre_initialization(GOAL), STATE, STATE) :-
 	( recorded(pre_initialization_goal, OLD, REF), erase(REF) ->
 	  recorda(pre_initialization_goal, (OLD, GOAL))
 	; recorda(pre_initialization_goal, GOAL)).
-
 process_directive(include(FNAME), STATE1, STATE2) :-
 	locate_file(FNAME, REALNAME),
 	seeing(CURRENT),
@@ -137,38 +133,32 @@ process_directive(include(FNAME), STATE1, STATE2) :-
 	open_file_stack(CURRENT, STATE1, STATE2),
 	message(['% including ', REALNAME]),
 	see(REALNAME).
-
 process_directive(ensure_loaded(FNAME), S1, S2) :-
 	locate_file(FNAME, REALNAME),
 	( recorded(included, REALNAME)
 	-> S2 = S1
 	; process_directive(include(REALNAME), S1, S2)
 	).
-
 process_directive(global_variable(NAME), S, S) :-
 	mangle_name(NAME, MNAME),
 	recordz(global_variables, MNAME).
-
 process_directive(verbatim(STR), S, S) :-
 	recordz(verbatim_code, STR).
-
 process_directive(determinate(PI), S, S) :-
 	register_predicate_annotation(PI, determinate_predicate).
-
 process_directive(op(P, A, N), S, S) :- op(P, A, N).
-
 process_directive(meta_predicate(META), S, S) :-
 	register_predicate_annotation(META, meta_signature).
-
 process_directive(public(PI), S, S) :-
 	mark_predicate_indicators(PI, public_predicate).
-
 process_directive(discontiguous(PI), S, S) :-
 	mark_predicate_indicators(PI, discontiguous_predicate).
-
 process_directive(mode(MODES), S, S) :-
 	register_predicate_annotation(MODES, mode_declaration).
-
+process_directive(trace_libraries, S, S) :-
+	recordz(trace_libraries, yes).
+process_directive(compress_facts, S, S) :-
+	recordz(compress_facts, yes).
 process_directive(DECL, STATE, STATE) :-
 	error(['unrecognized directive: ', DECL]).
 

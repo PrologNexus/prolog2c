@@ -62,14 +62,12 @@ assemble(enter(NAME, ARITY, LBL), S1, S) :-
 	gen('\n', MNAME, '$', ARITY, ':\n'),
 	gen('{ENTER(', LBL, ');\n'),
 	(ARITY =:= 0; gen('A[0]=deref(A[0]);\n')). % for indexing
-
 assemble(environment(SIZE), S, S) :-
 	gen('#undef CURRENT_ENVIRONMENT_SIZE\n#define CURRENT_ENVIRONMENT_SIZE ', SIZE, '\n'),
 	(SIZE =:= 0; gen('ENVIRONMENT(', SIZE, ');\n')).
 assemble(determinate_exit, S, S) :- gen('DETERMINATE_EXIT;\n').
 assemble(exit(L), S, S) :- gen('EXIT(', L, ');\n').
 assemble(redo, S, S) :- gen('REDO;\n').
-
 assemble(set_redo(L), S, S) :- gen('SET_REDO(&&', L, ');\n').
 assemble(no_redo, S, S) :- gen('SET_REDO(NULL);\n').
 assemble(copy_choice_point(L), S, S) :- gen('COPY_CHOICE_POINT(&&', L, ');\n').
@@ -78,9 +76,7 @@ assemble(pop_choice_point, S, S) :- gen('POP_CHOICE_POINT;\n').
 assemble(save_choice_points, S, S) :- gen('SAVE_CHOICE_POINTS;\n').
 assemble(restore_choice_points, S, S) :- gen('RESTORE_CHOICE_POINTS;\n').
 assemble(adjust_choice_point(L), S, S) :- gen('ADJUST_CHOICE_POINT(&&', L, ');\n').
-
 assemble(cut(L), S, S) :- gen('CUT(', L, ');\n').
-
 assemble(label(LABEL), S, S) :- gen('}', LABEL, ':{\n').
 assemble(local(N, R), S, S) :- gen('X ', R, '=E[', N, '];\n').
 assemble(unify(R1, R2), S, S) :- gen('if(!unify(', R1, ',', R2, ')) FAIL;\n').
@@ -133,7 +129,6 @@ assemble(unify_facts(L, DATA, TABLE, TILEN, ITABLE, TALEN, ATABLE, TSLEN, STABLE
 	gen_list(['UNIFY_BLOCK(', L, ',', L2, ',', L3, ',', L4, ',', TILEN,
 		  ',', LLIT, ',', TALEN, ',', LLAT, ',', TSLEN, ',', LLST,
 		  ');\n']).
-
 assemble(make_term(RLIST, R), S, S) :-
 	length(RLIST, N),
 	N1 is N - 1,
@@ -141,11 +136,9 @@ assemble(make_term(RLIST, R), S, S) :-
 	gen('X ', R, '=STRUCTURE(', F, ','),
 	gen(N1, ');\n'),
 	generate_slot_inits(R, 1, ARGS).
-
 assemble(make_pair(CAR, CDR, R), S, S) :-
 	gen('X ', R, '=make_pair('),
 	gen(CAR, ',', CDR, ');\n').
-
 assemble(jump(LABEL), S, S) :- gen('goto ', LABEL, ';\n').
 assemble(remove_choice_points, S, S) :- gen('CLEARCP;\n').
 assemble(fail, S, S) :- gen('FAIL;\n').
@@ -158,7 +151,6 @@ assemble(numerically_greater(R1, R2), S, S) :- gen('if(!is_num_gt(', R1, ',', R2
 assemble(numerically_less(R1, R2), S, S) :- gen('if(!is_num_lt(', R1, ',', R2, ')) FAIL;\n').
 assemble(numerically_greater_or_equal(R1, R2), S, S) :- gen('if(is_num_lt(', R1, ',', R2, ')) FAIL;\n').
 assemble(numerically_less_or_equal(R1, R2), S, S) :- gen('if(is_num_gt(', R1, ',', R2, ')) FAIL;\n').
-
 assemble(call(NAME, RLIST, LABEL), S, S) :-
 	length(RLIST, ARITY),
 	(ARITY == 0; gen('A=arg_top;\n')),
@@ -183,7 +175,6 @@ assemble(final_call_address(RADR, RARGS, LABEL), S, S) :-
 	gen('A=arg_top;\npush_argument_list(', RARGS, ');\n'),
 	gen('FINAL_CALL(*((void*)slot_ref(deref(', RADR, '),0)),&&', LABEL, ');}\n'),
 	gen(LABEL, ':{\n').
-
 assemble(tail_call(NAME, RLIST), S, S) :-
 	length(RLIST, ARITY),
 	gen('POP_ARGUMENTS;\n'),
@@ -194,18 +185,15 @@ assemble(tail_call(NAME, RLIST), S, S) :-
 assemble(tail_call_address(RADR, RARGS), S, S) :-
 	gen('POP_ARGUMENTS;\nA=arg_top;\npush_argument_list(', RARGS, ');\n'),
 	gen('TAIL_CALL(*((void*)slot_ref(deref(', RADR, '),0)));\n').
-
 assemble(foreign_call(NAME, 0), S, S) :- gen('if(!', NAME, '(C0)) FAIL;\n').
 assemble(foreign_call(NAME, RLIST), S, S) :-
 	gen('if(!', NAME, '(C0'),
 	generate_foreign_arguments(RLIST),
 	gen(')) FAIL;\n').	%XXX doesn't pop
-
 assemble(predicate_address(N, A, R), S, S) :-
 	mangle_name(N, MNAME),
 	gen('X ', R, '=POINTER(&&', MNAME),
 	gen('$', A, ');\n').
-
 assemble(add(R1, R2, R3), S, S) :- gen('X ', R3, '=num_add(', R1, ','),	gen(R2, ');\n').
 assemble(subtract(R1, R2, R3), S, S) :-	gen('X ', R3, '=num_sub(', R1, ','), gen(R2, ');\n').
 assemble(multiply(R1, R2, R3), S, S) :-	gen('X ', R3, '=num_mul(', R1, ','), gen(R2, ');\n').
@@ -221,7 +209,6 @@ assemble(shift_left(R1, R2, R3), S, S) :- gen('X ', R3, '=num_shl(', R1, ','), g
 assemble(shift_right(R1, R2, R3), S, S) :- gen('X ', R3, '=num_shr(', R1, ','), gen(R2, ');\n').
 assemble(exponent(R1, R2, R3), S, S) :- gen('X ', R3, '=num_pow(', R1, ','), gen(R2, ');\n').
 assemble(xor(R1, R2, R3), S, S) :- gen('X ', R3, '=num_xor(', R1, ','), gen(R2, ');\n').
-
 assemble(bitwise_not(R1, R2), S, S) :- gen('X ', R2, '=num_not(', R1, ');\n').
 assemble(abs(R1, R2), S, S) :- gen('X ', R2, '=num_abs(', R1, ');\n').
 assemble(atan(R1, R2), S, S) :- gen('X ', R2, '=num_atan(', R1, ');\n').
@@ -242,7 +229,6 @@ assemble(truncate(R1, R2), S, S) :- gen('X ', R2, '=num_truncate(', R1, ');\n').
 assemble(negate(R1, R2), S, S) :- gen('X ', R2, '=num_negate(', R1, ');\n').
 assemble(random(R1, R2), S, S) :- gen('X ', R2, '=num_random(', R1, ');\n').
 assemble(clock(R1), S, S) :- gen('X ', R1, '=num_clock();\n').
-
 assemble(integer(R), S, S) :- gen('if(!is_FIXNUM(deref(', R, '))) FAIL;\n').
 assemble(number(R), S, S) :- gen('if(!is_number(deref(', R, '))) FAIL;\n').
 assemble(var(R), S, S) :- gen('if(!is_variable(deref(', R, '))) FAIL;\n').
@@ -255,9 +241,7 @@ assemble(float(R), S, S) :- gen('if(!is_float(deref(', R, '))) FAIL;\n').
 assemble(is_stream(R), S, S) :- gen('if(!is_stream(deref(', R, '))) FAIL;\n').
 assemble(db_reference(R), S, S) :- gen('if(!is_dbreference(deref(', R, '))) FAIL;\n').
 assemble(foreign_pointer(R), S, S) :- gen('if(!is_pointer(deref(', R, '))) FAIL;\n').
-
 assemble(check_nonvar(I), S, S) :- gen('CHECK_NONVAR(', I, ');\n').
-
 assemble(structure(R, N, A, _), S1, S2) :-
 	gensym('T', T, S1, S2),
 	gen('X ', T, '=deref(', R, ');\n'), % deref just once
@@ -265,29 +249,23 @@ assemble(structure(R, N, A, _), S1, S2) :-
 	A2 is A + 1,		% add functor name
 	gen(A2, '||slot_ref(', T, ',0)!=literal_', N),
 	gen(') FAIL;\n').
-
 assemble(arg(R1, I, R2), S, S) :-
 	gen('X ', R2, '=slot_ref(deref(', R1),
 	gen('),', I, ');\n').
-
 assemble(term_less(R1, R2), S, S) :- gen('if(compare_terms(deref(', R1, '),deref(', R2, ')) <= 0) FAIL;\n').
 assemble(term_not_less(R1, R2), S, S) :- gen('if(compare_terms(deref(', R1, '),deref(', R2, ')) > 0) FAIL;\n').
-
 assemble(global_ref(NAME, R), S, S) :-
 	mangle_name(NAME, MNAME),
 	gen('X ', R, '=GLOBAL_REF(', MNAME, ');\n').
 assemble(global_set(NAME, R), S, S) :-
 	mangle_name(NAME, MNAME),
 	gen('GLOBAL_SET(', MNAME, ',', R, ');\n').
-
 assemble(simple_test(L), S, S) :-
 	gen('#undef FAIL\n#define FAIL QUASI_FAILURE(', L, ')\n').
 assemble(end_simple_test, S, S) :-
 	gen('#undef FAIL\n#define FAIL FAILURE\n').
-
 assemble(trace_off, S, S) :-
-	gen('#define debugging 0\n').
-
+	(recorded(trace_libraries, yes); gen('#define debugging 0\n')).
 assemble(switch_on_integer(L), S, S) :- gen('if(is_FIXNUM(A[0])) goto ', L, ';\n').
 assemble(switch_on_var(L), S, S) :- gen('if(is_VAR(A[0])) goto ', L, ';\n').
 assemble(switch_on_null(L), S, S) :- gen('if(A[0]==END_OF_LIST_VAL) goto ', L, ';\n').
@@ -313,14 +291,11 @@ assemble(dispatch_on_integer(TABLE), S, S) :-
 	gen('switch(fixnum_to_word(A[0])){\n'),
 	forall(member(N/L, TABLE), gen('case ', N, ':goto ', L, ';\n')),
 	gen('}').
-
 assemble(suspend(R1, L), S, S) :-
 	gen('saved_state.result=', R1, ';\nsaved_state.P=&&', L, ';\n'),
 	gen('goto suspend;\n', L, ':\n', R1, '=saved_state.result;\n').
-
 assemble(call_triggered(L), S, S) :-
 	gen('CALL_TRIGGERED(', L, ');\n').
-
 assemble(OP, _, _) :-
 	error(['invalid pseudo instruction: ', OP]).
 
