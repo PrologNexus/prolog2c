@@ -41,8 +41,8 @@ Introduction
   dynamic loading of compiled code are not provided, and
   multithreading is not supported.  This Prolog implementation does
   not attempt to be ISO compliant, event though many standard
-  predicates are available. Coroutining is implemented (using freeze/2
-  and dif/2) and the handling infinite trees is supported in many
+  predicates are available. Coroutining is implemented (using `freeze/2`
+  and `dif/2`) and the handling infinite trees is supported in many
   cases, but probably not all.
 
   ?-Prolog has currently only been tested on Linux (x86, x86-64 and
@@ -211,7 +211,7 @@ Debugging and error messages
   the implementation. Syntactical errors will produce a parser error,
   with some rough indication about the place where the problem
   occurred. Runtime-errors will throw an exception, which can be
-  caught by user code using catch/3. 
+  caught by user code using `catch/3`. 
 
 
 Support syntax
@@ -294,7 +294,7 @@ Builtin predicates
     (non-determinate) predicate exit, cut, or after a
     head-unification. Note that the triggering of GOAL depends on the
     binding order, in case VAR is bound to another unbound variable.
-    delay/2 is used as the basic for freeze/2 and dif/2, described
+    `delay/2` is used as the basic for `freeze/2` and `dif/2`, described
     below.
 
         freeze(-VAR, +GOAL)
@@ -308,7 +308,7 @@ Builtin predicates
     be different: if any instantiation of variables inside the terms
     would make X and Y identical, then the operation that performed
     the instantiation will fail. Inequality-constraints on variables
-    are implemented using delay/2 but always take precedence before
+    are implemented using `delay/2` but always take precedence before
     other delayed goals.
 
     The "GOAL"s must be complete, callable terms, merely passing
@@ -508,7 +508,7 @@ Builtin predicates
         type(binary)
 
     Stream-aliases for user-defined ports are not supported. To make
-    the stream the current input or output port use see/1 or tell/1,
+    the stream the current input or output port use `see/1` or `tell/1`,
     respectively [ISO]
 
         peek_byte(-BYTE)
@@ -702,7 +702,7 @@ Builtin predicates
         user_error       these refer to the initial I/O streams (i.e. the
                          console)
 
-    tell/1 and see/1 accept the stream-alias `user`, which has the
+    `tell/1` and `see/1` accept the stream-alias `user`, which has the
     same meaning as `user_output` and `user_input`, respectively.
 
   - Formatted output
@@ -753,7 +753,7 @@ Builtin predicates
         %s              write the next argument as a string
         %i              the next arguments are a format-string and a list
                         (indirect writef)
-        %f              perform flush/0
+        %f              perform `flush/0`
         %g              writes a compound of the form NAME(ARG, ...) as 
                         ARG1 NAME ARG2 NAME ...
         %x              skips the next argument
@@ -1065,7 +1065,7 @@ Builtin predicates
     Executes the shell-command CMD (which should be an atom or a
     string) and unifies STATUS with the return status (exit code) of
     the shell after running the command. If STATUS is not given,
-    shell/1 fails when the command returns with an exit-status that is
+    `shell/1` fails when the command returns with an exit-status that is
     not 0.
 
         rename_file(+OLD, +NEW)
@@ -1192,7 +1192,7 @@ Builtin predicates
 
         memberchk(?X, +Y)
 
-    Like member/2, but produces only one solution.
+    Like `member/2`, but produces only one solution.
 
         is_list(?X)
 
@@ -1266,7 +1266,7 @@ Builtin predicates
         global_set(NAME, +X)          
 
     Sets the global variable with the name NAME to X. Note that this
-    does not take care of backtracking, use copy_term/2 to preserve X
+    does not take care of backtracking, use `copy_term/2` to preserve X
     in that case.
 
         current_prolog_flag(+ATOM, -VAL)
@@ -1286,7 +1286,7 @@ Builtin predicates
         windows                       true or false
         address_bits                  32 or 64
 
-    No flags are changable, so there is no set_prolog_flag/2.
+    No flags are changable, so there is no `set_prolog_flag/2`.
 
         acyclic_term(+TERM)
 
@@ -1320,7 +1320,7 @@ Builtin predicates
 
         set_random_state(+INTEGER)
 
-    Sets the seed for the random/1 arithmetic expression.
+    Sets the seed for the `random/1` arithmetic expression.
 
         numbervars(?TERM, +START, -END)
 
@@ -1350,9 +1350,9 @@ Builtin predicates
 
         ensure_loaded(+FILE)
 
-    The same as consult/1, but consults FILE only if it wasn't consulted
+    The same as `consult/1`, but consults FILE only if it wasn't consulted
     (or included) before. This predicate has the same semantics as
-    the ensure_loaded/1 directive.
+    the `ensure_loaded/1` directive.
 
 
 Precedence of builtin operators
@@ -1422,8 +1422,8 @@ Directives
 
        global_variable(NAME)                    [compiler]
 
-  Declares NAME as a global variable, accessible with global_set/2 and
-  global_ref/2.
+  Declares NAME as a global variable, accessible with `global_set/2` and
+  `global_ref/2`.
  
        verbatim(CODE)                           [compiler]
 
@@ -1471,11 +1471,11 @@ Directives
   initialization goals may be declared and are invoked in the order in
   which they appear in the source code [ISO]
 
-  In compiled code, the default initialization goal is main/0.
+  In compiled code, the default initialization goal is `main/0`.
                              
       op(P, A, N)                               [compiler, interpreter]
 
-  Declares an operator - identical to op/3, but done before reading
+  Declares an operator - identical to `op/3`, but done before reading
   any further clauses [ISO]
 
       ensure_loaded(FILENAME)                   [compiler, interpreter]
@@ -1496,12 +1496,12 @@ Performance tips
 
   Compiling generated C code with "-DNO\_CHECK\_CYCLES" drops
   cycle-checks in builtin operations (this does not affect
-  acyclic_term/1).
+  `acyclic_term/1`).
 
   Asserting and retrieving terms in the record- or clause-database
   involves copying and thus should be avoided in time-critical code.
 
-  Any use of delay/2, freeze/2 or dif/2 will have a detrimental impact
+  Any use of `delay/2`, `freeze/2` or `dif/2` will have a detrimental impact
   on overall performance.
 
   As large sets of facts can increase Code-size and C compile-times
@@ -1570,21 +1570,21 @@ Performance tips
 Calling code written in other languages
 ---------------------------------------
 
-  To call foreign functions, a single form named "foreign_call" is
-  provided. foreign_call/1 takes a structure that names the function
+  To call foreign functions, a single form named `foreign_call` is
+  provided. `foreign_call/1` takes a structure that names the function
   to be called and holds the arguments to be passed. The function
   should take as many arguments as the structure (plus 1) and return
   an integer, indicating whether the foreign call failed (0) or
-  succeeded (1). The first argument is a "CHOICE_POINT *", a pointer
+  succeeded (1). The first argument is a `CHOICE_POINT *`, a pointer
   to current entry on the choice-point stack. Further arguments are of
-  type "X", a generic union type which is either an immediate small
+  type `X`, a generic union type which is either an immediate small
   integer ("fixnum") or a pointer to a non-immediate data object. See
-  "pc.h" in the distributed source for more information about the
+  `pc.h` in the distributed source for more information about the
   internal data layout. All arguments are dereferenced on entry (that
   is, veriables are resolved as much as possible, but not in nested
   data).
 
-  C code can be embedded in the compiled program using the "verbatim"
+  C code can be embedded in the compiled program using the `verbatim`
   directive. The text given will be emitted directly in the generated
   code, after the inclusion of the "pc.h" header file.
 
@@ -1593,17 +1593,17 @@ Calling code written in other languages
   references to Prolog data will become invalid, unless saved in the
   "global" variables vector", a separate buffer that may be used to
   keep "live" references to heap-allocated data (only usable in code
-  compiled with "-DEMBEDDED", see below for more information.)
+  compiled with `-DEMBEDDED`, see below for more information.)
   
   Note that the garbage collector ignores data that is not located in
   the garbage-collected heap, so you can create Prolog data structures
   in native code and pass them to Prolog without problems. You can use
-  duplicate_term/2 to copy static data from native code into
+  `duplicate_term/2` to copy static data from native code into
   dynamically allocated data located in the heap (but you must of
   course free the old static data manually).
 
   To get you started, here is a very simple example: let's add
-  an interface to the gethostname(2) UNIX API function.
+  an interface to the `gethostname(2)` UNIX API function.
 
   ---
 
@@ -1643,42 +1643,42 @@ Calling code written in other languages
 
   Notes:
 
-  - "PRIMITIVE()", "unify()", "CSTRING()" and "system\_error()" are
+  - `PRIMITIVE()`, `unify()`, `CSTRING()` and `system_error()` are
     only visible in compiled Prolog code. If you want to implement
     the C part of your extension in a separate source-file, you can
-    include "pc.h", but will have to do without some of the macros
-    and functions provided in "pc.h" (look for definitions guarded
-    with "COMPILED\_PROLOG\_PROGRAM".)
+    include `pc.h`, but will have to do without some of the macros
+    and functions provided in `pc.h` (look for definitions guarded
+    with `COMPILED_PROLOG_PROGRAM`.)
 
-  - "PRIMITIVE()" is not strictly necessary. It only ensures the
-    result type is "int" and an implicit first argument of type
-    "CHOICE\_POINT *" is passed. This argument _must_ be named "C0",
-    as "unify()" actually is a macro that uses it.
+  - `PRIMITIVE()` is not strictly necessary. It only ensures the
+    result type is `int` and an implicit first argument of type
+    `CHOICE_POINT *` is passed. This argument _must_ be named `C0`,
+    as `unify()` actually is a macro that uses it.
 
-  - "CSYMBOL()" allocates a Prolog atom, from a zero-terminated C
+  - `CSYMBOL()` allocates a Prolog atom, from a zero-terminated C
     string, in the garbage collected heap. There are variants
     to allocate using an arbitrary allocation pointer, called
-    "CSYMBOL1()", etc.
+    `CSYMBOL1()`, etc.
 
-  - "system\_error()" throws an exception of type system\_error/1.
-    You can also use "throw\_exception()" to trigger an arbitrary
-    exception object, or "type\_error()" to trigger an exception of
-    type type\_error/2.
+  - `system_error()` throws an exception of type `system_error/1`.
+    You can also use `throw_exception()` to trigger an arbitrary
+    exception object, or `type_error()` to trigger an exception of
+    type `type_error/2`.
 
-  - "unify" is a macro, expanding into an inline test and a call to
+  - `unify` is a macro, expanding into an inline test and a call to
     a general unification routine. It is also only usable in
     compiled prolog code. The result is an integer (1 on success or
     0 on failure.)
 
   - You can add your extensions permanently to the compiler by
-    adding a macro/2 clause in the file "macros.pl" of the compiler
-    sources and adding a clause for auto\_include/3 (in the same
+    adding a `macro/2` clause in the file `macros.pl` of the compiler
+    sources and adding a clause for `auto_include/3` (in the same
     file), which ensures that a file is included automatically and
     compiled with the original program. Finally copy your extension
-    file into the "lib" directory (wherever you chose to install
+    file into the `lib` directory (wherever you chose to install
     it.)
 
-  - There isn't much information here - you really should study "pc.h"
+  - There isn't much information here - you really should study `pc.h`
     if you want to interface to C code in earnest.
 
   This is the low-level way of calling C code. The other is
@@ -1821,17 +1821,17 @@ Embedding
   mode), and should contain at least a single entry (what is normally
   the program name.) You can pass command-line options, including
   runtime options, here as usual. The compiled Prolog code will start
-  like any other non-embedded program, until suspend/2 is invoked,
+  like any other non-embedded program, until `suspend/2` is invoked,
   which passes its first argument to the caller of the "prolog()"
   function (the result). Any re-invocation of "prolog()" will continue
   the execution of the Prolog code at the state where the previous
   execution was suspended, passing on the "arg" value to be unified
-  with the second argument of suspend/2.
+  with the second argument of `suspend/2`.
 
-  All invocations of "prolog()" after the first _must_ pass "0" and
-  "NULL" as values for "argc" and "argv".
+  All invocations of `prolog()` after the first _must_ pass `0` and
+  `NULL` as values for `argc` and `argv`.
 
-  Should the program terminate, "exit_code" will be set to the
+  Should the program terminate, `exit_code` will be set to the
   exit status of the program, depending on how the program
   terminated execution:
 
@@ -1855,10 +1855,10 @@ Embedding
   of the Prolog side, but will not be collected and retain their
   identity.
 
-  The name of the "prolog()" entry-point can be changed by redefining
-  the ENTRY_POINT_NAME macro when compiling the C code of an embedded
+  The name of the `prolog()` entry-point can be changed by redefining
+  the `ENTRY_POINT_NAME` macro when compiling the C code of an embedded
   program. The name of the "prolog_variable()" access function can be
-  changes by redefining VARIABLE_ACCESS_NAME.
+  changes by redefining `VARIABLE_ACCESS_NAME`.
 
   The compiled Prolog code is not reentrant or thread-safe.
 
@@ -1866,9 +1866,9 @@ Embedding
 Limitations
 -----------
 
-  call/1 and its variants are not available in the compiler, as are
-  setof/3 and bagof/3. Goals passed to catch/2, findall/3, forall/2
-  and '\+'/1 must be directly callable.
+  `call/1` and its variants are not available in the compiler, as are
+  `setof/3` and `bagof/3`. Goals passed to `catch/2`, `findall/3`, `forall/2`
+  and `'\+'/1` must be directly callable.
 
   Integer numbers are limited to signed integers in a range of 31 bits
   on 32-bit platforms and 63 bits on 64-bit platforms.
