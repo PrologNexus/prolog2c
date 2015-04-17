@@ -1,4 +1,3 @@
-
 %   File   : WRITEF.PL
 %   Author : Lawrence + Richard
 %   Updated: 10 September 1983
