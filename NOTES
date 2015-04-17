@@ -29,8 +29,11 @@ NOTES											              -*- Org -*-
 *** 32-bit version can't tokenize fractional part of real if it doesn't fit into an integer
    - e.g.:
      main :- f(0.463647609000806).
-*** Everything is still rather slow and uses too much memory
+*** TODO Everything is still rather slow and uses too much memory
    - see file:broken-tests/
+     - chess.pl works only with ridiculous memory settings:
+       chess -:T500M -:E500M -:h2G -:C500M -:A200M
+     - strangely, under SWI it produces different moves.
 *** TODO Once trail-stack reserve is reached, GC will loop if the trail can't be reduced
     - remember trail_top when trailing triggers GC and avoid another
       trailing-induced GC if the trail_top is not significantly below
@@ -40,22 +43,27 @@ NOTES											              -*- Org -*-
 *** If heap is insufficient deref_term/4 will loop endlessly
    - also recorded/X, retract/1 and clause/X, atom_codes/2,
      number_codes/2.
+*** DONE Reading operator in comma-separated list seems to give problems
+    - e.g. "s(1,mode,2)" fails on 2nd ",", so "mode" needs to be parenthesized.
+    - triggered by after_prefix_op/7, perhaps add another case for
+      "read(atom(Functor), [','|..."?
+    - seems to work, make full-check      
 *** functor/3 (and others?) may exceed heap-reserve for large inputs
 ** Minor
 *** TODO Rename file:macros.pl to something more sensible
     - perhaps "classes.pl"
 *** TODO The interpreter should accept but ignore some compiler-specific directives
-    - determinate, mode, meta_predicate
+    - determinate, mode, meta_predicate, compress_facts, trace_libraries
 *** discontiguous/1 is not available in the interpreter
 *** TODO standard-ports should have some initial data
     - alias, type, mode.
 *** '$call' doesn't check argc nor whether argument is ptr
     - needs to be safer, should it be exposed (or "meta_predicate"
       is made official)
-*** pi: call/1 should probably handle X^Y terms (quantified)
+*** interp: call/1 should probably handle X^Y terms (quantified)
 *** split_string/4 does not retain empty strings
     - this is incompatible to SWIs version.
-*** TODO Eliminate redundant switch-operations
+*** Eliminate redundant switch-operations
     - e.g.:
       #+BEGIN_SRC prolog
       foo(a, 1).
@@ -96,8 +104,9 @@ NOTES											              -*- Org -*-
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
 ** Var-test in clause-indexing can be omitted if argument has mode '+'
-** Run benchmarks with NO_CHECK_CYCLES?
-** TODO Find a more efficient way of compiling unifications
+** DONE Run benchmarks with NO_CHECK_CYCLES (fast mode)
+   - run benchmarks, measure effect.
+** Find a more efficient way of compiling unifications
 ** TODO Add macros for trivial lib predicates
    | asserta/1                 | would need to introduce var |
    | assertz/1                 | s.a.                        |
@@ -358,6 +367,7 @@ NOTES											              -*- Org -*-
    - force inlining? (check whether -O2 inlines it)
    - check once again with new optimization options (-O1)
 ** Deref arguments in advance
+   - is this legal?
 ** Use power-of-2 sized hash-tables everywhere
    - use binary-and instead of mod operation, supposed to be faster.
    - symbol- and structure-dispatch tables, block-dispatch-tables (in
@@ -380,9 +390,11 @@ NOTES											              -*- Org -*-
    - profile to find suitable points of improvement.
 ** Special-case calls of primitives that are known to always succeed
    - avoids test for failure.
+   - or does cc already detect this?
 ** DONE Take advantage of timestamps when binding vars in unify()
    - see comment in file:pc.h (unify2), seems to work, but trail
      is only slightly smaller.
+   - check if this doesn't break findall/bagof/setof.
    - benchmark.
 ** writeq/1 could use foreign_call(basic_writeq(X)) for atoms
    - but the name needs to be classified anyway, because of the
@@ -403,22 +415,24 @@ NOTES											              -*- Org -*-
    - full unification may not trail properly due to timestamp issues.
    - could at least perform a simple match without binding variables.
    - must pass term to match in first-lookup and lookup for next item.
-** TODO current_op/3 needs fast path when operator name is known
-   - use something different that plain list, or store as list keyed
-     by operator name and search in C.
 ** TODO Determinate goal in condition of if-then-else can drop some of the CP dance
    - same for '\\+'/2, once/1, ';'/2 (?)
-   - done for simple tests.
+   - done for simple tests, but for declared predicates we must make sure
+     C is trimmed to C0 + 1
 ** Analyze program before compiling to pseudo-instructions
    - perform determinateness-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
+** lib/rdtok: support "\OOO"/"\xXX" escapes
 ** Catch unbound variables as '+' args to predicates with declared mode
    - possibly, but needs a lot of changes and slows down compilation.
 ** Allow serializing DB to and from file
 ** TODO Check if we can use file:lib/canon.pl for printing query results
+   - syntax is ugly, could use "**" as does GNU Prolog.
 ** Handle arbitrary signals
+   - should we?
 ** dlopen, dlsym, to access primitives written in C
+   - kust opens cans of worms, but could be done as .c extension.
 ** Show warning for untriggered delayed goals with "-:d"
    - check trail-entries when unwinding trail and before exit.
 ** pb extensions
@@ -447,31 +461,6 @@ NOTES											              -*- Org -*-
      queues, rbtrees, s11n, tree23, numvars
    - explain usage, mention autoloads.
 ** TODO List differences to ISO in file:README
-** DONE News
-   - added mode/1 directive.
-   - current_prolog_flag: address_bits(N)
-   - added support for "discontiguous" directive, changed
-     "determinate" into an operator.
-   - pb: handles "fail" mode (opposite of "success").
-   - the compiler skips the first line of the source-program if it
-     starts with "#".
-   - current_prolog_flag/2 understands apple, windows, unix
-   - Added builtins put/2, tab/2, skip/2, get/2, get0/2, is_list/1,
-     exists_directory/1, atomic_list_concat/2, split_string/4,
-     sub_atom/5, append/2, read_line/2, read_string/3,
-     set_stream_position/2, close/2, chdir/1, getcwd/1, nth/3,
-     numbervars/3, stream_property/2
-   - Added support for stream aliases "current_input",
-     "current_output", "user_input", "user_output" and "user_error".
-   - Dropped peek/1
-   - pi: Respects PC_LIBRARY_DIR.
-   - removed "-I" option, added "-n"
-   - PC_INCLUDE_PATH has been renamed PC_LIBRARY_DIR and is only
-     allowed to contain a single directory.
-   - Filenames may now be "library(NAME)", refering to the current
-     library directory.
-** Add pc-autocompile to dist and document
-   - find a better name.
 ** Missing ISO predicates
    | Name                                         | Remarks                                        |
    |----------------------------------------------+------------------------------------------------|
@@ -489,27 +478,16 @@ NOTES											              -*- Org -*-
    | log/2, atan/2, asin/1, acos/1, | arithmetic expressions                    |
    | epsilon/0, pi/0, e/0           | arithmetic constants                      |
    | ^/2                            | integer exponentation (error on overflow) |
-* Tests
-** TODO port file:broken-tests/r6rs-sem.pl
 * Diagnostics
 ** Detect singleton variables
 ** Report unused predicates
-* Experimental
-** DONE /fast-memberchk/ (semi-native memberchk)
-   - gives little, mainly in compiler (which is the only heavy use of
-     it.)
-   - test and merge.
-** DONE Speeding up current_op/3 by doing search of known op-name in C
-   - see stash "faster current_op"
-   - seems to work, but needs more testing.
-** DONE /quasi-fail/ (simpler code for control-structure with simple-tests)
-   - test.
 * Runtime
 ** TODO Use macro to check for exceeded heap-limit
 * Test suites
 ** file:/archive/prologsuite.tar.gz
 ** file:/archive/inriasuite.tar.gz
 ** file:/archive/iclpgcbenches.tar.gz
+** https://sites.google.com/site/prologsite/prolog-problems
 * Undocumented features
 ** Compiler
 *** '$predicate_address'/2
@@ -531,6 +509,5 @@ NOTES											              -*- Org -*-
 ** Test on WIN64
 ** Test on Mac
 ** Test on [pi], [call-cc]
-** Test dist
 ** Tag, push, upload
 ** Bump version (file:README + file:lib/flags.pl)
