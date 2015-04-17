@@ -1,14 +1,7 @@
 %%%% https://github.com/zick/ImplOfR6RSAppA
 
-/* these are currently missing and SWI-specific (and some are undocumented)
-   
-  format/2
-  char_type/2
-  format/1
-  gensym/2
-  atom_number/2
 
-*/
+:- ensure_loaded(library(compat)).
 
 
 %%% grammar
@@ -678,7 +671,7 @@ reduce([store, St, E1], [store, St, Next1]) :-
 reduce(P1, Next) :-
   ctx_p(P1, [apply, Nonproc|Vs], Next,
         [raise, ['make-cond','can\'t apply non-procedure']], normal),
-format('~p~n',[Nonproc]),
+writef('%t\n',[Nonproc]),
   nonproc(Nonproc), v_s(Vs).
 reduce(P1, Next) :-
   ctx_p(P1, [apply, Proc|Vs_V], Next,
@@ -913,7 +906,7 @@ eval(X, Y) :- reduce(X, Z), \+(X==Z), eval(Z, Y), !.
 eval(X, X) :- reduce(X, X), !.
 
 eval_step(X, Y) :-
-  reduce(X, Z), \+(X==Z), format('~p~n',[Z]), eval_step(Z, Y), !.
+  reduce(X, Z), \+(X==Z), writef('%w%n',[Z]), eval_step(Z, Y), !.
 eval_step(X, X) :- reduce(X, X), !.
 
 
@@ -1108,50 +1101,50 @@ numstr([H|T]) :- char_type(H, digit), numstr(T).
 %%% printer
 
 print_program([unknown, Msg]) :-
-  format('unknown: ~p~n', [Msg]).
+  writef('unknown: %w\n', [Msg]).
 print_program([uncaught_exception, ['make-cond', Msg]]) :-
-  format('uncaught exception: ~p~n',[Msg]).
+  writef('uncaught exception: %w\n',[Msg]).
 print_program([store, Sfs, [values|Vs]]) :-
   print_values(Sfs, [values|Vs]).
 print_values(Sfs, [values, V]) :-
   v(V), print_obj(Sfs, V), !.
 print_values(Sfs, [values, V|Vs]) :-
   v(V), v_s(Vs),
-  format('(values '),
+  display('(values '),
   print_values1(Sfs, [V|Vs]),
-  format(')'), !.
+  display(')'), !.
 print_values1(_, []) :- !.
 print_values1(Sfs, [V|Vs]) :-
   v(V), v_s(Vs),
   print_obj(Sfs, V),
-  format(' '),
+  display(' '),
   print_values1(Sfs, Vs), !.
 
 print_obj(_, null) :-
-  format('()'), !.
+  display('()'), !.
 print_obj(_, Sqv) :-
-  sqv(Sqv), format('~p', [Sqv]), !.
+  sqv(Sqv), write(Sqv), !.
 print_obj(_, [quote,Sym]) :-
-  sym(Sym), format('~p', [Sym]), !.
+  sym(Sym), write(Sym), !.
 print_obj(_, [lambda,_|_]) :-
-  format('<closure>'), !.
+  display('<closure>'), !.
 print_obj(St, Pp) :-
   pp(Pp), append(Sfs, [[Pp,[cons,V1,V2]]|Sfs2], St),
   sf_s(Sfs), sf_s(Sfs2), v(V1), v(V2),
-  format('('),
+  display('('),
   print_list(St, V1, V2),
-  format(')'), !.
+  display(')'), !.
 print_list(St, CAR, null) :-
   print_obj(St, CAR), !.
 print_list(St, CAR, Pp) :-
   pp(Pp), append(Sfs, [[Pp,[cons,V1,V2]]|Sfs2], St),
   sf_s(Sfs), sf_s(Sfs2), v(V1), v(V2),
   print_obj(St, CAR),
-  format(' '),
+  display(' '),
   print_list(St, V1, V2), !.
 print_list(St, CAR, CDR) :-
   print_obj(St, CAR),
-  format(' . '),
+  display(' . '),
   print_obj(St, CDR), !.
 
 
