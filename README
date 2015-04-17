@@ -1934,32 +1934,59 @@ Version history
 ---------------
 
 
+  - Version 4:
+
+    - Various performance improvements.
+    - Added `mode/1`, `compress_facts` and `trace_libraries` directives.
+    - `current_prolog_flag/2`: added `address_bits(N)` flag.
+    - Added support for `discontiguous/1` directive, changed `determinate/1` 
+      into an operator.
+    - pb: handles "fail" mode (opposite of "success").
+    - The compiler skips the first line of the source-program if it
+      starts with `#`.
+    - `current_prolog_flag/2` understands apple, windows, unix
+    - Added builtins `put/2`, `tab/2`, `skip/2`, `get/2`, `get0/2`, `is_list/1`,
+      `exists_directory/1`, `atomic_list_concat/2`, `split_string/4`,
+      `sub_atom/5`, `append/2`, `read_line/2`, `read_string/3`,
+      `set_stream_position/2`, `close/2`, `chdir/1`, `getcwd/1`, `nth/3`,
+      `numbervars/3`, `stream_property/2`
+    - Added support for stream aliases `current_input`,
+      `current_output`, `user_input`, `user_output` and `user_error`.
+    - Dropped `peek/1`
+    - pi: Respects `PC_LIBRARY_DIR`.
+    - Removed `-I` option, added `-n`
+    - `PC_INCLUDE_PATH` has been renamed `PC_LIBRARY_DIR` and is only
+      allowed to contain a single directory.
+    - Filenames may now be `library(NAME)`, refering to the current
+      library directory.
+
+
   - Version 3:
 
     - Large sets of facts can be compiled more efficiently by using the
-      "-compress-facts" option.
+      `-compress-facts` option.
     - Reduced storage consumption in compiler.
     - The routines for storing and retrieving terms to and from the
       record- or clause database are now tail-recursive and handle
       larger terms.
     - SIGINT is handled and produces an exception (user\_interrupt),
       if the platform supports it.
-    - Renamed read\_atom/2 to read\_string/2.
-    - read\_string/2 and read\_line/1 return now character-code lists 
+    - Renamed `read_atom/2` to `read_string/2`.
+    - `read_string/2` and `read_line/1` return now character-code lists 
       instead of atoms.
     - New library predicates and builtins:
-      char\_code/2, atom\_concat/3, atom\_chars/2, atom\_length/2,
-      current\_input/1, current\_output/1, number\_chars/2, nl/1,
-      put\_byte/1, put\_byte/2, put\_code/1, put\_code/2, get\_byte/1,
-      get\_byte/2, get\_code/1, get\_code/2, peek\_byte/1, peek\_byte/2,
-      peek\_code/1, peek\_code/2, read/2, display/2, write/2, writeq/2,
-      put\_char/1, put\_char/2, get\_char/1, get\_char/2, peek\_char/1,
-      peek\_char/2, ground/1, rename\_file/2, delete\_file/1, once/1,
-      close/1, set\_input/1, set\_output/1, set\_error\_output/1,
-      at\_end\_of\_stream/0, at\_end\_of\_stream/1, flush\_output/1,
-      acyclic\_term/1, unify\_with\_occurs\_check/2, current\_prolog\_flag/2,
-      read\_line/1, duplicate\_term/2
-    - Renamed flush/0 to flush\_output/0.
+      `char_code/2`, `atom_concat/3`, `atom_chars/2`, `atom_length/2`,
+      `current_input/1`, `current_output/1`, `number_chars/2`, `nl/1`,
+      `put_byte/1`, `put_byte/2`, `put_code/1`, `put_code/2`, `get_byte/1`,
+      `get_byte/2`, `get_code/1`, `get_code/2`, `peek_byte/1`, `peek_byte/2`,
+      `peek_code/1`, `peek_code/2`, `read/2`, `display/2`, `write/2`, `writeq/2`,
+      `put_char/1`, `put_char/2`, `get_char/1`, `get_char/2`, `peek_char/1`,
+      `peek_char/2`, `ground/1`, `rename_file/2`, `delete_file/1`, `once/1`,
+      `close/1`, `set_input/1`, `set_output/1`, `set_error_output/1`,
+      `at_end_of_stream/0`, `at_end_of_stream/1`, `flush_output/1`,
+      `acyclic_term/1`, `unify_with_occurs_check/2`, `current_prolog_flag/2`,
+      `read_line/1`, `duplicate_term/2`
+    - Renamed `flush/0` to `flush_output/0`.
     - pi interpreter:
       - More robust with respect to current I/O ports in case of
         exceptions, also reduced memory usage across queries.
@@ -1968,7 +1995,7 @@ Version history
       - Undefined goals now throw an error.
     - Handling of Single-element list in arithmetic expressions.
     - Cycle-handling has been added to many builtins. May be disabled.
-    - Added min/2 and max/2 in arithmetic expressions.
+    - Added `min/2` and `max/2` in arithmetic expressions.
     - Added support for speed- and memory-profiling.
     - String-canonicalization didn't handle empty strings.
     - pb wrapper generator:
@@ -1977,13 +2004,13 @@ Version history
       - fixed handling zero-argument function with result.
       - "/* success */" result modifier.
     - Slightly faster db-key computation.
-    - Added ensure\_loaded/1 directive.
+    - Added `ensure_loaded/1` directive.
 
   - Version 2:
 
     - Many bugfixes, everywhere.
     - Added "writef.pl" and "arith.pl" to library.
-    - Added primitive read\_atom/2.
+    - Added primitive `read_atom/2`.
     - The interpreter handles DCG rules now.
     - Added "foreign pointer" type.
     - Added support for coroutines (freeze + dif)
