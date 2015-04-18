@@ -43,11 +43,6 @@ NOTES											              -*- Org -*-
 *** If heap is insufficient deref_term/4 will loop endlessly
    - also recorded/X, retract/1 and clause/X, atom_codes/2,
      number_codes/2.
-*** DONE Reading operator in comma-separated list seems to give problems
-    - e.g. "s(1,mode,2)" fails on 2nd ",", so "mode" needs to be parenthesized.
-    - triggered by after_prefix_op/7, perhaps add another case for
-      "read(atom(Functor), [','|..."?
-    - seems to work, make full-check      
 *** functor/3 (and others?) may exceed heap-reserve for large inputs
 ** Minor
 *** TODO Rename file:macros.pl to something more sensible
@@ -104,8 +99,6 @@ NOTES											              -*- Org -*-
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
 ** Var-test in clause-indexing can be omitted if argument has mode '+'
-** DONE Run benchmarks with NO_CHECK_CYCLES (fast mode)
-   - run benchmarks, measure effect.
 ** Find a more efficient way of compiling unifications
 ** TODO Add macros for trivial lib predicates
    | asserta/1                 | would need to introduce var |
