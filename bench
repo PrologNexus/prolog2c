@@ -3,7 +3,7 @@
 
 
 set opts "-O1 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -DNDEBUG"
-set fast_opts "-DUNSAFE -O3 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -fno-trapping-math -ffast-math"
+set fast_opts "-DUNSAFE -O3 -fomit-frame-pointer -fno-strict-aliasing -fwrapv -fno-trapping-math -ffast-math -DNO_CHECK_CYCLES"
 set filename ""
 set args {}
 set bench_compile_times 0
