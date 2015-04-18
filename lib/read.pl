@@ -142,10 +142,14 @@ read(atom(Functor), ['('|S1], Precedence, Answer, S) :- !,
 	Term =.. [Functor,Arg1|RestArgs], !,
 	exprtl0(S3, Term, Precedence, Answer, S).
 
+%% flw (allow prefix-op before punctutation)
+read(atom(Functor), [Stop|S1], Precedence, Answer, S) :-
+	(Stop == ','; Stop == ')'), !,
+	exprtl0([Stop|S1], Functor, Precedence, Answer, S).
+
 read(atom(Functor), S0, Precedence, Answer, S) :-
 	prefixop(Functor, Prec, Right), !,
-	after_prefix_op(Functor, Prec, Right, S0, Precedence, 
-	    Answer, S).
+	after_prefix_op(Functor, Prec, Right, S0, Precedence, Answer, S).
 
 read(atom(Atom), S0, Precedence, Answer, S) :- !,
 	exprtl0(S0, Atom, Precedence, Answer, S).
@@ -153,7 +157,7 @@ read(atom(Atom), S0, Precedence, Answer, S) :- !,
 read(integer(Integer), S0, Precedence, Answer, S) :- !,
 	exprtl0(S0, Integer, Precedence, Answer, S).
 
-% flw
+% flw (parse non-integer number)
 read(number(Number), S0, Precedence, Answer, S) :- !,
 	exprtl0(S0, Number, Precedence, Answer, S).
 
