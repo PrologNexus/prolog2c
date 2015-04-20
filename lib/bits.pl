@@ -2,6 +2,8 @@
 
 
 %% convert string to list of bits
+%
+% length of bit-list must be a multiple of 8
 
 string_bits([], []).
 string_bits([N|R], B) :-
