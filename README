@@ -1276,7 +1276,7 @@ Builtin predicates
 
         version                       Prolog version as integer
         bounded                       true
-        max_arity                     999 (arbitrary, this has not been tested)
+        max_arity                     65536 (arbitrary, this has not been tested)
         integer_rounding_function     toward_zero
         max_integer                   
         min_integer                   30 or 62 bit integer, depending on word size
