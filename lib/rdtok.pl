@@ -43,7 +43,8 @@
 :- mode read_tokens(+, -, -),
 	read_after_atom(+, -, -),
 	'$rdtok_read_string'(+, -, +, -),
-	escaped_char(+, -),
+	'$rdtok_escape'(+, -),
+	'$rdtok_hex_digit'(+, -),
 	read_solidus(+, -, -),
 	read_solidus(+, -),
 	read_fullstop(+, -, -).
@@ -206,31 +207,53 @@ read_after_atom(Ch, Dict, Tokens) :-
 	get0(Ch),
 	'$rdtok_read_string'(Ch, Chars, Quote, NextCh).
 
-
 '$rdtok_read_string'(-1, _N, Quote, -1) :-
 	display('! end of file in '), put(Quote),
 	display(token), put(Quote), nl,
 	!, fail.
 '$rdtok_read_string'(Quote, Chars, Quote, NextCh) :- !,
 	get0(Ch),				% closing or doubled quote
-	more_string(Ch, Quote, Chars, NextCh).
-'$rdtok_read_string'(92, [Ch2|Chars], Quote, NextCh) :- % (flw) \C handling
+	'$rdtok_more_string'(Ch, Quote, Chars, NextCh).
+'$rdtok_read_string'(92, [Ch1|Chars], Quote, NextCh) :- % (flw) \C handling
 	!, get0(Ch),
-	(escaped_char(Ch, Ch2); '$rdtok_read_string'(-1, Chars, Quote, NextCh)),
+	( '$rdtok_escape'(Ch, Ch1)
+	; '$rdtok_read_string'(-1, Chars, Quote, NextCh) % eof, force error
+	),
 	'$rdtok_read_string'(Chars, Quote, NextCh).
 '$rdtok_read_string'(Char, [Char|Chars], Quote, NextCh) :-
 	'$rdtok_read_string'(Chars, Quote, NextCh).	% ordinary character
 
+'$rdtok_escape'(-1, -1) :- !, fail.
+'$rdtok_escape'(120, Ch) :- % 'x'
+	!,
+	get0(Ch1), get0(Ch2),
+	'$rdtok_hex_digit'(Ch1, D1), '$rdtok_hex_digit'(Ch2, D2),
+	Ch is D1 * 16 + D2.
+'$rdtok_escape'(Ch1, Ch) :-
+	Ch1 >= 48, Ch1 =< 57,	% '0'...'9'
+	!,
+	get0(Ch2), Ch2 >= 48, Ch2 =< 57,
+	get0(Ch3), Ch3 >= 48, Ch3 =< 57,
+	Ch is (Ch1 - 48) * 64 + (Ch2 - 48) * 8 + (Ch3 - 48).
+'$rdtok_escape'(110, 10). % \n
+'$rdtok_escape'(114, 13). % \r
+'$rdtok_escape'(116, 9). % \t
+'$rdtok_escape'(C, C). % anything else
+	
+'$rdtok_hex_digit'(C, N) :-
+	C >= 48,		% '0'
+	( C =< 57, N is C - 48	% '9'
+	; ( C >= 65		% 'A'
+	  -> C =< 70, N is C - 55 % 'F'
+	  ; (C >= 97		  % 'a'
+	    -> C =< 102, N is C - 87 % 'f'
+	    )
+	  )
+	).
 
-more_string(Quote, Quote, [Quote|Chars], NextCh) :- !,
+'$rdtok_more_string'(Quote, Quote, [Quote|Chars], NextCh) :- !,
 	'$rdtok_read_string'(Chars, Quote, NextCh).	% doubled quote
-more_string(NextCh, _, [], NextCh).		% end
-
-escaped_char(-1, -1) :- !, fail.
-escaped_char(110, 10). % \n
-escaped_char(114, 13). % \r
-escaped_char(116, 9). % \t
-escaped_char(C, C). % anything else
+'$rdtok_more_string'(NextCh, _, [], NextCh).		% end
 
 
 %   read_solidus(Ch, Dict, Tokens)
