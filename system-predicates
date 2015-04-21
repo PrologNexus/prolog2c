@@ -170,7 +170,7 @@ system_predicate(append(+XX, ?Y), 'lists').
 system_predicate(is_list(?X), 'lists').
 system_predicate(union(+X, +Y, -Z), 'sets').
 system_predicate(symdiff(+X, +Y, -Z), 'sets').
-system_predicate(?X =.. ?Y, 'misc', '"univ"').
+system_predicate(?X =.. ?Y, 'misc').
 system_predicate(write(+X), 'write').
 system_predicate(writeq(+X), 'write').
 system_predicate(write(+S, +X), 'write').
