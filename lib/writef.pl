@@ -21,19 +21,7 @@
 % 
 %         Formatted write.  Format is an atom whose characters  will  be  output.
 %         Format  may  contain  certain special character sequences which specify
-%         certain  formatting  actions.    The  following  sequences  result   in
-%         particular (otherwise hard to use) characters being output.
-% 
-%             '\n'  --  <NL> is output
-%             '\l'  --  <LF> is output (same as <NL> on UNIX)
-%             '\r'  --  <CR> is output
-%             '\t'  --  <TAB> is output
-%             '\e'  --  <ESC> is output
-%             '\\'  --  The character "\" is output
-%             '\%'  --  The character "%" is output
-%             '\nnn' -  where nnn is an integer (1-3 digits)
-%                       the character with ASCII code nnn is output
-%                       (NB : nnn is read as DECIMAL)
+%         certain  formatting  actions.
 % 
 %         The  following  special  sequences specify that items be taken from the
 %         List and output in some way.  List, then, provides all the actual terms
@@ -164,7 +152,6 @@
 		padout(+,+,+),
 		padout(+,+,+,-,-),
 		praggl(+,+,+,+),
-		wf_char(+,-),
 		writelots(?,+),
 		writef_nonlist(+,-),
 		writefs(+,+).
@@ -284,16 +271,6 @@ writefs([37,D|Rest], [Head|Tail]) :-	%   %<columns><just>
 	padout(Head, Size, Just), !,
 	writefs(More, Tail).
 
-writefs([92,C|Rest], List) :-		%   \<special>
-	wf_char(C, Char),
-	put(Char), !,
-	writefs(Rest, List).
-
-writefs([92|Rest], List) :-		%   \<character code in decimal>
-	getcode(Char, Rest, More),
-	put(Char), !,
-	writefs(More, List).
-
 writefs([Char|Rest], List) :-		%   <ordinary character>
 	put(Char), !,
 	writefs(Rest, List).
@@ -348,19 +325,6 @@ wf_act(119, [Head|Tail], Tail) :-	%   Write
 	write(Head).
 
 wf_act(120, [_|Tail], Tail).		%   X (skip)
-
-
-
-
-wf_char( 37, 37).		%  %
-wf_char( 92, 92).		%  \
-wf_char( 98,  8).		%  Backspace
-wf_char(101, 27).		%  Escape
-wf_char(102, 12).		%  Formfeed
-wf_char(108, 10).		%  Linefeed
-wf_char(110, 10).		%  Newline (=LF on UNIX)
-wf_char(114, 13).		%  Return
-wf_char(116,  9).		%  Tab
 
 
 
