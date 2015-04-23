@@ -9,7 +9,7 @@
 # don't forget a trailing slash
 pc_prefix=
 PC_INCLUDEPATH=.
-optflags="-O1 -fomit-frame-pointer -DNDEBUG"
+optflags="-O1 -fomit-frame-pointer -DNDEBUG -DTRACE"
 cc=gcc
 cachedir="${HOME}/.qp"
 
@@ -71,8 +71,7 @@ while test -n "$1"; do
 	-version)
 	    exec ${pc_prefix}pc -version;;
 	-g)
-	    c_options="${c_options} -DTRACE -g"
-	    optflags=
+	    c_options="${c_options} -g"
 	    shift;;
 	-C)
 	    shift
