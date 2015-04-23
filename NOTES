@@ -45,10 +45,9 @@ NOTES											              -*- Org -*-
      number_codes/2.
 *** functor/3 (and others?) may exceed heap-reserve for large inputs
 ** Minor
+*** TODO pi doesn't handle she-bang
 *** TODO Rename file:macros.pl to something more sensible
     - perhaps "classes.pl"
-*** TODO The interpreter should accept but ignore some compiler-specific directives
-    - determinate, mode, meta_predicate, compress_facts, trace_libraries
 *** discontiguous/1 is not available in the interpreter
 *** TODO standard-ports should have some initial data
     - alias, type, mode.
@@ -416,7 +415,6 @@ NOTES											              -*- Org -*-
    - perform determinateness-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
-** lib/rdtok: support "\OOO"/"\xXX" escapes
 ** Catch unbound variables as '+' args to predicates with declared mode
    - possibly, but needs a lot of changes and slows down compilation.
 ** Allow serializing DB to and from file
@@ -448,6 +446,12 @@ NOTES											              -*- Org -*-
    - different handling of put_code/put_byte, get_code/get_byte and
      peek_code/peek_byte
 * Documentation
+** DONE News
+   - `read` now is more robust with respect to operators in
+     argument-lists.
+   - `read` understands `\xXX` and `\OOO` escape sequences in quoted
+     strings and atoms.
+   - The interpreter didn't recognize '=..'/2
 ** TODO Document non-autoload libraries
    - only roughly, not in detail.
    - libs: arrays, assoc, bits, canon, heaps, logarr, map, path, pp,
@@ -455,18 +459,16 @@ NOTES											              -*- Org -*-
    - explain usage, mention autoloads.
 ** TODO List differences to ISO in file:README
 ** Missing ISO predicates
-   | Name                                         | Remarks                                        |
-   |----------------------------------------------+------------------------------------------------|
-   | current_predicate/1                          | unimplemented                                  |
-   | set_prolog_flag/2                            | unimplemented, as there are no changable flags |
-   | call/1                                       | unimplemented                                  |
-   | close/2                                      | unimplemented                                  |
-   | set_stream_position/2                        | too vague to be useful                         |
-   | stream_property/2                            |                                                |
-   | char_conversion/2, current_char_conversion/2 | unimplemented                                  |
-   | read_term/2, read_term/3                     |                                                |
-   | write_canonical/1, write_canonical/2         |                                                |
-   | write_term/2, write_term/3                   |                                                |
+   | Name                                         | Remarks                                         |
+   |----------------------------------------------+-------------------------------------------------|
+   | current_predicate/1                          | unimplemented                                   |
+   | set_prolog_flag/2                            | unimplemented, as there are no changeable flags |
+   | call/1                                       | unimplemented                                   |
+   | set_stream_position/2                        | too vague to be useful                          |
+   | char_conversion/2, current_char_conversion/2 | unimplemented                                   |
+   | read_term/2, read_term/3                     |                                                 |
+   | write_canonical/1, write_canonical/2         |                                                 |
+   | write_term/2, write_term/3                   |                                                 |
 ** ISO-extensions ISO DTR 13211-1:2006
    | log/2, atan/2, asin/1, acos/1, | arithmetic expressions                    |
    | epsilon/0, pi/0, e/0           | arithmetic constants                      |
