@@ -426,6 +426,10 @@ pi_process_directive(include(FILE)) :-
 	recordz(pi_loaded, FILE2),
 	pi_msg('% including %q ...\n', FILE2).
 pi_process_directive(X) :-
+	functor(X, NAME, 1),
+	%% ignored
+	memberchk(NAME, [compress_facts, trace_libraries, determinate, mode]).
+pi_process_directive(X) :-
 	(call(X); seen, pi_close_all_files, throw(error('latent goal failed', X))).
 
 pi_close_all_files :-

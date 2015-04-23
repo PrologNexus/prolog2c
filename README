@@ -1409,13 +1409,14 @@ Directives
   The following directives are available and can be declared using the
   usual ":- DIRECTIVE, ... ." syntax. Note that some of these are
   available only in compiled code, some only in interpreted code and
-  some in both:
+  some in both (directives marked with "*" are ignored by the
+  interpreter):
 
-       compress_facts                           [compiler]
+       compress_facts                           [compiler, interpreter*]
 
   Equivalent to the `-compress-facts` compiler option.
 
-       trace_libraries                          [compiler]
+       trace_libraries                          [compiler, interpreter*]
 
   Enable tracing for all code, including auto-included
   libraries. Normally only the code of the user program is traced.
@@ -1437,7 +1438,7 @@ Directives
   the "initialization" directive, but pre-initialization goals are run
   before all normal initialization goals.
 
-       determinate PI, ...                      [compiler]
+       determinate PI, ...                      [compiler, interpreter*]
 
   Declares the predicates specified in PI as being determinate, which
   gives more opportunities for tail-call optimization. PI should be of
@@ -1448,7 +1449,7 @@ Directives
   Allows the clauses of the predicates indicated by PI to be
   discontiguous in the source program [ISO]
 
-       mode PREDICATE(MODE, ...), ...           [compiler]
+       mode PREDICATE(MODE, ...), ...           [compiler, interpreter*]
 
   Declares that one or more predicates are always called with certain
   types of arguments. MODE should be one of the atoms `+`, `-` or `?`
