@@ -144,7 +144,7 @@ read(atom(Functor), ['('|S1], Precedence, Answer, S) :- !,
 
 %% flw (allow prefix-op before punctutation)
 read(atom(Functor), [Stop|S1], Precedence, Answer, S) :-
-	(Stop == ','; Stop == ')'), !,
+	memberchk(Stop, [',', ')', ']']), !,
 	exprtl0([Stop|S1], Functor, Precedence, Answer, S).
 
 read(atom(Functor), S0, Precedence, Answer, S) :-
