@@ -46,8 +46,6 @@ NOTES											              -*- Org -*-
 *** functor/3 (and others?) may exceed heap-reserve for large inputs
 ** Minor
 *** TODO pi doesn't handle she-bang
-*** TODO Rename file:macros.pl to something more sensible
-    - perhaps "classes.pl"
 *** discontiguous/1 is not available in the interpreter
 *** TODO standard-ports should have some initial data
     - alias, type, mode.
@@ -359,7 +357,9 @@ NOTES											              -*- Org -*-
    - force inlining? (check whether -O2 inlines it)
    - check once again with new optimization options (-O1)
 ** Deref arguments in advance
-   - is this legal?
+   - Can be done for arguments with "+"-mode (other arguments may
+     be indirectly deref'd through shared bindings).
+** If no GC occurs, could failure simple reset "alloc_top"?
 ** Use power-of-2 sized hash-tables everywhere
    - use binary-and instead of mod operation, supposed to be faster.
    - symbol- and structure-dispatch tables, block-dispatch-tables (in
@@ -383,6 +383,10 @@ NOTES											              -*- Org -*-
 ** Special-case calls of primitives that are known to always succeed
    - avoids test for failure.
    - or does cc already detect this?
+** Determinacy analysis
+   - keep flag during compilation of a full predicate.
+   - determinate if all but last clause contain a cut and all predicates
+     called before the cuts are determinate.
 ** DONE Take advantage of timestamps when binding vars in unify()
    - see comment in file:pc.h (unify2), seems to work, but trail
      is only slightly smaller.
