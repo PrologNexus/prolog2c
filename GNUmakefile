@@ -16,7 +16,7 @@ CT =
 
 LIBS = -lm -lrt
 
-PC_SOURCE_FILES = settings.pl support.pl state.pl terms.pl lib/dcg.pl index.pl macros.pl \
+PC_SOURCE_FILES = settings.pl support.pl state.pl terms.pl lib/dcg.pl index.pl builtin.pl \
 	process.pl compile.pl assemble.pl main.pl xref.pl lib/flags.pl lib/lists.pl \
 	lib/misc.pl lib/write.pl lib/rdtok.pl lib/op.pl lib/rdb.pl lib/io.pl \
 	lib/findall.pl lib/sets.pl lib/read.pl lib/cdb.pl pc.pl

@@ -1645,20 +1645,20 @@ Calling code written in other languages
   Notes:
 
   - `PRIMITIVE()`, `unify()`, `CSTRING()` and `system_error()` are
-    only visible in compiled Prolog code. If you want to implement
-    the C part of your extension in a separate source-file, you can
-    include `pc.h`, but will have to do without some of the macros
-    and functions provided in `pc.h` (look for definitions guarded
-    with `COMPILED_PROLOG_PROGRAM`.)
+    only visible in compiled Prolog code. If you want to implement the
+    C part of your extension in a separate source-file, you can
+    include `pc.h`, but will have to do without some of the macros and
+    functions provided in `pc.h` (look for definitions guarded with
+    `COMPILED_PROLOG_PROGRAM`.)
 
   - `PRIMITIVE()` is not strictly necessary. It only ensures the
     result type is `int` and an implicit first argument of type
-    `CHOICE_POINT *` is passed. This argument _must_ be named `C0`,
-    as `unify()` actually is a macro that uses it.
+    `CHOICE_POINT *` is passed. This argument _must_ be named `C0`, as
+    `unify()` actually is a macro that uses it.
 
   - `CSYMBOL()` allocates a Prolog atom, from a zero-terminated C
-    string, in the garbage collected heap. There are variants
-    to allocate using an arbitrary allocation pointer, called
+    string, in the garbage collected heap. There are variants to
+    allocate using an arbitrary allocation pointer, called
     `CSYMBOL1()`, etc.
 
   - `system_error()` throws an exception of type `system_error/1`.
@@ -1666,18 +1666,17 @@ Calling code written in other languages
     exception object, or `type_error()` to trigger an exception of
     type `type_error/2`.
 
-  - `unify` is a macro, expanding into an inline test and a call to
-    a general unification routine. It is also only usable in
-    compiled prolog code. The result is an integer (1 on success or
-    0 on failure.)
+  - `unify` is a macro, expanding into an inline test and a call to a
+    general unification routine. It is also only usable in compiled
+    prolog code. The result is an integer (1 on success or 0 on
+    failure.)
 
-  - You can add your extensions permanently to the compiler by
-    adding a `macro/2` clause in the file `macros.pl` of the compiler
+  - You can add your extensions permanently to the compiler by adding
+    a `macro/2` clause in the file `builtin.pl` of the compiler
     sources and adding a clause for `auto_include/3` (in the same
     file), which ensures that a file is included automatically and
     compiled with the original program. Finally copy your extension
-    file into the `lib` directory (wherever you chose to install
-    it.)
+    file into the `lib` directory (wherever you chose to install it.)
 
   - There isn't much information here - you really should study `pc.h`
     if you want to interface to C code in earnest.

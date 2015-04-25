@@ -10,7 +10,7 @@
 :- include('terms.pl').
 :- include('index.pl').
 :- include('lib/dcg.pl').
-:- include('macros.pl').
+:- include('builtin.pl').
 :- include('process.pl').
 :- include('compile.pl').
 :- include('assemble.pl').
