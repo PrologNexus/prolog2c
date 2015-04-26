@@ -7,8 +7,9 @@
 
 
 gensym(BASE, ATM) :-
-	recorded(gensym_counter, C, REF),
-	erase(REF),
+	( recorded(gensym_counter, C, REF), erase(REF)
+	; C = 1
+	),
 	C2 is C + 1,
 	recordz(gensym_counter, C2),
 	atomic_list_concat([BASE, C], ATM).
