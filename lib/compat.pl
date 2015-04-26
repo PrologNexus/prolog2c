@@ -5,14 +5,12 @@
 	downcase_string(+, -),
 	upcase_string(+, -).
 
-:- global_variable(gensym_counter).
-:- pre_initialization(global_set(gensym_counter, 1)).
-
 
 gensym(BASE, ATM) :-
-	global_ref(gensym_counter, C),
+	recorded(gensym_counter, C, REF),
+	erase(REF),
 	C2 is C + 1,
-	global_set(gensym_counter, C2),
+	recordz(gensym_counter, C2),
 	atomic_list_concat([BASE, C], ATM).
 
 atom_number(A, N) :-
