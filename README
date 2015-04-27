@@ -988,7 +988,10 @@ Builtin predicates
 
         random(X)
 
-     Random integer between  0 and X (exclusive).
+     Random integer between 0 and X (exclusive). This function calls
+     the C library routine rand(3), where the initial random seed has
+     been initialized to a time-based value at the start of the
+     executing program
 
         round(X)
 
