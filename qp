@@ -6,12 +6,13 @@
 
 ## Change these to your liking: ############################################
 
-# don't forget a trailing slash
 pc_prefix=
-PC_INCLUDEPATH=.
+include_path=.
 optflags="-O1 -fomit-frame-pointer -DNDEBUG -DTRACE"
 cc=gcc
 cachedir="${HOME}/.qp"
+# set this one if you don't want to set PC_LIBRARY_DIR globally
+#PC_LIBRARY_DIR=...
 
 ############################################################################
 
@@ -23,7 +24,7 @@ fi
 
 pc_options=
 c_options=
-library_dir=
+library_dir="$PC_LIBRARY_DIR"
 pc_sourcefile=
 ofile=
 pp=
@@ -38,7 +39,7 @@ function compute_md5() {
 }
 
 function usage() {
-    echo "usage: qp [OPTION ...] [FILRNAME ARGUMENT ...]"
+    echo "usage: qp [OPTION ...] [FILENAME ARGUMENT ...]"
     echo
     echo "  -help             show this text"
     echo "  -version          show version and exit"
@@ -49,7 +50,7 @@ function usage() {
     echo "  -compress-facts   compress blocks of facts with ground arguments"
     echo "  -xref             write cross-referencing information instead of"
     echo "                    compiling program"
-    echo "  -n                ignore PC_library_dir"
+    echo "  -n                ignore PC_LIBRARY_DIR"
     echo "  -C OPTION         pass OPTION to the C compiler"
     echo "  -O0               compile C code without any optimizations"
     echo "  -g                enable debug-information and call-tracing"
@@ -169,15 +170,16 @@ if test \! -x "${cachedir}/${hashcode}"; then
 	pc_sourcefile="${newfile}"
     fi
 
-    if test -n "${PC_library_dir}"; then
-	optflags="${optflags} -I${PC_library_dir}"
+    if test -n "${library_dir}"; then
+	optflags="${optflags} -I${library_dir}"
     fi
 
     tmp1=`mktemp --tmpdir qp-XXXXXX`
     cfile="${tmp1}.c"
-    ${pc_prefix}pc -q "${pc_sourcefile}" ${pc_options} -o "${cfile}"
+    PC_LIBRARY_DIR=${library_dir} ${pc_prefix}pc -q "${pc_sourcefile}" ${pc_options} \
+	-o "${cfile}"
     "$cc" -std=gnu99 ${optflags} -fno-strict-aliasing -fwrapv \
-	-I${PC_INCLUDEPATH} -I. "${cfile}" -o "${cachedir}/${hashcode}" \
+	-I${include_path} -I. "${cfile}" -o "${cachedir}/${hashcode}" \
 	-lm -lrt ${c_options} 
     rm -f "${cfile}"
 
