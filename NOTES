@@ -451,6 +451,10 @@ NOTES											              -*- Org -*-
      peek_code/peek_byte
 * Documentation
 ** DONE News
+   - Passing variable in argument position with "+"-mode now throws
+     exception instead of terminating the program.
+   - "qp" was broken in a few places and can now override
+     PC_LIBRARY_DIR directly, if needed.
    - `read` now is more robust with respect to operators in
      argument-lists.
    - `read` understands `\xXX` and `\OOO` escape sequences in quoted

@@ -1303,7 +1303,9 @@ static inline X check_output_port(X x)
 
 static void check_nonvar_failed(XCHAR *name, int arity, int arg) 
 {
-  CRASH("%s/%d: mode declaration violated for argument %d", name, arity, arg + 1);
+  sprintf(string_buffer, "%s/%d: mode declaration violated for argument %d", name, 
+	  arity, arg + 1);
+  system_error(string_buffer);
 }
 
 
