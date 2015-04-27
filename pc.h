@@ -2530,6 +2530,7 @@ static void initialize(int argc, char *argv[])
   global_argv = argv;
   debugging = 0;
   verbose = 0;
+  srand((unsigned int)time(NULL));
 
 #if defined(PROFILE) || defined(PROFILE_MEMORY)
   where = &system_pinfo;
