@@ -29,6 +29,7 @@ pc_sourcefile=
 ofile=
 pp=
 force=
+dontrun=
 
 function compute_md5() {
     if test `uname` == Darwin; then
@@ -51,6 +52,7 @@ function usage() {
     echo "  -xref             write cross-referencing information instead of"
     echo "                    compiling program"
     echo "  -n                ignore PC_LIBRARY_DIR"
+    echo "  -c                compile but do not run"
     echo "  -C OPTION         pass OPTION to the C compiler"
     echo "  -O0               compile C code without any optimizations"
     echo "  -g                enable debug-information and call-tracing"
@@ -71,6 +73,9 @@ while test -n "$1"; do
 	    exit;;
 	-version)
 	    exec ${pc_prefix}pc -version;;
+	-c)
+	    dontrun=1
+	    shift;;
 	-g)
 	    optflags=
 	    c_options="${c_options} -g"
@@ -191,6 +196,6 @@ fi
 
 if test -n "$ofile"; then
     cp "${cachedir}/${hashcode}" "$ofile"
-else
+elif test -z "$dontrun"; then
     exec "${cachedir}/${hashcode}" "$@"
 fi
