@@ -11,11 +11,11 @@
 
 
 run(CMD) :-
-	run_translate(CMD, STR, []),
-	shell(STR).
+	run(CMD, 0).
 
 run(CMD, S) :-
 	run_translate(CMD, STR, []),
+	!,
 	shell(STR, S).
 
 run_insert(LST, OUT, IN) :- append(LST, IN, OUT).
@@ -45,6 +45,8 @@ temporary_file(FN) :-
 capture(CMD, OUTPUT) :-
 	temporary_file(TMP),
 	run((CMD, '>', TMP)),
-	see(TMP), read_string(all, OUTPUT1), seen,
+	open(TMP, read, IN),
+	read_string(IN, all, OUTPUT1),
+	close(IN),
 	delete_file(TMP),
 	split_string(OUTPUT1, "", " \t\”", [OUTPUT]).
