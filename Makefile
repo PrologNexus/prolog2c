@@ -1,5 +1,7 @@
 #### Makefile for pc
 
+# change this to your liking
+PREFIX = /usr/local
 
 CC = gcc
 CFLAGS = -std=gnu99 -I. -fno-strict-aliasing -fwrapv
@@ -13,7 +15,7 @@ LIBS += -lrt
 endif
 
 
-.PHONY: all check clean
+.PHONY: all check clean install
 
 
 all: pc pi pb
@@ -35,3 +37,14 @@ clean:
 check: all
 	./pc -n pc.pl -o pc2.c
 	cmp pc.c pc2.c
+
+install: all
+	mkdir -p $(PREFIX)/bin
+	mkdir -p $(PREFIX)/share/qp
+	mkdir -p $(PREFIX)/include
+	install -m755 pc $(PREFIX)/bin
+	install -m755 pi $(PREFIX)/bin
+	install -m755 pb $(PREFIX)/bin
+	install -m755 qp $(PREFIX)/bin
+	install -m644 pc.h $(PREFIX)/include
+	install -m644 lib/* $(PREFIX)/share/qp
