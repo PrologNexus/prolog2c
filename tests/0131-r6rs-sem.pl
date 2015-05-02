@@ -1036,7 +1036,7 @@ parse(Str, Obj) :-
 
 remove_space([], []) :- !.
 remove_space([N|T], Z) :-
-  char_type(N, space),
+  code_type(N, space),
   remove_space(T, Z), !.
 remove_space([N|T], [N|T]) :- !.
 
@@ -1089,13 +1089,13 @@ numstr_to_number([H|T], Result, Acc) :-
   numstr_to_number(T, Result, Acc1).
   
 
-delimiter(N) :-  char_type(N, space).
+delimiter(N) :-  code_type(N, space).
 delimiter(N) :-  char_code('\'', N).
 delimiter(N) :- char_code('(', N).
 delimiter(N) :- char_code(')', N).
 
 numstr([]).
-numstr([H|T]) :- char_type(H, digit), numstr(T).
+numstr([H|T]) :- code_type(H, digit), numstr(T).
 
 
 %%% printer
