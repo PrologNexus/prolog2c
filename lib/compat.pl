@@ -12,7 +12,8 @@ gensym(BASE, ATM) :-
 	),
 	C2 is C + 1,
 	recordz(gensym_counter, C2),
-	atomic_list_concat([BASE, C], ATM).
+	atomic_list_concat([BASE, C], ATM),
+	!.
 
 atom_number(A, N) :-
 	var(A),
