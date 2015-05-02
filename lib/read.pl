@@ -32,13 +32,13 @@
 	display_token(+).
 
 
-read1(Answer) :- read1(Answer, _).
+'$read1'(Answer) :- '$read1'(Answer, _).
 
 %% this corresponds to ISO read/2
-read2(S, A) :-
+'$read2'(S, A) :-
 	foreign_call(current_input_stream(OLD)),
 	foreign_call(set_current_input_stream(S)),
-	read1(A),
+	'$read1'(A),
 	foreign_call(set_current_input_stream(OLD)).
 
 
@@ -46,7 +46,7 @@ read2(S, A) :-
 %   reads a term from the current input stream and unifies it with
 %   Answer.  Variables is bound to a list of [Atom=Variable] pairs.
 
-read1(Answer, Variables) :-
+'$read1'(Answer, Variables) :-
 	repeat,
 	    read_tokens(Tokens, Variables),
 	    (   read(Tokens, 1200, Term, LeftOver), all_read(LeftOver)

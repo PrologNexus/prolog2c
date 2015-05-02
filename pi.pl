@@ -22,7 +22,7 @@ get_library_dir(DIR) :-
 repl :-
 	display('?- '), flush_output,
 	seeing(IN), telling(OUT),
-	catch(read1(TERM, VARS), EXN, (report_exception(EXN), !, repl)),
+	catch('$read1'(TERM, VARS), EXN, (report_exception(EXN), !, repl)),
 	(TERM == end_of_file, halt; process_input(TERM, VARS, IN, OUT)).
 repl :- repl.
 

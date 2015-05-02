@@ -32,7 +32,7 @@ compile_file_finished(STATE) :-
 
 % no more input, read next
 process_input([], BLOCK, NA, STATE) :-
-	read1(EXPR),
+	'$read1'(EXPR),
 	!, process_input([EXPR], BLOCK, NA, STATE).
 
 % end of file reached, compile block, if not empty

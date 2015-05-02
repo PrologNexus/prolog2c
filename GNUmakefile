@@ -37,7 +37,7 @@ CC_OPTIMIZED_COMPILE_OPTIONS = -std=gnu99 -I. -fno-strict-aliasing -fwrapv -O1 \
 	-fomit-frame-pointer
 MANIFEST = README qp lib/sorts.pl lib/ordset.pl lib/writef.pl lib/arith.pl lib/iso.pl \
 	lib/str.pl lib/numvars.pl pc.c pc.h pi.c pb.c g-s-p.pl system-predicates pb.pl \
-	pi.pl lib/interp.pl pi_system_predicate.pl pi_call_primitive.pl \
+	pi.pl lib/interp.pl pi_system_predicate.pl pi_call_primitive.pl lib/readt.pl \
 	pi_evaluate_op.pl Makefile $(PC_SOURCE_FILES)
 
 

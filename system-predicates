@@ -137,8 +137,9 @@ system_predicate(ord_union(+X, +Y, -Z), 'ordset').
 system_predicate(ord_memberchk(+X, +Y), 'ordset').
 system_predicate(read(-X), 'read').
 system_predicate(read(+S, -X), 'read').
-system_predicate(read1(-X, -Y), 'read').
 system_predicate(read_tokens(-X, -Y), 'rdtok').
+system_predicate(read_term(-X, +Y), 'readt').
+system_predicate(read_term(+X, -Y, -Z), 'readt').
 system_predicate(recorda(+X, -Y), 'rdb').
 system_predicate(recorda(+X, -Y, -Z), 'rdb').
 system_predicate(recorded(+X, -Y), 'rdb').

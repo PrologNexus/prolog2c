@@ -42,8 +42,8 @@ macro(telling(S), foreign_call(current_output_stream(S))).
 macro(current_input(S), foreign_call(current_input_stream(S))).
 macro(current_output(S), foreign_call(current_output_stream(S))).
 macro(current_error_output(S), foreign_call(current_error_stream(S))).
-macro(read(T), read1(T)).
-macro(read(S, T), read2(S, T)).
+macro(read(T), '$read1'(T)).
+macro(read(S, T), '$read2'(S, T)).
 macro(enable_trace(F), foreign_call(enable_trace(F))).
 macro(getpid(PID), foreign_call(get_process_id(PID))).
 macro(sleep(SECS), foreign_call(sleep_for_seconds(SECS))).
@@ -168,8 +168,9 @@ auto_include(ord_subtract, 2, 'ordset').
 auto_include(ord_memberchk, 2, 'ordset').
 
 auto_include(read_tokens, 2, 'rdtok').
-auto_include(read1, 1, 'read').
-auto_include(read2, 1, 'read').
+auto_include('$read1', 1, 'read').
+auto_include('$read1', 2, 'read').
+auto_include('$read2', 2, 'read').
 
 auto_include(clause, 2, 'cdb').
 auto_include(clause, 3, 'cdb').
@@ -208,6 +209,9 @@ auto_include(put_char, 1, 'iso').
 auto_include(put_char, 2, 'iso').
 
 auto_include(numbervars, 3, 'numvars').
+
+auto_include(read_term, 2, 'readt').
+auto_include(read_term, 3, 'readt').
 
 auto_include(_, _, _) :- fail.
 
@@ -258,9 +262,9 @@ determinate_builtin('$findall_push', 1).
 determinate_builtin('$findall_collect', 1).
 determinate_builtin(ord_memberchk, 2).
 determinate_builtin(read_tokens, 2).
-determinate_builtin(read1, 1).
-determinate_builtin(read1, 2).
-determinate_builtin(read2, 1).
+determinate_builtin('$read1', 1).
+determinate_builtin('$read1', 2).
+determinate_builtin('$read2', 1).
 determinate_builtin(abolish, 1).
 determinate_builtin(asserta, 1).
 determinate_builtin(asserta, 2).

@@ -596,6 +596,18 @@ Builtin predicates
     Reads the next term from the current input-stream or the stream
     given and unifies it with X [ISO]
 
+        read_term(-TERM, +OPTIONS)
+        read_term(+STREAM, -TERM, +OPTIONS)
+
+    Read a term, given a list of read-options. Currently supported
+    read-options are:
+
+        variables(-VARS)            unify VARS with the list if non-
+                                    anonymous variables in TERM.
+        variable_names(-VARNAMES)   unify VARNAMES with a list of
+                                    ATOM=VAR structures of all non-
+                                    anonymous variables
+
         read_string(+LEN, -X)
         read_string(+STREAM, +LEN, -X)
 
