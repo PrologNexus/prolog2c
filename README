@@ -78,7 +78,7 @@ Building and installation
   have GNU make, then compile the files manually, see Makefile for the
   proper options you have to pass to the compiler.
 
-  Compilation may take a while, particularly with clang.
+  Compilation may take quite some time, particularly with clang.
 
   Several builtin predicates are actually implemented in Prolog and
   reside in separate library files in the "lib" directory. You can
@@ -86,6 +86,14 @@ Building and installation
   to find the libraries the compiler must be able to locate the
   library directory. This can be done by setting the environment
   variable `PC_LIBRARY_DIR` to the name of a directory to be searched.
+
+  There is an "install" target in the makefile, which will copy all
+  parts of ?-Prolog in your system. To do so enter
+
+    make PREFIX=<path> install
+
+  `PREFIX` defaults to `/usr/local`. After this set `PC_LIBRARY_DIR`
+  to `<PREFIX>/qp`.
 
 
 Usage
@@ -153,10 +161,6 @@ Usage
 
   Running "qp" without arguments just starts the interpreter ("pi").
   Enter "qp -help" to see a list of options.
-
-  To install this script, modify the set of variables at the start to
-  reflect the actual locations of "pc" and "pi" and copy it into some
-  directory in your PATH.
 
 
 Interpreter
