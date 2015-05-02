@@ -3,6 +3,8 @@
 
 %% compile a set of clauses
 
+compile_clauses(';'/2, _, _, _) :-
+	error(['attempt to redefine builtin predicate: ', ';'/2]).
 compile_clauses(NAME/ARITY, CLAUSES, S1, S2) :-
 	gen_label(L1, S1, S3),
 	emit(enter(NAME, ARITY, L1)),
