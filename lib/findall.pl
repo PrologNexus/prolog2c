@@ -34,8 +34,10 @@
 '$findall_collect'([X|MORE], R, L) :-
 	(var(X); X \== '$<mark>'),
 	!, '$findall_collect'(MORE, [X|R], L).
-'$findall_collect'([_|MORE], R, R) :-
-	!, global_set(findall_solutions, MORE).
+'$findall_collect'([_|MORE], R1, R2) :-
+	%% first update global before unifying
+	global_set(findall_solutions, MORE),
+	R1 = R2.
 
 
 %% bagof/3, setof/3
