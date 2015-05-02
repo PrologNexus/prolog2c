@@ -3,11 +3,6 @@ NOTES											              -*- Org -*-
 
 * Issues
 ** Major
-*** TODO discontiguous doesn't work with "wildcard" PI
-    - e.g. ":- discontiguous bar." with defs for bar/0 and bar/1.
-    - matching of N/A when collecting clauses for one of the two
-      functors seems to get confused.
-    - not completely sure whether ISO allows PI without arity.
 *** TODO embedded test fails on [z]
     - exit_code doesn't seem to be initialized.
     - is TERMINATE(..., EXIT_SUCCESS) called?
@@ -45,6 +40,13 @@ NOTES											              -*- Org -*-
      number_codes/2.
 *** functor/3 (and others?) may exceed heap-reserve for large inputs
 ** Minor
+*** TODO discontiguous doesn't work with "wildcard" PI
+    - e.g. ":- discontiguous bar." with defs for bar/0 and bar/1.
+    - matching of N/A when collecting clauses for one of the two
+      functors seems to get confused.
+    - not completely sure whether ISO allows PI without arity.
+*** TODO Check what other builtins we should prevent to be redefined
+    - see compile_clauses/4 in file:compile.pl
 *** TODO pi doesn't handle she-bang
 *** discontiguous/1 is not available in the interpreter
 *** TODO standard-ports should have some initial data
@@ -419,15 +421,14 @@ NOTES											              -*- Org -*-
    - perform determinateness-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
-** Catch unbound variables as '+' args to predicates with declared mode
+** TODO Add read_term/2+3
+   - only with read-options "variables" and "variable_names"
+** Detect unbound variables in '+' args for calls to predicates with declared mode
+   - i.e. at compile-time.
    - possibly, but needs a lot of changes and slows down compilation.
 ** Allow serializing DB to and from file
 ** TODO Check if we can use file:lib/canon.pl for printing query results
    - syntax is ugly, could use "**" as does GNU Prolog.
-** Handle arbitrary signals
-   - should we?
-** dlopen, dlsym, to access primitives written in C
-   - kust opens cans of worms, but could be done as .c extension.
 ** Show warning for untriggered delayed goals with "-:d"
    - check trail-entries when unwinding trail and before exit.
 ** pb extensions
@@ -446,14 +447,25 @@ NOTES											              -*- Org -*-
      | skip/1        |
      | read_line/X   |
      | read_string/X |
+     | read/X        |
+     | read_term/X   |
      | sub_atom/5    |
    - different handling of put_code/put_byte, get_code/get_byte and
      peek_code/peek_byte
+** Potential libraries
+*** Handle arbitrary signals
+   - should we? could be dine in (.c) library.
+*** dlopen, dlsym, to access primitives written in C
+   - kust opens cans of worms, but could be done as .c extension.
 * Documentation
 ** DONE News
+   - Added `read_term/2` and `read_term/3`.
+   - Fixed problem in `findall/3` that caused failure of update
+     of global state variable in certain situations.
+   - Added "install" target to makefile.
    - Passing variable in argument position with "+"-mode now throws
      exception instead of terminating the program.
-   - "qp" was broken in a few places and can now override
+   - `qp` was broken in a few places and can now override
      PC_LIBRARY_DIR directly, if needed.
    - `read` now is more robust with respect to operators in
      argument-lists.
@@ -474,10 +486,13 @@ NOTES											              -*- Org -*-
    | call/1                                       | unimplemented                                   |
    | set_stream_position/2                        | too vague to be useful                          |
    | char_conversion/2, current_char_conversion/2 | unimplemented                                   |
-   | read_term/2, read_term/3                     |                                                 |
-   | write_canonical/1, write_canonical/2         |                                                 |
-   | write_term/2, write_term/3                   |                                                 |
+   | write_canonical/1, write_canonical/2         | would require heavy modifiations to lib/write   |
+   | write_term/2, write_term/3                   | s.a.                                            |
 ** ISO-extensions ISO DTR 13211-1:2006
+   | subsumes_term/2                |                                           |
+   | retractall/1                   |                                           |
+   | term_variables/2               | ISO, according to SWI docs                |
+   | callable/1                     | considered silly by notes in SWI docs     |
    | log/2, atan/2, asin/1, acos/1, | arithmetic expressions                    |
    | epsilon/0, pi/0, e/0           | arithmetic constants                      |
    | ^/2                            | integer exponentation (error on overflow) |
