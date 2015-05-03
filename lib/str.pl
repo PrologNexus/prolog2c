@@ -32,7 +32,8 @@ split_string(STR, SEP, PAD, SUB) :-
 	!,
 	'$split_string_split'(L, SEP, R).
 '$split_string_split'([C|L], SEP, [[C]|R2]) :-
-	'$split_string_split'(L, SEP, [""|R2]), !.
+	'$split_string_split'(L, SEP, [""|R2]),
+	!.
 '$split_string_split'([C|L], SEP, [[C|W]|R2]) :-
 	'$split_string_split'(L, SEP, [W|R2]).
 
