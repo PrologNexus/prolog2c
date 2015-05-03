@@ -3,6 +3,9 @@ NOTES											              -*- Org -*-
 
 * Issues
 ** Major
+*** TODO split_string/4 doesn't work with string that consists only of spaces
+    - split_string/4 does not retain empty strings, this is
+      incompatible to SWIs version.
 *** TODO embedded test fails on [z]
     - exit_code doesn't seem to be initialized.
     - is TERMINATE(..., EXIT_SUCCESS) called?
@@ -55,8 +58,6 @@ NOTES											              -*- Org -*-
     - needs to be safer, should it be exposed (or "meta_predicate"
       is made official)
 *** interp: call/1 should probably handle X^Y terms (quantified)
-*** split_string/4 does not retain empty strings
-    - this is incompatible to SWIs version.
 *** Eliminate redundant switch-operations
     - e.g.:
       #+BEGIN_SRC prolog
