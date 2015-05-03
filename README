@@ -607,10 +607,10 @@ Builtin predicates
     read-options are:
 
         variables(-VARS)            unify VARS with the list if non-
-                                    anonymous variables in TERM.
+                                    anonymous variables in TERM [ISO]
         variable_names(-VARNAMES)   unify VARNAMES with a list of
                                     ATOM=VAR structures of all non-
-                                    anonymous variables
+                                    anonymous variables [ISO]
 
         read_string(+LEN, -X)
         read_string(+STREAM, +LEN, -X)
