@@ -3946,6 +3946,27 @@ static X string_to_list(XCHAR *str, int len)
 }
 
 
+static X string_to_number(XCHAR *ptr)
+{
+  // catch "nan" and "inf" (user at least should add "+"/"-")
+  if(isalpha(*ptr)) return END_OF_LIST_VAL;
+
+  XCHAR *endptr;
+  XWORD n = strtol(ptr, &endptr, 10);
+
+  if(*endptr != '\0' || ((n == LONG_MIN || n == LONG_MAX) && errno == ERANGE) || !is_in_fixnum_range(n)) {
+    XFLOAT f = strtod(ptr, &endptr);
+
+    if(*endptr != '\0' || ((f == 0 || f == HUGE_VAL || f == -HUGE_VAL) && errno == ERANGE)) 
+      return END_OF_LIST_VAL;
+
+    return FLONUM(f);
+  }
+
+  return word_to_fixnum(n);
+}
+
+
 static void push_argument_list(X lst)
 {
   lst = deref(lst);
@@ -4705,23 +4726,8 @@ PRIMITIVE(number_codes, X num, X lst)
   if(is_variable(num)) {
     int len;
     XCHAR *ptr = to_string(lst, &len);
-
-    // catch "nan" and "inf" (user at least should add "+"/"-")
-    if(isalpha(*ptr)) return 0;
-
-    XCHAR *endptr;
-    XWORD n = strtol(ptr, &endptr, 10);
-
-    if(*endptr != '\0' || ((n == LONG_MIN || n == LONG_MAX) && errno == ERANGE) || !is_in_fixnum_range(n)) {
-      XFLOAT f = strtod(ptr, &endptr);
-
-      if(*endptr != '\0' || ((f == 0 || f == HUGE_VAL || f == -HUGE_VAL) && errno == ERANGE)) 
-	return 0;
-
-      return unify(num, FLONUM(f));
-    }
-
-    return unify(num, word_to_fixnum(n));
+    X n = string_to_number(ptr);
+    return n != END_OF_LIST_VAL && unify(num, n);
   }
 
   check_number(num);
@@ -5152,6 +5158,22 @@ PRIMITIVE(fast_assq, X key, X lst, X arg, X result) {
   }
 
   return 0;
+}
+
+PRIMITIVE(num_to_atom, X num, X atom) {
+  if(is_FIXNUM(num))
+    sprintf(string_buffer, XWORD_OUTPUT_FORMAT, fixnum_to_word(num));
+  else if(objtype(num) == FLONUM_TYPE)
+    sprintf(string_buffer, XFLOAT_OUTPUT_FORMAT, flonum_to_float(num));
+  else check_number_failed(num);
+
+  return unify(atom, CSYMBOL(string_buffer));
+}
+
+PRIMITIVE(atom_to_num, X atom, X num) {
+  XCHAR *ptr = (XCHAR *)objdata(slot_ref(check_type_SYMBOL(atom), 0));
+  X n = string_to_number(ptr);
+  return n != END_OF_LIST_VAL && unify(num, n);
 }
 
 

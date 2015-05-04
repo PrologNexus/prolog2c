@@ -89,8 +89,6 @@ char_code(A, C) :- atom_codes(A, [C]).
 atom_number(A, N) :-
 	var(A),
 	!,
-	number_codes(NC, N),
-	atom_codes(A, NC).
+	foreign_call(num_to_atom(N, A)).
 atom_number(A, N) :-
-	atom_codes(A, AC),
-	number_codes(N, AC).
+	foreign_call(atom_to_num(A, N)).
