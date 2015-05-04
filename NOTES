@@ -1,4 +1,4 @@
-NOTES											              -*- Org -*-
+NOTES									              -*- Org -*-
 
 
 * Issues
@@ -98,7 +98,7 @@ NOTES											              -*- Org -*-
     - at least as much as possible and sensible.
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
-** Var-test in clause-indexing can be omitted if argument has mode '+'
+** TODO Var-test in clause-indexing can be omitted if argument has mode '+'
 ** Find a more efficient way of compiling unifications
 ** TODO Add macros for trivial lib predicates
    | asserta/1                 | would need to introduce var |
@@ -362,13 +362,15 @@ NOTES											              -*- Org -*-
 ** Deref arguments in advance
    - Can be done for arguments with "+"-mode (other arguments may
      be indirectly deref'd through shared bindings).
-** If no GC occurs, could failure simple reset "alloc_top"?
-** Use power-of-2 sized hash-tables everywhere
+** TODO If no GC occurs, could failure simple reset "alloc_top"?
+   - bound vars are reset, so no dangling references should occur.
+** TODO Use power-of-2 sized hash-tables everywhere
    - use binary-and instead of mod operation, supposed to be faster.
    - symbol- and structure-dispatch tables, block-dispatch-tables (in
      unify_block()), shared-term table
-** If clause contains a single tail-call, CP-creation could be avoided
-   - saves little, though.
+** TODO If clause contains a single tail-call, CP-creation could be avoided
+   - also applicable if body consists of primitive operations only
+     (foreign_call/1, etc.)
 ** Remove unused predicates
    - could be done in assembly-stage
      - register called predicates (and caller), compute unused
@@ -376,17 +378,14 @@ NOTES											              -*- Org -*-
        drop sections of pseudo-instructions.
      - add pseudo-instructions for marking start + end of predicate
        definition.
-** Peephole optimization of pseudo-instructions
+** TODO Peephole optimization of pseudo-instructions
    - needs thorough analysis of occurring patterns.
 ** Environment trimming
    - sort variables by lifetime (reversed) and trim env_top after last use.
    - may only be applicable when env_top didn't change.
-** Add "determinate" declarations and green cuts in library code
-   - profile to find suitable points of improvement.
-** Special-case calls of primitives that are known to always succeed
+** TODO Special-case calls of primitives that are known to always succeed
    - avoids test for failure.
-   - or does cc already detect this?
-** Determinacy analysis
+** TODO Determinacy analysis
    - keep flag during compilation of a full predicate.
    - determinate if all but last clause contain a cut and all predicates
      called before the cuts are determinate.
