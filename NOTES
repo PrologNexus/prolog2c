@@ -459,6 +459,7 @@ NOTES									              -*- Org -*-
    - kust opens cans of worms, but could be done as .c extension.
 * Documentation
 ** DONE News
+   - Added `atom_number/2`.
    - Added `read_term/2` and `read_term/3`.
    - Fixed problem in `findall/3` that caused failure of update
      of global state variable in certain situations.

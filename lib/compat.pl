@@ -15,15 +15,6 @@ gensym(BASE, ATM) :-
 	atomic_list_concat([BASE, C], ATM),
 	!.
 
-atom_number(A, N) :-
-	var(A),
-	!,
-	number_codes(NC, N),
-	atom_codes(A, NC).
-atom_number(A, N) :-
-	atom_codes(A, AC),
-	number_codes(N, AC).
-
 %%XXX dog slow and incomplete
 code_type(C, ascii) :- between(0, 127, C).
 code_type(C, ctrl) :- between(0, 31, C).

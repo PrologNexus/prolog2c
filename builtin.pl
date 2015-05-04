@@ -87,6 +87,7 @@ auto_include(between, 3, 'misc').
 auto_include(atom_codes, 2, 'misc').
 auto_include(number_codes, 2, 'misc').
 auto_include(char_code, 2, 'misc').
+auto_include(atom_number, 2, 'misc').
 
 auto_include(atomic_list_concat, 2, 'str').
 auto_include(split_string, 4, 'str').
@@ -301,6 +302,7 @@ determinate_builtin(put_char, 1).
 determinate_builtin(put_char, 2).
 determinate_builtin(atom_codes, 2).
 determinate_builtin(number_codes, 2).
+determinate_builtin(atom_number, 2).
 determinate_builtin(is_list, 1).
 determinate_builtin(atomic_list_concat, 2).
 determinate_builtin(split_string, 4).

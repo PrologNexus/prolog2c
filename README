@@ -378,6 +378,10 @@ Builtin predicates
     Unifies X with the number constructed from the character-codes in
     the list Y or vice versa [ISO]
 
+        atom_number(?X, ?Y)
+
+    Unifies X with the atom constructed from the number Y or vice versa.
+
         name(?X, ?Y)
 
     Unifies X with the atom or number constructed from the character

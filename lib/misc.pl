@@ -85,3 +85,12 @@ number_codes(A, LST) :-
 	(LST1 == 0 -> number_codes(A, LST); LST = LST1).
 
 char_code(A, C) :- atom_codes(A, [C]).
+
+atom_number(A, N) :-
+	var(A),
+	!,
+	number_codes(NC, N),
+	atom_codes(A, NC).
+atom_number(A, N) :-
+	atom_codes(A, AC),
+	number_codes(N, AC).
