@@ -50,7 +50,6 @@ NOTES									              -*- Org -*-
     - not completely sure whether ISO allows PI without arity.
 *** TODO Check what other builtins we should prevent to be redefined
     - see compile_clauses/4 in file:compile.pl
-*** TODO pi doesn't handle she-bang
 *** discontiguous/1 is not available in the interpreter
 *** TODO standard-ports should have some initial data
     - alias, type, mode.
@@ -459,6 +458,8 @@ NOTES									              -*- Org -*-
    - kust opens cans of worms, but could be done as .c extension.
 * Documentation
 ** DONE News
+   - lib/interp (`consult/1`) ignores first line if it starts with
+     "#".
    - Added `atom_number/2`.
    - Added `read_term/2` and `read_term/3`.
    - Fixed problem in `findall/3` that caused failure of update

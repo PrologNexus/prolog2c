@@ -353,11 +353,15 @@ consult(FILE) :-
 	pi_locate_file(FILE, FILE2),
 	seeing(OLD),
 	see(FILE2),
+	'$skip_shebang',
 	recordz(pi_loaded, FILE2),
 	pi_msg('% consulting %q ...\n', FILE2),
 	pi_consult_terms(0/0),
 	seen,
 	see(OLD).
+
+'$skip_shebang' :-
+	(\+peek_byte(35); read_line(_)), !.
 
 ensure_loaded(FILE) :-
 	pi_locate_file(FILE, FILE2),
