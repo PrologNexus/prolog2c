@@ -99,6 +99,7 @@ auto_include(get, 1, 'io').
 auto_include(see, 1, 'io').
 auto_include(seen, 0, 'io').
 auto_include(seeing, 1, 'io').
+auto_include(append, 1, 'io').
 auto_include(tell, 1, 'io').
 auto_include(told, 0, 'io').
 auto_include(telling, 1, 'io').
@@ -241,6 +242,7 @@ determinate_builtin(see, 1).
 determinate_builtin(seen, 0).
 determinate_builtin(seeing, 1).
 determinate_builtin(tell, 1).
+determinate_builtin(append, 1).
 determinate_builtin(told, 0).
 determinate_builtin(telling, 1).
 determinate_builtin(op, 3).
