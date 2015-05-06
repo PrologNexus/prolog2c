@@ -47,7 +47,7 @@ process_input([end_of_file], [], _, STATE) :-
 	!,
 	compile_file_finished(STATE).
 process_input([end_of_file], BLOCK, NA, STATE1) :-
-	store_clause_block(NA, BLOCK, STATE1, STATE2),
+	compile_block(NA, BLOCK, STATE1, STATE2),
 	!,
 	compile_file_finished(STATE2).
 
