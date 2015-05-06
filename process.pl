@@ -21,7 +21,6 @@ compile_file_finished(STATE) :-
 compile_file_finished(STATE) :-
 	process_initialization_goals(STATE).
 compile_file_finished(STATE) :-
-	seen,
 	check_unresolved_calls,
 	recorded(output_file, OUTFILE),
 	(recorded(show_intermediate_code, yes) -> show_intermediate_code
