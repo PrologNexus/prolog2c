@@ -107,16 +107,17 @@ system_predicate(chdir(+X)).
 system_predicate(getcwd(-X)).
 system_predicate(set_random_state(+X)).
 
-system_predicate(append(+X), 'io').
 system_predicate(compare(-X, ?X, ?Z), 'misc').
 system_predicate(copy_term(?X, ?Y), 'misc').
 system_predicate(duplicate_term(?X, ?Y), 'misc').
 system_predicate(between(+X, +Y, ?Z), 'misc').
+system_predicate(atom_number(?X, ?Y), 'misc').
 system_predicate(current_op(?X, ?Y, ?Z), 'op').
 system_predicate(get(+S, -X), 'io').
 system_predicate(get0(+S, -X), 'io').
 system_predicate(get(-X), 'io').
 system_predicate(get0(-X), 'io').
+system_predicate(append(+X), 'io').
 system_predicate(intersection(+X, +Y, -Z), 'sets').
 system_predicate(keysort(+X, -Y), 'sorts').
 system_predicate(length(?X, ?Y), 'lists').
