@@ -37,7 +37,8 @@ compile_clause_list([CLAUSE|MORE], NAME/ARITY, [I/T|MAP], S1, S2) :-
 	secondary_clause_label(NAME, ARITY, I, L2),
 	emit(label(L2)),
 	compile_clause(CLAUSE, NAME/ARITY, I, notlast, S3, S4),
-	!, compile_clause_list(MORE, NAME/ARITY, MAP, S4, S2).
+	!,
+	compile_clause_list(MORE, NAME/ARITY, MAP, S4, S2).
 
 % rule
 compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, S1, S2) :-
@@ -70,13 +71,16 @@ compile_fact_block(NA, CLAUSES, MAP, S1, S) :-
 	compile_facts(CLAUSES, DATA, S1, S2),
 	length(DATA, N1), DATA = [A1|_], length(A1, N2), N3 is N1 * N2,
 	message(['% compressed fact block ', NA, ': ', N1/N3]),
-	( build_dispatch_table(NA, integer, integer_table_index_threshold, DMAP, ITABLE, TILEN, DMAP2)
+	( build_dispatch_table(NA, integer, integer_table_index_threshold, DMAP, ITABLE,
+			       TILEN, DMAP2)
 	; DMAP2 = DMAP, TILEN = 0, ITABLE = none
 	),
-	( build_dispatch_table(NA, atom, atom_table_index_threshold, DMAP2, ATABLE, TALEN, DMAP3)
+	( build_dispatch_table(NA, atom, atom_table_index_threshold, DMAP2, ATABLE, TALEN,
+			       DMAP3)
 	; DMAP3 = DMAP2, TALEN = 0, ATABLE = none
 	),
-	( build_dispatch_table(NA, structure, structure_table_index_threshold, DMAP3, STABLE, TSLEN, _)
+	( build_dispatch_table(NA, structure, structure_table_index_threshold, DMAP3,
+			       STABLE, TSLEN, _)
 	; TSLEN = 0, STABLE = none
 	),
 	gen_label(L, S2, S),
@@ -261,7 +265,7 @@ compile_meta_term_for_unification(SPEC, NA, G, DEST, B1, B2, S1, S2) :-
 	gensym('T', T2, S4, S5),
 	gensym('T', T3, S5, S6),
 	register_literal('$meta_call', NLIT, S6, S7), % functor-name
-	emit(literal(NLIT, T1, '$meta_call'), predicate_address(P, LEN, T2)), % predicate-ptr
+	emit(literal(NLIT, T1, '$meta_call'), predicate_address(P, LEN, T2)), % pred-ptr
 	compile_term_for_unification(IARGS, T3, B1, B2, S7, S2), % variable-list
 	emit(make_term([T1, T2, T3], DEST)).
 
@@ -328,6 +332,7 @@ compile_body_expression((X, Y), TAIL, D1, D2, B1, B2, S1, S2) :-
 % if-then-else
 compile_body_expression((X -> Y; Z), TAIL, D1, D2, B1, B2, S1, S2) :-
 	simple_test(X),
+	% test-expression is "simple"
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
 	emit(simple_test(L1)),
@@ -397,6 +402,7 @@ compile_body_expression(repeat, _, D, D, B, B, S1, S2) :-
 % not
 compile_body_expression(\+X, _, D, D, B1, B2, S1, S2) :-
 	simple_test(X),
+	% test is "simple"
 	gen_label(L1, S1, S3),
 	emit(simple_test(L1)),
 	compile_body_expression(X, nontail, D, _, B1, B2, S3, S2),
@@ -409,7 +415,7 @@ compile_body_expression(\+X, _, D, D, B1, B2, S1, S2) :-
 
 % once
 compile_body_expression(once(X), _, D, D, B1, B2, S1, S2) :-
-	%% doesn't check for simple_test - that's ok
+	%% doesn't check test for being "simple" - that's ok
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
 	emit(save_choice_points, push_choice_point(L1)),
@@ -439,7 +445,8 @@ compile_body_expression(forall(G, A), TAIL, D, D, B1, B2, S1, S2) :-
 	add_boilerplate(P, (HEAD :- G2, \+(A2), !, fail)),
 	add_boilerplate(P2, HEAD),
 	HEAD2 =.. [P|IARGS],
-	!, compile_body_expression(HEAD2, TAIL, D, _, B1, B2, S4, S2).
+	!,
+	compile_body_expression(HEAD2, TAIL, D, _, B1, B2, S4, S2).
 
 % bagof
 compile_body_expression(bagof(T, G, L), TAIL, D1, D2, B1, B2, S1, S2) :-
@@ -482,7 +489,7 @@ compile_body_expression(X = Y, _, D, D, B, B, S, S) :-
 	indexed_variable(X, N),
 	indexed_variable(Y, N).
 compile_body_expression(X = Y, _, D, D, B1, B2, S1, S2) :-
-	%% if possibly cyclic, don't compile to simple assignment
+	%% if certain to be cyclic, don't compile to simple assignment
 	possibly_cyclic_unification(X = Y),
 	message(['% explicit unification contains cycles: ', X = Y]),
 	compile_explicit_unification(X, Y, unify, B1, B2, S1, S2).
@@ -565,7 +572,6 @@ compile_body_expression(global_set(NAME, VALUE), _, D, D, B1, B2, S1, S2) :-
 
 % suspend
 compile_body_expression(suspend(X, Y), _, D, D, B1, B2, S1, S2) :-
-	%%XXX allow multiple invocations?
 	gensym('T', T1, S1, S3),
 	gen_label(L, S3, S4),
 	compile_term_for_unification(X, T1, B1, B3, S4, S5),

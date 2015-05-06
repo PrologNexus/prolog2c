@@ -150,8 +150,8 @@ drop_qualifiers(_^X, Y) :- !, drop_qualifiers(X, Y).
 drop_qualifiers(X, X).
 
 
-%% collect variables into index/realvar lists and produce new expressions containing the latter,
-%% together with a new list of indexed vars usable is environment in a new clause
+%% collect variables into index/realvar lists and produce new expressions containing the 
+%% latter, together with a new list of indexed vars usable is environment in a new clause
 
 goals_and_variables(GOAL, VLIST, NEWGOAL, IARGS) :-
 	collect_indexed_variables(GOAL, GVARS),

@@ -11,7 +11,8 @@ compile_file(FILE) :-
 
 compile_file_finished(_) :-
 	recorded(xref_mode, yes),
-	!, emit_xref_information.
+	!,
+	emit_xref_information.
 compile_file_finished(STATE) :-
 	process_discontiguous_code(STATE).
 compile_file_finished(STATE) :-
@@ -33,24 +34,29 @@ compile_file_finished(STATE) :-
 % no more input, read next
 process_input([], BLOCK, NA, STATE) :-
 	'$read1'(EXPR),
-	!, process_input([EXPR], BLOCK, NA, STATE).
+	!,
+	process_input([EXPR], BLOCK, NA, STATE).
 
 % end of file reached, compile block, if not empty
 process_input([end_of_file], BLOCK, NA, STATE) :-
 	open_file_stack(INFILE, STATE2, STATE), % note order
 	seen,
 	see(INFILE),
-	!, process_input([], BLOCK, NA, STATE2).
+	!,
+	process_input([], BLOCK, NA, STATE2).
 process_input([end_of_file], [], _, STATE) :-
-	!, compile_file_finished(STATE).
+	!,
+	compile_file_finished(STATE).
 process_input([end_of_file], BLOCK, NA, STATE1) :-
-	compile_block(NA, BLOCK, STATE1, STATE2),
-	!, compile_file_finished(STATE2).
+	store_clause_block(NA, BLOCK, STATE1, STATE2),
+	!,
+	compile_file_finished(STATE2).
 
 % detect DCG rules and expand
 process_input([(HEAD --> BODY)|MORE], BLOCK, NA, STATE) :-
         dcg_rule((HEAD --> BODY), EXPANSION),
-	!, process_input([EXPANSION|MORE], BLOCK, NA, STATE).
+	!,
+	process_input([EXPANSION|MORE], BLOCK, NA, STATE).
 
 % marked as discontiguous? just record
 process_input([CLAUSE|MORE], BLOCK, NA, STATE) :-

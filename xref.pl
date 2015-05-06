@@ -29,7 +29,8 @@ dump_boilerplate_code :-
 register_unresolved_call(NA) :-
 	(recorded(defined, NA)
 	; recorded(unresolved, NA)
-	; recordz(unresolved, NA)).
+	; recordz(unresolved, NA)
+	).
 
 register_defined_predicate(NA) :-
 	(recorded(defined, NA)

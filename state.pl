@@ -1,10 +1,12 @@
 %%% compiler-state management
 
 
+%% state(LABELCOUNTER, LITERALCOUNTER, OPENFILESTACK)
+
 initial_state(state(1, 1, [])).
 
 
-% generate unique labels or literal indices
+%% generate unique labels or literal indices
 
 gen_label(L, S1, S2) :-	gensym('L', L, S1, S2).
 
@@ -16,7 +18,7 @@ gensym(PREFIX, N, state(S1, X, Y), state(S2, X, Y)) :-
 	atomic_list_concat([PREFIX, S1], N).
 
 
-% push and pop files on to/from file stack
+%% push and pop files on to/from file stack
 %
 % - works in both directions: STATE1 is without, STATE2 is with added element
 
