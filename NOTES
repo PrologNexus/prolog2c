@@ -11,7 +11,7 @@ NOTES									              -*- Org -*-
     - is TERMINATE(..., EXIT_SUCCESS) called?
 *** TODO 0046-arithmetic test fails in 32-bit pc
     - seems to be a parsing problem.
-*** TODO Term-comparison doesn't handle cyclic structures, yet
+*** TODO Term-comparison doesn't handle cyclic structures
 *** 0028-endless-tailcall crashes in pi
     - hits some limit, not sure which.
     - is in any case not keeping the memory-use constant.
@@ -361,7 +361,7 @@ NOTES									              -*- Org -*-
 ** Deref arguments in advance
    - Can be done for arguments with "+"-mode (other arguments may
      be indirectly deref'd through shared bindings).
-** TODO If no GC occurs, could failure simple reset "alloc_top"?
+** TODO If no GC occurs, could failure simply reset "alloc_top"?
    - bound vars are reset, so no dangling references should occur.
 ** TODO Use power-of-2 sized hash-tables everywhere
    - use binary-and instead of mod operation, supposed to be faster.
