@@ -817,14 +817,16 @@ make_unbound_vars(VS, [_|Y], S1, S) :-
 %% bagof/setof
 
 compile_bagof(T, NA, G, L, [], TAIL, D1, D2, B1, B2, S1, S2) :-
-	compile_body_expression((findall(T, G, L), NA, L \== []), TAIL, D1, D2, B1, B2, S1, S2).
+	compile_body_expression((findall(T, G, L), L \== []), NA, TAIL, D1, D2, B1, B2, S1,
+				S2).
 compile_bagof(T, NA, G, L, VARS, TAIL, D1, D2, B1, B2, S1, S2) :-
 	gensym('$bagof_', P, S1, S3),
 	goals_and_variables(G/T, VLIST, G2/T2, IARGS),
 	map_indexed_variables_to_real_variables(VARS, VLIST, VARS2),
 	map_second(VLIST, VARGS),
 	HEAD =.. [P|VARGS],
-	add_boilerplate(P, (HEAD :- '$bagof_start'(VARS2, T2, T3), G2, '$findall_push'(T3), fail)),
+	add_boilerplate(P, (HEAD :- '$bagof_start'(VARS2, T2, T3), G2, '$findall_push'(T3),
+			    fail)),
 	HEAD2 =.. [P|IARGS],
 	compile_body_expression(\+HEAD2, NA, nontail, D1, _, B1, B3, S3, S4),
 	compile_body_expression('$bagof_finish'(L), NA, TAIL, D1, D2, B3, B2, S4, S2).
