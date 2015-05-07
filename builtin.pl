@@ -86,7 +86,6 @@ auto_include(shell, 1, 'misc').
 auto_include(between, 3, 'misc').
 auto_include(atom_codes, 2, 'misc').
 auto_include(number_codes, 2, 'misc').
-auto_include(char_code, 2, 'misc').
 auto_include(atom_number, 2, 'misc').
 
 auto_include(atomic_list_concat, 2, 'str').
@@ -200,6 +199,7 @@ auto_include(all_different, 1, 'co').
 
 auto_include(current_prolog_flag, 2, 'flags').
 
+auto_include(char_code, 2, 'iso').
 auto_include(atom_concat, 3, 'iso').
 auto_include(atom_chars, 2, 'iso').
 auto_include(number_chars, 2, 'iso').

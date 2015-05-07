@@ -81,7 +81,6 @@ system_predicate(suspend(?X, ?Y)).
 system_predicate(acyclic_term(?X)).
 system_predicate(close(+X)).
 system_predicate(close(+X, +Y)).
-system_predicate(char_code(?X, ?Y)).
 system_predicate(atom_length(?X, ?Y)).
 system_predicate(seeing(-X)).
 system_predicate(telling(-X)).
@@ -195,6 +194,7 @@ system_predicate(flush_output, 'io').
 system_predicate(flush_output(+X), 'io').
 system_predicate(at_end_of_stream, 'io').
 system_predicate(at_end_of_stream(+X), 'io').
+system_predicate(char_code(?X, ?Y), 'iso').
 system_predicate(atom_concat(?X, ?Y, ?Z), 'iso').
 system_predicate(atom_chars(?X, ?Y), 'iso').
 system_predicate(number_chars(?X, ?Y), 'iso').

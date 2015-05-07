@@ -35,3 +35,5 @@ peek_char(S, C) :- peek_byte(S, C1), (C1 == -1 -> C = end_of_file; char_code(C, 
 put_char(C) :- char_code(C, N), put_byte(N).
 
 put_char(S, C) :- char_code(C, N), put_byte(S, N).
+
+char_code(A, C) :- atom_codes(A, [C]).
