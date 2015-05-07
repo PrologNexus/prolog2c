@@ -236,6 +236,7 @@ process_initialization_goals(STATE) :-
 	(recorded(public_predicate, _), PGOAL = '$init_public'; PGOAL = true),
 	recorda(initialization_done, true),
 	default_setting(entry_point, EP),
+	register_call(?/?, EP/0),
 	!, process_input([(EP :- IGOAL, PGOAL, GOAL)], [], _, STATE).
 
 
