@@ -370,13 +370,6 @@ NOTES									              -*- Org -*-
 ** TODO If clause contains a single tail-call, CP-creation could be avoided
    - also applicable if body consists of primitive operations only
      (foreign_call/1, etc.)
-** Remove unused predicates
-   - could be done in assembly-stage
-     - register called predicates (and caller), compute unused
-       predicates and predicates used by other unused predicates and
-       drop sections of pseudo-instructions.
-     - add pseudo-instructions for marking start + end of predicate
-       definition.
 ** TODO Peephole optimization of pseudo-instructions
    - needs thorough analysis of occurring patterns.
 ** Environment trimming
