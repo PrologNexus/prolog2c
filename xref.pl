@@ -49,7 +49,7 @@ register_call(FROM, TO) :-
 	recordz(calls, calls(FROM, TO)).
 
 predicate_callers(NA, CALLERS) :-
-	bagof(CALLER, recorded(calls, calls(CALLER, NA)), LST),
+	setof(CALLER, recorded(calls, calls(CALLER, NA)), LST),
 	!,
 	CALLERS = LST.
 predicate_callers(_, []).
