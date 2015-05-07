@@ -12,6 +12,7 @@
 :- include('compile.pl').
 :- include('assemble.pl').
 :- include('xref.pl').
+:- include('dce.pl').
 
 show_version_and_exit :-
 	current_prolog_flag(version, V),

@@ -15,6 +15,7 @@
 :- include('compile.pl').
 :- include('assemble.pl').
 :- include('xref.pl').
+:- include('dce.pl').
 :- include('main.pl').
 
 show_version_and_exit :- display('<none>\n'), halt.
