@@ -307,7 +307,7 @@ compile_meta_arguments([X|MORE], NA, [SPEC|SIG], DL1, DL2, B1, B2, S1, S2) :-
 
 compile_body(BODY, N/A, LAST, BOUND, S1, S2) :-
 	(LAST == last -> DET = det; DET = nondet),
-	compile_body_expression(BODY, tail, LAST/DET, LD2, BOUND, _, S1, S3),
+	compile_body_expression(BODY, N/A, tail, LAST/DET, LD2, BOUND, _, S1, S3),
 	gen_label(L, S3, S2),
 	( ( LD2 = _/det; determinate_builtin(N, A) )
 	-> emit(determinate_exit)
@@ -318,125 +318,127 @@ compile_body(BODY, N/A, LAST, BOUND, S1, S2) :-
 %% compile expression occuring in clause body
 
 % first, try macros
-compile_body_expression(TERM, TAIL, D1, D2, B1, B2, S1, S2) :-
+compile_body_expression(TERM, NA, TAIL, D1, D2, B1, B2, S1, S2) :-
 	macro(TERM, EXPANSION),
 	TERM \= EXPANSION,	% handle macro that just adds boilerplate (e.g. "autoload" like)
-	!, compile_body_expression(EXPANSION, TAIL, D1, D2, B1, B2, S1, S2).
+	!,
+	compile_body_expression(EXPANSION, NA, TAIL, D1, D2, B1, B2, S1, S2).
 
 % conjunction
-compile_body_expression((X, Y), TAIL, D1, D2, B1, B2, S1, S2) :-
-	compile_body_expression(X, nontail, D1, D, B1, B, S1, S),
+compile_body_expression((X, Y), NA, TAIL, D1, D2, B1, B2, S1, S2) :-
+	compile_body_expression(X, NA, nontail, D1, D, B1, B, S1, S),
 	!,
-	compile_body_expression(Y, TAIL, D, D2, B, B2, S, S2).
+	compile_body_expression(Y, NA, TAIL, D, D2, B, B2, S, S2).
 
 % if-then-else
-compile_body_expression((X -> Y; Z), TAIL, D1, D2, B1, B2, S1, S2) :-
+compile_body_expression((X -> Y; Z), NA, TAIL, D1, D2, B1, B2, S1, S2) :-
 	simple_test(X),
 	% test-expression is "simple"
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
 	emit(simple_test(L1)),
-	compile_body_expression(X, nontail, D1, _, B1, B3, S4, S5),
+	compile_body_expression(X, NA, nontail, D1, _, B1, B3, S4, S5),
 	emit(end_simple_test),
 	collect_indexed_variables(Y, BY1), subtract(BY1, B3, BY),
 	collect_indexed_variables(Z, BZ1), subtract(BZ1, B3, BZ),
-	compile_body_expression(Y, TAIL, D1, D4, B3, B4, S5, S6),
+	compile_body_expression(Y, NA, TAIL, D1, D4, B3, B4, S5, S6),
 	make_unbound_vars(BY, BZ, S6, S7),
 	emit(jump(L2), label(L1)),
-	compile_body_expression(Z, TAIL, D1, D5, B3, B5, S7, S8),
+	compile_body_expression(Z, NA, TAIL, D1, D5, B3, B5, S7, S8),
 	make_unbound_vars(BZ, BY, S8, S2),
 	emit(label(L2)),
 	union(B4, B5, B2),
 	both_determinate(D4, D5, D2).	
-compile_body_expression((X -> Y; Z), TAIL, D1, D2, B1, B2, S1, S2) :-
+compile_body_expression((X -> Y; Z), NA, TAIL, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
 	emit(save_choice_points, push_choice_point(L1)),
-	compile_body_expression(X, nontail, D1, _, B1, B3, S4, S5),
+	compile_body_expression(X, NA, nontail, D1, _, B1, B3, S4, S5),
 	emit(restore_choice_points),
 	collect_indexed_variables(Y, BY1), subtract(BY1, B3, BY),
 	collect_indexed_variables(Z, BZ1), subtract(BZ1, B3, BZ),
-	compile_body_expression(Y, TAIL, D1, D4, B3, B4, S5, S6),
+	compile_body_expression(Y, NA, TAIL, D1, D4, B3, B4, S5, S6),
 	make_unbound_vars(BY, BZ, S6, S7),
 	emit(jump(L2), label(L1), restore_choice_points),
-	compile_body_expression(Z, TAIL, D1, D5, B3, B5, S7, S8),
+	compile_body_expression(Z, NA, TAIL, D1, D5, B3, B5, S7, S8),
 	make_unbound_vars(BZ, BY, S8, S2),
 	emit(label(L2)),
 	union(B4, B5, B2),
 	both_determinate(D4, D5, D2).
 
 % disjunction
-compile_body_expression((X; Y), TAIL, D1, D2, B1, B2, S1, S2) :-
+compile_body_expression((X; Y), NA, TAIL, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
 	emit(copy_choice_point(L1)),
 	collect_indexed_variables(X, BX1), subtract(BX1, B1, BX),
 	collect_indexed_variables(Y, BY1), subtract(BY1, B1, BY),
-	compile_body_expression(X, nontail, D1, D3, B1, B3, S4, S5),
+	compile_body_expression(X, NA, nontail, D1, D3, B1, B3, S4, S5),
 	make_unbound_vars(BX, BY, S5, S6),
 	emit(jump(L2), label(L1), no_redo, pop_choice_point),
-	compile_body_expression(Y, TAIL, D1, D4, B1, B4, S6, S7),
+	compile_body_expression(Y, NA, TAIL, D1, D4, B1, B4, S6, S7),
 	make_unbound_vars(BY, BX, S7, S2),
 	emit(label(L2)),
 	union(B3, B4, B2),
 	both_determinate(D3, D4, D2).
 
 % cut
-compile_body_expression(!, _, _, last/det, B, B, S1, S2) :-
+compile_body_expression(!, _, _, _, last/det, B, B, S1, S2) :-
 	gen_label(L, S1, S2),
 	emit(cut(L)).
 
 % true
-compile_body_expression(true, _, D, D, B, B, S, S).
+compile_body_expression(true, _, _, D, D, B, B, S, S).
 
 % fail
-compile_body_expression(fail, _, D, D, B, B, S, S) :-
+compile_body_expression(fail, _, _, D, D, B, B, S, S) :-
 	emit(fail).
 
 % repeat
-compile_body_expression(repeat, _, D, D, B, B, S1, S2) :-
+compile_body_expression(repeat, _, _, D, D, B, B, S1, S2) :-
 	gen_label(L, S1, S2),
 	%% this clause can only be exited via cut, so just adjust ptrs in CP (no redo will ever happen)
 	emit(adjust_choice_point(L), label(L)).
 	
 % not
-compile_body_expression(\+X, _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(\+X, NA, _, D, D, B1, B2, S1, S2) :-
 	simple_test(X),
 	% test is "simple"
 	gen_label(L1, S1, S3),
 	emit(simple_test(L1)),
-	compile_body_expression(X, nontail, D, _, B1, B2, S3, S2),
+	compile_body_expression(X, NA, nontail, D, _, B1, B2, S3, S2),
 	emit(end_simple_test, fail, label(L1)).
-compile_body_expression(\+X, _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(\+X, NA, _, D, D, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	emit(save_choice_points, push_choice_point(L1)),
-	compile_body_expression(X, nontail, D, _, B1, B2, S3, S2),
+	compile_body_expression(X, NA, nontail, D, _, B1, B2, S3, S2),
 	emit(restore_choice_points, fail, label(L1), restore_choice_points).
 
 % once
-compile_body_expression(once(X), _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(once(X), NA, _, D, D, B1, B2, S1, S2) :-
 	%% doesn't check test for being "simple" - that's ok
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
 	emit(save_choice_points, push_choice_point(L1)),
-	compile_body_expression(X, nontail, D, _, B1, B2, S4, S2),
+	compile_body_expression(X, NA, nontail, D, _, B1, B2, S4, S2),
 	emit(restore_choice_points, jump(L2)),
 	emit(label(L1), restore_choice_points, fail, label(L2)).
 
 % findall
-compile_body_expression(findall(T, G, L), TAIL, D, D, B1, B2, S1, S2) :-
-	compile_body_expression('$findall_start', nontail, D, _, B1, _, S1, S4),
+compile_body_expression(findall(T, G, L), NA, TAIL, D, D, B1, B2, S1, S2) :-
+	compile_body_expression('$findall_start', NA, nontail, D, _, B1, _, S1, S4),
 	gensym('$findall_', P, S4, S5),
 	goals_and_variables(G/T, VLIST, G2/T2, IARGS),
 	map_second(VLIST, VARGS), % use real vars in head of newly created predicate
 	HEAD =.. [P|VARGS],
 	add_boilerplate(P, (HEAD :- G2, '$findall_push'(T2), fail)),
 	HEAD2 =.. [P|IARGS],
-	compile_body_expression(\+HEAD2, nontail, D, _, B1, B3, S5, S6),
-	!, compile_body_expression('$findall_collect'(L), TAIL, D, _, B3, B2, S6, S2).
+	compile_body_expression(\+HEAD2, NA, nontail, D, _, B1, B3, S5, S6),
+	!,
+	compile_body_expression('$findall_collect'(L), NA, TAIL, D, _, B3, B2, S6, S2).
 
 % forall
-compile_body_expression(forall(G, A), TAIL, D, D, B1, B2, S1, S2) :-
+compile_body_expression(forall(G, A), NA, TAIL, D, D, B1, B2, S1, S2) :-
 	gensym('$forall_', P, S1, S3),
 	gensym('$forall_', P2, S3, S4),
 	goals_and_variables(G/A, VLIST, G2/A2, IARGS),
@@ -446,22 +448,22 @@ compile_body_expression(forall(G, A), TAIL, D, D, B1, B2, S1, S2) :-
 	add_boilerplate(P2, HEAD),
 	HEAD2 =.. [P|IARGS],
 	!,
-	compile_body_expression(HEAD2, TAIL, D, _, B1, B2, S4, S2).
+	compile_body_expression(HEAD2, NA, TAIL, D, _, B1, B2, S4, S2).
 
 % bagof
-compile_body_expression(bagof(T, G, L), TAIL, D1, D2, B1, B2, S1, S2) :-
+compile_body_expression(bagof(T, G, L), NA, TAIL, D1, D2, B1, B2, S1, S2) :-
 	free_variables(G, T, [], VARS),
 	drop_qualifiers(G, G2), 
-	compile_bagof(T, G2, L, VARS, TAIL, D1, D2, B1, B2, S1, S2).
+	compile_bagof(T, NA, G2, L, VARS, TAIL, D1, D2, B1, B2, S1, S2).
 
 % setof
-compile_body_expression(setof(T, G, L), TAIL, D1, D2, B1, B2, S1, S2) :-
+compile_body_expression(setof(T, G, L), NA, TAIL, D1, D2, B1, B2, S1, S2) :-
 	free_variables(G, T, [], VARS),
 	drop_qualifiers(G, G2), 
-	compile_setof(T, G2, L, VARS, TAIL, D1, D2, B1, B2, S1, S2).
+	compile_setof(T, NA, G2, L, VARS, TAIL, D1, D2, B1, B2, S1, S2).
 
 % catch
-compile_body_expression(catch(G, B, R), TAIL, D1, D2, B1, B2, S1, S2) :-
+compile_body_expression(catch(G, B, R), NA, TAIL, D1, D2, B1, B2, S1, S2) :-
 	gen_label(L1, S1, S3),
 	gen_label(L2, S3, S4),
 	collect_indexed_variables(B, BB1), subtract(BB1, B1, BB),
@@ -470,56 +472,56 @@ compile_body_expression(catch(G, B, R), TAIL, D1, D2, B1, B2, S1, S2) :-
 	make_unbound_vars([], BB, S4, S5),
 	emit(push_catcher(L1)),
 	union(BB, B1, BB2),
-	compile_body_expression(G, nontail, D1, _, BB2, B3, S5, S6),
+	compile_body_expression(G, NA, nontail, D1, _, BB2, B3, S5, S6),
 	emit(pop_catcher, jump(L2)), % G succeeds, no throw
 	gensym('T', T, S6, S7),
 	emit(label(L1), enter_catcher),  % throw occurred
 	compile_term_for_unification(B, T, B3, B4, S7, S8),
 	emit(unify_throw(T)), % ball unifies
-	compile_body_expression(R, TAIL, D1, D2, B4, B2, S8, S2), % recovery goal
+	compile_body_expression(R, NA, TAIL, D1, D2, B4, B2, S8, S2), % recovery goal
 	emit(label(L2)).
 
 % if-then
-compile_body_expression((X -> Y), TAIL, D1, D2, B1, B2, S1, S2) :-
-	compile_body_expression((X -> Y; fail), TAIL, D1, D2, B1, B2, S1, S2).
+compile_body_expression((X -> Y), NA, TAIL, D1, D2, B1, B2, S1, S2) :-
+	compile_body_expression((X -> Y; fail), NA, TAIL, D1, D2, B1, B2, S1, S2).
 
 % inline-unification
-compile_body_expression(X = Y, _, D, D, B, B, S, S) :-
+compile_body_expression(X = Y, _, _, D, D, B, B, S, S) :-
 	%% same variable?
 	indexed_variable(X, N),
 	indexed_variable(Y, N).
-compile_body_expression(X = Y, _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(X = Y, _, _, D, D, B1, B2, S1, S2) :-
 	%% if certain to be cyclic, don't compile to simple assignment
 	possibly_cyclic_unification(X = Y),
 	message(['% explicit unification contains cycles: ', X = Y]),
 	compile_explicit_unification(X, Y, unify, B1, B2, S1, S2).
-compile_body_expression(X = Y, _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(X = Y, _, _, D, D, B1, B2, S1, S2) :-
 	%% X is an unbound variable
 	indexed_variable(X, N),
 	\+member(N, B1), \+indexed_variable(Y, _),
 	gensym('T', T, S1, S),
 	compile_term_for_unification(Y, T, [N|B1], B2, S, S2),
 	emit(assign(N, T)).
-compile_body_expression(X = Y, _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(X = Y, _, _, D, D, B1, B2, S1, S2) :-
 	%% Y is an unbound variable
 	indexed_variable(Y, N),
 	\+member(N, B1), \+indexed_variable(X, _),
 	gensym('T', T, S1, S),
 	compile_term_for_unification(X, T, [N|B1], B2, S, S2),
 	emit(assign(N, T)).
-compile_body_expression(X = Y, _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(X = Y, _, _, D, D, B1, B2, S1, S2) :-
 	compile_explicit_unification(X, Y, unify, B1, B2, S1, S2).
-compile_body_expression(X \= Y, _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(X \= Y, _, _, D, D, B1, B2, S1, S2) :-
 	compile_explicit_unification(X, Y, not_unify, B1, B2, S1, S2).
 
 % identity comparison
-compile_body_expression(X == Y, _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(X == Y, _, _, D, D, B1, B2, S1, S2) :-
 	gensym('T', T1, S1, S3),
 	compile_term_for_unification(X, T1, B1, B, S3, S4),
 	gensym('T', T2, S4, S5),
 	compile_term_for_unification(Y, T2, B, B2, S5, S2),
 	emit(identical(T1, T2)).
-compile_body_expression(X \== Y, _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(X \== Y, _, _, D, D, B1, B2, S1, S2) :-
 	gensym('T', T1, S1, S3),
 	compile_term_for_unification(X, T1, B1, B, S3, S4),
 	gensym('T', T2, S4, S5),
@@ -527,51 +529,51 @@ compile_body_expression(X \== Y, _, D, D, B1, B2, S1, S2) :-
 	emit(not_identical(T1, T2)).
 
 % arithmetic
-compile_body_expression(X is EXP, _, D, D, B1, [N|B1], S1, S2) :-
+compile_body_expression(X is EXP, _, _, D, D, B1, [N|B1], S1, S2) :-
 	indexed_variable(X, N),
 	\+member(N, B1),
 	gensym('T', T1, S1, S),
 	compile_arithmetic_expression(EXP, T1, B1, S, S2),
 	emit(assign(N, T1)).
-compile_body_expression(X is EXP, _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(X is EXP, _, _, D, D, B1, B2, S1, S2) :-
 	gensym('T', T1, S1, S3),
 	compile_arithmetic_expression(EXP, T1, B1, S3, S4),
 	gensym('T', T2, S4, S5),
 	compile_term_for_unification(X, T2, B1, B2, S5, S2),
 	emit(unify(T1, T2)).
 
-compile_body_expression(X =:= Y, _, D, D, B, B, S1, S2) :-
+compile_body_expression(X =:= Y, _, _, D, D, B, B, S1, S2) :-
 	compile_arithmetic_test(X, Y, B, numerically_equal, S1, S2).
-compile_body_expression(X =\= Y, _, D, D, B, B, S1, S2) :-
+compile_body_expression(X =\= Y, _, _, D, D, B, B, S1, S2) :-
 	compile_arithmetic_test(X, Y, B, numerically_not_equal, S1, S2).
-compile_body_expression(X > Y, _, D, D, B, B, S1, S2) :-
+compile_body_expression(X > Y, _, _, D, D, B, B, S1, S2) :-
 	compile_arithmetic_test(X, Y, B, numerically_greater, S1, S2).
-compile_body_expression(X < Y, _, D, D, B, B, S1, S2) :-
+compile_body_expression(X < Y, _, _, D, D, B, B, S1, S2) :-
 	compile_arithmetic_test(X, Y, B, numerically_less, S1, S2).
-compile_body_expression(X >= Y, _, D, D, B, B, S1, S2) :-
+compile_body_expression(X >= Y, _, _, D, D, B, B, S1, S2) :-
 	compile_arithmetic_test(X, Y, B, numerically_greater_or_equal, S1, S2).
-compile_body_expression(X =< Y, _, D, D, B, B, S1, S2) :-
+compile_body_expression(X =< Y, _, _, D, D, B, B, S1, S2) :-
 	compile_arithmetic_test(X, Y, B, numerically_less_or_equal, S1, S2).
 			
 % foreign call
-compile_body_expression(foreign_call(CALL), _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(foreign_call(CALL), _, _, D, D, B1, B2, S1, S2) :-
 	CALL =.. [NAME|ARGS],
 	compile_term_arguments(ARGS, [], DLIST, B1, B2, S1, S2),
 	emit(foreign_call(NAME, DLIST)).
 
 % global variable access
-compile_body_expression(global_ref(NAME, RESULT), _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(global_ref(NAME, RESULT), _, _, D, D, B1, B2, S1, S2) :-
 	gensym('T', T1, S1, S3),
 	gensym('T', T2, S3, S4),
 	compile_term_for_unification(RESULT, T2, B1, B2, S4, S2),
 	emit(global_ref(NAME, T1), unify(T1, T2)).
-compile_body_expression(global_set(NAME, VALUE), _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(global_set(NAME, VALUE), _, _, D, D, B1, B2, S1, S2) :-
 	gensym('T', T1, S1, S3),
 	compile_term_for_unification(VALUE, T1, B1, B2, S3, S2),
 	emit(global_set(NAME, T1)).
 
 % suspend
-compile_body_expression(suspend(X, Y), _, D, D, B1, B2, S1, S2) :-
+compile_body_expression(suspend(X, Y), _, _, D, D, B1, B2, S1, S2) :-
 	gensym('T', T1, S1, S3),
 	gen_label(L, S3, S4),
 	compile_term_for_unification(X, T1, B1, B3, S4, S5),
@@ -581,39 +583,39 @@ compile_body_expression(suspend(X, Y), _, D, D, B1, B2, S1, S2) :-
 	emit(unify(T1, T2)).
 
 % low-level call + address
-compile_body_expression('$predicate_address'(N/A, PTR), _, D, D, B1, B2, S1, S2) :-
+compile_body_expression('$predicate_address'(N/A, PTR), _, _, D, D, B1, B2, S1, S2) :-
 	gensym('T', T1, S1, S3),
 	gensym('T', T2, S3, S4),
 	compile_term_for_unification(PTR, T2, B1, B2, S4, S2),
 	emit(predicate_address(N, A, T1), unify(T1, T2)).
-compile_body_expression('$call'(PTR, ARGS), TAIL, LAST/D, LAST/nondet, B1, B2, S1, S2) :-
+compile_body_expression('$call'(PTR, ARGS), _, TAIL, LAST/D, LAST/nondet, B1, B2, S1, S2) :-
 	gen_label(L, S1, S3),
 	compile_term_arguments([PTR, ARGS], [], [R1, R2], B1, B2, S3, S2),
 	compile_pointer_call(TAIL, LAST, D, R1, R2, L).
 
 % delay
-compile_body_expression(delay(V, G, P), TAIL, D, D, B1, B2, S1, S2) :-
-	compile_delayed_goal('$delay_goal', V, G, P, TAIL, D, B1, B2, S1, S2).
-compile_body_expression(delay(V, G), TAIL, D, D, B1, B2, S1, S2) :-
-	compile_delayed_goal('$delay_goal', V, G, 1, TAIL, D, B1, B2, S1, S2).
+compile_body_expression(delay(V, G, P), NA, TAIL, D, D, B1, B2, S1, S2) :-
+	compile_delayed_goal('$delay_goal', NA, V, G, P, TAIL, D, B1, B2, S1, S2).
+compile_body_expression(delay(V, G), NA, TAIL, D, D, B1, B2, S1, S2) :-
+	compile_delayed_goal('$delay_goal', NA, V, G, 1, TAIL, D, B1, B2, S1, S2).
 
 % freeze
-compile_body_expression(freeze(V, G), TAIL, D, D, B1, B2, S1, S2) :-
-	compile_delayed_goal('$freeze_goal', V, G, 1, TAIL, D, B1, B2, S1, S2).
+compile_body_expression(freeze(V, G), NA, TAIL, D, D, B1, B2, S1, S2) :-
+	compile_delayed_goal('$freeze_goal', NA, V, G, 1, TAIL, D, B1, B2, S1, S2).
 
 % type-, order- or ordinary predicate call
-compile_body_expression(TERM, TAIL, D1, D2, B1, B2, S1, S2) :-
+compile_body_expression(TERM, NA, TAIL, D1, D2, B1, B2, S1, S2) :-
 	TERM =.. [NAME|ARGS],
-	( compile_meta_predicate(NAME, ARGS, TAIL, D1, D2, B1, B2, S1, S2)
+	( compile_meta_predicate(NAME, NA, ARGS, TAIL, D1, D2, B1, B2, S1, S2)
 	; compile_term_arguments(ARGS, [], DLIST, B1, B2, S1, S),
-	  (compile_type_predicate(NAME, DLIST), S2 = S, D2 = D1
+	  ( compile_type_predicate(NAME, DLIST), S2 = S, D2 = D1
 	  ; DLIST = [X, Y], compile_order_predicate(NAME, X, Y), S2 = S, D2 = D1
-	  ; compile_ordinary_call(NAME, TAIL, DLIST, D1, D2, S, S2)
+	  ; compile_ordinary_call(NAME, NA, TAIL, DLIST, D1, D2, S, S2)
 	  )
 	).
 
 % otherwise: error
-compile_body_expression(TERM, _, _, _, _, _, _, _) :-
+compile_body_expression(TERM, _, _, _, _, _, _, _, _) :-
 	error(['can not compile: ', TERM]).
 
 
@@ -629,10 +631,10 @@ compile_explicit_unification(X, Y, OP, B1, B2, S1, S2) :-
 
 %% compile delayed goal
 
-compile_delayed_goal(INSTALLER, V, G, PRIO, TAIL, D, B1, B2, S1, S2) :-
-	(recorded(uses_delay, _)
+compile_delayed_goal(INSTALLER, NA, V, G, PRIO, TAIL, D, B1, B2, S1, S2) :-
+	( recorded(uses_delay, _)
 	; recordz(uses_delay, yes),
-	 message(['% delayed goal checks are enabled'])
+	  message(['% delayed goal checks are enabled'])
 	),
 	gensym('$delayed_', P, S1, S3),
 	gensym('$delay_', P2, S3, S4),
@@ -645,18 +647,18 @@ compile_delayed_goal(INSTALLER, V, G, PRIO, TAIL, D, B1, B2, S1, S2) :-
 	INSTALL =.. [INSTALLER, V2, PRIO, PTR, VARGS],
 	add_boilerplate(P2, (DHEAD :- '$predicate_address'(P/N, PTR), INSTALL)),
 	DHEAD2 =.. [P2|IARGS],
-	compile_body_expression(DHEAD2, TAIL, D, _, B1, B2, S4, S2).
+	compile_body_expression(DHEAD2, NA, TAIL, D, _, B1, B2, S4, S2).
 
 
 %% compile calls (meta-predicate-, ordinary or type-/order-predicate)
 
-compile_meta_predicate(NAME, ARGS, TAIL, D1, D2, B1, B2, S1, S2) :-
+compile_meta_predicate(NAME, NA, ARGS, TAIL, D1, D2, B1, B2, S1, S2) :-
 	length(ARGS, ARITY),
 	is_meta_predicate(NAME, ARITY, SIG),
 	compile_meta_arguments(ARGS, NAME/ARITY, SIG, [], DLIST, B1, B2, S1, S),
-	compile_ordinary_call(NAME, TAIL, DLIST, D1, D2, S, S2).
+	compile_ordinary_call(NAME, NA, TAIL, DLIST, D1, D2, S, S2).
 	
-compile_ordinary_call(NAME, TAIL, DLIST, LAST/D1, D2, S1, S2) :-
+compile_ordinary_call(NAME, NA, TAIL, DLIST, LAST/D1, D2, S1, S2) :-
 	length(DLIST, ARITY),
 	register_unresolved_call(NAME/ARITY),
 	(determinate_builtin(NAME, ARITY) -> D2 = LAST/D1; D2 = LAST/nondet),
@@ -811,9 +813,9 @@ make_unbound_vars(VS, [_|Y], S1, S) :-
 
 %% bagof/setof
 
-compile_bagof(T, G, L, [], TAIL, D1, D2, B1, B2, S1, S2) :-
-	compile_body_expression((findall(T, G, L), L \== []), TAIL, D1, D2, B1, B2, S1, S2).
-compile_bagof(T, G, L, VARS, TAIL, D1, D2, B1, B2, S1, S2) :-
+compile_bagof(T, NA, G, L, [], TAIL, D1, D2, B1, B2, S1, S2) :-
+	compile_body_expression((findall(T, G, L), NA, L \== []), TAIL, D1, D2, B1, B2, S1, S2).
+compile_bagof(T, NA, G, L, VARS, TAIL, D1, D2, B1, B2, S1, S2) :-
 	gensym('$bagof_', P, S1, S3),
 	goals_and_variables(G/T, VLIST, G2/T2, IARGS),
 	map_indexed_variables_to_real_variables(VARS, VLIST, VARS2),
@@ -821,18 +823,18 @@ compile_bagof(T, G, L, VARS, TAIL, D1, D2, B1, B2, S1, S2) :-
 	HEAD =.. [P|VARGS],
 	add_boilerplate(P, (HEAD :- '$bagof_start'(VARS2, T2, T3), G2, '$findall_push'(T3), fail)),
 	HEAD2 =.. [P|IARGS],
-	compile_body_expression(\+HEAD2, nontail, D1, _, B1, B3, S3, S4),
-	compile_body_expression('$bagof_finish'(L), TAIL, D1, D2, B3, B2, S4, S2).
+	compile_body_expression(\+HEAD2, NA, nontail, D1, _, B1, B3, S3, S4),
+	compile_body_expression('$bagof_finish'(L), NA, TAIL, D1, D2, B3, B2, S4, S2).
 
-compile_setof(T, G, L, [], TAIL, D1, D2, B1, B2, S1, S2) :-
+compile_setof(T, NA, G, L, [], TAIL, D1, D2, B1, B2, S1, S2) :-
 	gensym('$setof_', P, S1, S3),
 	goals_and_variables(G/T/L, VLIST, G2/T2/L2, IARGS),
 	map_second(VLIST, VARGS),
 	HEAD =.. [P|VARGS],
 	add_boilerplate(P, (HEAD :- findall(T2, G2, TMP), TMP \== [], sort(TMP, L2))),
 	HEAD2 =.. [P|IARGS],
-	compile_body_expression(HEAD2, TAIL, D1, D2, B1, B2, S3, S2).
-compile_setof(T, G, L, VARS, TAIL, D1, D2, B1, B2, S1, S2) :-
+	compile_body_expression(HEAD2, NA, TAIL, D1, D2, B1, B2, S3, S2).
+compile_setof(T, NA, G, L, VARS, TAIL, D1, D2, B1, B2, S1, S2) :-
 	gensym('$setof_', P, S1, S3),
 	gensym('$setof_', P2, S3, S4),
 	goals_and_variables(G/T/L, VLIST, G2/T2/L2, IARGS),
@@ -842,7 +844,7 @@ compile_setof(T, G, L, VARS, TAIL, D1, D2, B1, B2, S1, S2) :-
 	add_boilerplate(P, (HEAD :- '$bagof_start'(VARS2, T2, T3), G2, '$findall_push'(T3), fail)),
 	add_boilerplate(P2, (HEAD :- '$bagof_finish'(TMP), sort(TMP, L2))),
 	HEAD2 =.. [P|IARGS],
-	compile_body_expression(HEAD2, TAIL, D1, D2, B1, B2, S4, S2).
+	compile_body_expression(HEAD2, NA, TAIL, D1, D2, B1, B2, S4, S2).
 
 
 %% emit checks that '+'-moded arguments are instantiated
