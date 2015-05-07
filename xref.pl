@@ -39,3 +39,17 @@ register_defined_predicate(NA) :-
 	),
 	recorded(unresolved, NA, REF), erase(REF).
 register_defined_predicate(_).
+
+
+%% operations on the call-tree
+
+%% FROM, TO: NAME/ARITY
+register_call(FROM, FROM).
+register_call(FROM, TO) :-
+	recordz(calls, calls(FROM, TO)).
+
+predicate_callers(NA, CALLERS) :-
+	bagof(CALLER, recorded(calls, calls(CALLER, NA)), LST),
+	!,
+	CALLERS = LST.
+predicate_callers(_, []).
