@@ -265,6 +265,7 @@ compile_meta_term_for_unification(SPEC, NA, G, DEST, B1, B2, S1, S2) :-
 	gensym('T', T2, S4, S5),
 	gensym('T', T3, S5, S6),
 	register_literal('$meta_call', NLIT, S6, S7), % functor-name
+	register_call(NA, P/LEN),
 	emit(literal(NLIT, T1, '$meta_call'), predicate_address(P, LEN, T2)), % pred-ptr
 	compile_term_for_unification(IARGS, T3, B1, B2, S7, S2), % variable-list
 	emit(make_term([T1, T2, T3], DEST)).
@@ -583,10 +584,11 @@ compile_body_expression(suspend(X, Y), _, _, D, D, B1, B2, S1, S2) :-
 	emit(unify(T1, T2)).
 
 % low-level call + address
-compile_body_expression('$predicate_address'(N/A, PTR), _, _, D, D, B1, B2, S1, S2) :-
+compile_body_expression('$predicate_address'(N/A, PTR), NA, _, D, D, B1, B2, S1, S2) :-
 	gensym('T', T1, S1, S3),
 	gensym('T', T2, S3, S4),
 	compile_term_for_unification(PTR, T2, B1, B2, S4, S2),
+	register_call(NA, N/A),
 	emit(predicate_address(N, A, T1), unify(T1, T2)).
 compile_body_expression('$call'(PTR, ARGS), _, TAIL, LAST/D, LAST/nondet, B1, B2, S1, S2) :-
 	gen_label(L, S1, S3),
@@ -663,6 +665,7 @@ compile_ordinary_call(NAME, NA, TAIL, DLIST, LAST/D1, D2, S1, S2) :-
 	register_unresolved_call(NAME/ARITY),
 	(determinate_builtin(NAME, ARITY) -> D2 = LAST/D1; D2 = LAST/nondet),
 	gen_label(L, S1, S2),
+	register_call(NA, NAME/ARITY),
 	compile_call(TAIL, LAST, D1, NAME, DLIST, L).
 
 compile_call(tail, _, det, NAME, DLIST, _) :- emit(tail_call(NAME, DLIST)).
