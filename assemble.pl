@@ -24,13 +24,16 @@ assemble_global_variables(I, N) :-
 	erase(REF),
 	gen('#define ', NAME, ' ', I, '\n'),
 	I2 is I + 1,
-	!, assemble_global_variables(I2, N).
+	!,
+	assemble_global_variables(I2, N).
 assemble_global_variables(N, N).
 
 assemble_instructions(STATE) :-
-	recorded(code, OP, REF), erase(REF),
+	recorded(code, OP, REF),
+	erase(REF),
 	assemble(OP, STATE, S2),
-	!, assemble_instructions(S2).
+	!,
+	assemble_instructions(S2).
 assemble_instructions(_).
 
 generate_header :-
