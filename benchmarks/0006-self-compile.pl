@@ -9,6 +9,7 @@
 :- include('compile.pl').
 :- include('assemble.pl').
 :- include('xref.pl').
+:- include('dce.pl').
 
 :- initialization(main).
 
