@@ -1,4 +1,4 @@
-NOTES									              -*- Org -*-
+NOTES							              -*- Org -*-
 
 
 * Issues
@@ -43,6 +43,10 @@ NOTES									              -*- Org -*-
      number_codes/2.
 *** functor/3 (and others?) may exceed heap-reserve for large inputs
 ** Minor
+*** TODO Iterating over db-entries may be influenced by added items
+    - see file:broken-tests/rdb-backtrack-in-added-item.pl
+    - required cut at end of eliminate_predicate/1 in file:dce.pl, or
+      pc1 loops here.
 *** TODO discontiguous doesn't work with "wildcard" PI
     - e.g. ":- discontiguous bar." with defs for bar/0 and bar/1.
     - matching of N/A when collecting clauses for one of the two
@@ -100,39 +104,28 @@ NOTES									              -*- Org -*-
 ** TODO Var-test in clause-indexing can be omitted if argument has mode '+'
 ** Find a more efficient way of compiling unifications
 ** TODO Add macros for trivial lib predicates
-   | asserta/1                 | would need to introduce var |
-   | assertz/1                 | s.a.                        |
-   | clause/2                  | s.a.                        |
-   | $findall_start/0          |                             |
-   | seen/0                    |                             |
-   | told/0                    |                             |
-   | tab/1                     |                             |
-   | get/1                     |                             |
-   | skip/1                    |                             |
-   | open/3                    |                             |
-   | open/4                    |                             |
-   | read_string/2             |                             |
-   | read_line/1               |                             |
-   | set_input/1               |                             |
-   | set_output/2              |                             |
-   | flush_output/0            |                             |
-   | flush_output/1            |                             |
-   | at_end_of_stream/0        |                             |
-   | at_end_of_stream/1        |                             |
-   | put_char/1                | s.a.                        |
-   | put_char/2                |                             |
-   | is_list/1                 |                             |
-   | shell/1                   |                             |
-   | unify_with_occurs_check/2 |                             |
-   | char_code/2               |                             |
-   | list_to_ord_set/2         |                             |
-   | ord_seteq/2               |                             |
-   | recorded/2                | s.a.                        |
-   | recorda/2                 | s.a.                        |
-   | recordz/2                 | s.a.                        |
-   | keysort/2                 |                             |
-   | sort/2                    |                             |
-   | merge/3                   |                             |
+   | $findall_start/0          |
+   | tab/1                     |
+   | get/1                     |
+   | skip/1                    |
+   | open/3                    |
+   | open/4                    |
+   | read_string/2             |
+   | read_line/1               |
+   | set_input/1               |
+   | set_output/2              |
+   | flush_output/1            |
+   | at_end_of_stream/1        |
+   | put_char/2                |
+   | is_list/1                 |
+   | shell/1                   |
+   | unify_with_occurs_check/2 |
+   | char_code/2               |
+   | list_to_ord_set/2         |
+   | ord_seteq/2               |
+   | keysort/2                 |
+   | sort/2                    |
+   | merge/3                   |
 ** Results of memory profile for pc, compiling itself 
    - commit f254da345c8df3997b56c3d84dd1e35cdfe12e0d
    $start/0                                 C:    88   T:     0   E:     8   H:    56 
@@ -372,6 +365,9 @@ NOTES									              -*- Org -*-
      (foreign_call/1, etc.)
 ** TODO Peephole optimization of pseudo-instructions
    - needs thorough analysis of occurring patterns.
+** DONE Remove unused predicates
+   - run all tests.
+   - benchmark compile-times.
 ** Environment trimming
    - sort variables by lifetime (reversed) and trim env_top after last use.
    - may only be applicable when env_top didn't change.
@@ -451,6 +447,7 @@ NOTES									              -*- Org -*-
    - kust opens cans of worms, but could be done as .c extension.
 * Documentation
 ** DONE News
+   - The compiler now removes predicates that are never used.
    - lib/interp (`consult/1`) ignores first line if it starts with
      "#".
    - Added `atom_number/2`.
@@ -467,11 +464,6 @@ NOTES									              -*- Org -*-
    - `read` understands `\xXX` and `\OOO` escape sequences in quoted
      strings and atoms.
    - The interpreter didn't recognize '=..'/2
-** TODO Document non-autoload libraries
-   - only roughly, not in detail.
-   - libs: arrays, assoc, bits, canon, heaps, logarr, map, path, pp,
-     queues, rbtrees, s11n, tree23, numvars
-   - explain usage, mention autoloads.
 ** TODO List differences to ISO in file:README
 ** Missing ISO predicates
    | Name                                         | Remarks                                         |
