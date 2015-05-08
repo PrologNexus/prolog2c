@@ -178,7 +178,7 @@ register_predicate_annotation(X, LABEL) :-
 	functor(X, NAME, ARITY),
 	X =.. [_|ANN],
 	recordz(LABEL, info(NAME, ARITY, ANN)).
-register_predicate_annotation(X) :-
+register_predicate_annotation(X, _) :-
 	error(['invalid predicate annotation: ', X]).
 
 
