@@ -76,7 +76,7 @@ if {[file exists $optfile]} {
 
 if {$bench_compile_times} {
     eval exec /usr/bin/time -f %U gcc -std=gnu99 -Ilib -I. $opts $cfile -o $xfile -lm -lrt >&@ stdout
-    file delete -force $rtmp $tmpnamee $cfile
+    file delete -force $rtmp $tmpname $cfile
     exit
 } else {
     eval exec gcc -std=gnu99 -Ilib -I. $opts $cfile -o $xfile -lm -lrt >&@ stdout
