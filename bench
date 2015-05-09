@@ -64,7 +64,7 @@ proc RunOnce {} {
 
 if {[catch {exec ./pc -q -n $filename -o $cfile >&@ stdout} result]} {
     puts stderr $result
-    file delete -force $rtmp $cfile
+    file delete -force $rtmp $cfile $tmpname
     exit 1
 }
 
