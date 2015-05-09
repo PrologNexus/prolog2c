@@ -4916,9 +4916,9 @@ PRIMITIVE(retry_string_to_list, X lst) {
 }
 
 PRIMITIVE(delay_goal, X var, X prio, X ptr, X args) {
-  ASSERT(is_variable(var), "put_attr: not a variable");
+  ASSERT(is_variable(var), "delay_goal: not a variable");
   check_fixnum(prio);
-  ASSERT(!is_FIXNUM(ptr) && is_POINTER(ptr), "put_attr: not a pointer");
+  ASSERT(!is_FIXNUM(ptr) && is_POINTER(ptr), "delay_goal: not a pointer");
   // insert into front of list - if multiple delayed goals are triggered
   // on a variable, the order will automatically be reversed because
   // the entry of a delayed goal will invoke the next on the list (and so on)
