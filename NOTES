@@ -43,6 +43,8 @@ NOTES							              -*- Org -*-
      number_codes/2.
 *** functor/3 (and others?) may exceed heap-reserve for large inputs
 ** Minor
+*** TODO Profiling needs Windows implementation
+    - use Sleep() or SleepEx()
 *** TODO Iterating over db-entries may be influenced by added items
     - see file:broken-tests/rdb-backtrack-in-added-item.pl
     - required cut at end of eliminate_predicate/1 in file:dce.pl, or
@@ -354,8 +356,18 @@ NOTES							              -*- Org -*-
 ** Deref arguments in advance
    - Can be done for arguments with "+"-mode (other arguments may
      be indirectly deref'd through shared bindings).
-** TODO If no GC occurs, could failure simply reset "alloc_top"?
-   - bound vars are reset, so no dangling references should occur.
+** DONE If no GC occurs, failure could simply reset "alloc_top"
+   - see file:patches/fast-dealloc.diff
+   - may confuse memory-profiling.
+   - failing tests:
+     - 0081-zebra: restoring to alloc_top at predicate-entry seems to
+       be too much, e.g. in zebra, fail of call to right_of/3
+       backtracks inside main/0, resetting alloc_top below space
+       allocated by previous member/2 calls.
+       - but resetting alloc_top to the CP above the current one saves
+	 very little (current status of patch)
+     - 0120-different: also seems to need clearing fast_gc in
+       delay_goal()
 ** TODO Use power-of-2 sized hash-tables everywhere
    - use binary-and instead of mod operation, supposed to be faster.
    - symbol- and structure-dispatch tables, block-dispatch-tables (in
@@ -365,9 +377,6 @@ NOTES							              -*- Org -*-
      (foreign_call/1, etc.)
 ** TODO Peephole optimization of pseudo-instructions
    - needs thorough analysis of occurring patterns.
-** DONE Remove unused predicates
-   - run all tests.
-   - benchmark compile-times.
 ** Environment trimming
    - sort variables by lifetime (reversed) and trim env_top after last use.
    - may only be applicable when env_top didn't change.
@@ -447,6 +456,8 @@ NOTES							              -*- Org -*-
    - kust opens cans of worms, but could be done as .c extension.
 * Documentation
 ** DONE News
+   - TRACE-mode is now enabled by default, unless NOTRACE or NDEBUG or
+     UNSAFE is defined.
    - The compiler now removes predicates that are never used.
    - lib/interp (`consult/1`) ignores first line if it starts with
      "#".
