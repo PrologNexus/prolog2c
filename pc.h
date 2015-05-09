@@ -4767,7 +4767,7 @@ PRIMITIVE(functor, X term, X name, X arity)
       x = STRUCTURE(name, n);
     
       for(int i = 1; i <= n; ++i) 
-	SLOT_SET(x, i, make_var());
+	SLOT_INIT(x, i, make_var());
     }
 
     return unify(term, x);
