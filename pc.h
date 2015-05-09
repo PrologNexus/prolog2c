@@ -1398,7 +1398,6 @@ static void unwind_trail(X *tp)
 static inline void force_gc()
 {
   alloc_top = fromspace_limit + 1; /* trigger GC on next check */
-  fast_gc = 0;
 }
 
 
