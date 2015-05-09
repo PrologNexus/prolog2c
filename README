@@ -207,9 +207,8 @@ Debugging and error messages
   There are no debugging-facilities besides a "trace" mode, which
   writes information about predicate-calls, -exits, -fails and redo's
   during execution to stderr. You can enable this trace mode by
-  compiling the generated C code with the "-DTRACE" option given to
-  the C compiler. Once compiled in trace mode you can run the binary
-  with "-:d" to produce a trace on stderr as the program is executing.
+  running the binary with the "-:d" option to produce a trace on
+  stderr as the program is executing.
 
   The compiler does very little error-reporting, mostly to simplify
   the implementation. Syntactical errors will produce a parser error,
@@ -1255,7 +1254,7 @@ Builtin predicates
 
     Enables "trace" mode in compiled code, starting at the next call,
     exit or fail. For this to be effective, the program must be
-    compiled with the "-DTRACE" option.
+    compiled without the "-DNDEBUG" option.
 
         compare(-X, ?X, ?Z)               
 
@@ -1513,7 +1512,7 @@ Performance tips
 ----------------
 
   Compiling the generated C code with "-DNDEBUG" will disable various
-  internal sanity checks and assertions.
+  internal sanity checks and assertions, and will disable tracing.
 
   Compile the generated C code with "-DUNSAFE" to disable all safety
   checks (implies "-DNDEBUG".)

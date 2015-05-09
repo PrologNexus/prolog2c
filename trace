@@ -1,7 +1,7 @@
 #!/usr/bin/env tclsh
 ### compile + run program, with tracing -*- Tcl -*-
 
-set opts "-g -DTRACE -DDEBUG_GC"
+set opts "-g -DDEBUG_GC"
 set filename [lindex $argv 0]
 set args [lrange $argv 1 $argc]
 set bfile [file tail $filename]

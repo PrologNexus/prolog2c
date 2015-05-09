@@ -8,7 +8,7 @@
 
 pc_prefix=
 include_path=.
-optflags="-O1 -fomit-frame-pointer -DTRACE"
+optflags="-O1 -fomit-frame-pointer"
 cc=gcc
 cachedir="${HOME}/.qp"
 # set this one if you don't want to set PC_LIBRARY_DIR globally

@@ -4,7 +4,7 @@
 PREFIX = /usr/local
 
 CC = gcc
-CFLAGS = -std=gnu99 -I. -fno-strict-aliasing -fwrapv
+CFLAGS = -std=gnu99 -I. -fno-strict-aliasing -fwrapv -DNOTRACE
 OPTFLAGS = -O1 -fomit-frame-pointer
 SETTINGS = -DTRAIL_STACK_SIZE=10000000 -DCHOICE_POINT_STACK_SIZE=20000000 \
 	-DENVIRONMENT_STACK_SIZE=10000000 -DHEAP_SIZE=100000000

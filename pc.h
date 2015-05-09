@@ -117,10 +117,8 @@
 #define XWORD_OUTPUT_FORMAT   "%" XWORD_OUTPUT_FORMAT_LENGTH "d"
 #define XFLOAT_OUTPUT_FORMAT  "%.15g"
 
-#ifdef UNSAFE
-# ifdef TRACE
-#  undef TRACE
-# endif
+#if !defined(UNSAFE) && !defined(NDEBUG) && !defined(NOTRACE)
+# define TRACE
 #endif
 
 #define EXIT_EXCEPTION   (-1)

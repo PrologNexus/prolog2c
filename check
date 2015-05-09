@@ -1,7 +1,7 @@
 #!/usr/bin/env tclsh
 ### compile + run with timeout, then check status and output -*- Tcl -*-
 
-set opts "-g -DTRACE -DDEBUG_GC"
+set opts "-g -DDEBUG_GC"
 set moreopts ""
 set filename ""
 set args ""
