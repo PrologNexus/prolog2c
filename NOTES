@@ -104,7 +104,6 @@ NOTES							              -*- Org -*-
 *** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
 ** TODO Var-test in clause-indexing can be omitted if argument has mode '+'
-** Find a more efficient way of compiling unifications
 ** TODO Add macros for trivial lib predicates
    | $findall_start/0          |
    | tab/1                     |
@@ -128,228 +127,6 @@ NOTES							              -*- Org -*-
    | keysort/2                 |
    | sort/2                    |
    | merge/3                   |
-** Results of memory profile for pc, compiling itself 
-   - commit f254da345c8df3997b56c3d84dd1e35cdfe12e0d
-   $start/0                                 C:    88   T:     0   E:     8   H:    56 
-   read_lookup/2                            C:    88   T:     3   E:    34   H:     5M
-   read_digits/5                            C:    88   T:    19   E:    62   H:     0 
-   read_digits/4                            C:    88   T:     0   E:    40   H:    13K
-   read_integer/3                           C:    88   T:    32   E:    40   H:    20K
-   read_fullstop/3                          C:    88   T:    16   E:    16   H:     0 
-   read_symbol/3                            C:   132   T:    39   E:    45   H:   181K
-   read_name/3                              C:   116   T:    12   E:    22   H:   6.2M
-   read_solidus/2                           C:    88   T:     0   E:    23   H:   274K
-   read_solidus/3                           C:    89   T:    70   E:    46   H:    22K
-   escaped_char/2                           C:    88   T:    16   E:     0   H:     0 
-   more_string/4                            C:    88   T:    32   E:    40   H:     0 
-   read_string/4                            C:    92   T:    16   E:    95   H:   479K
-   read_string/3                            C:    88   T:     0   E:    32   H:   279K
-   read_after_atom/3                        C:    88   T:     8   E:    24   H:   306K
-   read_number/4                            C:    88   T:    16   E:   119   H:    51K
-   read_tokens/3                            C:   113   T:    53   E:   128   H:   6.5M
-   read_tokens/2                            C:    88   T:     2K  E:    32   H:    78K
-   $record_db_key/2                         C:    88   T:    16   E:    24   H:     0 
-   $record_db_match/3                       C:    88   T:     1   E:    54   H:2.2e+02M
-   recorded/3                               C:    88   T:    16   E:    72   H:   4.8M
-   recorded/2                               C:    88   T:     0   E:    24   H:   341K
-   $record/4                                C:    88   T:    32   E:    48   H:   2.7M
-   recordz/3                                C:    88   T:     0   E:    24   H:     0 
-   recordz/2                                C:    88   T:     0   E:    24   H:  0.99M
-   recorda/3                                C:    88   T:     0   E:    24   H:     0 
-   recorda/2                                C:    88   T:     0   E:    24   H:   288 
-   memberchk/2                              C:    88   T:     0   E:    36   H:   1.8M
-   length/2                                 C:   340   T:    57   E:    89   H:   5.6M
-   reverse/3                                C:    88   T:     4   E:    25   H:     1M
-   reverse/2                                C:    88   T:     0   E:    16   H:     0 
-   append/3                                 C:    88   T:    15   E:    24   H:    51M
-   member/2                                 C:    88   T:     2   E:    36   H:    84M
-   number_codes/2                           C:    88   T:     9   E:    29   H:   3.1M
-   atom_codes/2                             C:    88   T:    16   E:    27   H:    11M
-   copy_term/2                              C:    88   T:     0   E:    32   H:     0 
-   deref_term/4                             C:    88   T:    16   E:    40   H:    16M
-   $univ_args/4                             C:    88   T:    12   E:    54   H:   4.7M
-   =../2                                    C:   109   T:     7   E:    54   H:    11M
-   name/2                                   C:   107   T:     0   E:    35   H:     0 
-   compare/3                                C:    88   T:    16   E:    25   H:     0 
-   $findall_collect/3                       C:    88   T:     1   E:    31   H:    12M
-   $findall_collect/1                       C:    88   T:     0   E:    16   H:   251K
-   $findall_push/1                          C:    90   T:    32   E:    32   H:    12M
-   $findall_start/0                         C:    88   T:     0   E:     0   H:     0 
-   $atomic_list_concat/2                    C:   364   T:   128   E:    74   H:   9.4M
-   atomic_list_concat/2                     C:   642   T:   254   E:   149   H:   759K
-   atom_concat/3                            C:   176   T:   189   E:   149   H:     2K
-   subtract/3                               C:    88   T:     4   E:    30   H:    98K
-   intersection/3                           C:    88   T:     0   E:    67   H:    39K
-   union/3                                  C:    88   T:    15   E:    32   H:   4.5M
-   keysort/2                                C:    88   T:     0   E:    16   H:     0 
-   combine/3                                C:    88   T:    16   E:     9   H:     0 
-   compare/4                                C:    88   T:     0   E:    48   H:   184K
-   compare/5                                C:    88   T:    16   E:    48   H:    92K
-   merge/5                                  C:   898   T:   496   E:   741   H:  0.98M
-   $sort_halve/4                            C:    88   T:    21   E:    50   H:   410K
-   sort/4                                   C:     1K  T:   504   E:   873   H:   333K
-   told/0                                   C:    88   T:     0   E:     8   H:    32 
-   tell/1                                   C:   117   T:     0   E:    10   H:    72 
-   seen/0                                   C:    88   T:     0   E:     8   H:   864 
-   see/1                                    C:   117   T:     0   E:     8   H:     1K
-   exprtl/6                                 C:   319   T:   289   E:   241   H:   1.1M
-   cant_follow_expr/2                       C:    88   T:     0   E:     0   H:     0 
-   exprtl0/5                                C:    88   T:   110   E:   345   H:   7.4M
-   prefix_is_atom/2                         C:    99   T:     0   E:   105   H:    33K
-   peepop/2                                 C:    88   T:    16   E:    56   H:    17K
-   after_prefix_op/7                        C:   133   T:   368   E:   189   H:     8K
-   read_list/3                              C:    88   T:    56   E:    62   H:    94K
-   read_args/3                              C:    88   T:    50   E:    42   H:   1.4M
-   read/5                                   C:    88   T:    78   E:   154   H:   3.7M
-   read/4                                   C:   155   T:   261   E:    81   H:   1.3M
-   ambigop/6                                C:   264   T:     0   E:    48   H:     0 
-   infixop/4                                C:    88   T:    48   E:    32   H:     0 
-   postfixop/3                              C:   176   T:     0   E:    40   H:     0 
-   prefixop/3                               C:   173   T:     0   E:    39   H:     0 
-   expect/3                                 C:    88   T:    16   E:    16   H:    28K
-   all_read/1                               C:    88   T:     0   E:  -296   H:     0 
-   read1/2                                  C:    88   T:     2K  E:     0   H:   118K
-   read1/1                                  C:    88   T:     0   E:    16   H:    39K
-   current_op/3                             C:    88   T:     0   E:    32   H:   665K
-   is_opchar/1                              C:    88   T:     0   E:     8   H:     0 
-   classify_other_tail/1                    C:   117   T:     0   E:     5   H:     1K
-   classify_alpha_tail/1                    C:   120   T:     0   E:    12   H:    27K
-   classify_name/2                          C:   159   T:    16   E:    28   H:    19K
-   write_atom/4                             C:    88   T:    32   E:   104   H:     4K
-   write_oper/5                             C:    88   T:     0   E:    40   H:     0 
-   write_out/7                              C:    88   T:   104   E:   120   H:     7K
-   write_out/5                              C:    97   T:     2   E:   141   H:    14K
-   maybe_space/2                            C:    88   T:     0   E:    21   H:     0 
-   maybe_paren/5                            C:    88   T:    16   E:    64   H:     0 
-   write/1                                  C:    88   T:     0   E:    16   H:     3K
-   $forall_11650/3                          C:    88   T:     0   E:    48   H:   384 
-   $findall_5127/2                          C:   176   T:    16   E:    16   H:     0 
-   $findall_2249/6                          C:   176   T:     0   E:    48   H:    24K
-   $findall_2229/4                          C:   176   T:     0   E:    32   H:    12K
-   $findall_2210/5                          C:   176   T:     0   E:    40   H:    20K
-   $findall_1752/7                          C:   176   T:     0   E:    56   H:    10K
-   $findall_1688/7                          C:   176   T:     0   E:    56   H:    14K
-   $findall_1423/6                          C:   176   T:     0   E:    48   H:     1K
-   $findall_1373/4                          C:   176   T:     0   E:    32   H:    34K
-   $findall_1066/4                          C:   176   T:     0   E:    32   H:   800 
-   $findall_1053/3                          C:   176   T:     0   E:    24   H:     2K
-   $findall_226/3                           C:   176   T:     0   E:    24   H:     0 
-   $forall_160/2                            C:    88   T:     0   E:    32   H:     0 
-   parse_arguments/1                        C:   484   T:   152   E:   228   H:     1K
-   set_library_path/0                       C:   264   T:    32   E:    56   H:   296 
-   compile/1                                C:    39K  T:   186K  E:    26K  H:    32 
-   main/0                                   C:     0   T:     0   E:     0   H:   320 
-   register_defined_predicate/1             C:   218   T:    47   E:    87   H:    32K
-   register_unresolved_call/1               C:   291   T:    26   E:    28   H:     0 
-   generate_literal_list/1                  C:    88   T:     0   E:    12   H:    32K
-   generate_slot_inits/3                    C:    88   T:     0   E:    41   H:   116K
-   generate_foreign_arguments/1             C:    88   T:     0   E:    15   H:    44K
-   generate_data_list/1                     C:    88   T:     0   E:    14   H:   747K
-   generate_static_literals/6               C:     3K  T:     1K  E:     1K  H:    53K
-   generate_static_literal/4                C:    10K  T:     3K  E:     3K  H:   177K
-   assemble_literals/2                      C:    88   T:     1K  E:    48   H:   118K
-   gen_label_or_index/1                     C:    88   T:     0   E:    16   H:     0 
-   assemble_structure_dispatch/4            C:    28K  T:     6K  E:     7K  H:   119K
-   assemble_atom_dispatch/4                 C:    18K  T:     4K  E:     5K  H:   128K
-   assemble_arguments/2                     C:    88   T:     0   E:    25   H:   399K
-   assemble/3                               C:   311   T:    62   E:    75   H:   2.7M
-   generate_trailer/0                       C:    88   T:     0   E:     0   H:     0 
-   generate_verbatim_code/0                 C:    88   T:     0   E:     8   H:    32 
-   generate_header/0                        C:   264   T:    48   E:    40   H:    64 
-   assemble_instructions/1                  C:    88   T:   110   E:    32   H:   2.8M
-   assemble_global_variables/2              C:    88   T:    41   E:    41   H:   320 
-   assemble_file/2                          C:     1K  T:   159K  E:   456   H:   128 
-   make_unbound_vars/4                      C:   224   T:    53   E:    82   H:    16K
-   register_literals/4                      C:   138   T:   105   E:    62   H:    77K
-   register_literal/4                       C:    88   T:    55   E:    32   H:    91K
-   both_determinate/3                       C:    88   T:    16   E:    35   H:    19K
-   emit/4                                   C:   616   T:   128   E:   264   H:     0 
-   emit/3                                   C:   440   T:    96   E:   184   H:     0 
-   emit/2                                   C:   264   T:    64   E:   112   H:     0 
-   emit/1                                   C:    88   T:     0   E:     8   H:     0 
-   compile_arithmetic_operation_arguments/5 C:     1K  T:   386   E:   532   H:    94K
-   arithmetic_operation/3                   C:    88   T:    16   E:     0   H:     0 
-   arithmetic_operation/2                   C:    88   T:     0   E:     0   H:     0 
-   compile_arithmetic_expression/5          C:   648   T:   209   E:   397   H:    64K
-   compile_arithmetic_test/6                C:     2K  T:   654   E:     1K  H:    21K
-   compile_order_predicate/3                C:    88   T:     0   E:    64   H:    64 
-   type_predicate/1                         C:    88   T:     0   E:     0   H:     0 
-   compile_type_predicate/2                 C:   119   T:     3   E:    30   H:    95K
-   compile_call/6                           C:   109   T:     7   E:   106   H:    59K
-   compile_ordinary_call/7                  C:     1K  T:   342   E:   386   H:   346K
-   compile_meta_predicate/9                 C:   427   T:     0   E:   104   H:   103K
-   compile_explicit_unification/7           C:     2K  T:   907   E:     1K  H:    25K
-   compile_body_expression/8                C:     2K  T:     1K  E:     2K  H:   8.4M
-   compile_body/5                           C:     3K  T:     2K  E:     3K  H:   295K
-   compile_term_arguments/7                 C:     1K  T:   637   E:   747   H:   1.9M
-   compile_term_for_unification/6           C:   646   T:   242   E:   326   H:     1M
-   compile_unification1/7                   C:     1K  T:   556   E:   700   H:   791K
-   compile_unification/7                    C:     2K  T:   960   E:     1K  H:   513K
-   compile_head/5                           C:   185   T:   159   E:   203   H:   200K
-   secondary_clause_label/4                 C:     3K  T:     1K  E:   859   H:   348K
-   clause_label/4                           C:     3K  T:     1K  E:   976   H:   369K
-   compile_redo/2                           C:   151   T:    23   E:    44   H:    21K
-   show_compiled_clause/1                   C:    88   T:     0   E:    16   H:     0 
-   compile_clause/6                         C:    10K  T:     6K  E:     5K  H:   752K
-   compile_clause_list/5                    C:     6K  T:    11K  E:     2K  H:   705K
-   compile_clauses/4                        C:    22K  T:    39K  E:    10K  H:    99K
-   check_unresolved_calls/0                 C:    88   T:     0   E:     8   H:    32 
-   process_initialization_goals/1           C:    88   T:    96   E:    48   H:   280 
-   process_boilerplate_code/1               C:   176   T:    80   E:    40   H:   448 
-   compile_block/4                          C:    22K  T:    39K  E:    10K  H:    10K
-   process_directive/3                      C:   960   T:   324   E:   389   H:    12K
-   process_input/4                          C:   424   T:     8K  E:   366   H:  0.97M
-   compile_file_finished/1                  C:    10K  T:   172K  E:     5K  H:    32 
-   compile_file/1                           C:    88   T:    16   E:    24   H:    64 
-   is_meta_predicate/3                      C:    88   T:     0   E:    24   H:    64K
-   determinate_builtin/2                    C:    88   T:     0   E:    13   H:    42K
-   add_boilerplate/2                        C:    97   T:    32   E:    22   H:     0 
-   auto_include/3                           C:    88   T:     1   E:    22   H:     0 
-   macro/2                                  C:   173   T:    19   E:   108   H:   2.9M
-   build_dispatch_table_entry/2             C:    88   T:    16   E:    27   H:    19K
-   build_dispatch_table/7                   C:     5K  T:     2K  E:     4K  H:    22K
-   find_free_dispatch_table_entry/4         C:    88   T:    16   E:    93   H:     5K
-   insert_dispatch_table_entries/4          C:    88   T:    25   E:    54   H:    11K
-   duplicate_dispatch_table_entries/3       C:   140   T:   101   E:    96   H:   144K
-   adjust_dispatch_table/4                  C:    15K  T:     8K  E:    12K  H:     1K
-   dispatch_instruction/2                   C:    88   T:    16   E:     4   H:     5K
-   compile_dispatch_sequence/6              C:     9K  T:     2K  E:     3K  H:   161K
-   compile_dispatch_integer_fail/6          C:     4K  T:     1K  E:     1K  H:     1K
-   compile_dispatch/5                       C:    22K  T:     7K  E:     9K  H:    62K
-   member_in_indexing_types/2               C:    88   T:     0   E:    46   H:   1.9M
-   scan_indexing_types/3                    C:   150   T:    38   E:   124   H:   344K
-   compile_clause_indexing/5                C:    12K  T:     4K  E:     4K  H:    49K
-   get_argument_type/2                      C:    88   T:    16   E:    34   H:   123K
-   build_index_to_type_map/3                C:   129   T:    95   E:    91   H:   627K
-   possibly_cyclic_unification/1            C:   199   T:    77   E:    64   H:    23K
-   goals_and_variables/4                    C:     5K  T:     2K  E:     3K  H:     3K
-   map_indexed_variables_to_real_variables/3 C:   740   T:   244   E:   485   H:   103K
-   collect_indexed_variables/3              C:   585   T:   208   E:   153   H:   238K
-   collect_indexed_variables/2              C:    88   T:    48   E:    32   H:   176K
-   ground_term/1                            C:   104   T:    16   E:    36   H:   1.9M
-   indexed_variable/2                       C:    88   T:     0   E:    16   H:   4.3M
-   index_variables/5                        C:   106   T:   557   E:   121   H:    10M
-   index_variables/3                        C:    88   T:     0   E:    32   H:    38K
-   open_file_stack/3                        C:    88   T:    23   E:    32   H:    10K
-   gensym/4                                 C:    88   T:    16   E:    48   H:   4.8M
-   gen_literal_index/3                      C:    88   T:    32   E:    32   H:   137K
-   gen_label/3                              C:    88   T:     0   E:    24   H:     0 
-   initial_state/1                          C:    88   T:    16   E:     0   H:     0 
-   locate_file/2                            C:   365   T:   246   E:    91   H:     2K
-   map_second/2                             C:    88   T:    16   E:    24   H:    14K
-   concatenate/2                            C:     1K  T:   301   E:   321   H:    12M
-   hexdigit/2                               C:    88   T:    16   E:    22   H:     0 
-   mangle_char/2                            C:    88   T:    16   E:    10   H:   3.4M
-   mangle_name/2                            C:     2K  T:   565   E:   588   H:   1.4M
-   file_name_string/2                       C:    88   T:    64   E:    24   H:    56 
-   message/1                                C:   176   T:     0   E:    16   H:     1K
-   gen/5                                    C:    88   T:     0   E:    40   H:     0 
-   gen/4                                    C:    88   T:     0   E:    32   H:     0 
-   gen/3                                    C:    88   T:     0   E:    24   H:     0 
-   gen/2                                    C:    88   T:     0   E:    16   H:     0 
-   gen/1                                    C:    88   T:     0   E:     8   H:     0 
-   default_setting/2                        C:    88   T:    14   E:     0   H:     0 
-   <system>                                 C:     0   T:     0   E:     0   H:     1K
 ** gprof reports very heavy use of make_var()
    - force inlining? (check whether -O2 inlines it)
    - check once again with new optimization options (-O1)
@@ -386,6 +163,10 @@ NOTES							              -*- Org -*-
    - keep flag during compilation of a full predicate.
    - determinate if all but last clause contain a cut and all predicates
      called before the cuts are determinate.
+     - this is basically done already for single clauses to determine
+       tail-calls / determinate exits.
+   - only effective for calls following the definition of the
+     predicate.
 ** DONE Take advantage of timestamps when binding vars in unify()
    - see comment in file:pc.h (unify2), seems to work, but trail
      is only slightly smaller.
@@ -398,7 +179,8 @@ NOTES							              -*- Org -*-
 ** Arithmetic
    - deref all vars just once at start.
    - track types, use unboxed math.
-** 2-stream unification
+** Find a more efficient way of compiling unifications
+*** 2-stream unification
    - rather complicated, first attempt at implementation ended in
      quite a mess and was abandoned.
 ** With some sort of type/groundness analysis many primitives could be optimized
