@@ -4426,7 +4426,7 @@ PRIMITIVE(basic_writeq, X s, X x)
 }
 
 // has no args, avoid ugly dummy parameter
-static int gc(CHOICE_POINT *C0) { alloc_top = fromspace_limit + 1; return 1; }
+static int gc(CHOICE_POINT *C0) { force_gc(); return 1; }
 
 PRIMITIVE(halt, X code) 
 { 
