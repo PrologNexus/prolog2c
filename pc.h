@@ -1395,6 +1395,13 @@ static void unwind_trail(X *tp)
 }
 
 
+static inline void force_gc()
+{
+  alloc_top = fromspace_limit + 1; /* trigger GC on next check */
+  fast_gc = 0;
+}
+
+
 static inline void push_trail(CHOICE_POINT *C0, X var)
 {
   // trail-check
@@ -1412,7 +1419,7 @@ static inline void push_trail(CHOICE_POINT *C0, X var)
 
     if(trail_top >= trail_stack_limit) {
       gc_caused_by_trailing = 1;
-      alloc_top = fromspace_limit + 1; /* trigger GC */
+      force_gc();
     }
 
 #ifdef USE_DELAY
@@ -3931,7 +3938,7 @@ static X string_to_list(XCHAR *str, int len)
   XWORD size = len * 3 * sizeof(XWORD); /* N pairs */
 
   if((XWORD)alloc_top + size  > (XWORD)fromspace_limit) {
-    alloc_top = fromspace_limit; /* force GC */
+    force_gc();
     return ZERO;
   }
 
