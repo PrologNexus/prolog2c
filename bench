@@ -89,6 +89,6 @@ for {set i 0} {$i < 5} {incr i} {
     lappend results $r
 }
 
-set results [lsort -real $results]
-puts [expr ([lindex $results 1] + [lindex $results 2] + [lindex $results 3]) / 3]
+lassign [lsort -real $results] {_ a b c}
+puts [expr ($a + $b + $c) / 3]
 file delete -force $rtmp $tmpname $cfile
