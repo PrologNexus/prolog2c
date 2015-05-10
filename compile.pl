@@ -405,7 +405,7 @@ compile_body_expression(fail, _, _, D, D, B, B, S, S) :-
 	emit(fail).
 
 % repeat
-compile_body_expression(repeat, _, _, D, D, B, B, S1, S2) :-
+compile_body_expression(repeat, _, _, _, notlast/nondet, B, B, S1, S2) :-
 	gen_label(L, S1, S2),
 	%% this clause can only be exited via cut, so just adjust ptrs in CP (no redo will ever happen)
 	emit(adjust_choice_point(L), label(L)).
