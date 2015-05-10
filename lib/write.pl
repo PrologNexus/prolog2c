@@ -117,12 +117,6 @@ put_string([H|T], Q) :-
 
 
 
-%   write_variable(V)
-%   is system dependent.  This just uses whatever Prolog supplies.
-
-write_variable(V) :-
-	display(V).
-
 %   write_out(Term, Style, Priority, Ci, Co)
 %   writes out a Term in a given Style (display,write,writeq,print)
 %   in a context of priority Priority (that is, operators with
@@ -134,7 +128,7 @@ write_out(Term, _, _, Ci, alpha) :-
 	var(Term),
 	!,
 	maybe_space(Ci, alpha),
-	write_variable(Term).
+	display(Term).
 write_out(N, _, _, Ci, alpha) :-
 	number(N),
 	(   N < 0, maybe_space(Ci, other)
@@ -324,7 +318,7 @@ write_tail(Var, _) :-			%  |var]
 	var(Var),
 	!,
 	put(124),
-	write_variable(Var),
+	display(Var),
 	put(93).
 write_tail([], _) :- !,			%  ]
 	put(93).
