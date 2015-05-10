@@ -615,9 +615,9 @@ static XCHAR *type_names[] = {
 #define IS_IN_HEAP(ptr)  ((X*)(ptr) >= fromspace && (X*)(ptr) < fromspace_end)
 
 #define slot_ref(x, i)          (objdata(x)[ i ])
+
+// doesn't make a difference, currently
 #define atomic_slot_set(x, i, y)  (objdata(x)[ i ] = (y))
-#define string_ref(x, i)        code_char(((XCHAR *)objdata(x))[ i ])
-#define string_set(x, i, y)     ({ X c_ = (y); (((XCHAR *)objdata(x))[ i ]) = char_code(c_); c_; })
 
 #define ASSIGN(dest, x)  dest = (x)
 
