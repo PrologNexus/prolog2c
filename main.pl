@@ -76,5 +76,5 @@ parse_arguments(_) :- usage(1).
 
 usage(STATUS) :-
 	gen('usage: pc [-version] [-h] [-v] [-o FILENAME] [-i]',
-	    ' [-xref] [-compress-facts] [FILENAME]\n'),
+	    ' [-xref] [-xrefall] [-compress-facts] [FILENAME]\n'),
 	halt(STATUS).
