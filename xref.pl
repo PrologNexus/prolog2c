@@ -4,24 +4,20 @@
 emit_xref_information :-
 	dump_directives,
 	dump_defined_predicates,
-	% dump_unknown_predicates,
+	%dump_unknown_predicates,
 	dump_determinate_predicates,
-	dump_boilerplate_code,
 	dump_call_information.
 
 dump_directives :-
 	forall(recorded(directive, DECL), write_xref(directive(DECL))).
 
 dump_defined_predicates :-
-	forall(recorded(defined, N/A), write_xref(defined(N, A))).
+	forall(recorded(defined, N/A), write_xref(defined(N/A))).
 
 dump_unknown_predicates :-
 	forall((recorded(unresolved, N/A),
 		\+auto_include(N, A, _)),
-	       write_xref(unknown(N, A))).
-
-dump_boilerplate_code :-
-	forall(recorded(boilerplate, B), write_xref(boilerplate(B))).
+	       write_xref(unknown(N/A))).
 
 dump_call_information :-
 	forall(recorded(calls, calls(NA1, NA2)), dump_call_information(NA1, NA2)).
