@@ -1159,10 +1159,6 @@ Builtin predicates
     Unifies X with the first element of SET - this predicate only
     produces one solution.
 
-        ord_seteq(+SET1, +SET2)
-
-    True if sets are equal.
-
         ord_subset(+SET1, +SET2)
 
     True if SET1 is a subset of SET2.

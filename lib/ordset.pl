@@ -26,7 +26,6 @@
 	    ord_intersect(+, +, +, +, +),
 	ord_intersect(+, +, ?),
 	    ord_intersect(+, +, +, +, +, ?),
-	ord_seteq(+, +),
 	ord_subset(+, +),
 	    ord_subset(+, +, +, +, +),
 	ord_subtract(+, +, ?), 
@@ -116,16 +115,6 @@ ord_intersect(<, _,     Tail1, Head2, Tail2, Intersection) :-
 	ord_intersect(Tail1, [Head2|Tail2], Intersection).
 ord_intersect(>, Head1, Tail1, _,     Tail2, Intersection) :-
 	ord_intersect([Head1|Tail1], Tail2, Intersection).
-
-
-
-%   ord_seteq(+Set1, +Set2)
-%   is true when the two arguments represent the same set.  Since they
-%   are assumed to be ordered representations, they must be identical.
-
-
-ord_seteq(Set1, Set2) :-
-	Set1 == Set2.
 
 
 

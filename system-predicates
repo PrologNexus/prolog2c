@@ -129,7 +129,6 @@ system_predicate(ord_disjoint(+X, +Y), 'ordset').
 system_predicate(ord_insert(+X, +Y, -Z), 'ordset').
 system_predicate(ord_intersect(+X, +Y), 'ordset').
 system_predicate(ord_intersect(+X, +Y, -Z), 'ordset').
-system_predicate(ord_seteq(+X, +Y), 'ordset').
 system_predicate(ord_subset(+X, +Y), 'ordset').
 system_predicate(ord_subtract(+X, +Y, -Z), 'ordset').
 system_predicate(ord_symdiff(+X, +Y, -Z), 'ordset').

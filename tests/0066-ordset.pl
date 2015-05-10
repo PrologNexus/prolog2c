@@ -6,7 +6,6 @@ main :-
 	ord_intersect([0,1],[1,2]),
 	\+ord_intersect([0,1],[2,3]),
 	ord_intersect(S1, [0,1,2], [1,2]),
-	ord_seteq(S1, S1),
 	ord_subset([1,2],S1),
 	\+ord_subset([1,3],S1),
 	ord_subtract(S1, [1,2,6],[bar,foo]),

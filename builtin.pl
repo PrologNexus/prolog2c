@@ -162,7 +162,6 @@ auto_include(ord_disjoint, 2, 'ordset').
 auto_include(ord_insert, 3, 'ordset').
 auto_include(ord_intersect, 2, 'ordset').
 auto_include(ord_intersect, 3, 'ordset').
-auto_include(ord_seteq, 2, 'ordset').
 auto_include(ord_subset, 2, 'ordset').
 auto_include(ord_symdiff, 2, 'ordset').
 auto_include(ord_union, 2, 'ordset').
