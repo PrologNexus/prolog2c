@@ -154,7 +154,7 @@ process_directive(global_variable(NAME), S, S) :-
 process_directive(verbatim(STR), S, S) :-
 	recordz(verbatim_code, STR).
 process_directive(determinate(PI), S, S) :-
-	register_predicate_annotation(PI, determinate_predicate).
+	mark_predicate_indicators(PI, determinate_predicate).
 process_directive(op(P, A, N), S, S) :- op(P, A, N).
 process_directive(meta_predicate(META), S, S) :-
 	register_predicate_annotation(META, meta_signature).
