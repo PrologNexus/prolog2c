@@ -10,6 +10,7 @@
 %   -q                      disable any output
 %   -compress-facts         compress blocks of facts with ground arguments
 %   -xref                   write cross-referencing information to stdout
+%   -xrefall                write xref information for all code
 %   -n                      ignore PC_LIBRARY_DIR
 %
 % - The content of PC_INCLUDE_PATH are prepended to the default include-path.
@@ -37,6 +38,9 @@ parse_arguments(['-o', OFILE|MORE]) :-
 	parse_arguments(MORE).
 parse_arguments(['-xref'|MORE]) :-
 	recordz(xref_mode, yes),
+	parse_arguments(MORE).
+parse_arguments(['-xrefall'|MORE]) :-
+	recordz(xref_mode, all),
 	parse_arguments(MORE).
 parse_arguments(['-i'|MORE]) :-
 	recorda(show_intermediate_code, yes),

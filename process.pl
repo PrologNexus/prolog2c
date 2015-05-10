@@ -21,11 +21,14 @@ compile_file_finished(STATE) :-
 compile_file_finished(STATE) :-
 	process_initialization_goals(STATE).
 compile_file_finished(STATE) :-
-	check_unresolved_calls,
 	mark_unused_predicates,
-	recorded(output_file, OUTFILE),
-	(recorded(show_intermediate_code, yes) -> show_intermediate_code
-	; assemble_file(OUTFILE, STATE)
+	check_unresolved_calls,
+	( recorded(xref_mode, all)
+	-> emit_xref_information
+	; recorded(output_file, OUTFILE),
+	  (recorded(show_intermediate_code, yes) -> show_intermediate_code
+	  ; assemble_file(OUTFILE, STATE)
+	  )
 	).
 
 

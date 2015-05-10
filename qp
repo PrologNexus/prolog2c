@@ -51,6 +51,7 @@ function usage() {
     echo "  -compress-facts   compress blocks of facts with ground arguments"
     echo "  -xref             write cross-referencing information instead of"
     echo "                    compiling program"
+    echo "  -xrefall          like -xref, but for all included libraries"
     echo "  -n                ignore PC_LIBRARY_DIR"
     echo "  -c                compile but do not run"
     echo "  -C OPTION         pass OPTION to the C compiler"
@@ -84,7 +85,7 @@ while test -n "$1"; do
 	    shift
 	    c_options="${c_options} $1"
 	    shift;;
-	-xref|-i)
+	-xref|-i|-xrefall)
 	    xref=$1
 	    shift;;
 	-o) 

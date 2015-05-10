@@ -117,6 +117,8 @@ Usage
     -compress-facts         reduce code produced for facts (see below)
     -xref                   write cross-referencing information to
                             stdout
+    -xrefall                like `-xref`, but considers all library code
+                            as well
     -n                      ignore PC_LIBRARY_DIR
 
   Any output preceeded with "%" is purely for informational purposes
