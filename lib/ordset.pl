@@ -38,6 +38,15 @@
 	    ord_memberchk(+, +, ?, ?).
 
 
+:- determinate ord_disjoint/5,
+	ord_insert/5,
+	ord_intersect/6,
+	ord_union/6,
+	ord_subset/5,
+	ord_subtract/6,
+	ord_symdiff/6.
+
+
 %   list_to_ord_set(+List, ?Set)
 %   is true when Set is the ordered representation of the set represented
 %   by the unordered representation List.  The only reason for giving it

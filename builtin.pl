@@ -263,6 +263,13 @@ determinate_builtin('$findall_start', 0).
 determinate_builtin('$findall_push', 1).
 determinate_builtin('$findall_collect', 1).
 determinate_builtin(ord_memberchk, 2).
+determinate_builtin(ord_disjoint, 2).
+determinate_builtin(ord_insert, 3).
+determinate_builtin(ord_intersect, 3).
+determinate_builtin(ord_subset, 2).
+determinate_builtin(ord_subtract, 3).
+determinate_builtin(ord_symdiff, 3).
+determinate_builtin(ord_union, 3).
 determinate_builtin(read_tokens, 2).
 determinate_builtin('$read1', 1).
 determinate_builtin('$read1', 2).

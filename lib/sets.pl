@@ -7,6 +7,8 @@
 	symdiff(+, +, ?),
 	symdiff(+, +, ?, ?).
 
+:- determinate symdiff/4.
+
 
 union([], X, X).
 union([X|R], Y, Z):- member(X, Y), !, union(R, Y, Z).
