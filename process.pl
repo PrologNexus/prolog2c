@@ -219,7 +219,8 @@ process_discontiguous_code(STATE) :-
 		    clause_functor(C, N, A),
 		    erase(R)),
 		CLAUSES),
-	!, process_input(CLAUSES, [], _, STATE).
+	!,
+	process_input(CLAUSES, [], _, STATE).
 
 
 %% add clauses for boilerplate code and (pre-)initialization goals
@@ -228,7 +229,8 @@ process_boilerplate_code(STATE) :-
 	emit(trace_off),
 	findall(B, (recorded(boilerplate, B, REF), erase(REF)), BOILERPLATE),
 	BOILERPLATE \== [],
-	!, process_input(BOILERPLATE, [], _, STATE).
+	!,
+	process_input(BOILERPLATE, [], _, STATE).
 
 process_initialization_goals(STATE) :-
 	\+recorded(initialization_done, _),
@@ -238,7 +240,8 @@ process_initialization_goals(STATE) :-
 	recorda(initialization_done, true),
 	default_setting(entry_point, EP),
 	register_call(?/?, EP/0),
-	!, process_input([(EP :- IGOAL, PGOAL, GOAL)], [], _, STATE).
+	!,
+	process_input([(EP :- IGOAL, PGOAL, GOAL)], [], _, STATE).
 
 
 %% list unresolved calls

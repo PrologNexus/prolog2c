@@ -2,14 +2,22 @@
 
 
 atom_concat(X, Y, Z) :-
-	var(X), !, name(Y, YL), atom_codes(Z, ZL), append(XL, YL, ZL), name(X, XL).
+	var(X),
+	!,
+	name(Y, YL), atom_codes(Z, ZL),
+	append(XL, YL, ZL), name(X, XL).
 atom_concat(X, Y, Z) :-
-	var(Y), !, name(X, XL), atom_codes(Z, ZL), append(XL, YL, ZL), name(Y, YL).
+	var(Y),
+	!,
+	name(X, XL), atom_codes(Z, ZL),
+	append(XL, YL, ZL), name(Y, YL).
 atom_concat(X, Y, Z) :-
-	name(X, XL), name(Y, YL), append(XL, YL, ZL), atom_codes(Z, ZL).
+	name(X, XL), name(Y, YL),
+	append(XL, YL, ZL), atom_codes(Z, ZL).
 
 atom_chars(X, Y) :-
-	var(X), !,
+	var(X),
+	!,
 	findall(C, (member(CH, Y), char_code(CH, C)), YL),
 	atom_codes(X, YL).
 atom_chars(X, Y) :-
@@ -17,7 +25,8 @@ atom_chars(X, Y) :-
 	findall(CH, (member(C, XL), char_code(CH, C)), Y).
 
 number_chars(X, Y) :-
-	var(X), !,
+	var(X),
+	!,
 	findall(C, (member(CH, Y), char_code(CH, C)), YL),
 	number_codes(X, YL).
 number_chars(X, Y) :-
