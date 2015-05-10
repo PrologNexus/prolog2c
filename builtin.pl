@@ -309,7 +309,14 @@ determinate_builtin(is_list, 1).
 determinate_builtin(atomic_list_concat, 2).
 determinate_builtin(split_string, 4).
 determinate_builtin(numbervars, 3).
-
+determinate_builtin(set_stream_position, 2).
+determinate_builtin(atom_chars, 2).
+determinate_builtin(number_chars, 2).
+determinate_builtin(plus, 3).
+determinate_builtin(succ, 2).
+determinate_builtin(times, 3).
+determinate_builtin(divide, 4).
+		    
 determinate_builtin(NAME, ARITY) :-
 	recorded(determinate_predicate, NAME/ARITY).
 
