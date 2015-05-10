@@ -59,6 +59,7 @@ macro(delete_file(X), foreign_call(delete_file(X))).
 macro(stream_property(S, P), '$stream_property'(P, S)). % to utilize indexing
 macro(getcwd(X), foreign_call(get_working_dir(X))).
 macro(chdir(X), foreign_call(set_working_dir(X))).
+macro(char_code(A, C), atom_codes(A, [C])).
 
 
 % nothing matches - tryi auto-include and finally, fail
@@ -199,7 +200,6 @@ auto_include(all_different, 1, 'co').
 
 auto_include(current_prolog_flag, 2, 'flags').
 
-auto_include(char_code, 2, 'iso').
 auto_include(atom_concat, 3, 'iso').
 auto_include(atom_chars, 2, 'iso').
 auto_include(number_chars, 2, 'iso').
