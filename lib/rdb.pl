@@ -5,6 +5,8 @@
 :- pre_initialization((foreign_call(db_create(record_db, 3001, DB)),
 		       global_set(record_db, DB))).
 
+:- determinate '$record_db_key'/2.
+
 
 recorda(KEY, TERM) :- recorda(KEY, TERM, _).
 recorda(KEY, TERM, REF) :- '$record'(KEY, TERM, REF, 0).

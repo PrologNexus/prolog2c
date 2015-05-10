@@ -156,6 +156,10 @@
 		writef_nonlist(+,-),
 		writefs(+,+).
 
+:- determinate prlist/1,
+	writef_nonlist/2,
+	praggl/4,
+	getpad/3.
 
 
 			% Print a list, one element per line

@@ -1,6 +1,9 @@
 %%% miscellaneous predicates
 
 
+:- determinate '$univ_args'/4.
+
+
 compare(>, X, Y) :- X @> Y, !.
 compare(<, X, Y) :- X @< Y, !.
 compare(=, X, X).

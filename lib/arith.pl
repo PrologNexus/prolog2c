@@ -58,6 +58,10 @@
     add, bind_new_var(Z)" or something like that.)
 */
 
+
+:- determinate times/5.
+
+
 %   The general idea is that if there is enough information in a goal
 %   to detect that it must fail (e.g. succ(X,a)) we fail, if there is
 %   enough information to determine a unique solution, we yield that
@@ -68,6 +72,7 @@
 %   because these operations are primitives, that would be coded in
 %   assembler or micro-code, and we don't want to oblige a compiler
 %   to generate full frames for them.  
+
 
 instantiation_fault_(Goal) :-
 	throw(instantiation_error(Goal)).

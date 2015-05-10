@@ -47,7 +47,12 @@
 	is_opchar(+),
 	write_args(+, +, +, +, +),
 	write_tail(?, +).
-	
+
+:- determinate maybe_paren/5,
+	maybe_space/2,
+	write_atom/4,
+	is_opchar/1.
+
 
 /*
 print(Term) :-

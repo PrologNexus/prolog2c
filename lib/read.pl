@@ -31,6 +31,12 @@
 	display_list(+, +),
 	display_token(+).
 
+:- determinate '$read2'/2,
+	prefixop/3,
+	postfixop/3,
+	infixop/4,
+	ambigop/6.
+
 
 '$read1'(Answer) :- '$read1'(Answer, _).
 

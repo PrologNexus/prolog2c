@@ -49,6 +49,10 @@
 	read_solidus(+, -),
 	read_fullstop(+, -, -).
 
+:- determinate '$rdtok_hex_digit'/2,
+	read_integer/3,
+	read_lookup/2.
+
 	
 %   read_tokens(TokenList, Dictionary)
 %   returns a list of tokens.  It is needed to "prime" read_tokens/2

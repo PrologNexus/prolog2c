@@ -52,6 +52,8 @@
 						  op(400,yfx,'\\\\'),
 						  op(400,yfx,'rem')])).
 
+:- determinate '$op'/3.						  
+
 						  
 current_op(P, A, N) :-
 	global_ref(operator_table, OT),
