@@ -118,7 +118,7 @@ Usage
     -xref                   write cross-referencing information to
                             stdout
     -xrefall                like `-xref`, but considers all library code
-                            as well
+                            as well and also outputs a call-graph
     -n                      ignore PC_LIBRARY_DIR
 
   Any output preceeded with "%" is purely for informational purposes
