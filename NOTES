@@ -101,8 +101,9 @@ NOTES							              -*- Org -*-
 *** Reader-error should throw syntax_error with message argument
 *** Throw ISO-compliant exceptions everywhere
     - at least as much as possible and sensible.
-*** Isn't most of the stuff in file:lib/ordset.pl, file:lib/sets.pl determinate?
 * Optimization opportunities
+** TODO Self-tail-calls should be optimizable
+   - just set A[] and jump? Do we need to restore R, and other registers?
 ** TODO Var-test in clause-indexing can be omitted if argument has mode '+'
 ** TODO Add macros for trivial lib predicates
    | $findall_start/0          |
@@ -121,9 +122,7 @@ NOTES							              -*- Org -*-
    | is_list/1                 |
    | shell/1                   |
    | unify_with_occurs_check/2 |
-   | char_code/2               |
    | list_to_ord_set/2         |
-   | ord_seteq/2               |
    | keysort/2                 |
    | sort/2                    |
    | merge/3                   |
@@ -145,6 +144,19 @@ NOTES							              -*- Org -*-
 	 very little (current status of patch)
      - 0120-different: also seems to need clearing fast_gc in
        delay_goal()
+   - example code:
+     #+BEGIN_SRC prolog
+     main :-
+	     between(1, 1000, X),
+	     make(10000, _),
+	     writef("%d %f", [X]),
+	     fail.
+
+     make(0, []) :- !.
+     make(N, [x|R]) :-
+	     N2 is N - 1,
+    	     make(N2, R).
+     #+END_SRC
 ** TODO Use power-of-2 sized hash-tables everywhere
    - use binary-and instead of mod operation, supposed to be faster.
    - symbol- and structure-dispatch tables, block-dispatch-tables (in
@@ -159,14 +171,6 @@ NOTES							              -*- Org -*-
    - may only be applicable when env_top didn't change.
 ** TODO Special-case calls of primitives that are known to always succeed
    - avoids test for failure.
-** TODO Determinacy analysis
-   - keep flag during compilation of a full predicate.
-   - determinate if all but last clause contain a cut and all predicates
-     called before the cuts are determinate.
-     - this is basically done already for single clauses to determine
-       tail-calls / determinate exits.
-   - only effective for calls following the definition of the
-     predicate.
 ** DONE Take advantage of timestamps when binding vars in unify()
    - see comment in file:pc.h (unify2), seems to work, but trail
      is only slightly smaller.
@@ -200,12 +204,9 @@ NOTES							              -*- Org -*-
    - perform determinateness-analysis for all code.
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
-** TODO Add read_term/2+3
-   - only with read-options "variables" and "variable_names"
 ** Detect unbound variables in '+' args for calls to predicates with declared mode
    - i.e. at compile-time.
    - possibly, but needs a lot of changes and slows down compilation.
-** Allow serializing DB to and from file
 ** TODO Check if we can use file:lib/canon.pl for printing query results
    - syntax is ugly, could use "**" as does GNU Prolog.
 ** Show warning for untriggered delayed goals with "-:d"
@@ -231,13 +232,13 @@ NOTES							              -*- Org -*-
      | sub_atom/5    |
    - different handling of put_code/put_byte, get_code/get_byte and
      peek_code/peek_byte
-** Potential libraries
-*** Handle arbitrary signals
-   - should we? could be dine in (.c) library.
-*** dlopen, dlsym, to access primitives written in C
-   - kust opens cans of worms, but could be done as .c extension.
 * Documentation
 ** DONE News
+   - dropped `ord_seteq/2`.
+   - The compiler now does some basic determinateness analysis for
+     predicates. Currently only calls following the definition of such
+     a predicate can take advantage of this.
+   - added `-xrefall` compiler option.
    - TRACE-mode is now enabled by default, unless NOTRACE or NDEBUG or
      UNSAFE is defined.
    - The compiler now removes predicates that are never used.
