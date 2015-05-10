@@ -80,3 +80,11 @@ predicate_callers(NA, CALLERS) :-
 	!,
 	CALLERS = LST.
 predicate_callers(_, []).
+
+
+%% register whether compiled predicate is determinate
+
+mark_as_determinate(N/A, det) :-
+	\+determinate_builtin(N, A),
+	recordz(determinate_predicate, N/A).
+mark_as_determinate(_, _).

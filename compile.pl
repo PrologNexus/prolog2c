@@ -18,16 +18,18 @@ compile_clauses(NAME/ARITY, CLAUSES, S1, S2) :-
 	  N >= T,
 	  fact_block(CLAUSES)
 	-> compile_fact_block(NAME/ARITY, CLAUSES, MAP, S3, S2)
-	; compile_clause_list(CLAUSES, NAME/ARITY, MAP, S3, S2)
+	; compile_clause_list(CLAUSES, NAME/ARITY, MAP, det, S3, S2)
 	).
 
-compile_clause_list([CLAUSE], NAME/ARITY, [I/_], S1, S2) :-
+compile_clause_list([CLAUSE], NAME/ARITY, [I/_], D1, S1, S2) :-
 	clause_label(NAME, ARITY, I, L1),
 	secondary_clause_label(NAME, ARITY, I, L2),
 	emit(label(L1), label(L2)),
 	(I =:= 1; emit(redo)),
-	compile_clause(CLAUSE, NAME/ARITY, I, last, S1, S2).	
-compile_clause_list([CLAUSE|MORE], NAME/ARITY, [I/T|MAP], S1, S2) :-
+	(D1 == det -> LAST = detlast; LAST = last),
+	compile_clause(CLAUSE, NAME/ARITY, I, LAST, D1, D, S1, S2),
+	mark_as_determinate(NAME/ARITY, D).
+compile_clause_list([CLAUSE|MORE], NAME/ARITY, [I/T|MAP], D1, S1, S2) :-
 	clause_label(NAME, ARITY, I, L1),
 	emit(label(L1)),
 	( I =:= 1
@@ -36,12 +38,12 @@ compile_clause_list([CLAUSE|MORE], NAME/ARITY, [I/T|MAP], S1, S2) :-
 	),
 	secondary_clause_label(NAME, ARITY, I, L2),
 	emit(label(L2)),
-	compile_clause(CLAUSE, NAME/ARITY, I, notlast, S3, S4),
+	compile_clause(CLAUSE, NAME/ARITY, I, notlast, D1, D2, S3, S4),
 	!,
-	compile_clause_list(MORE, NAME/ARITY, MAP, S4, S2).
+	compile_clause_list(MORE, NAME/ARITY, MAP, D2, S4, S2).
 
 % rule
-compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, S1, S2) :-
+compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, D1, D, S1, S2) :-
         show_compiled_clause((HEAD :- BODY)),
 	!,			% avoid match of next clause (fact)
 	I2 is I + 1,
@@ -53,10 +55,10 @@ compile_clause((HEAD :- BODY), NAME/ARITY, I, LAST, S1, S2) :-
 	compile_head(HEAD, NONSINGLETONS, BOUND, S1, S3),
 	gen_label(L1, S3, S4),
 	emit(call_triggered(L1)),
-	compile_body(BODY, NAME/ARITY, LAST, BOUND, S4, S2).
+	compile_body(BODY, NAME/ARITY, LAST, BOUND, D1, D, S4, S2).
 % fact
-compile_clause(HEAD, NA, I, M, S1, S2) :-
-	compile_clause((HEAD :- true), NA, I, M, S1, S2).
+compile_clause(HEAD, NA, I, M, D1, D, S1, S2) :-
+	compile_clause((HEAD :- true), NA, I, M, D1, D, S1, S2).
 
 
 %% compile "block" of facts, if all arguments are ground
@@ -103,6 +105,7 @@ show_compiled_clause(_).
 %% perform CP-handling for a particular clause-position (no CP needed in last clause)
 compile_redo(notlast, L) :- emit(set_redo(L)).
 compile_redo(last, _) :- emit(no_redo).
+compile_redo(detlast, _) :- emit(no_redo).
 
 
 %% generate clause labels from name/arity + index, and 2nd label for dispatch-target
@@ -306,13 +309,15 @@ compile_meta_arguments([X|MORE], NA, [SPEC|SIG], DL1, DL2, B1, B2, S1, S2) :-
 
 %% compile body
 
-compile_body(BODY, N/A, LAST, BOUND, S1, S2) :-
-	(LAST == last -> DET = det; DET = nondet),
+compile_body(BODY, N/A, LAST, BOUND, D1, D, S1, S2) :-
+	(LAST == last; LAST == detlast -> DET = det; DET = nondet),
 	compile_body_expression(BODY, N/A, tail, LAST/DET, LD2, BOUND, _, S1, S3),
 	gen_label(L, S3, S2),
 	( ( LD2 = _/det; determinate_builtin(N, A) )
-	-> emit(determinate_exit)
-	; emit(exit(L))
+	-> emit(determinate_exit),
+	  D = D1
+	; emit(exit(L)),
+	  D = nondet
 	).
 
 
@@ -384,7 +389,11 @@ compile_body_expression((X; Y), NA, TAIL, D1, D2, B1, B2, S1, S2) :-
 	both_determinate(D3, D4, D2).
 
 % cut
-compile_body_expression(!, _, _, _, last/det, B, B, S1, S2) :-
+compile_body_expression(!, _, _, LAST/_, LAST2/det, B, B, S1, S2) :-
+	( LAST == detlast
+	-> LAST2 = detlast
+	; LAST2 = last
+	),
 	gen_label(L, S1, S2),
 	emit(cut(L)).
 
@@ -663,17 +672,26 @@ compile_meta_predicate(NAME, NA, ARGS, TAIL, D1, D2, B1, B2, S1, S2) :-
 compile_ordinary_call(NAME, NA, TAIL, DLIST, LAST/D1, D2, S1, S2) :-
 	length(DLIST, ARITY),
 	register_unresolved_call(NAME/ARITY),
-	(determinate_builtin(NAME, ARITY) -> D2 = LAST/D1; D2 = LAST/nondet),
+	( determinate_builtin(NAME, ARITY)
+	-> D2 = LAST/D1
+	%% self-tail-call and is last clause in set of determinate clauses?
+	; ( TAIL/D1 == tail/det, NAME/ARITY == NA, LAST == detlast
+	  -> D2 = last/det
+	  ; D2 = LAST/nondet
+	  )
+	),
 	gen_label(L, S1, S2),
 	register_call(NA, NAME/ARITY),
 	compile_call(TAIL, LAST, D1, NAME, DLIST, L).
 
 compile_call(tail, _, det, NAME, DLIST, _) :- emit(tail_call(NAME, DLIST)).
 compile_call(tail, last, _, NAME, DLIST, L) :- emit(final_call(NAME, DLIST, L)).
+compile_call(tail, detlast, _, NAME, DLIST, L) :- emit(final_call(NAME, DLIST, L)).
 compile_call(_, _, _, NAME, DLIST, L) :- emit(call(NAME, DLIST, L)).
 
 compile_pointer_call(tail, _, det, R1, R2, _) :- emit(tail_call_address(R1, R2)).
 compile_pointer_call(tail, last, _, R1, R2, L) :- emit(final_call_address(R1, R2, L)).
+compile_pointer_call(tail, detlast, _, R1, R2, L) :- emit(final_call_address(R1, R2, L)).
 compile_pointer_call(_, _, _, R1, R2, L) :- emit(call_address(R1, R2, L)).
 
 compile_type_predicate(NAME, [VAL]) :-
