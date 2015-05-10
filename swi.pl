@@ -5,9 +5,10 @@
 :- op(1150,fx,determinate).
 :- op(1150,fx,mode).
 
-%% mode-declarations are used in lib/rdtok and lib/read, so we define
+%% mode-/determinate-declarations are used in lib/rdtok and lib/read, so we define
 %% a dummy predicate to treat it as a latent goal.
 mode(_).
+determinate(_).
 
 command_line_arguments(ARGS) :-
 	current_prolog_flag(argv, X),
