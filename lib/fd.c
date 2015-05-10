@@ -13,15 +13,6 @@ PRIMITIVE(open_fd, X fd, X input, X mode, X data, X result)
 }
 
 
-PRIMITIVE(close_fd, X fd) 
-{
-  if(close(fixnum_to_word(fd)) == -1)
-    system_error(strerror(errno));
-
-  return 1;
-}
-
-
 PRIMITIVE(raw_read, X fd, X count, X bytes)
 {
   int fno = fixnum_to_word(check_fixnum(fd));

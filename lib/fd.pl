@@ -55,12 +55,6 @@ open_fd(FD, INPUT, MODE, [_|MORE], DATA, STREAM) :-
 	open_fd(FD, INPUT, MODE, MORE, DATA, STREAM).
 
 
-%% close file-descriptor
-
-close_fd(FD) :-
-	foreign_call(close_fd(FD)).
-
-
 %% wait for I/O on file-descriptors
 
 poll_fds(FDS, READY) :-
