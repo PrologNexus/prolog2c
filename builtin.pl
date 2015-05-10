@@ -315,6 +315,10 @@ determinate_builtin(plus, 3).
 determinate_builtin(succ, 2).
 determinate_builtin(times, 3).
 determinate_builtin(divide, 4).
+determinate_builtin(union, 3).
+determinate_builtin(intersection, 3).
+determinate_builtin(subtract, 3).
+determinate_builtin(symdiff, 3).
 		    
 determinate_builtin(NAME, ARITY) :-
 	recorded(determinate_predicate, NAME/ARITY).

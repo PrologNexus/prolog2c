@@ -40,6 +40,14 @@
 :- global_variable(pi_trace_depth).
 :- pre_initialization(global_set(pi_trace_depth, none)).
 
+:- determinate pi_trace_out/2,
+	pi_trace_out/3,
+	expand_term/2,
+	pi_free_variables/5,
+	pi_explicit_binding/4,
+	pi_term_is_free_of/3,
+	pi_msg/2.
+
 
 pi_init(LDIR) :-
 	assertz(term_expansion(X, X)),

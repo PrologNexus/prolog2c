@@ -10,6 +10,10 @@
 :- pre_initialization((foreign_call(db_create(clause_db, 3001, DB)),
 		       global_set(clause_db, DB))).
 
+:- determinate '$assert'/4,
+	'$clause_check_term'/3,
+	'$clause_db_key'/2.
+
 
 asserta(TERM) :- asserta(TERM, _).
 asserta(TERM, REF) :-
