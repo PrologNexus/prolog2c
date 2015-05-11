@@ -517,7 +517,7 @@ static XCHAR *type_names[] = {
 
 /// debugging and termination
 
-#define OUTPUT(...)  { fflush(stdout); fprintf(stderr, __VA_ARGS__); } 
+#define COUTPUT(...)  { fflush(stdout); fprintf(stderr, __VA_ARGS__); } 
 #define CRASH(...)   { fflush(stdout); fprintf(stderr, "\n" __VA_ARGS__); fputc('\n', stderr); crash_hook(); exit(EXIT_FAILURE); }
 
 #ifdef UNSAFE
@@ -530,8 +530,8 @@ static XCHAR *type_names[] = {
 # define DRIBBLE          ;
 #else
 # define ASSERT(x, ...)   { if(!(x)) CRASH(__VA_ARGS__) }
-# define DBG              OUTPUT
-# define DRIBBLE(...)     { if(verbose) OUTPUT(__VA_ARGS__); }
+# define DBG              COUTPUT
+# define DRIBBLE(...)     { if(verbose) COUTPUT(__VA_ARGS__); }
 #endif
 
 #ifdef DEBUGGING
@@ -2587,7 +2587,7 @@ static void initialize(int argc, char *argv[])
 	// no option for ifthen-stack, in the moment
 
       default:
-	OUTPUT("WARNING: invalid runtime option \"%s\" (ignored)\n", arg);
+	COUTPUT("WARNING: invalid runtime option \"%s\" (ignored)\n", arg);
       }
     }
   }
