@@ -80,10 +80,10 @@ rb_empty(t(Nil,Nil)) :- Nil = black('',_,_,'').
 %	tree T, returning for each the value Value.
 
 rb_lookup(Key, Val, t(_,Tree)) :-
-	lookup(Key, Val, Tree).
+	'$rb_lookup'(Key, Val, Tree).
 
-lookup(_, _, black('',_,_,'')) :- !, fail.
-lookup(Key, Val, Tree) :-
+'$rb_lookup'(_, _, black('',_,_,'')) :- !, fail.
+'$rb_lookup'(Key, Val, Tree) :-
 	arg(2,Tree,KA),
 	compare(Cmp,KA,Key),
 	'$rb_lookup'(Cmp,Key,Val,Tree).
@@ -149,7 +149,7 @@ rb_next(t(_,Tree), Key, Next, Val) :-
 '$rb_next'(=, _, _, _, NK, Val, Tree, Candidate) :-
 	arg(4,Tree,NTree),
 	(
-	    min(NTree, NK, Val)
+	    '$rb_min'(NTree, NK, Val)
 	-> true
 	;
 	    Candidate = (NK-Val)
@@ -179,7 +179,7 @@ rb_previous(t(_,Tree), Key, Previous, Val) :-
 '$rb_previous'(=, _, _, _, K, Val, Tree, Candidate) :-
 	arg(1,Tree,NTree),
 	(
-	    max(NTree, K, Val)
+	    '$rb_max'(NTree, K, Val)
 	-> true
 	;
 	    Candidate = (K-Val)
@@ -566,10 +566,10 @@ rb_del_max(t(Nil,T), K, Val, t(Nil,NT)) :-
 '$rb_delete_next'(black(black('',_,_,''),K,V,R),K,V,R,not_done) :- !.
 '$rb_delete_next'(red(L,K,V,R),K0,V0,OUT,Done) :-
 	'$rb_delete_next'(L,K0,V0,NL,Done0),
-	fixup_left(Done0,red(NL,K,V,R),OUT,Done).
+	'$rb_fixup_left'(Done0,red(NL,K,V,R),OUT,Done).
 '$rb_delete_next'(black(L,K,V,R),K0,V0,OUT,Done) :-
 	'$rb_delete_next'(L,K0,V0,NL,Done0),
-	fixup_left(Done0,black(NL,K,V,R),OUT,Done).
+	'$rb_fixup_left'(Done0,black(NL,K,V,R),OUT,Done).
 
 
 '$rb_fixup_left'(done,T,T,done).
