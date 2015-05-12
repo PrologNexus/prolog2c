@@ -247,10 +247,10 @@ read_after_atom(Ch, Dict, Tokens) :-
 '$rdtok_hex_digit'(C, N) :-
 	C >= 48,		% '0'
 	( C =< 57, N is C - 48	% '9'
-	; ( C >= 65		% 'A'
-	  -> C =< 70, N is C - 55 % 'F'
-	  ; (C >= 97		  % 'a'
-	    -> C =< 102, N is C - 87 % 'f'
+	; (C >= 97		% 'a'
+	  -> C =< 102, N is C - 87 % 'f'
+	  ; ( C >= 65		   % 'A'
+	    -> C =< 70, N is C - 55 % 'F'
 	    )
 	  )
 	).
