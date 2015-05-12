@@ -234,12 +234,13 @@ NOTES							              -*- Org -*-
      peek_code/peek_byte
 * Documentation
 ** DONE News
-   - dropped `ord_seteq/2`.
+   - "0xXXX" is accepted as syntax for hexadecimal numbers.
+   - dropped `ord_seteq/2`, as it is equivalent to `==/2`
    - The compiler now does some basic determinateness analysis for
      predicates. Currently only calls following the definition of such
      a predicate can take advantage of this.
    - added `-xrefall` compiler option.
-   - TRACE-mode is now enabled by default, unless NOTRACE or NDEBUG or
+   - TRACE-mode is now enabled by default, unless NOTRACE, NDEBUG or
      UNSAFE is defined.
    - The compiler now removes predicates that are never used.
    - lib/interp (`consult/1`) ignores first line if it starts with
