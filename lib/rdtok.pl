@@ -363,7 +363,8 @@ read_integer(BaseChar, IntVal, NextCh) :-
 	Base is BaseChar - 48,
 	get0(Ch),
 	Ch =\= -1,
-	(   Ch =\= 39, read_digits(Ch, Base, 10, IntVal, NextCh)
+	(   Ch == 120, read_digits(0, 16, IntVal, NextCh)
+	;   Ch =\= 39, read_digits(Ch, Base, 10, IntVal, NextCh)
 	;   Base >= 1, read_digits(0, Base, IntVal, NextCh)
 	;   get0(IntVal), IntVal =\= -1, get0(NextCh)
 	),  !.
@@ -377,6 +378,12 @@ read_digits(Digit, SoFar, Base, Value, NextCh) :-
 	Digit >= 48, Digit =< 57,
 	!,
 	Next is SoFar*Base-48+Digit,
+	read_digits(Next, Base, Value, NextCh).
+read_digits(Digit, SoFar, Base, Value, NextCh) :-
+	Base > 10,
+	'$rdtok_hex_digit'(Digit, N),
+	!,
+	Next is SoFar * Base + N,
 	read_digits(Next, Base, Value, NextCh).
 read_digits(LastCh, Value, _, Value, LastCh).
 
