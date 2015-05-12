@@ -363,7 +363,7 @@ read_integer(BaseChar, IntVal, NextCh) :-
 	Base is BaseChar - 48,
 	get0(Ch),
 	Ch =\= -1,
-	(   Ch == 120, read_digits(0, 16, IntVal, NextCh)
+	(   Ch == 120, Base == 0, read_digits(0, 16, IntVal, NextCh)
 	;   Ch =\= 39, read_digits(Ch, Base, 10, IntVal, NextCh)
 	;   Base >= 1, read_digits(0, Base, IntVal, NextCh)
 	;   get0(IntVal), IntVal =\= -1, get0(NextCh)
