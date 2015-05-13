@@ -5,7 +5,8 @@
 :- pre_initialization((foreign_call(db_create(record_db, 3001, DB)),
 		       global_set(record_db, DB))).
 
-:- determinate '$record_db_key'/2.
+:- determinate '$record_db_key'/2,
+	'$record'/4.
 
 
 recorda(KEY, TERM) :- recorda(KEY, TERM, _).
@@ -18,7 +19,8 @@ recordz(KEY, TERM, REF) :- '$record'(KEY, TERM, REF, 1).
 	'$record_db_key'(KEY, KEY2),
 	foreign_call(db_record(DB, ATEND, KEY2, TERM, REF)).
 
-recorded(KEY, TERM) :- recorded(KEY, TERM, _).
+recorded(KEY, TERM) :-
+	recorded(KEY, TERM, _).
 recorded(KEY, TERM, REF) :-
 	nonvar(REF),
 	!,

@@ -36,4 +36,3 @@ eliminate_predicate(_) :-
 	N2 is N + 1,
 	recordz(dce_count, N2),
 	!.			% avoid backtracking (this is a bug)
-
