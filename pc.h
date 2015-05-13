@@ -2273,27 +2273,27 @@ static void collect_garbage(CHOICE_POINT *C)
     }
 
     if(is_forwarded(var)) {
-      if(gap_size) {		/* forwarded var? close existing gap */
+      if(gap_size) {		// forwarded var? close existing gap
 	gp->size = gap_size;
 	++gp;
 	gap_size = 0;
       }
 
 #ifdef USE_DELAY
-      *(tsp++) = tp[ 0 ];	/* frozen goals */
+      *(tsp++) = tp[ 0 ];	// frozen goals
 #endif
       *(tsp++) = fptr_to_ptr(objbits(var));
     }
-    else if(gap_size) {		/* collected var? add to gap */
+    else if(gap_size) {		// collected var? add to gap or...
       gap_size += slots;
     }
-    else {			/* collected var, create new gap */
+    else {			// ...create new gap
       gp->position = tp;
       gap_size = slots;
     }
   }
 
-  if(gap_size) {		/* close gap, if one is still open */
+  if(gap_size) {		// close gap, if one is still open
     gp->size = gap_size;
     ++gp;
   }
