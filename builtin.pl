@@ -344,7 +344,6 @@ simple_test(P) :-
 	( A == 1, type_predicate(N)
 	; A == 2, comparison_predicate(N)
 	).
-simple_test(foreign_call(_)).
 simple_test((X, Y)) :-
 	simple_test(X),
 	simple_test(Y).
