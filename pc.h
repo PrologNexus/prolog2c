@@ -2303,12 +2303,18 @@ static void collect_garbage(CHOICE_POINT *C)
   TRAIL_STACK_GAP *gp2 = trail_stack_gap_buffer;
 
   for(CHOICE_POINT *cp = choice_point_stack; cp < C; ++cp) {
-    while(gp2 < gp && cp->T > gp2->position) {
+    while(gp2 < gp && cp->T >= gp2->position + gp2->size) {
+      // add gap-size to shift, if cp->T is above gap
       ts_shift += gp2->size;
       ++gp2;
     }
 
+    X *cpt = cp->T;		// remember
     cp->T -= ts_shift;
+    
+    // if cp->T is inside gap, only reduce by offset into it
+    if(cpt > gp2->position && cpt < gp2->position + gp2->size)
+      cp->T -= cpt - gp2->position;
   }
 
   // do the same for trail-ptrs in catcher-stack
