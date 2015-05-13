@@ -72,7 +72,7 @@ register_call(FROM, TO) :-
 	recordz(calls, calls(FROM, TO)).
 
 predicate_callers(NA, CALLERS) :-
-	setof(CALLER, recorded(calls, calls(CALLER, NA)), LST),
+	findall(CALLER, recorded(calls, calls(CALLER, NA)), LST),
 	!,
 	CALLERS = LST.
 predicate_callers(_, []).
