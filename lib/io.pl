@@ -78,30 +78,30 @@ open(NAME, INPUT, MODE, [type(binary)|MORE], DATA, STREAM) :-
 open(NAME, INPUT, MODE, [_|MORE], DATA, STREAM) :-
 	open(NAME, INPUT, MODE, MORE, DATA, STREAM).
 
-read_string(LEN, ATM) :-
-	read_string(current_input, LEN, ATM).
+read_string(LEN, STR) :-
+	read_string(current_input, LEN, STR).
 
-read_string(STREAM, LEN, ATM) :-
-	foreign_call(read_string(STREAM, LEN, A1)),
-	A1 \== 0,
+read_string(STREAM, LEN, STR) :-
+	foreign_call(read_string(STREAM, LEN, S1)),
+	S1 \== 0,
 	!,
-	ATM = A1.
-read_string(_, _, ATM) :-
-	'$retry_string_to_list'(ATM).
+	STR = S1.
+read_string(_, _, STR) :-
+	'$retry_string_to_list'(STR).
 
 read_line(ATM) :-
 	read_line(current_input, ATM).
 
-read_line(STREAM, ATM) :-
-	foreign_call(read_line(STREAM, A1)),
-	A1 \== 0,
+read_line(STREAM, STR) :-
+	foreign_call(read_line(STREAM, S1)),
+	S1 \== 0,
 	!,
-	ATM = A1.
-read_line(_, ATM) :-
-	'$retry_string_to_list'(ATM).
+	STR = S1.
+read_line(_, STR) :-
+	'$retry_string_to_list'(STR).
 
-'$retry_string_to_list'(ATM) :-
-	foreign_call(retry_string_to_list(ATM)).
+'$retry_string_to_list'(STR) :-
+	foreign_call(retry_string_to_list(STR)).
 
 set_input(S) :-
 	foreign_call(set_current_input_stream(S)).
