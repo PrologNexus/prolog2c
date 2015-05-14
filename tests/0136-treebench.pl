@@ -1,15 +1,14 @@
 %%% benchmark 23-trees vs rbtrees
 
 
-% this segfaults in rbtree-lookup: apparently an invalid trail-stack ptr
-% in a re-invoked choice point appears, which is higher than the current
-% top of the trail-stack
-
-
 :- ensure_loaded(library(tree23)).
 :- ensure_loaded(library(rbtrees)).
 
 
+count(10000).
+
+
+/*
 main :-
 	writef("tree23: adding ...%f"),
 	TT is clock,
@@ -28,6 +27,13 @@ main :-
 	l2(T2),
 	report(RL),
 	nl.
+*/
+
+main :-
+	t1(T1),
+	t2(T2),
+	l1(T1),
+	l2(T2).
 
 report(T) :-
 	TN is round((clock - T) * 1000) / 1000,
@@ -37,7 +43,8 @@ t1(T) :-
 	empty_23(T0),
 	add_t1(0, T0, T).
 
-add_t1(10000, T, T) :-
+add_t1(N, T, T) :-
+	count(N),
 	!.
 add_t1(I, T1, T) :-
 	R is random(100000),
@@ -49,7 +56,8 @@ add_t1(I, T1, T) :-
 	add_t1(I2, T3, T).
 
 l1(T) :-
-	between(1, 10000, I),
+	count(N),
+	between(1, N, I),
 	get_23(I, T, X),
 	atom_number(IA, I),
 	get_23(IA, T, Y),
@@ -62,7 +70,8 @@ t2(T) :-
 	rb_new(T0),
 	add_t2(0, T0, T).
 
-add_t2(10000, T, T) :-
+add_t2(N, T, T) :-
+	count(N),
 	!.
 add_t2(I, T1, T) :-
 	R is random(100000),
@@ -74,7 +83,8 @@ add_t2(I, T1, T) :-
 	add_t2(I2, T3, T).
 
 l2(T) :-
-	between(1, 10000, I),
+	count(N),
+	between(1, N, I),
 	rb_lookup(I, X, T),
 	atom_number(IA, I),
 	rb_lookup(IA, Y, T),
