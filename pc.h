@@ -2269,8 +2269,10 @@ static void collect_garbage(CHOICE_POINT *C)
 
     if(offset >= trail_stack_gap_buffer_size) {
       trail_stack_gap_buffer_size *= 2;
-      trail_stack_gap_buffer = realloc(trail_stack_gap_buffer, trail_stack_gap_buffer_size * sizeof(TRAIL_STACK_GAP));
-      ASSERT(trail_stack_gap_buffer, "out of memory - can not re-allocate trail-stack gap-buffer");
+      trail_stack_gap_buffer = realloc(trail_stack_gap_buffer, 
+				       trail_stack_gap_buffer_size * sizeof(TRAIL_STACK_GAP));
+      ASSERT(trail_stack_gap_buffer, 
+	     "out of memory - can not re-allocate trail-stack gap-buffer");
       gp = trail_stack_gap_buffer + offset;
     }
 
