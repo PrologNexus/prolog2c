@@ -2317,8 +2317,12 @@ static void collect_garbage(CHOICE_POINT *C)
     cp->T -= ts_shift;
     
     // if cp->T is inside gap, only reduce by offset into it
-    if(cpt > gp2->position && cpt < gp2->position + gp2->size)
+    if(gp2 < gp && cpt > gp2->position && cpt < gp2->position + gp2->size)
       cp->T -= cpt - gp2->position;
+
+    ASSERT(cp->T >= trail_stack, "trail-pointer underflow after shift");
+    ASSERT(cp == choice_point_stack || cp->T >= (cp - 1)->T, 
+	   "trail-pointer in CP below expected value");
   }
 
   // do the same for trail-ptrs in catcher-stack
