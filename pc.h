@@ -1374,6 +1374,8 @@ static inline X make_var()
 
 static void unwind_trail(X *tp)
 {
+  ASSERT(tp >= trail_stack && tp <= trail_top, "trail-unwind to invalid pointer");
+
   while(trail_top != tp) {
     BLOCK *var = (BLOCK *)(*(--trail_top));
 #ifdef USE_DELAY
