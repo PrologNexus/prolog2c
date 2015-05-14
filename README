@@ -228,6 +228,10 @@ Support syntax
 
   DCG rules, including semicontext notation, are fully supported.
 
+  Hexadecimal numeric syntax ("0x...") is allowed, and quoted atoms
+  and strings may contain the escape sequences "\xXX", "\n", "\r" and
+  "\t".
+
 
 Builtin predicates
 ------------------
@@ -749,15 +753,6 @@ Builtin predicates
 
     The format-string (an atom or a string) may contain the following special 
     character sequences:
-
-        \n              newline
-        \l              linefeed
-        \r              carriage return
-        \t              tab
-        \e              escape
-        \\              \
-        \%              %
-        \nnn            character with ASCII code nnn (decimal)
 
         %t              output the next argument (same as %w)
         %w              write the next argument
