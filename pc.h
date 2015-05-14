@@ -529,7 +529,7 @@ static XCHAR *type_names[] = {
 # define DBG(...)         ;
 # define DRIBBLE          ;
 #else
-# define ASSERT(x, ...)   { if(!(x)) CRASH(__VA_ARGS__) }
+# define ASSERT(x, ...)   { if(!(x)) CRASH("[internal error] " __VA_ARGS__) }
 # define DBG              COUTPUT
 # define DRIBBLE(...)     { if(verbose) COUTPUT(__VA_ARGS__); }
 #endif
