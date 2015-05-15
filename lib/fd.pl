@@ -65,3 +65,9 @@ poll_fds(FDS, READY) :-
 
 poll_fds(FDS, TIMEOUT, READY) :-
 	foreign_call(poll_fds(FDS, TIMEOUT, READY)).
+
+
+%% generally useful, but it seldom works for me...
+
+set_stream_buffer(STR, BUF) :-
+	foreign_call(set_stream_buffer(STR, BUF)).

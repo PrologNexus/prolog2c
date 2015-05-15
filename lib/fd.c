@@ -74,3 +74,27 @@ PRIMITIVE(poll_fds, X fdlist, X timeout, X rdylist)
 
   return unify(rdylist, lst);
 }
+
+
+PRIMITIVE(set_stream_buffer, X port, X buf)
+{
+  X stream = get_stream(port);
+  XCHAR *buffer;
+  int mode;
+  size_t size;
+
+  if(buf == ZERO) {
+    buffer = NULL;
+    mode = _IONBF;
+    size = 0;
+  } 
+  else {
+    buffer = malloc(size = fixnum_to_word(check_fixnum(buf)));
+    mode = _IOFBF;
+  }
+
+  if(setvbuf(port_file(stream), buffer, mode, size) != 0)
+    system_error(strerror(errno));
+
+  return 1;
+}
