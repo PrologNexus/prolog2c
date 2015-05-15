@@ -4006,7 +4006,7 @@ static X get_stream(X s)
   else if(s == current_input_atom) return standard_input_port;
   else if(s == current_output_atom) return standard_output_port;
   
-  return check_input_port(s);
+  return check_type_PORT(s);
 }
 
 
