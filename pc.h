@@ -796,7 +796,7 @@ static inline int is_structure(X x)
 #define BLOB(ptr, len)  ({ XWORD len_ = (len); X x_ = STRING(len_); memcpy(objdata(x_), (ptr), len_); intern(x_); })
 
 
-/// Hook called when the system terminates
+/// Hook called when the system terminates abnormally
 
 static void crash_hook()
 {
