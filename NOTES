@@ -208,8 +208,9 @@ NOTES							              -*- Org -*-
    - in other words: actually take advantage of having a static whole-program compiler.
 * Features
 ** Build source-map to produce backtrace on errors
-   - static map holding clause-names and labels.
-   - sort by address and map return-addr in CP to clause.
+   - unfortunately throwing exceptions needs to have access to C0,
+     which would required changing too much code.
+   - initial patch: file:patches/label_map.diff
 ** Detect unbound variables in '+' args for calls to predicates with declared mode
    - i.e. at compile-time.
    - possibly, but needs a lot of changes and slows down compilation.
