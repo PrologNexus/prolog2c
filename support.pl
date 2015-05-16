@@ -34,7 +34,8 @@ mangle_name(NAME, MNAME) :-
 	name(NAME, STRING),
 	findall(CS, (member(C, STRING), mangle_char(C, CS)), MSTRING),
 	append(["___"|MSTRING], MSTRING2),
-	name(MNAME, MSTRING2).
+	name(MNAME, MSTRING2),
+	!.
 
 mangle_char(C, [C]) :- (C >= 97, C =< 122; C >= 48, C =< 57), !.
 mangle_char(C1, [95, C2, C3]) :-
