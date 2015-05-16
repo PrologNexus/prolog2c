@@ -16,7 +16,7 @@ PRIMITIVE(open_input_string, X str, X data, X result)
   int len;
   XCHAR *b1 = to_string(str, &len);
   XCHAR *buf = xstrndup(b1, len + 1);
-  FILE *fp = fmemopen(buf, len, "r");
+  FILE *fp = fmemopen(buf, len + 1, "r");
 
   if(fp == NULL)
     system_error(strerror(errno));
