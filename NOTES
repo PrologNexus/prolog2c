@@ -9,6 +9,7 @@ NOTES							              -*- Org -*-
 *** TODO embedded test fails on [z]
     - exit_code doesn't seem to be initialized.
     - is TERMINATE(..., EXIT_SUCCESS) called?
+    - might be fixed in df6cf4379.
 *** TODO 0046-arithmetic test fails in 32-bit pc
     - seems to be a parsing problem.
 *** TODO Term-comparison doesn't handle cyclic structures
@@ -204,8 +205,10 @@ NOTES							              -*- Org -*-
    - done for simple tests, but for declared predicates we must make sure
      C is trimmed to C0 + 1
 ** Analyze program before compiling to pseudo-instructions
-   - perform determinateness-analysis for all code.
-   - in other words: actually take advantage of having a static whole-program compiler.
+   - allows use of determinateness-analysis results even if definition
+     follows use.
+   - in other words: actually take advantage of having a static
+     whole-program compiler.
 * Features
 ** Build source-map to produce backtrace on errors
    - unfortunately throwing exceptions needs to have access to C0,
@@ -214,7 +217,9 @@ NOTES							              -*- Org -*-
 ** Detect unbound variables in '+' args for calls to predicates with declared mode
    - i.e. at compile-time.
    - possibly, but needs a lot of changes and slows down compilation.
-** TODO Check if we can use file:lib/canon.pl for printing query results
+** DONE Check if we can use file:lib/canon.pl for printing query results
+   - see file:patches/canonical-term-in-pi.diff, currently drives the
+     var-indices rather hi (a cut in show_variables may help)
    - syntax is ugly, could use "**" as does GNU Prolog.
 ** Show warning for untriggered delayed goals with "-:d"
    - check trail-entries when unwinding trail and before exit.
