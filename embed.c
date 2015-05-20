@@ -16,7 +16,7 @@ int main()
   X one = prolog(1, argv, NULL, NULL);
   X *global = prolog_variable(0);
   *global = one;
-  int x;
+  int x = 0;
   X two = prolog(0, NULL, word_to_fixnum(123), &x);
   assert(x == EXIT_SUCCESS);
   assert(two == word_to_fixnum(2));
