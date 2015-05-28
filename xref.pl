@@ -72,10 +72,7 @@ register_call(FROM, TO) :-
 	recordz(calls, calls(FROM, TO)).
 
 predicate_callers(NA, CALLERS) :-
-	findall(CALLER, recorded(calls, calls(CALLER, NA)), LST),
-	!,
-	CALLERS = LST.
-predicate_callers(_, []).
+	findall(CALLER, recorded(calls, calls(CALLER, NA)), CALLERS).
 
 
 %% register whether compiled predicate is determinate
