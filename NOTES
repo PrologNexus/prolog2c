@@ -43,6 +43,37 @@ NOTES							              -*- Org -*-
    - also recorded/X, retract/1 and clause/X, atom_codes/2,
      number_codes/2.
 *** functor/3 (and others?) may exceed heap-reserve for large inputs
+*** This code caused base64_decode/2 in bunnymail to be incorrectly dropped
+    - commit 3cf402a26c9d69dcdfca25a01e79c3a5913a9774
+      #+BEGIN_SRC
+      diff --git a/xref.pl b/xref.pl
+      index fa36d9f..77bb55e 100644
+      --- a/xref.pl
+      +++ b/xref.pl
+      @@ -72,10 +72,7 @@ register_call(FROM, TO) :-
+	      recordz(calls, calls(FROM, TO)).
+
+       predicate_callers(NA, CALLERS) :-
+      -	findall(CALLER, recorded(calls, calls(CALLER, NA)), LST),
+      -	!,
+      -	CALLERS = LST.
+      -predicate_callers(_, []).
+      +	findall(CALLER, recorded(calls, calls(CALLER, NA)), CALLERS).
+      #+END_SRC
+    - the reason is not clear yet - only "pc -q compose.pl -o compose.c"
+      causes the error, dropping -q makes it work again.
+    - trace:
+      [(420/962/2446) CALL: predicate_callers('/'(decode_encoded_text, 4), [])]
+      [(420/962/2449) FAIL: predicate_callers('/'(decode_encoded_text, 4), [])]
+      [(420/962/2446) CALL: predicate_callers('/'(base64_encode, 2), [])]
+      [(420/962/2449) FAIL: predicate_callers('/'(base64_encode, 2), [])]
+      [(420/962/2446) CALL: predicate_callers('/'(base64_decode, 2), [])]
+      [(420/962/2449) EXIT: predicate_callers('/'(base64_decode, 2), [])]
+      [(420/961/2449) CALL: eliminate_predicate('/'(base64_decode, 2))]
+      [(420/961/2449) REDO: eliminate_predicate('/'(base64_decode, 2))]
+      [(420/961/2454) EXIT: eliminate_predicate('/'(base64_decode, 2))]
+    - findall succeeds, explicit unification succeeds, for an unknown
+      reason (trail-GC still wrong?)
 ** Minor
 *** "simple-test" optimization is not possible for foreign_call/1
     - a primitive may unify variables and quasi-failure would not
