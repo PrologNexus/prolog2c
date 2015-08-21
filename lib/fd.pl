@@ -40,9 +40,9 @@ open_fd(FD, MODE, STREAM) :-
 	open_fd(FD, MODE, STREAM, []).
 
 open_fd(FD, write, STREAM, OPTIONS) :-
-	open_fd(FD, 1, "w", OPTIONS, [output, mode(write)], STREAM).
+	open_fd(FD, 0, "w", OPTIONS, [output, mode(write)], STREAM).
 open_fd(FD, read, STREAM, OPTIONS) :-
-	open_fd(FD, 0, "r", OPTIONS, [input, mode(read)], STREAM).
+	open_fd(FD, 1, "r", OPTIONS, [input, mode(read)], STREAM).
 open_fd(FD, append, STREAM, OPTIONS) :-
 	open_fd(FD, 0, "a", OPTIONS, [output, mode(append)], STREAM).
 
