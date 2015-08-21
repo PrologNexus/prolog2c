@@ -1948,6 +1948,33 @@ Limitations
 Version history
 ---------------
 
+  - Version 5:
+
+    - "0xXXX" is accepted as syntax for hexadecimal numbers.
+    - Dropped `ord_seteq/2`, as it is equivalent to `==/2`
+    - The compiler now does some basic determinateness analysis for
+      predicates. Currently only calls following the definition of such
+      a predicate can take advantage of this.
+    - Added `-xrefall` compiler option.
+    - TRACE-mode is now enabled by default, unless NOTRACE, NDEBUG or
+      UNSAFE is defined.
+    - The compiler now removes predicates that are never used.
+    - `consult/1` ignores first line if it starts with "#".
+    - Added `atom_number/2`.
+    - Added `read_term/2` and `read_term/3`.
+    - Fixed problem in `findall/3` that caused failure of update
+      of global state variable in certain situations.
+    - Added `install` target to makefile.
+    - Passing variable in argument position with "+"-mode now throws
+      exception instead of terminating the program.
+    - `qp` was broken in a few places and can now override
+      PC_LIBRARY_DIR directly, if needed.
+    - `read` is now more robust with respect to operators in
+      argument-lists.
+    - `read` understands `\xXX` and `\OOO` escape sequences in quoted
+      strings and atoms.
+    - The interpreter didn't recognize '=..'/2
+
 
   - Version 4:
 

@@ -40,7 +40,7 @@ split_string(STR, SEP, PAD, SUB) :-
 '$split_string_trim'(L, "", L) :- !.
 '$split_string_trim'(L, SET, R) :-
 	'$split_string_trim_head'(L, SET, L1),
-	'string_split_trim_tail'(L1, SET, R).
+	'$string_split_trim_tail'(L1, SET, R).
 
 '$split_string_trim_head'("", _, "").
 '$split_string_trim_head'([C|R], SET, R2) :-
@@ -49,9 +49,9 @@ split_string(STR, SEP, PAD, SUB) :-
 	'$split_string_trim_head'(R, SET, R2).
 '$split_string_trim_head'(R, _, R).
 
-'string_split_trim_tail'("", _, "").
-'string_split_trim_tail'([C|R1], SET, R) :-
-	'string_split_trim_tail'(R1, SET, R2),
+'$string_split_trim_tail'("", _, "").
+'$string_split_trim_tail'([C|R1], SET, R) :-
+	'$string_split_trim_tail'(R1, SET, R2),
 	( R2 == "", memberchk(C, SET)
 	-> R = ""
 	; R = [C|R2]

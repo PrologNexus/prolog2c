@@ -178,7 +178,7 @@ bench-fast:
 clean:
 	rm -f pi_system_predicate.pl pi_call_primitive.pl pi_evaluate_op.pl pi pc1 pc2.c pc1.c pc1o tmp/*.c
 
-dist: pc2.c pi pb
+dist: pc2.c pi pb README.html
 	cp pc2.c pc.c
 	ddir=pc-`date +%Y-%m-%d`; \
 	rm -fr $$ddir pc.tar.gz; \

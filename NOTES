@@ -6,9 +6,8 @@ NOTES							              -*- Org -*-
 *** TODO split_string/4 doesn't work with string that consists only of spaces
     - split_string/4 does not retain empty strings, this is
       incompatible to SWIs version.
-*** TODO embedded test fails on [z]
+*** DONE embedded test fails on [z]
     - exit_code doesn't seem to be initialized.
-    - is TERMINATE(..., EXIT_SUCCESS) called?
     - might be fixed in df6cf4379.
 *** TODO 0046-arithmetic test fails in 32-bit pc
     - seems to be a parsing problem.
@@ -90,6 +89,7 @@ NOTES							              -*- Org -*-
       functors seems to get confused.
     - not completely sure whether ISO allows PI without arity.
 *** TODO Check what other builtins we should prevent to be redefined
+    - currently only done for ';'/2
     - see compile_clauses/4 in file:compile.pl
 *** discontiguous/1 is not available in the interpreter
 *** TODO standard-ports should have some initial data
@@ -98,7 +98,7 @@ NOTES							              -*- Org -*-
     - needs to be safer, should it be exposed (or "meta_predicate"
       is made official)
 *** interp: call/1 should probably handle X^Y terms (quantified)
-*** Eliminate redundant switch-operations
+*** Eliminate redundant switch-instructions
     - e.g.:
       #+BEGIN_SRC prolog
       foo(a, 1).
@@ -276,32 +276,6 @@ NOTES							              -*- Org -*-
    - different handling of put_code/put_byte, get_code/get_byte and
      peek_code/peek_byte
 * Documentation
-** DONE News
-   - "0xXXX" is accepted as syntax for hexadecimal numbers.
-   - dropped `ord_seteq/2`, as it is equivalent to `==/2`
-   - The compiler now does some basic determinateness analysis for
-     predicates. Currently only calls following the definition of such
-     a predicate can take advantage of this.
-   - added `-xrefall` compiler option.
-   - TRACE-mode is now enabled by default, unless NOTRACE, NDEBUG or
-     UNSAFE is defined.
-   - The compiler now removes predicates that are never used.
-   - lib/interp (`consult/1`) ignores first line if it starts with
-     "#".
-   - Added `atom_number/2`.
-   - Added `read_term/2` and `read_term/3`.
-   - Fixed problem in `findall/3` that caused failure of update
-     of global state variable in certain situations.
-   - Added "install" target to makefile.
-   - Passing variable in argument position with "+"-mode now throws
-     exception instead of terminating the program.
-   - `qp` was broken in a few places and can now override
-     PC_LIBRARY_DIR directly, if needed.
-   - `read` now is more robust with respect to operators in
-     argument-lists.
-   - `read` understands `\xXX` and `\OOO` escape sequences in quoted
-     strings and atoms.
-   - The interpreter didn't recognize '=..'/2
 ** TODO List differences to ISO in file:README
 ** Missing ISO predicates
    | Name                                         | Remarks                                         |
