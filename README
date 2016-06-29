@@ -154,12 +154,14 @@ Usage
   changed. One use of this script is to automatically compile
   a script containing Prolog source code:
 
-  % cat hello
-  #!/usr/bin/env qp
-  main :- display('Hello, World!'), nl.
-  % chmod +x hello
-  % ./hello
-  Hello, World!
+<pre>
+      % cat hello
+      #!/usr/bin/env qp
+      main :- display('Hello, World!'), nl.
+      % chmod +x hello
+      % ./hello
+      Hello, World!
+</pre>
 
   Running "qp" without arguments just starts the interpreter ("pi").
   Enter "qp -help" to see a list of options.
