@@ -4,7 +4,7 @@
 ===============================
 
 
-Version 6
+Version 7
 
 
 Introduction
@@ -1949,6 +1949,11 @@ Limitations
 
 Version history
 ---------------
+
+  - Version 7:
+
+    - Fix handling of command-line parsing for newer versions of SWI prolog
+      (reported by Xin Wang)
 
   - Version 6:
 
