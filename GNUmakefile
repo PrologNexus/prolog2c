@@ -137,6 +137,7 @@ pi_system_predicate.pl: g-s-p system-predicates
 	./g-s-p <system-predicates
 
 g-s-p: g-s-p.pl
+	mkdir -p tmp
 	./pc -n $< -o tmp/g-s-p.c
 	$(CC) $(CC_COMPILE_OPTIONS) tmp/g-s-p.c $(LIBS) -o $@
 
