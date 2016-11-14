@@ -12,7 +12,13 @@ determinate(_).
 
 command_line_arguments(ARGS) :-
 	current_prolog_flag(argv, X),
-	append(_, ['--'|ARGS], X), !.
+        filter_dashes(X, ARGS),
+        !.
+
+% newer versions of SWI filter drop arguments before "--":
+filter_dashes(X, ARGS) :-
+	append(_, ['--'|ARGS], X).
+filter_dashes(ARGS, ARGS).
 
 dbreference(_) :- fail.		% sufficient here
 
